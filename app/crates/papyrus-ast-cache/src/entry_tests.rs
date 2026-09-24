@@ -363,3 +363,46 @@ fn unicode_source_paths_get_their_own_cache_file() {
     assert_eq!(game, "skyrim");
     assert_eq!(digest.len(), 32);
 }
+
+#[test]
+fn mtime_valid_entry_returns_the_stored_hash_without_source_text() {
+    let cache_dir = tempdir().unwrap();
+    let project_dir = tempdir().unwrap();
+    let source_path = project_dir.path().join("Example.psc");
+    let source = "ScriptName Example\n";
+    std::fs::write(&source_path, source).unwrap();
+    write_entry_in_for_game(
+        cache_dir.path(),
+        GAME,
+        &source_path,
+        &fresh_entry(&source_path, source),
+    );
+
+    let entry = mtime_valid_entry_in_for_game(cache_dir.path(), GAME, &source_path)
+        .expect("mtime-fresh entry should be readable");
+    assert_eq!(
+        entry.content_md5,
+        format!("{:x}", md5::compute(source.as_bytes()))
+    );
+}
+
+#[test]
+fn mtime_valid_entry_is_none_after_the_source_mtime_changes() {
+    let cache_dir = tempdir().unwrap();
+    let project_dir = tempdir().unwrap();
+    let source_path = project_dir.path().join("Example.psc");
+    let source = "ScriptName Example\n";
+    std::fs::write(&source_path, source).unwrap();
+    write_entry_in_for_game(
+        cache_dir.path(),
+        GAME,
+        &source_path,
+        &fresh_entry(&source_path, source),
+    );
+
+    let later = std::time::SystemTime::now() + std::time::Duration::from_secs(120);
+    let file = std::fs::File::open(&source_path).unwrap();
+    file.set_modified(later).unwrap();
+
+    assert!(mtime_valid_entry_in_for_game(cache_dir.path(), GAME, &source_path).is_none());
+}

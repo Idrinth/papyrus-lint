@@ -628,3 +628,52 @@ fn extra_json_fields_do_not_invalidate_a_fresh_entry() {
         Some(ast)
     );
 }
+
+#[test]
+fn content_md5_is_returned_from_a_mtime_fresh_entry_without_the_source_text() {
+    let h = harness("HashOnlyLookup.psc", "ScriptName HashOnlyLookup\n");
+    put_in_for_game(
+        h.cache_dir.path(),
+        GAME,
+        &h.source_path,
+        h.source,
+        &sample_ast(),
+        COMPATIBLE_VERSION,
+    );
+
+    assert_eq!(
+        content_md5_in_for_game(h.cache_dir.path(), GAME, &h.source_path),
+        Some(format!("{:x}", md5::compute(h.source.as_bytes())))
+    );
+}
+
+#[test]
+fn content_md5_is_a_miss_when_the_file_mtime_no_longer_matches() {
+    let h = harness("StaleHash.psc", "ScriptName StaleHash\n");
+    put_in_for_game(
+        h.cache_dir.path(),
+        GAME,
+        &h.source_path,
+        h.source,
+        &sample_ast(),
+        COMPATIBLE_VERSION,
+    );
+
+    let later = std::time::SystemTime::now() + std::time::Duration::from_secs(120);
+    let file = std::fs::File::open(&h.source_path).unwrap();
+    file.set_modified(later).unwrap();
+
+    assert_eq!(
+        content_md5_in_for_game(h.cache_dir.path(), GAME, &h.source_path),
+        None
+    );
+}
+
+#[test]
+fn content_md5_is_a_miss_for_an_uncached_path() {
+    let h = harness("UncachedHash.psc", "ScriptName UncachedHash\n");
+    assert_eq!(
+        content_md5_in_for_game(h.cache_dir.path(), GAME, &h.source_path),
+        None
+    );
+}

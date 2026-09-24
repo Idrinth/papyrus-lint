@@ -199,10 +199,11 @@ pub(crate) fn lint_with_compile_check<E: papyrus_lints::ExternalSignatures>(
             index.into_values().flatten(),
             Path::new(&context.root),
             false,
+            context.config.game,
         );
         project_diagnostics.extend(papyrus_lints::conflicting_script_versions::check(
             path,
-            source.as_bytes(),
+            &papyrus_lint_core::content_hash::md5_hex(source),
             &files,
         ));
     }

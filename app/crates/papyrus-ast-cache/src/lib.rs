@@ -10,6 +10,10 @@
 //! invalidated by the source file's last-modified timestamp, an MD5 of its
 //! content, and the linter version that wrote the entry -- if any of the
 //! three is no longer valid, it's treated as a miss and the caller re-parses.
+//! [`content_md5_for_game`] can recover that stored digest from a still
+//! mtime-fresh entry without opening the `.psc`, so project-level checks
+//! that only need the hash (notably `conflicting-script-versions`) skip a
+//! content read.
 //!
 //! Every public accessor takes the target `game` (`skyrim`, `fallout4`, …).
 //! There is no implicit cross-game fallback: a Fallout 4 lookup never reads
@@ -264,6 +268,39 @@ pub fn ast_for_script_name(game: Game, name: &str) -> Option<papyrus_parser::ast
 /// deserialize the AST.
 pub fn contains_script_name(game: Game, name: &str) -> bool {
     has_bundled_blob(game) && bundled::contains_name(game, name)
+}
+
+/// Returns the stored content MD5 for `game`/`source_path` when the on-disk
+/// entry is still mtime-fresh and version-compatible. Does not open the
+/// `.psc` itself — only its metadata — so a later
+/// `conflicting-script-versions` check can compare hashes without reading
+/// file contents. Returns `None` on a miss, mismatch, or I/O error.
+pub fn content_md5_for_game(game: Game, source_path: &Path) -> Option<String> {
+    game.assert_supported();
+    let _guard = CACHE_LOCK
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    ops::content_md5_in_for_game(&entry::cache_dir()?, game, source_path)
+}
+
+/// Persists `content_md5` for `game`/`source_path` against the file's
+/// current mtime. A still-fresh entry keeps its AST/tokens; otherwise a
+/// hash-only entry is written. Failures are ignored, matching the other
+/// `put_*` accessors.
+pub fn put_content_md5_for_game(game: Game, source_path: &Path, content_md5: &str) {
+    game.assert_supported();
+    let _guard = CACHE_LOCK
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    if let Some(dir) = entry::cache_dir() {
+        ops::put_content_md5_in_for_game(
+            &dir,
+            game,
+            source_path,
+            content_md5,
+            version::stamped_version(),
+        );
+    }
 }
 
 #[cfg(test)]

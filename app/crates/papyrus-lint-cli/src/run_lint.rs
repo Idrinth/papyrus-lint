@@ -158,10 +158,11 @@ fn collect_project_diagnostics(
             paths,
             ctx.project_root,
             ctx.short_paths,
+            ctx.lint_config.game,
         );
         project_diagnostics.extend(papyrus_lints::conflicting_script_versions::check(
             script_path,
-            source.as_bytes(),
+            &content_hash::md5_hex(source),
             &files,
         ));
     }

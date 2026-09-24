@@ -1,5 +1,9 @@
 use super::*;
 
+use papyrus_lint_globals::Game;
+
+const GAME: Game = Game::Skyrim;
+
 fn write_file(dir: &Path, name: &str) -> PathBuf {
     let path = dir.join(name);
     fs::write(&path, "").expect("failed to write test script file");
@@ -317,7 +321,7 @@ fn warns_about_same_named_scripts_with_different_contents() {
     fs::write(alternate.join("example.PSC"), "ScriptName ExampleV2\n")
         .expect("failed to write alternate script");
 
-    let diagnostics = conflicting_script_versions(&script, root.path(), &[], false);
+    let diagnostics = conflicting_script_versions(&script, root.path(), &[], false, GAME);
 
     assert_eq!(diagnostics.len(), 1);
     assert_eq!(diagnostics[0].rule, CONFLICTING_SCRIPT_VERSIONS_RULE);
@@ -336,7 +340,7 @@ fn warns_about_same_named_scripts_with_different_contents_and_shortens_the_path(
     fs::write(alternate.join("example.PSC"), "ScriptName ExampleV2\n")
         .expect("failed to write alternate script");
 
-    let diagnostics = conflicting_script_versions(&script, root.path(), &[], true);
+    let diagnostics = conflicting_script_versions(&script, root.path(), &[], true, GAME);
 
     assert_eq!(diagnostics.len(), 1);
     let shortened = Path::new("source/scripts/example.PSC");
@@ -359,7 +363,7 @@ fn ignores_identical_same_named_scripts() {
     fs::write(&script, "same").expect("failed to write primary script");
     fs::write(alternate.join("Example.psc"), "same").expect("failed to write alternate script");
 
-    assert!(conflicting_script_versions(&script, root.path(), &[], false).is_empty());
+    assert!(conflicting_script_versions(&script, root.path(), &[], false, GAME).is_empty());
 }
 
 #[test]
@@ -394,10 +398,10 @@ fn conflicting_script_versions_ignores_lookup_roots() {
     .expect("failed to write vanilla script");
     let lookup = vec![vanilla.path().to_string_lossy().into_owned()];
 
-    assert!(conflicting_script_versions(&script, root.path(), &[], false).is_empty());
+    assert!(conflicting_script_versions(&script, root.path(), &[], false, GAME).is_empty());
     assert!(find_psc_file_in_lookup_roots(root.path(), "Actor", &lookup).is_some());
     assert_eq!(
-        conflicting_script_versions(&script, root.path(), &lookup, false).len(),
+        conflicting_script_versions(&script, root.path(), &lookup, false, GAME).len(),
         1,
         "additional_script_roots still report collisions, unlike lookup roots"
     );
@@ -449,6 +453,7 @@ fn reports_conflicts_from_additional_roots_in_sorted_path_order() {
         root.path(),
         &["z-scripts".into(), "a-scripts".into()],
         false,
+        GAME,
     );
 
     assert_eq!(diagnostics.len(), 2);
@@ -467,10 +472,14 @@ fn reports_conflicts_from_additional_roots_in_sorted_path_order() {
 fn conflict_check_returns_empty_for_an_unreadable_script_path() {
     let root = tempfile::tempdir().expect("failed to create temp dir");
 
-    assert!(
-        conflicting_script_versions(&root.path().join("Missing.psc"), root.path(), &[], false)
-            .is_empty()
-    );
+    assert!(conflicting_script_versions(
+        &root.path().join("Missing.psc"),
+        root.path(),
+        &[],
+        false,
+        GAME
+    )
+    .is_empty());
 }
 
 #[test]
@@ -484,7 +493,7 @@ fn conflict_check_ignores_same_named_directories() {
     let script = primary.join("Example.psc");
     fs::write(&script, "primary").expect("failed to write primary script");
 
-    assert!(conflicting_script_versions(&script, root.path(), &[], false).is_empty());
+    assert!(conflicting_script_versions(&script, root.path(), &[], false, GAME).is_empty());
 }
 
 #[test]
@@ -544,7 +553,8 @@ fn conflicting_script_versions_in_index_flags_a_same_named_entry_with_different_
         .expect("failed to write alternate script");
     let index = build_script_index(root.path(), &[]);
 
-    let diagnostics = conflicting_script_versions_in_index(&script, &index, root.path(), false);
+    let diagnostics =
+        conflicting_script_versions_in_index(&script, &index, root.path(), false, GAME);
 
     assert_eq!(diagnostics.len(), 1);
     assert_eq!(diagnostics[0].rule, CONFLICTING_SCRIPT_VERSIONS_RULE);
@@ -565,8 +575,8 @@ fn conflicting_script_versions_in_index_matches_conflicting_script_versions() {
     let index = build_script_index(root.path(), &[]);
 
     assert_eq!(
-        conflicting_script_versions_in_index(&script, &index, root.path(), false),
-        conflicting_script_versions(&script, root.path(), &[], false)
+        conflicting_script_versions_in_index(&script, &index, root.path(), false, GAME),
+        conflicting_script_versions(&script, root.path(), &[], false, GAME)
     );
 }
 
@@ -576,7 +586,9 @@ fn conflicting_script_versions_in_index_ignores_unknown_file_names() {
     let index = build_script_index(root.path(), &[]);
     let script = root.path().join("Untracked.psc");
 
-    assert!(conflicting_script_versions_in_index(&script, &index, root.path(), false).is_empty());
+    assert!(
+        conflicting_script_versions_in_index(&script, &index, root.path(), false, GAME).is_empty()
+    );
 }
 
 #[test]
@@ -593,6 +605,7 @@ fn conflicting_script_versions_among_flags_a_same_named_known_script_with_differ
         std::slice::from_ref(&other),
         Path::new("."),
         false,
+        GAME,
     );
 
     assert_eq!(diagnostics.len(), 1);
@@ -614,8 +627,13 @@ fn conflicting_script_versions_among_shortens_a_conflict_under_the_project_root(
     let other = write_file(&alternate, "example.PSC");
     fs::write(&other, "ScriptName ExampleV2\n").expect("failed to write second script");
 
-    let diagnostics =
-        conflicting_script_versions_among(&script, std::slice::from_ref(&other), root.path(), true);
+    let diagnostics = conflicting_script_versions_among(
+        &script,
+        std::slice::from_ref(&other),
+        root.path(),
+        true,
+        GAME,
+    );
 
     assert_eq!(diagnostics.len(), 1);
     let shortened = Path::new("source/scripts/example.PSC");
@@ -636,7 +654,10 @@ fn conflicting_script_versions_among_ignores_identical_known_scripts() {
     let other = write_file(dir_b.path(), "Example.psc");
     fs::write(&other, "same").expect("failed to write second script");
 
-    assert!(conflicting_script_versions_among(&script, &[other], Path::new("."), false).is_empty());
+    assert!(
+        conflicting_script_versions_among(&script, &[other], Path::new("."), false, GAME)
+            .is_empty()
+    );
 }
 
 #[test]
@@ -651,7 +672,8 @@ fn conflicting_script_versions_among_ignores_the_script_itself_and_unrelated_nam
         &script,
         &[script.clone(), unrelated],
         Path::new("."),
-        false
+        false,
+        GAME,
     )
     .is_empty());
 }
@@ -664,7 +686,8 @@ fn conflicting_script_versions_among_returns_empty_for_an_unreadable_script_path
         &root.path().join("Missing.psc"),
         &[],
         Path::new("."),
-        false
+        false,
+        GAME,
     )
     .is_empty());
 }
@@ -677,7 +700,8 @@ fn conflicting_script_versions_among_ignores_unreadable_candidates() {
     let missing = dir.path().join("EXAMPLE.PSC");
 
     assert!(
-        conflicting_script_versions_among(&script, &[missing], Path::new("."), false).is_empty()
+        conflicting_script_versions_among(&script, &[missing], Path::new("."), false, GAME)
+            .is_empty()
     );
 }
 
@@ -699,6 +723,7 @@ fn conflicting_script_versions_among_deduplicates_and_sorts_conflicts() {
         &[second.clone(), first.clone(), second],
         Path::new("."),
         false,
+        GAME,
     );
 
     let mut expected = vec![first, second_dir.path().join("example.psc")];

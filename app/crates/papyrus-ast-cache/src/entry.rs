@@ -57,6 +57,26 @@ pub(crate) fn file_modified_unix_secs(source_path: &Path) -> Option<u64> {
     Some(modified.duration_since(UNIX_EPOCH).ok()?.as_secs())
 }
 
+/// Reads back the cache entry for `game`/`source_path` when the stored
+/// mtime and linter version still match, without needing the source text.
+/// Used to recover [`CacheEntry::content_md5`] so callers such as
+/// `conflicting-script-versions` can compare scripts without opening the
+/// `.psc` again.
+pub(crate) fn mtime_valid_entry_in_for_game(
+    dir: &Path,
+    game: Game,
+    source_path: &Path,
+) -> Option<CacheEntry> {
+    let raw = std::fs::read(cache_file_path_for_game(dir, game, source_path)).ok()?;
+    let entry: CacheEntry = serde_json::from_slice(&raw).ok()?;
+    if !is_compatible_version(&entry.linter_version)
+        || entry.modified_unix_secs != file_modified_unix_secs(source_path)?
+    {
+        return None;
+    }
+    Some(entry)
+}
+
 /// Reads back the cache entry for `game`/`source_path`/`source`, if one
 /// exists and is still fresh (matching content/mtime and at or above
 /// [`crate::version::MIN_COMPATIBLE_VERSION`]). Shared by the `ast` and
@@ -69,20 +89,10 @@ pub(crate) fn valid_entry_in_for_game(
     source_path: &Path,
     source: &str,
 ) -> Option<CacheEntry> {
-    let raw = std::fs::read(cache_file_path_for_game(dir, game, source_path)).ok()?;
-    deserialize_fresh_entry(raw, source_path, source)
-}
-
-fn deserialize_fresh_entry(raw: Vec<u8>, source_path: &Path, source: &str) -> Option<CacheEntry> {
-    let entry: CacheEntry = serde_json::from_slice(&raw).ok()?;
-
-    if !is_compatible_version(&entry.linter_version)
-        || entry.modified_unix_secs != file_modified_unix_secs(source_path)?
-        || entry.content_md5 != format!("{:x}", md5::compute(source.as_bytes()))
-    {
+    let entry = mtime_valid_entry_in_for_game(dir, game, source_path)?;
+    if entry.content_md5 != format!("{:x}", md5::compute(source.as_bytes())) {
         return None;
     }
-
     Some(entry)
 }
 

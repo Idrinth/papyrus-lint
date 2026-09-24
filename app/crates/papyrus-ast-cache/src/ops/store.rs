@@ -7,7 +7,8 @@ use std::path::Path;
 use papyrus_lint_globals::Game;
 
 use crate::entry::{
-    file_modified_unix_secs, valid_entry_in_for_game, write_entry_in_for_game, CacheEntry,
+    file_modified_unix_secs, mtime_valid_entry_in_for_game, valid_entry_in_for_game,
+    write_entry_in_for_game, CacheEntry,
 };
 
 enum FieldUpdate<'a> {
@@ -89,6 +90,48 @@ fn write_stamped_entry_for_game(
         tokens,
     };
     write_entry_in_for_game(dir, game, source_path, &entry);
+}
+
+/// Persists `content_md5` against `source_path`'s current mtime. A still
+/// mtime-fresh entry keeps its AST/tokens and stamped version; otherwise a
+/// hash-only entry is written so later lookups can skip opening the `.psc`.
+pub(crate) fn put_content_md5_in_for_game(
+    dir: &Path,
+    game: Game,
+    source_path: &Path,
+    content_md5: &str,
+    linter_version: &str,
+) {
+    if let Some(existing) = mtime_valid_entry_in_for_game(dir, game, source_path) {
+        if existing.content_md5 == content_md5 {
+            return;
+        }
+        write_entry_in_for_game(
+            dir,
+            game,
+            source_path,
+            &CacheEntry {
+                content_md5: content_md5.to_string(),
+                ..existing
+            },
+        );
+        return;
+    }
+    let Some(modified_unix_secs) = file_modified_unix_secs(source_path) else {
+        return;
+    };
+    write_entry_in_for_game(
+        dir,
+        game,
+        source_path,
+        &CacheEntry {
+            modified_unix_secs,
+            content_md5: content_md5.to_string(),
+            linter_version: linter_version.to_string(),
+            ast: None,
+            tokens: None,
+        },
+    );
 }
 
 #[cfg(test)]

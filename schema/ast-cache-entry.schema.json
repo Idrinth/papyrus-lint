@@ -19,7 +19,7 @@
       "minimum": 0
     },
     "content_md5": {
-      "description": "Lowercase hex MD5 digest of the cached source file's exact byte content at the moment this entry was written. A cache hit requires this to still match a fresh digest of the source's current content.",
+      "description": "Lowercase hex MD5 digest of the cached source file's decoded text at the moment this entry was written. A cache hit for the AST/tokens requires this to still match a fresh digest of the source's current content. The digest can also be read back on its own from a still mtime-fresh entry (without opening the `.psc`) so `conflicting-script-versions` can compare scripts by hash.",
       "type": "string",
       "pattern": "^[0-9a-f]{32}$"
     },

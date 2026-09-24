@@ -2,22 +2,22 @@ use std::path::{Path, PathBuf};
 
 use super::{check, ProjectFile, RULE};
 
-fn file(path: &str, contents: &str) -> ProjectFile {
+fn file(path: &str, content_md5: &str) -> ProjectFile {
     ProjectFile {
         path: PathBuf::from(path),
         display_path: path.to_string(),
-        contents: contents.as_bytes().to_vec(),
+        content_md5: content_md5.to_string(),
     }
 }
 
 #[test]
 fn reports_different_same_named_files_from_complete_list() {
     let files = vec![
-        file("first/Test.psc", "one"),
-        file("unrelated/Other.psc", "other"),
-        file("second/test.PSC", "two"),
+        file("first/Test.psc", "aaa"),
+        file("unrelated/Other.psc", "ccc"),
+        file("second/test.PSC", "bbb"),
     ];
-    let diagnostics = check(Path::new("first/Test.psc"), b"one", &files);
+    let diagnostics = check(Path::new("first/Test.psc"), "aaa", &files);
 
     assert_eq!(diagnostics.len(), 1);
     assert_eq!(diagnostics[0].rule, RULE);
@@ -30,5 +30,5 @@ fn ignores_identical_copies() {
         file("first/Test.psc", "same"),
         file("second/Test.psc", "same"),
     ];
-    assert!(check(Path::new("first/Test.psc"), b"same", &files).is_empty());
+    assert!(check(Path::new("first/Test.psc"), "same", &files).is_empty());
 }
