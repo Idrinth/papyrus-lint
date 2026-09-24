@@ -6,8 +6,7 @@
 //! by `PAPYRUS_LINT_AST_CACHE_DIR`, or, when that isn't set, an `ast-cache`
 //! directory next to the running executable -- the desktop app's own binary,
 //! or `PapyrusLinterCLI`'s, whichever process is doing the parsing -- and
-//! are named `{game}-{path-md5}.json`. Legacy Skyrim entries named only
-//! `{path-md5}.json` are migrated on their first successful lookup. Entries are
+//! are named `{game}-{path-md5}.json`. Entries are
 //! invalidated by the source file's last-modified timestamp, an MD5 of its
 //! content, and the linter version that wrote the entry -- if any of the
 //! three is no longer valid, it's treated as a miss and the caller re-parses.
@@ -125,7 +124,7 @@ fn has_bundled_blob(game: Game) -> bool {
 /// `game`, `source`'s current content, `source_path`'s modification time,
 /// and a linter version at or above [`version::MIN_COMPATIBLE_VERSION`].
 /// Returns `None` on any cache miss, mismatch, or error -- the caller
-/// should parse `source` fresh in that case. See [`ops::get_in`] for the
+/// should parse `source` fresh in that case. See [`ops::get_in_for_game`] for the
 /// in-memory priming a disk hit also does (a bundled hit primes the same
 /// way).
 pub fn get_for_game(
@@ -175,7 +174,7 @@ pub fn put_for_game(
 /// time, and a linter version at or above
 /// [`version::MIN_COMPATIBLE_VERSION`]. Returns `None` on any cache miss,
 /// mismatch, or error -- the caller should tokenize `source` fresh in that
-/// case. See [`ops::get_tokens_in`] for the in-memory priming a disk hit
+/// case. See [`ops::get_tokens_in_for_game`] for the in-memory priming a disk hit
 /// also does (a bundled hit primes the same way).
 pub fn get_tokens_for_game(
     game: Game,
@@ -233,7 +232,7 @@ pub fn put_tokens_for_game(
 /// app commands or CLI invocations -- skips both re-parsing and
 /// re-tokenizing it there too, not just in `get_for_game`/
 /// `get_tokens_for_game`'s other existing callers. See
-/// [`ops::ensure_primed_in`].
+/// [`ops::ensure_primed_in_for_game`].
 pub fn ensure_primed_for_game(game: Game, source_path: &Path, source: &str) {
     if has_bundled_blob(game) && bundled::prime(game, source) {
         return;
