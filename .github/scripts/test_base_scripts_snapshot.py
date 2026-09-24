@@ -203,8 +203,23 @@ class RenderAndMainTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             stderr = io.StringIO()
+            work_dirs: list[Path] = []
+            root_exists_during_render: list[bool] = []
+
+            def render_error(
+                _root: Path,
+                _cli: Path,
+                _preset: str,
+                work_dir: Path,
+                _game: str,
+                _extender: bool,
+            ) -> str:
+                work_dirs.append(work_dir)
+                root_exists_during_render.append(work_dir.parents[2].exists())
+                raise snap.SnapshotError("broken")
+
             with (
-                mock.patch.object(entry, "render_output", side_effect=snap.SnapshotError("broken")),
+                mock.patch.object(entry, "render_output", side_effect=render_error),
                 mock.patch("sys.stderr", stderr),
             ):
                 status = entry.main(
@@ -213,6 +228,9 @@ class RenderAndMainTests(unittest.TestCase):
 
             self.assertEqual(1, status)
             self.assertIn("error (strict): broken", stderr.getvalue())
+            self.assertEqual([True], root_exists_during_render)
+            self.assertEqual(1, len(work_dirs))
+            self.assertFalse(work_dirs[0].parents[2].exists())
 
     def test_all_runs_both_base_and_extender_variants(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
