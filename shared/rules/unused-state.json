@@ -10,5 +10,5 @@
   "importance": "low",
   "fixable": false,
   "description": "Flags named states that are neither Auto nor targeted by a GoToState call.",
-  "definition": "Flags, as a `[warning]`, each named `State` that is neither marked `Auto` nor targeted by a literal `GoToState(\"Name\")` or `self.GoToState(\"Name\")` call in the same script. State names are matched case-insensitively. Calls through another object do not activate this script's state, and calls with a non-literal target are not guessed at."
+  "definition": "Flags, as a `[warning]`, each named `State` that is neither marked `Auto` nor targeted by a literal `GoToState(\"Name\")` or `self.GoToState(\"Name\")` call in the same script or in a script that extends it. A child script's `GoToState` activates a state declared on an ancestor, so that state is not unused. State names are matched case-insensitively. Calls through another object do not activate this script's state, and calls with a non-literal target are not guessed at. When other scripts can't be resolved, only calls in the same script are considered."
 }

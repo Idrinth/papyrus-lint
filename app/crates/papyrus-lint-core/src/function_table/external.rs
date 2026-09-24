@@ -74,6 +74,10 @@ impl papyrus_lints::ExternalSignatures for FunctionTable {
         self.ancestor_states(type_name)
     }
 
+    fn descendant_targets_state(&mut self, type_name: &str, state_name: &str) -> bool {
+        self.descendant_targets_state(type_name, state_name)
+    }
+
     fn has_event(&mut self, type_name: &str, event_name: &str) -> Option<bool> {
         FunctionTable::has_event(self, type_name, event_name)
     }

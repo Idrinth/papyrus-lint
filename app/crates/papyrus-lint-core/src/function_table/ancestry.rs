@@ -1,7 +1,7 @@
 //! `Extends`-chain lookups against a [`super::FunctionTable`]: functions,
 //! properties, states, members, and subtype/ancestry queries.
 
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use super::{CacheProbe, FunctionTable};
 use crate::script_functions::{FunctionSignature, Member, ScriptFunctions};
@@ -365,6 +365,103 @@ impl FunctionTable {
         result
     }
 
+    /// Whether a project script that extends `type_name` (directly or
+    /// transitively) contains a literal `GoToState` / `self.GoToState`
+    /// targeting `state_name`, and `type_name` itself declares that state.
+    /// A child `GoToState` activates an ancestor's state, so the unused-state
+    /// lint must not flag it. Both names are matched case-insensitively.
+    /// Scripts outside the project (bundled vanilla/SKSE scripts, lookup
+    /// roots) are not treated as descendants.
+    pub fn descendant_targets_state(&mut self, type_name: &str, state_name: &str) -> bool {
+        self.ensure_descendant_goto_targets();
+        self.descendant_goto_targets
+            .as_ref()
+            .and_then(|index| index.get(&type_name.to_ascii_lowercase()))
+            .is_some_and(|targets| targets.contains(&state_name.to_ascii_lowercase()))
+    }
+
+    fn ensure_descendant_goto_targets(&mut self) {
+        if self.descendant_goto_targets.is_some() {
+            return;
+        }
+        if self.indexed_project_scripts.is_none() {
+            self.indexed_project_scripts = Some(self.project_script_names());
+        }
+        let project_names: Vec<String> = self
+            .indexed_project_scripts
+            .as_ref()
+            .map(|names| names.iter().cloned().collect())
+            .unwrap_or_default();
+        for name in &project_names {
+            self.ensure_loaded(name);
+        }
+        let mut pending = project_names.clone();
+        let mut seen = HashSet::new();
+        while let Some(name) = pending.pop() {
+            if !seen.insert(name.clone()) {
+                continue;
+            }
+            self.ensure_loaded(&name);
+            if let Some(parent) = self
+                .scripts
+                .get(&name)
+                .and_then(|slot| slot.as_ref())
+                .and_then(parent_cache_key)
+            {
+                pending.push(parent);
+            }
+        }
+
+        let mut index: HashMap<String, HashSet<String>> = HashMap::new();
+        for name in project_names {
+            let Some(slot) = self.scripts.get(&name).and_then(|slot| slot.as_ref()) else {
+                continue;
+            };
+            if slot.goto_state_targets.is_empty() {
+                continue;
+            }
+            let targets = slot.goto_state_targets.clone();
+            let mut current = parent_cache_key(slot);
+            let mut visited = vec![name];
+            while let Some(parent) = current {
+                if visited.iter().any(|seen| seen == &parent) {
+                    break;
+                }
+                if let Some(script) = self.scripts.get(&parent).and_then(|slot| slot.as_ref()) {
+                    let declared: HashSet<String> = targets
+                        .iter()
+                        .filter(|target| script.states.contains_key(target.as_str()))
+                        .cloned()
+                        .collect();
+                    if !declared.is_empty() {
+                        index.entry(parent.clone()).or_default().extend(declared);
+                    }
+                    current = parent_cache_key(script);
+                } else {
+                    break;
+                }
+                visited.push(parent);
+            }
+        }
+        self.descendant_goto_targets = Some(index);
+    }
+
+    fn project_script_names(&self) -> HashSet<String> {
+        if let Some(known) = &self.known_scripts {
+            return known.keys().cloned().collect();
+        }
+        let index = self.script_index.clone().unwrap_or_else(|| {
+            std::sync::Arc::new(crate::script_locator::build_script_index(
+                &self.root,
+                &self.additional_roots,
+            ))
+        });
+        index
+            .keys()
+            .filter_map(|file_name| file_name.strip_suffix(".psc").map(str::to_string))
+            .collect()
+    }
+
     /// Lists every function and property available on an object of type
     /// `type_name`, including those inherited via `Extends`. A member
     /// declared on `type_name` itself (or an ancestor closer to it) shadows
@@ -555,6 +652,21 @@ impl FunctionTable {
         self.has_member_cached(type_name, |script| {
             script.states.contains_key(&state_name.to_ascii_lowercase())
         })
+    }
+
+    pub(super) fn descendant_targets_state_cached(
+        &self,
+        type_name: &str,
+        state_name: &str,
+    ) -> CacheProbe<bool> {
+        let Some(index) = &self.descendant_goto_targets else {
+            return CacheProbe::Miss;
+        };
+        CacheProbe::Hit(
+            index
+                .get(&type_name.to_ascii_lowercase())
+                .is_some_and(|targets| targets.contains(&state_name.to_ascii_lowercase())),
+        )
     }
 
     fn has_member_cached(
