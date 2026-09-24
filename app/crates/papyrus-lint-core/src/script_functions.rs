@@ -158,6 +158,11 @@ pub(crate) struct ScriptFunctions {
     /// [`crate::function_table::FunctionTable::has_state`] and
     /// [`crate::function_table::FunctionTable::ancestor_states`].
     pub(crate) states: HashMap<String, bool>,
+    /// Literal `GoToState` / `self.GoToState` targets in this script,
+    /// lowercased. Used by
+    /// [`crate::function_table::FunctionTable::descendant_targets_state`]
+    /// so a parent state a child activates is not reported unused.
+    pub(crate) goto_state_targets: HashSet<String>,
 }
 
 impl ScriptFunctions {
@@ -257,6 +262,7 @@ impl ScriptFunctions {
             properties,
             variables,
             states,
+            goto_state_targets: papyrus_lints::literal_goto_state_targets(script),
         }
     }
 }

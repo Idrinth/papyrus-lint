@@ -14,7 +14,7 @@
 //! state data lives in [`crate::script_functions`]; this module re-exports
 //! its [`FunctionSignature`], [`PropertySignature`] and [`Member`] types.
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::SystemTime;
@@ -97,6 +97,16 @@ pub struct FunctionTable {
     /// `fix` that rewrote a dependency) picks up an edited `.psc` instead
     /// of serving the previous parse.
     script_mtimes: HashMap<String, Option<SystemTime>>,
+    /// Lowercased state names targeted by a literal `GoToState` in some
+    /// project script that extends the key (and that ancestor actually
+    /// declares the state). `None` until the first
+    /// [`Self::descendant_targets_state`] call, and cleared when a project
+    /// script is reloaded.
+    descendant_goto_targets: Option<HashMap<String, HashSet<String>>>,
+    /// Project script names (lowercased file stems) the descendant-target
+    /// index was built from. Inserts of other names — bundled vanilla
+    /// scripts, unresolved lookups — must not drop that index.
+    indexed_project_scripts: Option<HashSet<String>>,
 }
 
 impl FunctionTable {
@@ -123,6 +133,8 @@ impl FunctionTable {
             lookup_index: None,
             scripts: HashMap::new(),
             script_mtimes: HashMap::new(),
+            descendant_goto_targets: None,
+            indexed_project_scripts: None,
         }
     }
 
@@ -140,6 +152,8 @@ impl FunctionTable {
             lookup_index: None,
             scripts: HashMap::new(),
             script_mtimes: HashMap::new(),
+            descendant_goto_targets: None,
+            indexed_project_scripts: None,
         }
     }
 
@@ -246,8 +260,23 @@ impl FunctionTable {
                     load::store_lookup_script(resolved_path, mtime, functions.clone());
                 }
             }
+            self.invalidate_descendant_index_if_project_script(&entry.name_lower);
             self.scripts.insert(entry.name_lower.clone(), functions);
             self.script_mtimes.insert(entry.name_lower, mtime);
+        }
+    }
+
+    /// Drops the descendant `GoToState` index when a project script is
+    /// (re)loaded. Bundled and unresolved names are not in
+    /// [`Self::indexed_project_scripts`], so filling those slots during an
+    /// ancestry walk does not force the index to be rebuilt per file.
+    fn invalidate_descendant_index_if_project_script(&mut self, name_lower: &str) {
+        if self
+            .indexed_project_scripts
+            .as_ref()
+            .is_some_and(|names| names.contains(name_lower))
+        {
+            self.descendant_goto_targets = None;
         }
     }
 }

@@ -68,6 +68,14 @@ pub fn documentation_comment(
     missing_doc_comment::documentation_comment(source, tokens, line)
 }
 
+/// Literal `GoToState("Name")` / `self.GoToState("Name")` targets in
+/// `script`, lowercased. See [`goto_state`] for which calls count.
+pub fn literal_goto_state_targets(
+    script: &papyrus_parser::ast::Script,
+) -> std::collections::HashSet<String> {
+    goto_state::literal_goto_state_targets(script)
+}
+
 /// A single lint finding, pointing at the 1-indexed line and column it applies to.
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct Diagnostic {

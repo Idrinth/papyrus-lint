@@ -192,6 +192,30 @@ fn does_not_treat_a_bare_self_call_as_goto_state() {
 }
 
 #[test]
+fn literal_goto_state_targets_keeps_only_self_literal_calls() {
+    let source = r#"
+ScriptName Example
+
+Function Test(Example other, String target)
+    GoToState("Busy")
+    self.GoToState("Idle")
+    GoToState("")
+    other.GoToState("Ignored")
+    GoToState(target)
+EndFunction
+"#;
+    let script = papyrus_parser::parse(source).expect("script should parse");
+    let targets = super::literal_goto_state_targets(&script);
+
+    assert_eq!(
+        targets,
+        ["busy".to_string(), "idle".to_string()]
+            .into_iter()
+            .collect()
+    );
+}
+
+#[test]
 fn fake_external_with_ancestor_state_lookup_always_returns_none() {
     assert!(FakeExternalWithAncestorState
         .lookup("BaseScript", "SomeFunction")

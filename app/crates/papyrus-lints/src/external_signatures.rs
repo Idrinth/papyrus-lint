@@ -135,6 +135,20 @@ pub trait ExternalSignatures {
         Vec::new()
     }
 
+    /// Whether a project script that extends `type_name` (directly or
+    /// transitively) contains a literal `GoToState` / `self.GoToState`
+    /// call targeting `state_name`. Used by the "Unused states" lint
+    /// (`crate::unused_state`) so a state declared for a child is not
+    /// flagged when that child activates it. Both names are matched
+    /// case-insensitively.
+    ///
+    /// The default is `false`: a caller that can't see other scripts
+    /// (see [`NoExternalSignatures`]) has no descendant calls to report,
+    /// and the lint keeps judging the script on its own.
+    fn descendant_targets_state(&mut self, _type_name: &str, _state_name: &str) -> bool {
+        false
+    }
+
     /// Whether `type_name` or one of its ancestors declares `event_name`
     /// as an `Event`. `Some(false)` means the complete ancestry was resolved
     /// and no matching event exists; `None` means resolution was incomplete,

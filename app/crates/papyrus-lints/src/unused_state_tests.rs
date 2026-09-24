@@ -1,5 +1,7 @@
 use super::*;
 
+use crate::external_signatures::ExternalSignatures;
+
 fn check(source: &str) -> Vec<Diagnostic> {
     let ast = papyrus_parser::parse(source).ok();
     let tokens = papyrus_parser::tokenize(source).ok();
@@ -87,6 +89,39 @@ fn honors_the_config_off_switch() {
     let diagnostics = crate::lint("ScriptName Example\n\nState Waiting\nEndState\n", &config);
 
     assert!(diagnostics.iter().all(|diagnostic| diagnostic.rule != RULE));
+}
+
+struct FakeExternalDescendantTargets;
+
+impl ExternalSignatures for FakeExternalDescendantTargets {
+    fn lookup(
+        &mut self,
+        _type_name: &str,
+        _function_name: &str,
+    ) -> Option<Vec<crate::external_signatures::ParamInfo>> {
+        None
+    }
+
+    fn descendant_targets_state(&mut self, type_name: &str, state_name: &str) -> bool {
+        type_name.eq_ignore_ascii_case("Example") && state_name.eq_ignore_ascii_case("Waiting")
+    }
+}
+
+#[test]
+fn does_not_flag_a_state_a_descendant_targets() {
+    let source = "ScriptName Example\n\nState Waiting\nEndState\n\nState Left\nEndState\n";
+    let ast = papyrus_parser::parse(source).ok();
+    let tokens = papyrus_parser::tokenize(source).ok();
+    let diagnostics = super::check(
+        source,
+        ast.as_ref(),
+        tokens.as_deref(),
+        &crate::config::Config::default(),
+        &mut FakeExternalDescendantTargets,
+    );
+
+    assert_eq!(diagnostics.len(), 1);
+    assert!(diagnostics[0].message.contains("'Left'"));
 }
 
 #[test]

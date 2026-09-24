@@ -15,7 +15,10 @@
 //! this script's own ancestry either. The empty string (`GoToState("")`,
 //! switching back to the empty state) is always valid and never flagged.
 
+use std::collections::HashSet;
+
 use papyrus_parser::ast::{Expr, Literal, Script};
+use papyrus_parser::visit::Visitor;
 
 use crate::external_signatures::ExternalSignatures;
 use crate::state_reference::StateReferences;
@@ -116,6 +119,36 @@ fn missing(line: usize, col: usize, name: &str) -> Diagnostic {
         column: col,
         message: format!("[warning] GoToState references state '{name}', which could not be found"),
         rule: RULE,
+    }
+}
+
+/// Literal `GoToState("Name")` / `self.GoToState("Name")` targets in
+/// `script`, lowercased. Empty-string targets (the empty state) are
+/// omitted. Used to tell a parent script's state from one a child
+/// activates.
+pub(crate) fn literal_goto_state_targets(script: &Script) -> HashSet<String> {
+    let mut collector = GotoTargetCollector::default();
+    collector.visit_script(script);
+    collector.targets
+}
+
+#[derive(Default)]
+struct GotoTargetCollector {
+    targets: HashSet<String>,
+}
+
+impl Visitor for GotoTargetCollector {
+    fn visit_expr(&mut self, expr: &Expr) {
+        if let Expr::Call { callee, args, .. } = expr {
+            if is_goto_state_callee(callee) {
+                if let [Expr::Literal(Literal::String(name))] = args.as_slice() {
+                    if !name.is_empty() {
+                        self.targets.insert(name.to_ascii_lowercase());
+                    }
+                }
+            }
+        }
+        papyrus_parser::visit::walk_expr(self, expr);
     }
 }
 

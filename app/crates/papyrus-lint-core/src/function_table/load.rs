@@ -220,6 +220,7 @@ impl FunctionTable {
             None => bundled_script_functions(self.game, &name_lower),
         };
 
+        self.invalidate_descendant_index_if_project_script(&name_lower);
         self.scripts.insert(name_lower.clone(), script);
         self.script_mtimes.insert(name_lower, mtime);
     }
@@ -250,6 +251,7 @@ impl FunctionTable {
             return;
         }
         let script = bundled_script_functions(self.game, name_lower);
+        self.invalidate_descendant_index_if_project_script(name_lower);
         self.scripts.insert(name_lower.to_string(), script);
         self.script_mtimes.insert(name_lower.to_string(), mtime);
     }
@@ -263,6 +265,7 @@ impl FunctionTable {
         {
             return;
         }
+        self.invalidate_descendant_index_if_project_script(name_lower);
         self.scripts.insert(name_lower.to_string(), None);
         self.script_mtimes.insert(name_lower.to_string(), mtime);
     }

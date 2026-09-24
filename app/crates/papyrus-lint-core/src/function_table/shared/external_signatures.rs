@@ -99,6 +99,17 @@ impl papyrus_lints::ExternalSignatures for SharedFunctionTable<'_> {
         )
     }
 
+    fn descendant_targets_state(&mut self, type_name: &str, state_name: &str) -> bool {
+        self.probe_or_load(
+            |table| table.descendant_targets_state_cached(type_name, state_name),
+            |table| {
+                papyrus_lints::ExternalSignatures::descendant_targets_state(
+                    table, type_name, state_name,
+                )
+            },
+        )
+    }
+
     fn has_event(&mut self, type_name: &str, event_name: &str) -> Option<bool> {
         self.probe_or_load(
             |table| table.has_event_cached(type_name, event_name),

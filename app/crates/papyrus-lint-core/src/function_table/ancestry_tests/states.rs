@@ -118,3 +118,77 @@ fn ancestor_states_does_not_infinite_loop_on_circular_extends() {
         vec![("froma".to_string(), false), ("fromb".to_string(), false)]
     );
 }
+
+#[test]
+fn descendant_goto_state_counts_as_a_use_of_an_ancestor_state() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    write_script(
+        root.path(),
+        "Base",
+        "ScriptName Base\n\nState Busy\nEndState\n\nState Unused\nEndState\n",
+    );
+    write_script(
+        root.path(),
+        "Child",
+        "ScriptName Child Extends Base\n\nFunction Demo()\n    GoToState(\"Busy\")\nEndFunction\n",
+    );
+    write_script(
+        root.path(),
+        "Unrelated",
+        "ScriptName Unrelated\n\nFunction Demo()\n    GoToState(\"Unused\")\nEndFunction\n",
+    );
+
+    let mut table = FunctionTable::new(root.path().to_path_buf());
+
+    assert!(table.descendant_targets_state("Base", "Busy"));
+    assert!(table.descendant_targets_state("base", "busy"));
+    assert!(!table.descendant_targets_state("Base", "Unused"));
+    assert!(!table.descendant_targets_state("Child", "Busy"));
+}
+
+#[test]
+fn descendant_goto_state_walks_through_an_intermediate_script() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    write_script(
+        root.path(),
+        "Base",
+        "ScriptName Base\n\nState Busy\nEndState\n",
+    );
+    write_script(root.path(), "Middle", "ScriptName Middle Extends Base\n");
+    write_script(
+        root.path(),
+        "Child",
+        "ScriptName Child Extends Middle\n\nFunction Demo()\n    self.GoToState(\"Busy\")\nEndFunction\n",
+    );
+
+    let mut table = FunctionTable::new(root.path().to_path_buf());
+
+    assert!(table.descendant_targets_state("Base", "Busy"));
+    assert!(!table.descendant_targets_state("Middle", "Busy"));
+}
+
+#[test]
+fn descendant_targets_state_honors_known_scripts_and_does_not_loop_on_cycles() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    let base = root.path().join("Base.psc");
+    let child = root.path().join("Child.psc");
+    let other = root.path().join("Other.psc");
+    std::fs::write(
+        &base,
+        "ScriptName Base Extends Child\n\nState Busy\nEndState\n",
+    )
+    .expect("failed to write base");
+    std::fs::write(
+        &child,
+        "ScriptName Child Extends Base\n\nFunction Demo()\n    GoToState(\"Busy\")\nEndFunction\n",
+    )
+    .expect("failed to write child");
+    std::fs::write(&other, "ScriptName Other\n\nState Busy\nEndState\n")
+        .expect("failed to write other");
+
+    let mut table =
+        FunctionTable::new(root.path().to_path_buf()).with_known_scripts(&[base, child]);
+
+    assert!(table.descendant_targets_state("Base", "Busy"));
+    assert!(!table.descendant_targets_state("Other", "Busy"));
+}
