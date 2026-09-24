@@ -198,6 +198,42 @@ fn supports_uppercase_hex_and_crlf_line_continuations() {
 }
 
 #[test]
+fn line_continuations_allow_horizontal_whitespace_before_newlines() {
+    let tokens = Lexer::new("first \\ \t\n    second \\\t\r\nthird")
+        .tokenize()
+        .expect("valid continuations");
+
+    assert_eq!(
+        tokens
+            .iter()
+            .map(|token| (&token.kind, token.line, token.col))
+            .collect::<Vec<_>>(),
+        vec![
+            (&TokenKind::Identifier("first".into()), 1, 1),
+            (&TokenKind::Identifier("second".into()), 2, 5),
+            (&TokenKind::Identifier("third".into()), 3, 1),
+            (&TokenKind::Eof, 3, 6),
+        ]
+    );
+}
+
+#[test]
+fn tracks_token_locations_across_crlf_and_comments() {
+    let tokens = Lexer::new("one\r\n;/ two\r\nthree /; four\r\n{five\r\n}\tsix")
+        .tokenize()
+        .expect("valid tokens");
+
+    let identifiers: Vec<_> = tokens
+        .iter()
+        .filter_map(|token| match &token.kind {
+            TokenKind::Identifier(name) => Some((name.as_str(), token.line, token.col)),
+            _ => None,
+        })
+        .collect();
+    assert_eq!(identifiers, [("one", 1, 1), ("four", 3, 10), ("six", 5, 3)]);
+}
+
+#[test]
 fn emits_all_parser_relevant_annotations_from_one_comment() {
     let tokens = Lexer::new("Function Foo() ; @public @nodiscard @private")
         .tokenize()
@@ -210,6 +246,22 @@ fn emits_all_parser_relevant_annotations_from_one_comment() {
         })
         .collect();
     assert_eq!(annotations, ["public", "private"]);
+}
+
+#[test]
+fn preserves_annotation_spelling_and_source_columns() {
+    let tokens = Lexer::new("Int value ; prefix @Public, @PRIVATE")
+        .tokenize()
+        .expect("valid tokens");
+    let annotations: Vec<_> = tokens
+        .iter()
+        .filter_map(|token| match &token.kind {
+            TokenKind::CommentAnnotation(name) => Some((name.as_str(), token.line, token.col)),
+            _ => None,
+        })
+        .collect();
+
+    assert_eq!(annotations, [("Public", 1, 20), ("PRIVATE", 1, 29)]);
 }
 
 #[test]
@@ -242,4 +294,13 @@ fn reports_invalid_characters_and_numeric_literals() {
     assert!(overflowing_integer
         .message
         .starts_with("invalid integer literal"));
+}
+
+#[test]
+fn reports_lone_logical_operator_characters_at_their_locations() {
+    for (source, character, line, col) in [("&", '&', 1, 1), ("one\n  |", '|', 2, 3)] {
+        let error = Lexer::new(source).tokenize().unwrap_err();
+        assert_eq!(error.message, format!("unexpected character '{character}'"));
+        assert_eq!((error.line, error.col), (line, col));
+    }
 }
