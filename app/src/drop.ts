@@ -5,12 +5,12 @@
 // results.
 import { invoke } from "@tauri-apps/api/core";
 import { type PapyrusScript, type PscParseOutcome } from "./backend-types";
-import { lintPscFile, preloadProjectScripts } from "./backend";
+import { type PreloadProgress, lintPscFile, preloadProjectScripts } from "./backend";
 import { currentLintConfig } from "./config-types";
 import { clearError, setDropZoneLoading, showError, showResult } from "./main";
 import { switchTab } from "./main-tabs";
 import { isAchlistPath, isPpjPath, isPscPath, scriptRootsForAchlist } from "./path";
-import { scheduleHideLintProgress, showLintProgress, updateLintProgress } from "./progress";
+import { scheduleHideLintProgress, showLintActivity, showLintProgress, updateLintProgress } from "./progress";
 import { loadProjectConfig } from "./project-settings";
 import {
   projectDirForAchlist,
@@ -76,6 +76,14 @@ export async function parsePscFiles(
   });
 }
 
+function applyPreloadProgress(progress: PreloadProgress) {
+  if (progress.total <= 0) {
+    showLintActivity(progress.phase);
+    return;
+  }
+  updateLintProgress(progress.completed, progress.total, progress.phase);
+}
+
 async function runParseThenLint(paths: string[], generation: number) {
   showLintProgress(paths.length, "Parsing");
   let parsed = 0;
@@ -93,7 +101,24 @@ async function runParseThenLint(paths: string[], generation: number) {
   if (generation !== currentParseGeneration) {
     return;
   }
-  await preloadProjectScripts(paths);
+  // parse_psc_file above only counts the lint targets. preload_project_scripts
+  // then closes over every referenced script (parents, imports, `new`/`as`
+  // types) and indexes them -- a long stretch that used to leave the bar
+  // sitting full at "Parsing n/n".
+  if (paths.length > 0) {
+    showLintActivity("Resolving references");
+  }
+  await preloadProjectScripts(
+    paths,
+    paths.length === 0
+      ? undefined
+      : (progress) => {
+          if (generation !== currentParseGeneration) {
+            return;
+          }
+          applyPreloadProgress(progress);
+        },
+  );
   if (generation !== currentParseGeneration) {
     return;
   }

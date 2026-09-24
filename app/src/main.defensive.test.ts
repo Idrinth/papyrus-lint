@@ -14,7 +14,7 @@ import { applyRuleTags, showResult } from "./main";
 import { DEFAULT_LINT_CONFIG } from "./config-types";
 import { applyLintConfigToUI, lintConfigFromUI } from "./config-ui";
 import { applyProjectInfoToUI, applyScriptRootsToUI } from "./project-settings";
-import { hideLintProgress, showLintProgress, updateLintProgress } from "./progress";
+import { hideLintProgress, showLintActivity, showLintProgress, updateLintProgress } from "./progress";
 import { applyAutocompleteSelection, handleAutocompleteKeydown, handleEditorTabKeydown, updateAutocomplete } from "./live-edit-autocomplete";
 import { saveAndCompileCodeViewerEdits, saveCodeViewerEdits } from "./live-edit-persist";
 import { openCodeViewer, requestCloseCodeViewer, toggleCodeViewerFullscreen } from "./code-viewer-dialog";
@@ -49,6 +49,7 @@ describe("frontend helpers without mounted UI", () => {
     expect(() => renderPresetManagementTab([])).not.toThrow();
     expect(() => populateResetPresetSelect([])).not.toThrow();
     expect(() => showLintProgress(2)).not.toThrow();
+    expect(() => showLintActivity("Resolving references")).not.toThrow();
     expect(() => updateLintProgress(1, 2)).not.toThrow();
     expect(() => hideLintProgress()).not.toThrow();
     expect(() => toggleCodeViewerFullscreen()).not.toThrow();

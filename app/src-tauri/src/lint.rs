@@ -2,6 +2,7 @@
 
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex, OnceLock, RwLock};
 
 use papyrus_lint_core::source_encoding::read_psc_source;
@@ -11,6 +12,7 @@ use papyrus_lint_core::{
 };
 use papyrus_lints::script_filename_mismatch;
 use serde::{Deserialize, Serialize};
+use tauri::ipc::Channel;
 
 /// Identity of one desktop-app [`function_table::FunctionTable`]: project
 /// root plus the two configured search-root lists. Concurrent Tauri
@@ -271,6 +273,26 @@ pub(crate) fn lint_psc_file(
     Ok(diagnostics)
 }
 
+/// One update for the desktop progress bar while [`preload_project_scripts`]
+/// closes over referenced scripts. `total` starts at the lint-target count
+/// and grows as on-disk dependencies are enqueued, matching the CLI's
+/// "Parsing: n/total" line. `total == 0` is indeterminate: the closure has
+/// finished and the function table is being indexed, which has no fraction
+/// of its own.
+#[derive(Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct PreloadProgress {
+    pub(crate) phase: String,
+    pub(crate) completed: usize,
+    pub(crate) total: usize,
+}
+
+fn emit_preload_progress(channel: Option<&Channel<PreloadProgress>>, progress: PreloadProgress) {
+    if let Some(channel) = channel {
+        let _ = channel.send(progress);
+    }
+}
+
 /// Parses every one of `paths` up front and closes over the type names in
 /// those ASTs (mirroring `PapyrusLinterCLI`'s parse phase — see
 /// [`function_table::FunctionTable::parse_type_closure`]), then preloads
@@ -283,13 +305,23 @@ pub(crate) fn lint_psc_file(
 /// frontend's own per-file call still reports that error); a referenced
 /// name that cannot be resolved is cached unresolved so lint does not
 /// retry it. This command never fails outright.
+///
+/// `on_progress`, when the frontend supplies it, is notified after each
+/// on-disk parse in that closure and once more before the function table
+/// is indexed. Absent, the command behaves exactly as before.
 #[tauri::command(async)]
-pub(crate) fn preload_project_scripts(paths: Vec<String>, context: ProjectLintContext) {
+pub(crate) fn preload_project_scripts(
+    paths: Vec<String>,
+    context: ProjectLintContext,
+    on_progress: Option<Channel<PreloadProgress>>,
+) {
     let function_table = context.function_table();
     let script_paths: Vec<PathBuf> = paths.into_iter().map(PathBuf::from).collect();
     let game = context.config.game;
 
     collision_cache::preload(game, &script_paths);
+    let total_files = AtomicUsize::new(script_paths.len());
+    let completed = AtomicUsize::new(0);
     let closed = {
         let table = function_table
             .read()
@@ -298,13 +330,32 @@ pub(crate) fn preload_project_scripts(paths: Vec<String>, context: ProjectLintCo
             &script_paths,
             function_table::TypeClosureOptions {
                 threads: papyrus_lint_core::parallel::default_thread_count(),
-                total_files: None,
+                total_files: on_progress.is_some().then_some(&total_files),
             },
             |path| parse_project_script(game, path),
             |parsed| parsed.ast.as_ref(),
-            || {},
+            || {
+                let done = completed.fetch_add(1, Ordering::SeqCst) + 1;
+                emit_preload_progress(
+                    on_progress.as_ref(),
+                    PreloadProgress {
+                        phase: "Resolving".to_string(),
+                        completed: done,
+                        total: total_files.load(Ordering::SeqCst),
+                    },
+                );
+            },
         )
     };
+
+    emit_preload_progress(
+        on_progress.as_ref(),
+        PreloadProgress {
+            phase: "Indexing scripts".to_string(),
+            completed: 0,
+            total: 0,
+        },
+    );
 
     let entries: Vec<function_table::PreloadedScript> = script_paths
         .iter()

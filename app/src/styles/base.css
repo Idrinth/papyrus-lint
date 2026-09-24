@@ -93,6 +93,36 @@ h1 {
   accent-color: var(--color-accent);
 }
 
+/* Indeterminate stand-in for the gap after "Parsing n/n", while referenced
+   scripts are still being closed over. The native indeterminate animation
+   is easy to miss on the dark theme, so the bar itself slides. */
+.lint-progress--busy progress {
+  appearance: none;
+  border: none;
+  border-radius: 999px;
+  background-color: rgba(36, 200, 219, 0.22);
+  background-image: linear-gradient(90deg, transparent, var(--color-accent), transparent);
+  background-repeat: no-repeat;
+  background-size: 40% 100%;
+  animation: lint-progress-slide 1.1s ease-in-out infinite;
+}
+
+@keyframes lint-progress-slide {
+  from {
+    background-position: -40% 0;
+  }
+
+  to {
+    background-position: 140% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lint-progress--busy progress {
+    animation-duration: 2.2s;
+  }
+}
+
 .contact-list__notice {
   margin: 0 0 1em;
   font-size: 0.9em;

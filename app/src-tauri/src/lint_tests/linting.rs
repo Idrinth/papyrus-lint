@@ -54,6 +54,7 @@ fn preload_project_scripts_lets_lint_psc_file_resolve_a_sibling_immediately() {
             derived_path.to_string_lossy().into_owned(),
         ],
         context.clone(),
+        None,
     );
 
     let diagnostics = lint_psc_file(derived_path.to_string_lossy().into_owned(), context).unwrap();
@@ -134,6 +135,7 @@ fn preload_project_scripts_closes_over_a_parent_that_was_not_in_the_batch() {
     preload_project_scripts(
         vec![derived_path.to_string_lossy().into_owned()],
         context.clone(),
+        None,
     );
 
     let diagnostics = lint_psc_file(derived_path.to_string_lossy().into_owned(), context).unwrap();
@@ -141,4 +143,62 @@ fn preload_project_scripts_closes_over_a_parent_that_was_not_in_the_batch() {
     assert!(diagnostics
         .iter()
         .any(|diagnostic| diagnostic.rule == "function-override"));
+}
+
+#[test]
+fn preload_project_scripts_reports_resolving_progress_including_parents_outside_the_batch() {
+    let dir = tempdir().unwrap();
+    let source_dir = dir.path().join("scripts/source");
+    std::fs::create_dir_all(&source_dir).unwrap();
+    std::fs::write(
+        source_dir.join("BaseScript.psc"),
+        "ScriptName BaseScript\n\nFunction DoIt()\nEndFunction\n",
+    )
+    .unwrap();
+    let derived_path = source_dir.join("DerivedScript.psc");
+    std::fs::write(
+        &derived_path,
+        "ScriptName DerivedScript extends BaseScript\n\nFunction DoIt()\nEndFunction\n",
+    )
+    .unwrap();
+
+    let seen = std::sync::Mutex::new(Vec::new());
+    let channel = tauri::ipc::Channel::new(|body| {
+        let tauri::ipc::InvokeResponseBody::Json(json) = body else {
+            return Ok(());
+        };
+        seen.lock().unwrap().push(json);
+        Ok(())
+    });
+
+    preload_project_scripts(
+        vec![derived_path.to_string_lossy().into_owned()],
+        ProjectLintContext {
+            root: dir.path().to_string_lossy().into_owned(),
+            ..Default::default()
+        },
+        Some(channel),
+    );
+
+    let seen = seen.lock().unwrap();
+    let resolving: Vec<(u64, u64)> = seen
+        .iter()
+        .filter_map(|json| serde_json::from_str::<serde_json::Value>(json).ok())
+        .filter(|progress| progress["phase"] == "Resolving")
+        .map(|progress| {
+            (
+                progress["completed"].as_u64().unwrap_or(0),
+                progress["total"].as_u64().unwrap_or(0),
+            )
+        })
+        .collect();
+    assert!(
+        resolving.len() >= 2,
+        "expected the seed and its parent to report progress, got {resolving:?}"
+    );
+    assert!(
+        resolving.iter().any(|(_, total)| *total >= 2),
+        "expected the reported total to grow past the single lint target, got {resolving:?}"
+    );
+    assert!(seen.iter().any(|json| json.contains("Indexing scripts")));
 }
