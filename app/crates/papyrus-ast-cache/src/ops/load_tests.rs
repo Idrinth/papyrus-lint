@@ -261,7 +261,7 @@ fn get_in_primes_papyrus_parsers_in_memory_cache_with_the_disk_cached_ast() {
 
     // Deliberately not what `source` actually parses to, so that a
     // subsequent `papyrus_parser::parse(source)` call returning it proves
-    // it came from `get_in`'s in-memory priming rather than a fresh parse
+    // it came from `get_in_for_game`'s in-memory priming rather than a fresh parse
     // of `source`.
     let distinct_ast = papyrus_parser::parse(
         "ScriptName PrimesInMemory extends Quest\n\nInt Property Marker = 1 Auto\n",
@@ -291,7 +291,7 @@ fn get_tokens_in_primes_papyrus_parsers_in_memory_cache_with_the_disk_cached_tok
 
     // Deliberately not what `source` actually tokenizes to, so that a
     // subsequent `papyrus_parser::tokenize(source)` call returning it
-    // proves it came from `get_tokens_in`'s in-memory priming rather than a
+    // proves it came from `get_tokens_in_for_game`'s in-memory priming rather than a
     // fresh tokenize of `source`.
     let distinct_tokens = papyrus_parser::tokenize(
         "ScriptName PrimesTokensInMemory extends Quest\n\nInt Property Marker = 1 Auto\n",

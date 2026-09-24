@@ -197,13 +197,10 @@ fn game_ensure_primed_caches_tokens_when_the_source_does_not_parse() {
         COMPATIBLE_VERSION,
     );
 
-    assert!(crate::ops::load::get_in_for_game(
-        h.cache_dir.path(),
-        GAME,
-        &h.source_path,
-        h.source,
-    )
-    .is_none());
+    assert!(
+        crate::ops::load::get_in_for_game(h.cache_dir.path(), GAME, &h.source_path, h.source,)
+            .is_none()
+    );
     assert_eq!(
         crate::ops::load::get_tokens_in_for_game(
             h.cache_dir.path(),
