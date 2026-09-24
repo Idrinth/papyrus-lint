@@ -26,6 +26,7 @@ class InlineCssImportsTest(unittest.TestCase):
             ".doc-content",
             ".coverage-content",
             ".rules-content",
+            "@media print",
         ):
             with self.subTest(selector=selector):
                 self.assertIn(selector, result)

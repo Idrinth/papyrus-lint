@@ -1,0 +1,222 @@
+/* Print stylesheet for the Pages site. Screen chrome (nav, theme switch,
+   search/filter widgets, download menus, lightboxes, video iframes) has
+   nothing to offer on paper; dark-theme tokens also wash out or invert
+   when a printer drops backgrounds. This file is imported last so these
+   rules win over the screen modules. */
+
+@media print {
+  @page {
+    margin: 1.4cm;
+  }
+
+  :root,
+  :root[data-theme="light"],
+  :root[data-theme="dark"] {
+    color-scheme: light;
+    --color-text: #111111;
+    /* Screen muted text is 40% opacity; that fails contrast on paper. */
+    --color-text-muted: #333333;
+    --color-bg: #ffffff;
+    --color-surface: #ffffff;
+    --color-border: #444444;
+    --color-border-strong: #222222;
+    --color-hover-bg: transparent;
+    --color-flagged-bg: #eeeeee;
+    --color-grid: transparent;
+    --color-accent: #111111;
+    --color-accent-toggle: #111111;
+    --color-error: #8b1515;
+    --color-error-strong: #8b1515;
+    --color-error-bg: #f3d6d6;
+    --color-warning: #6b4a00;
+    --color-warning-bg: #f3e4b8;
+    --color-info-bg: #d9e2f5;
+    --color-success: #145214;
+    --color-success-strong: #145214;
+    --code-comment: #2f6b2f;
+    --code-string: #8b1515;
+    --code-number: #0b5c3c;
+    --code-keyword: #1111aa;
+    --code-type: #0b5a6e;
+    color: var(--color-text);
+    background-color: #ffffff;
+    background-image: none;
+  }
+
+  html,
+  body {
+    background: #ffffff;
+    color: var(--color-text);
+  }
+
+  /* Keep badge/code tints so severity and syntax stay distinguishable. */
+  body {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: underline;
+  }
+
+  /* Screen-only chrome and controls. */
+  .site-header__nav,
+  .theme-switch,
+  .doc-breadcrumb,
+  .hero__actions,
+  .download-group,
+  .download-panel,
+  .badge-row,
+  .lightbox,
+  .lightbox__close,
+  .rules-filter-bar,
+  .rules-count,
+  .video-card__frame,
+  .site-footer .contact-list {
+    display: none !important;
+  }
+
+  .site-header {
+    position: static;
+    background: #ffffff;
+    border-bottom: 1px solid var(--color-border);
+    padding: 0 0 0.6em;
+  }
+
+  .site-header__logo {
+    width: 1.4em;
+    height: 1.4em;
+  }
+
+  main {
+    max-width: none;
+    padding: 0;
+  }
+
+  .hero {
+    padding: 1em 0 0.6em;
+    text-align: left;
+  }
+
+  .hero h1 {
+    font-size: 1.6em;
+  }
+
+  .hero__tagline {
+    margin: 0;
+    font-size: 1em;
+    color: var(--color-text);
+  }
+
+  section {
+    padding: 1em 0;
+    break-inside: avoid;
+  }
+
+  .site-footer {
+    margin-top: 1em;
+    padding: 0.8em 0 0;
+    color: var(--color-text);
+  }
+
+  /* Closed <details> hide their body in the UA stylesheet; force the
+     documented behavior onto the page and drop the now-useless summary. */
+  details {
+    display: block;
+  }
+
+  details > summary {
+    display: none;
+  }
+
+  details > *:not(summary) {
+    display: block !important;
+  }
+
+  details::details-content {
+    display: block;
+    content-visibility: visible;
+  }
+
+  pre.code-block,
+  .doc-content pre.code-block {
+    max-height: none;
+    overflow: visible;
+    background: #ffffff;
+    border: 1px solid var(--color-border);
+    white-space: pre-wrap;
+    break-inside: avoid;
+  }
+
+  .doc-content p,
+  .doc-content ul,
+  .card p,
+  .section-intro,
+  .integration p,
+  .docs-list p {
+    color: var(--color-text);
+  }
+
+  img {
+    max-width: 100%;
+    height: auto;
+    break-inside: avoid;
+  }
+
+  /* Stack the rules table the same way the narrow-viewport layout does so
+     columns are not clipped to the paper width. */
+  .rules-content .lint-table-wrap {
+    overflow: visible;
+  }
+
+  .rules-content table.lint-rules-table {
+    min-width: 0;
+    table-layout: auto;
+    width: 100%;
+  }
+
+  .rules-content .lint-rules-table thead {
+    display: none;
+  }
+
+  .rules-content .lint-rules-table,
+  .rules-content .lint-rules-table tbody,
+  .rules-content .lint-rules-table tr,
+  .rules-content .lint-rules-table th,
+  .rules-content .lint-rules-table td {
+    display: block;
+  }
+
+  .rules-content .lint-rules-table th:nth-child(n),
+  .rules-content .lint-rules-table td:nth-child(n) {
+    width: auto;
+    min-width: 0;
+    text-align: left;
+    border-bottom: none;
+    padding: 0.15em 0;
+  }
+
+  .rules-content .lint-rules-table tbody tr {
+    padding: 0.7em 0;
+    border-bottom: 1px solid var(--color-border);
+    break-inside: avoid;
+  }
+
+  .rules-content .lint-rules-table code {
+    color: var(--color-text);
+  }
+
+  .tag-badge {
+    color: var(--color-text);
+    border-color: var(--color-border-strong);
+  }
+
+  .card,
+  .integration,
+  .coverage-module,
+  .disable-note {
+    background: #ffffff;
+    break-inside: avoid;
+  }
+}
