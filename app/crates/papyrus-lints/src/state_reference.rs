@@ -42,3 +42,7 @@ impl StateReferences {
         }
     }
 }
+
+#[cfg(test)]
+#[path = "state_reference_tests.rs"]
+mod tests;
