@@ -3,6 +3,9 @@ import { invokeMock, onDragDropEventMock, showWindowMock } from "./test/mocks";
 vi.mock("@tauri-apps/api/core", () => ({
   invoke: (...args: unknown[]) => invokeMock(...args),
   isTauri: () => true,
+  Channel: class {
+    onmessage: ((payload: unknown) => void) | null = null;
+  },
 }));
 
 vi.mock("@tauri-apps/api/webview", () => ({
@@ -231,6 +234,42 @@ describe("handleDroppedPaths", () => {
     await pending;
 
     expect(order).toEqual(["preload_project_scripts", "lint_psc_file"]);
+  });
+
+  it("moves the progress bar through resolving while referenced scripts are preloaded", async () => {
+    invokeImplFor({
+      parse_achlist_file: () => ["A.psc"],
+      load_lint_config: () => DEFAULT_LINT_CONFIG,
+      parse_psc_file: () => ({ name: "A" }),
+      preload_project_scripts: (args) => {
+        const channel = (args as { onProgress: { onmessage: (payload: unknown) => void } }).onProgress;
+        const label = () => document.querySelector("#lint-progress-label")!.textContent;
+        const bar = document.querySelector<HTMLProgressElement>("#lint-progress-bar")!;
+        const busy = () => document.querySelector("#lint-progress")!.classList.contains("lint-progress--busy");
+
+        expect(label()).toBe("Resolving references");
+        expect(busy()).toBe(true);
+        expect(bar.hasAttribute("value")).toBe(false);
+
+        channel.onmessage({ phase: "Resolving", completed: 1, total: 2 });
+        expect(label()).toBe("Resolving 1 / 2 files");
+        expect(bar.value).toBe(1);
+        expect(bar.max).toBe(2);
+        expect(busy()).toBe(false);
+
+        channel.onmessage({ phase: "Indexing scripts", completed: 0, total: 0 });
+        expect(label()).toBe("Indexing scripts");
+        expect(busy()).toBe(true);
+        expect(bar.hasAttribute("value")).toBe(false);
+      },
+      lint_psc_file: () => [],
+    });
+
+    const pending = handleDroppedPaths(["/proj/list.achlist"]);
+    await confirmDetectedConfig();
+    await pending;
+
+    expect(document.querySelector("#lint-progress-label")!.textContent).toBe("Linting 1 / 1 files");
   });
 
   it("resolves the project root from a resolved script's own position when the achlist itself lives elsewhere", async () => {

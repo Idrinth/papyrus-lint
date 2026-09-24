@@ -15,7 +15,7 @@ vi.mock("@tauri-apps/api/window", () => ({
 }));
 
 import "./test/harness";
-import { hideLintProgress, scheduleHideLintProgress, showLintProgress, updateLintProgress } from "./progress";
+import { hideLintProgress, scheduleHideLintProgress, showLintActivity, showLintProgress, updateLintProgress } from "./progress";
 
 describe("showLintProgress / updateLintProgress / hideLintProgress", () => {
   it("shows the progress bar reset to 0/total", () => {
@@ -32,6 +32,26 @@ describe("showLintProgress / updateLintProgress / hideLintProgress", () => {
     expect(document.querySelector("#lint-progress-label")!.textContent).toBe("Parsing 0 / 4 files");
     updateLintProgress(2, 4, "Parsing");
     expect(document.querySelector("#lint-progress-label")!.textContent).toBe("Parsing 2 / 4 files");
+  });
+
+  it("switches to an indeterminate bar while a phase has no fraction yet", () => {
+    showLintProgress(3, "Parsing");
+    updateLintProgress(3, 3, "Parsing");
+
+    showLintActivity("Resolving references");
+
+    const bar = document.querySelector<HTMLProgressElement>("#lint-progress-bar")!;
+    expect(document.querySelector<HTMLElement>("#lint-progress")!.hidden).toBe(false);
+    expect(document.querySelector<HTMLElement>("#lint-progress")!.classList.contains("lint-progress--busy")).toBe(true);
+    expect(bar.hasAttribute("value")).toBe(false);
+    expect(document.querySelector("#lint-progress-label")!.textContent).toBe("Resolving references");
+
+    updateLintProgress(1, 4, "Resolving");
+
+    expect(document.querySelector<HTMLElement>("#lint-progress")!.classList.contains("lint-progress--busy")).toBe(false);
+    expect(bar.value).toBe(1);
+    expect(bar.max).toBe(4);
+    expect(document.querySelector("#lint-progress-label")!.textContent).toBe("Resolving 1 / 4 files");
   });
 
   it("stays hidden when there are no files to process", () => {

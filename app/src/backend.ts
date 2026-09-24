@@ -3,6 +3,7 @@
 // from the orchestration in main.ts so that layer isn't tangled up with how
 // each individual command is dispatched.
 import { invoke } from "@tauri-apps/api/core";
+import * as tauriCore from "@tauri-apps/api/core";
 import type { Member } from "./autocomplete-types";
 import { currentProjectLintContext } from "./backend-context";
 import { type CompileOutcome, type Diagnostic, type RuleTagsInfo } from "./backend-types";
@@ -48,14 +49,59 @@ export async function lintPscFile(path: string): Promise<Diagnostic[]> {
 // Purely a perf optimization -- a failure here is logged and otherwise
 // ignored, since the per-file calls that follow still resolve everything
 // correctly (just without this head start) either way.
-export async function preloadProjectScripts(paths: string[]): Promise<void> {
+//
+// `onProgress` receives the same counts the CLI's "Parsing" bar prints
+// while the type closure walks referenced scripts (`phase` is "Resolving"
+// with a growing `total`), then one indeterminate "Indexing scripts"
+// update (`total` 0) while those parses are merged into the function
+// table. The channel is optional so a caller that cannot construct one
+// (unit tests mock this module without `Channel`) still preloads.
+export interface PreloadProgress {
+  phase: string;
+  completed: number;
+  total: number;
+}
+
+// `Channel` is a real export of `@tauri-apps/api/core`, but the unit-test
+// mocks of that module usually only stub `invoke`. A namespace import
+// stays synchronous (an `await import()` here shifts the lint loop by a
+// microtask and breaks tests that drain a fixed number of turns) and is
+// simply missing on those mocks.
+function preloadProgressChannel(onProgress?: (progress: PreloadProgress) => void) {
+  try {
+    const core = tauriCore as { Channel?: new () => { onmessage: ((progress: PreloadProgress) => void) | null } };
+    if (typeof core.Channel !== "function") {
+      return undefined;
+    }
+    const channel = new core.Channel();
+    channel.onmessage = (progress) => onProgress?.(progress);
+    return channel;
+  } catch {
+    // Vitest's mock of this module throws on any export it didn't stub,
+    // including `Channel`. Preload still runs; it just can't stream progress.
+    return undefined;
+  }
+}
+
+export async function preloadProjectScripts(
+  paths: string[],
+  onProgress?: (progress: PreloadProgress) => void,
+): Promise<void> {
+  const onProgressChannel = preloadProgressChannel(onProgress);
   try {
     await invoke("preload_project_scripts", {
       paths,
       context: currentProjectLintContext(),
+      ...(onProgressChannel ? { onProgress: onProgressChannel } : {}),
     });
   } catch (error) {
     console.error(error);
+  } finally {
+    // Drop the handler so a finished run doesn't keep the progress closure,
+    // and the webview callback it registered, alive across later lints.
+    if (onProgressChannel) {
+      onProgressChannel.onmessage = () => {};
+    }
   }
 }
 
