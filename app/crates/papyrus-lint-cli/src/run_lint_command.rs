@@ -237,6 +237,7 @@ fn process_scripts<'a>(
         strict_achlist_scope,
         compile_check,
         compiler_path,
+        ignores,
     } = scan;
 
     let progress_stdout: Mutex<&mut (dyn Write + Send)> = Mutex::new(stdout);
@@ -291,6 +292,7 @@ fn process_scripts<'a>(
         output_format: lint.output_format,
         hash_source: lint.hash_source,
         use_color,
+        ignores: ignores.as_ref(),
     };
 
     let file_results: Vec<Result<FileOutcome, String>> =

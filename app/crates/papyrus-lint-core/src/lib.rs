@@ -24,6 +24,7 @@ pub mod compiler;
 pub mod content_hash;
 pub mod diff;
 pub mod function_table;
+pub mod ignore_file;
 mod native_globals;
 pub mod parallel;
 pub mod pex_header;

@@ -15,6 +15,18 @@ is checked in at
 also what `PapyrusLinterCLI init` (or `init --preset strict`, the default)
 writes into a project with no config file yet.
 
+Diagnostics that cannot be disabled in source code can instead be suppressed
+with a `.papyrus-lint-ignore` YAML file in the project root. Each list entry
+names a source file (an absolute path, or a path relative to the project root),
+a 1-indexed line, and a rule id. The suppression applies only to that exact
+rule finding on that exact line, like a single-line `@disable` comment:
+
+```yaml
+- file: /abc/scripts/source/dce.psc
+  line: 12
+  rule: trailing-whitespace
+```
+
 A JSON Schema for the same file is checked in at
 [`schema/papyrus-lint.schema.json`](../schema/papyrus-lint.schema.json) (JSON Schema
 Draft 2020-12), so editors that support YAML schema association can

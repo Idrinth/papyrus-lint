@@ -8,6 +8,7 @@ use std::path::{Path, PathBuf};
 use std::sync::RwLock;
 
 use papyrus_lint_core::function_table::{FunctionTable, SharedFunctionTable};
+use papyrus_lint_core::ignore_file::IgnoreFile;
 use papyrus_lint_core::{ast_cache, collision_cache, compile_diagnostics, compiler, content_hash};
 
 use crate::output::*;
@@ -38,6 +39,7 @@ pub(crate) struct LintContext<'a> {
     pub(crate) output_format: OutputFormat,
     pub(crate) hash_source: bool,
     pub(crate) use_color: bool,
+    pub(crate) ignores: Option<&'a IgnoreFile>,
 }
 
 /// One script's lint result, ready to be folded into its [`FileOutcome`]
@@ -108,6 +110,9 @@ pub(crate) fn lint_file(
                 diagnostics.extend(compile_diagnostics::parse_compile_errors(&outcome));
             }
         }
+    }
+    if let Some(ignores) = ctx.ignores {
+        ignores.retain_diagnostics(script_path, &mut diagnostics);
     }
     let parser_errors = collect_parser_errors(source);
     let parse_failed = !parser_errors.is_empty();

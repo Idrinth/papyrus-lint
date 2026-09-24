@@ -9,7 +9,7 @@ use papyrus_lint_core::source_encoding::{
     read_psc_source, read_psc_source_with_encoding, write_psc_source, PscEncoding,
 };
 
-use crate::lint::{lint_with_compile_check, ProjectLintContext};
+use crate::lint::{apply_project_ignores, lint_with_compile_check, ProjectLintContext};
 
 /// Writes `updated` back to `path` when it differs from `original`
 /// (preserving `encoding`), primes the AST cache, and re-lints the file
@@ -28,7 +28,9 @@ fn write_prime_and_relint(
     }
     ast_cache::ensure_primed_for_game(context.config.game, path, updated);
     let mut shared = SharedFunctionTable(function_table);
-    Ok(lint_with_compile_check(path, updated, context, &mut shared))
+    let mut diagnostics = lint_with_compile_check(path, updated, context, &mut shared);
+    apply_project_ignores(path, Path::new(&context.root), &mut diagnostics)?;
+    Ok(diagnostics)
 }
 
 /// Reads the `.psc` file at `path`, applies every automatic fix (honoring
