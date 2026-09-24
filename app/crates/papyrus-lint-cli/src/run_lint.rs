@@ -149,23 +149,34 @@ fn collect_project_diagnostics(
 ) -> Vec<papyrus_lints::Diagnostic> {
     let mut project_diagnostics = Vec::new();
     if ctx.lint_config.rules.conflicting_script_versions {
-        let paths: Vec<PathBuf> = if ctx.strict_achlist_scope {
-            ctx.scripts_by_name.values().flatten().cloned().collect()
-        } else {
-            ctx.script_index.values().flatten().cloned().collect()
-        };
+        // The index is already grouped by file name. Hashing every project
+        // script here made a full run quadratic; only same-named copies can
+        // conflict.
         collision_cache::remember_source(ctx.lint_config.game, script_path, source);
-        let files = papyrus_lint_core::script_locator::project_files(
-            paths,
-            ctx.project_root,
-            ctx.short_paths,
-            ctx.lint_config.game,
-        );
-        project_diagnostics.extend(papyrus_lints::conflicting_script_versions::check(
-            script_path,
-            &content_hash::sha256_hex(source),
-            &files,
-        ));
+        let conflicts = if ctx.strict_achlist_scope {
+            let candidates = script_path
+                .file_name()
+                .and_then(|name| name.to_str())
+                .and_then(|name| ctx.scripts_by_name.get(&name.to_ascii_lowercase()))
+                .map(Vec::as_slice)
+                .unwrap_or(&[]);
+            papyrus_lint_core::script_locator::conflicting_script_versions_among(
+                script_path,
+                candidates,
+                ctx.project_root,
+                ctx.short_paths,
+                ctx.lint_config.game,
+            )
+        } else {
+            papyrus_lint_core::script_locator::conflicting_script_versions_in_index(
+                script_path,
+                ctx.script_index,
+                ctx.project_root,
+                ctx.short_paths,
+                ctx.lint_config.game,
+            )
+        };
+        project_diagnostics.extend(conflicts);
     }
     if ctx.lint_config.rules.stale_compiled_output {
         project_diagnostics.extend(papyrus_lint_core::stale_pex::check(script_path));

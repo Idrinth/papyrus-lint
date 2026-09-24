@@ -332,14 +332,53 @@ fn lookup_index_cache_key(root: &Path, lookup_roots: &[String]) -> LookupIndexCa
 /// previous scan of the same directories in this process while their
 /// modification times are unchanged.
 pub fn cached_lookup_index(root: &Path, lookup_roots: &[String]) -> Arc<ScriptIndex> {
-    let key = lookup_index_cache_key(root, lookup_roots);
-    let mut cache = lookup_index_cache()
+    cached_index(
+        lookup_index_cache(),
+        lookup_index_cache_key(root, lookup_roots),
+        || build_lookup_index(root, lookup_roots),
+    )
+}
+
+static SCRIPT_INDEX_CACHE: OnceLock<LookupIndexCache> = OnceLock::new();
+
+fn script_index_cache() -> &'static LookupIndexCache {
+    SCRIPT_INDEX_CACHE.get_or_init(|| Mutex::new(HashMap::new()))
+}
+
+fn script_index_cache_key(root: &Path, additional_roots: &[String]) -> LookupIndexCacheKey {
+    detected_script_roots(root, additional_roots)
+        .into_iter()
+        .map(|path| {
+            let mtime = dir_mtime_nanos(&path).unwrap_or(0);
+            (path, mtime)
+        })
+        .collect()
+}
+
+/// Returns [`build_script_index`] for `root`/`additional_roots`, reusing a
+/// previous scan while those directories' modification times are unchanged.
+/// Desktop per-file lint commands use this so each file does not re-walk
+/// the project's source trees just to find same-named copies.
+pub fn cached_script_index(root: &Path, additional_roots: &[String]) -> Arc<ScriptIndex> {
+    cached_index(
+        script_index_cache(),
+        script_index_cache_key(root, additional_roots),
+        || build_script_index(root, additional_roots),
+    )
+}
+
+fn cached_index(
+    cache: &LookupIndexCache,
+    key: LookupIndexCacheKey,
+    build: impl FnOnce() -> ScriptIndex,
+) -> Arc<ScriptIndex> {
+    let mut cache = cache
         .lock()
         .unwrap_or_else(|poisoned| poisoned.into_inner());
     if let Some(index) = cache.get(&key) {
         return Arc::clone(index);
     }
-    let index = Arc::new(build_lookup_index(root, lookup_roots));
+    let index = Arc::new(build());
     cache.insert(key, Arc::clone(&index));
     index
 }
@@ -384,6 +423,9 @@ pub fn conflicting_script_versions_in_index(
     let Some(candidates) = index.get(&file_name.to_ascii_lowercase()) else {
         return Vec::new();
     };
+    if !has_other_candidate(script_path, candidates) {
+        return Vec::new();
+    }
 
     conflicting_script_versions_among(script_path, candidates, root, short_paths, game)
 }
@@ -411,6 +453,9 @@ pub fn conflicting_script_versions_among(
     short_paths: bool,
     game: Game,
 ) -> Vec<papyrus_lints::Diagnostic> {
+    if !has_other_candidate(script_path, known_scripts) {
+        return Vec::new();
+    }
     let Some(current) = file_content_hash(script_path, game) else {
         return Vec::new();
     };
@@ -419,6 +464,11 @@ pub fn conflicting_script_versions_among(
         &current,
         &project_files(known_scripts.iter().cloned(), root, short_paths, game),
     )
+}
+
+/// Whether `candidates` contains a path other than `script_path`.
+fn has_other_candidate(script_path: &Path, candidates: &[PathBuf]) -> bool {
+    candidates.iter().any(|candidate| candidate != script_path)
 }
 
 #[cfg(test)]
