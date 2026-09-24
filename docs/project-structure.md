@@ -87,7 +87,7 @@ Cargo workspace**. Run Cargo commands against each crate's own `Cargo.toml`.
 | `papyrus-lint-core` | Tauri-independent project resolution, cross-script lookup, compilation, and shared workflows. |
 | `papyrus-lint-output` | Plain-text, JSON, and AI-report models and formatting shared by GUI and CLI. |
 | `papyrus-lint-cli` | `PapyrusLinterCLI` argument parsing and lint/fix/init/doctor/blob orchestration. |
-| `papyrus-lint-lsp` | Stdio language server (`PapyrusLinterLsp`). v1 answers the handshake plus empty code-action and execute-command results; it does not lint yet. |
+| `papyrus-lint-lsp` | Stdio language server (`PapyrusLinterLsp`). Publishes `papyrus_lints` diagnostics for open documents. Code actions and whole-file fix are not implemented yet. |
 
 Important internal boundaries:
 

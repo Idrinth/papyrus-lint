@@ -40,32 +40,41 @@ fn initialize_advertises_the_stub_capabilities() {
 }
 
 #[test]
-fn document_sync_does_not_publish_diagnostics() {
+fn document_sync_publishes_diagnostics() {
     let (_code, responses) = exchange(&[
         request(1, "initialize", json!({})),
         json!({ "jsonrpc": "2.0", "method": "initialized" }),
         json!({
             "jsonrpc": "2.0",
             "method": "textDocument/didOpen",
-            "params": { "textDocument": { "uri": "file:///Quest.psc", "languageId": "papyrus", "version": 1, "text": "Scriptname Quest\n" } }
+            "params": { "textDocument": { "uri": "file:///Quest.psc", "languageId": "papyrus", "version": 1, "text": "Scriptname Quest \n" } }
         }),
         json!({
             "jsonrpc": "2.0",
             "method": "textDocument/didChange",
-            "params": { "textDocument": { "uri": "file:///Quest.psc", "version": 2 }, "contentChanges": [{ "text": "Scriptname Quest\n" }] }
+            "params": { "textDocument": { "uri": "file:///Quest.psc", "version": 2 }, "contentChanges": [{ "text": "Scriptname Quest \n" }] }
         }),
         json!({
             "jsonrpc": "2.0",
             "method": "textDocument/didSave",
-            "params": { "textDocument": { "uri": "file:///Quest.psc" }, "text": "Scriptname Quest\n" }
+            "params": { "textDocument": { "uri": "file:///Quest.psc" }, "text": "Scriptname Quest \n" }
         }),
-        json!({ "jsonrpc": "2.0", "method": "textDocument/didClose", "params": {} }),
+        json!({ "jsonrpc": "2.0", "method": "textDocument/didClose", "params": { "textDocument": { "uri": "file:///Quest.psc" } } }),
         json!({ "jsonrpc": "2.0", "method": "workspace/didChangeConfiguration", "params": {} }),
         json!({ "jsonrpc": "2.0", "method": "$/cancelRequest", "params": { "id": 1 } }),
     ]);
-    assert_eq!(responses.len(), 1);
-    let encoded = serde_json::to_string(&responses).unwrap();
-    assert!(!encoded.contains("publishDiagnostics"));
+    let published: Vec<_> = responses
+        .iter()
+        .filter(|message| message["method"] == "textDocument/publishDiagnostics")
+        .collect();
+    assert_eq!(published.len(), 4);
+    assert!(published[0]["params"]["diagnostics"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|diagnostic| diagnostic["code"] == "trailing-whitespace"));
+    assert_eq!(published[3]["params"]["diagnostics"], json!([]));
+    assert!(responses.iter().any(|message| message["id"] == 1));
 }
 
 #[test]

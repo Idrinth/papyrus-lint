@@ -2,6 +2,7 @@ use std::io::{self, BufRead, Write};
 
 use serde_json::{json, Value};
 
+use crate::documents::Documents;
 use crate::framing::{read_message, write_message};
 use crate::SERVER_NAME;
 
@@ -21,6 +22,7 @@ const SERVER_NOT_INITIALIZED: i64 = -32002;
 pub fn serve(mut input: impl BufRead, mut output: impl Write) -> io::Result<i32> {
     let mut shutdown = false;
     let mut initialized = false;
+    let mut documents = Documents::default();
     loop {
         let Some(bytes) = read_message(&mut input)? else {
             return Ok(0);
@@ -38,9 +40,17 @@ pub fn serve(mut input: impl BufRead, mut output: impl Write) -> io::Result<i32>
         };
         let id = message.get("id").filter(|id| !id.is_null()).cloned();
         let method = message.get("method").and_then(Value::as_str);
+        let params = message.get("params").cloned().unwrap_or(Value::Null);
         if id.is_none() {
             if method == Some("exit") {
                 return Ok(if shutdown { 0 } else { 1 });
+            }
+            match method {
+                Some("textDocument/didOpen") => documents.did_open(&params, &mut output)?,
+                Some("textDocument/didChange") => documents.did_change(&params, &mut output)?,
+                Some("textDocument/didSave") => documents.did_save(&params, &mut output)?,
+                Some("textDocument/didClose") => documents.did_close(&params, &mut output)?,
+                _ => {}
             }
             continue;
         }

@@ -106,7 +106,7 @@ update the cited code *and* this list.
 | Project root, achlist/ppj, script index, FunctionTable, compile/stale `.pex` | `app/crates/papyrus-lint-core/src/` |
 | `papyrus-lint.yaml`, presets, compiler/game-install detection | `app/crates/papyrus-lint-config/src/` |
 | CLI (`run`, `run_blob`, `fix`, `doctor`, `--tag`) | `app/crates/papyrus-lint-cli/src/` |
-| LSP stdio adapter (handshake only; no diagnostics yet) | `app/crates/papyrus-lint-lsp/src/` |
+| LSP stdio adapter (diagnostics on document sync; code actions and fix-file still empty) | `app/crates/papyrus-lint-lsp/src/` |
 | Text / JSON / AI report formatting | `app/crates/papyrus-lint-output/` and `schema/` |
 | Tauri commands | `app/src-tauri/src/` (`files.rs`, `lint.rs`, `repair.rs`, `export.rs`, `lint_config.rs`) |
 | Desktop UI (drop, results, live edit, watch, presets) | `app/src/` (`drop.ts`, `results-filter.ts`, `live-edit.ts`, `watch.ts`, `presets.ts`) |
