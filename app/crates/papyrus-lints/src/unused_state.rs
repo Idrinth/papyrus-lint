@@ -12,10 +12,18 @@ use crate::Diagnostic;
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "unused-state";
 
+/// Just the fields this rule consults. Cloning a [`StateDecl`] would copy
+/// every function body in the state for no reason.
+struct RecordedState {
+    name: String,
+    is_auto: bool,
+    line: usize,
+}
+
 #[derive(Default)]
 struct Collect {
     store: Store,
-    states: Vec<StateDecl>,
+    states: Vec<RecordedState>,
     targets: HashSet<String>,
 }
 
@@ -25,7 +33,11 @@ impl AstLint for Collect {
     }
 
     fn visit_state(&mut self, state: &StateDecl, _ctx: &mut VisitCtx<'_>) {
-        self.states.push(state.clone());
+        self.states.push(RecordedState {
+            name: state.name.clone(),
+            is_auto: state.is_auto,
+            line: state.line,
+        });
     }
 
     fn visit_expr(&mut self, expr: &Expr, _ctx: &mut VisitCtx<'_>) {
