@@ -219,7 +219,7 @@ do not copy the tree into `CONTRIBUTING.md` or `AGENTS.md`.
 │       │       ├── content_hash.rs # MD5 hashing helper for the "Export for AI"
 │       │       │                   # redacted-source option / --hash-source,
 │       │       │                   # and SHA-256 for the collision cache
-│       │       ├── collision_cache.rs # `{game}-{sha256(filename)}-collisions.json`
+│       │       ├── collision_cache.rs # `{game}-{sha256(filename)}.iplcc`
 │       │       │                   # index of script copies (hash/mtime/path)
 │       │       │                   # used by conflicting-script-versions
 │       │       ├── diff.rs         # unified_diff: renders fix --dry-run's/

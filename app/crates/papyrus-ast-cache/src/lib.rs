@@ -2,11 +2,11 @@
 //! the CLI, so reopening an unchanged script (e.g. switching between files
 //! in the code viewer, relinting an achlist, or resolving the same
 //! cross-script lookup across separate CLI invocations) skips re-parsing
-//! it. Entries live as one JSON file per target game and source path in the directory named
+//! it. Entries live as one binary `.iplatc` file per target game and source path in the directory named
 //! by `PAPYRUS_LINT_AST_CACHE_DIR`, or, when that isn't set, an `ast-cache`
 //! directory next to the running executable -- the desktop app's own binary,
 //! or `PapyrusLinterCLI`'s, whichever process is doing the parsing -- and
-//! are named `{game}-{path-md5}.json`. Entries are
+//! are named `{game}-{path-md5}.iplatc`. Entries are
 //! invalidated by the source file's last-modified timestamp, an MD5 of its
 //! content, and the linter version that wrote the entry -- if any of the
 //! three is no longer valid, it's treated as a miss and the caller re-parses.
@@ -57,7 +57,7 @@
 //! pool, or the desktop app's own already-concurrent per-file Tauri
 //! commands) can both resolve the same cross-script dependency at the same
 //! moment, and [`std::fs::write`] isn't atomic: two unsynchronized writers
-//! to the very same cache file could interleave into invalid JSON. A
+//! to the very same cache file could interleave into an unreadable blob. A
 //! corrupt read already falls back to a fresh parse (see above), so that
 //! alone was never unsound, but it did mean a hot shared script (e.g. a
 //! common base class) could pay for a redundant reparse on every such

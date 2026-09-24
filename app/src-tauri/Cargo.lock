@@ -2629,6 +2629,7 @@ dependencies = [
 name = "papyrus-lint-core"
 version = "0.1.0"
 dependencies = [
+ "bincode",
  "encoding_rs",
  "md5",
  "papyrus-ast-cache",
