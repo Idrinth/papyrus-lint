@@ -26,9 +26,9 @@ use std::path::{Path, PathBuf};
 use crate::comments::with_field_comments;
 use crate::preset_files::{executable_dir, find_user_preset_file, user_presets_dir_under};
 use crate::project_file::{
-    existing_config_path, game_key_first, non_lint_yaml, seed_lookup_script_roots, ProjectFile,
-    CONFIG_FILE_NAMES,
+    existing_config_path, game_key_first, non_lint_yaml, ProjectFile, CONFIG_FILE_NAMES,
 };
+use crate::script_roots::seed_lookup_script_roots;
 use crate::yaml_merge::deep_merge;
 
 pub use crate::preset_files::{list_user_preset_names, user_presets_dir};
