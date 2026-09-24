@@ -1,5 +1,6 @@
 //! Flags named states that can never become active because they are neither
-//! marked `Auto` nor targeted by a literal `GoToState` call in the script.
+//! marked `Auto` nor targeted by a literal `GoToState` call in the script
+//! or in a script that extends it.
 
 use std::collections::HashSet;
 
@@ -52,9 +53,16 @@ impl AstLint for Collect {
         self.targets.insert(name.to_ascii_lowercase());
     }
 
-    fn finish(&mut self, _ctx: &mut VisitCtx<'_>) {
+    fn finish(&mut self, ctx: &mut VisitCtx<'_>) {
+        let script_name = ctx.ast.map(|script| script.name.as_str());
         for state in &self.states {
             if state.is_auto || self.targets.contains(&state.name.to_ascii_lowercase()) {
+                continue;
+            }
+            if script_name.is_some_and(|name| {
+                ctx.external
+                    .descendant_targets_state(name, &state.name)
+            }) {
                 continue;
             }
             self.store.emit(
