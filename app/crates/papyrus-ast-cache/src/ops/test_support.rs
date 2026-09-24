@@ -1,6 +1,8 @@
 //! Shared helpers for [`super::load`], [`super::store`] and [`super::prime`]'s
 //! unit tests.
 
+use papyrus_lint_globals::Game;
+
 use crate::entry::CacheEntry;
 use crate::version::MIN_COMPATIBLE_VERSION;
 use tempfile::tempdir;
@@ -8,6 +10,10 @@ use tempfile::tempdir;
 /// A version at the minimum compatible threshold, used by tests that don't
 /// care about version compatibility itself.
 pub(in crate::ops) const COMPATIBLE_VERSION: &str = MIN_COMPATIBLE_VERSION;
+
+/// The game every ops test stores under. Cache files are always
+/// game-namespaced; tests pass this explicitly rather than a default.
+pub(in crate::ops) const GAME: Game = Game::Skyrim;
 
 pub(in crate::ops) fn sample_ast() -> papyrus_parser::ast::Script {
     papyrus_parser::parse("ScriptName Example\n").unwrap()
@@ -40,7 +46,7 @@ pub(in crate::ops) fn harness(filename: &str, source: &'static str) -> Harness {
 pub(in crate::ops) fn write_raw(h: &Harness, entry: CacheEntry) {
     std::fs::create_dir_all(h.cache_dir.path()).unwrap();
     std::fs::write(
-        crate::entry::cache_file_path(h.cache_dir.path(), &h.source_path),
+        crate::entry::cache_file_path_for_game(h.cache_dir.path(), GAME, &h.source_path),
         serde_json::to_vec(&entry).unwrap(),
     )
     .unwrap();

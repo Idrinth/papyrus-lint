@@ -43,15 +43,10 @@ fn cache_dir_from(
     Some(exe?.parent()?.join(CACHE_DIR_NAME))
 }
 
-/// The cache file `source_path` is stored under within `dir`: an MD5 of its
-/// absolute path, so path separators and length can't collide with
-/// filesystem naming limits.
-#[cfg(test)]
-pub(crate) fn cache_file_path(dir: &Path, source_path: &Path) -> PathBuf {
-    let digest = md5::compute(source_path.to_string_lossy().as_bytes());
-    dir.join(format!("{digest:x}.json"))
-}
-
+/// The cache file `source_path` is stored under within `dir` for `game`:
+/// `{game}-{md5}.json`, an MD5 of the path string so separators and length
+/// can't collide with filesystem naming limits. There is no game-less
+/// filename; every caller has a target game.
 pub(crate) fn cache_file_path_for_game(dir: &Path, game: Game, source_path: &Path) -> PathBuf {
     let digest = md5::compute(source_path.to_string_lossy().as_bytes());
     dir.join(format!("{}-{digest:x}.json", game.as_str()))
@@ -62,18 +57,12 @@ pub(crate) fn file_modified_unix_secs(source_path: &Path) -> Option<u64> {
     Some(modified.duration_since(UNIX_EPOCH).ok()?.as_secs())
 }
 
-/// Reads back the cache entry for `source_path`/`source`, if one exists and
-/// is still fresh (matching content/mtime and at or above
+/// Reads back the cache entry for `game`/`source_path`/`source`, if one
+/// exists and is still fresh (matching content/mtime and at or above
 /// [`crate::version::MIN_COMPATIBLE_VERSION`]). Shared by the `ast` and
 /// `tokens` accessors in [`crate::ops`], and by each one's `put` so that
 /// writing one field preserves whatever still-valid value the other field
 /// already held.
-#[cfg(test)]
-pub(crate) fn valid_entry_in(dir: &Path, source_path: &Path, source: &str) -> Option<CacheEntry> {
-    let raw = std::fs::read(cache_file_path(dir, source_path)).ok()?;
-    deserialize_fresh_entry(raw, source_path, source)
-}
-
 pub(crate) fn valid_entry_in_for_game(
     dir: &Path,
     game: Game,
@@ -95,17 +84,6 @@ fn deserialize_fresh_entry(raw: Vec<u8>, source_path: &Path, source: &str) -> Op
     }
 
     Some(entry)
-}
-
-#[cfg(test)]
-pub(crate) fn write_entry_in(dir: &Path, source_path: &Path, entry: &CacheEntry) {
-    let Ok(serialized) = serde_json::to_vec(entry) else {
-        return;
-    };
-    if std::fs::create_dir_all(dir).is_err() {
-        return;
-    }
-    let _ = std::fs::write(cache_file_path(dir, source_path), serialized);
 }
 
 pub(crate) fn write_entry_in_for_game(

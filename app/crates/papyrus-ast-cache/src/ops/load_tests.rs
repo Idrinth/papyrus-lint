@@ -1,7 +1,9 @@
 use super::*;
-use crate::entry::{cache_file_path, file_modified_unix_secs, CacheEntry};
-use crate::ops::store::{put_in, put_tokens_in};
-use crate::ops::test_support::{harness, sample_ast, sample_tokens, write_raw, COMPATIBLE_VERSION};
+use crate::entry::{cache_file_path_for_game, file_modified_unix_secs, CacheEntry};
+use crate::ops::store::{put_in_for_game, put_tokens_in_for_game};
+use crate::ops::test_support::{
+    harness, sample_ast, sample_tokens, write_raw, COMPATIBLE_VERSION, GAME,
+};
 use tempfile::tempdir;
 
 #[test]
@@ -13,9 +15,12 @@ fn get_is_a_hit_when_the_cached_version_is_newer_than_the_minimum_compatible_ver
     std::fs::write(&source_path, source).unwrap();
 
     let ast = sample_ast();
-    put_in(cache_dir.path(), &source_path, source, &ast, "9.9.9");
+    put_in_for_game(cache_dir.path(), GAME, &source_path, source, &ast, "9.9.9");
 
-    assert_eq!(get_in(cache_dir.path(), &source_path, source), Some(ast));
+    assert_eq!(
+        get_in_for_game(cache_dir.path(), GAME, &source_path, source),
+        Some(ast)
+    );
 }
 
 #[test]
@@ -26,7 +31,7 @@ fn get_is_a_miss_for_an_uncached_path() {
     std::fs::write(&source_path, "ScriptName Example\n").unwrap();
 
     assert_eq!(
-        get_in(cache_dir.path(), &source_path, "ScriptName Example\n"),
+        get_in_for_game(cache_dir.path(), GAME, &source_path, "ScriptName Example\n"),
         None
     );
 }
@@ -39,8 +44,9 @@ fn get_is_a_miss_when_the_content_changed_even_if_the_mtime_did_not() {
     let original = "ScriptName Example\n";
     std::fs::write(&source_path, original).unwrap();
 
-    put_in(
+    put_in_for_game(
         cache_dir.path(),
+        GAME,
         &source_path,
         original,
         &sample_ast(),
@@ -48,7 +54,10 @@ fn get_is_a_miss_when_the_content_changed_even_if_the_mtime_did_not() {
     );
 
     let changed = "ScriptName Renamed\n";
-    assert_eq!(get_in(cache_dir.path(), &source_path, changed), None);
+    assert_eq!(
+        get_in_for_game(cache_dir.path(), GAME, &source_path, changed),
+        None
+    );
 }
 
 #[test]
@@ -59,8 +68,9 @@ fn get_is_a_miss_when_the_file_was_modified_after_caching() {
     let source = "ScriptName Example\n";
     std::fs::write(&source_path, source).unwrap();
 
-    put_in(
+    put_in_for_game(
         cache_dir.path(),
+        GAME,
         &source_path,
         source,
         &sample_ast(),
@@ -72,7 +82,10 @@ fn get_is_a_miss_when_the_file_was_modified_after_caching() {
     let file = std::fs::File::open(&source_path).unwrap();
     file.set_modified(filetime_now).unwrap();
 
-    assert_eq!(get_in(cache_dir.path(), &source_path, source), None);
+    assert_eq!(
+        get_in_for_game(cache_dir.path(), GAME, &source_path, source),
+        None
+    );
 }
 
 #[test]
@@ -92,12 +105,15 @@ fn get_is_a_miss_when_the_cached_version_is_older_than_the_minimum_compatible_ve
     };
     std::fs::create_dir_all(cache_dir.path()).unwrap();
     std::fs::write(
-        cache_file_path(cache_dir.path(), &source_path),
+        cache_file_path_for_game(cache_dir.path(), GAME, &source_path),
         serde_json::to_vec(&entry).unwrap(),
     )
     .unwrap();
 
-    assert_eq!(get_in(cache_dir.path(), &source_path, source), None);
+    assert_eq!(
+        get_in_for_game(cache_dir.path(), GAME, &source_path, source),
+        None
+    );
 }
 
 #[test]
@@ -117,12 +133,15 @@ fn get_is_a_miss_when_the_cached_version_does_not_parse() {
     };
     std::fs::create_dir_all(cache_dir.path()).unwrap();
     std::fs::write(
-        cache_file_path(cache_dir.path(), &source_path),
+        cache_file_path_for_game(cache_dir.path(), GAME, &source_path),
         serde_json::to_vec(&entry).unwrap(),
     )
     .unwrap();
 
-    assert_eq!(get_in(cache_dir.path(), &source_path, source), None);
+    assert_eq!(
+        get_in_for_game(cache_dir.path(), GAME, &source_path, source),
+        None
+    );
 }
 
 #[test]
@@ -133,10 +152,14 @@ fn get_is_a_miss_on_malformed_cache_contents() {
     std::fs::write(&source_path, "ScriptName Example\n").unwrap();
 
     std::fs::create_dir_all(cache_dir.path()).unwrap();
-    std::fs::write(cache_file_path(cache_dir.path(), &source_path), b"not json").unwrap();
+    std::fs::write(
+        cache_file_path_for_game(cache_dir.path(), GAME, &source_path),
+        b"not json",
+    )
+    .unwrap();
 
     assert_eq!(
-        get_in(cache_dir.path(), &source_path, "ScriptName Example\n"),
+        get_in_for_game(cache_dir.path(), GAME, &source_path, "ScriptName Example\n"),
         None
     );
 }
@@ -152,15 +175,17 @@ fn different_source_paths_do_not_collide_in_the_cache() {
 
     let ast_a = papyrus_parser::parse("ScriptName A\n").unwrap();
     let ast_b = papyrus_parser::parse("ScriptName B\n").unwrap();
-    put_in(
+    put_in_for_game(
         cache_dir.path(),
+        GAME,
         &path_a,
         "ScriptName A\n",
         &ast_a,
         COMPATIBLE_VERSION,
     );
-    put_in(
+    put_in_for_game(
         cache_dir.path(),
+        GAME,
         &path_b,
         "ScriptName B\n",
         &ast_b,
@@ -168,11 +193,11 @@ fn different_source_paths_do_not_collide_in_the_cache() {
     );
 
     assert_eq!(
-        get_in(cache_dir.path(), &path_a, "ScriptName A\n"),
+        get_in_for_game(cache_dir.path(), GAME, &path_a, "ScriptName A\n"),
         Some(ast_a)
     );
     assert_eq!(
-        get_in(cache_dir.path(), &path_b, "ScriptName B\n"),
+        get_in_for_game(cache_dir.path(), GAME, &path_b, "ScriptName B\n"),
         Some(ast_b)
     );
 }
@@ -195,15 +220,17 @@ fn same_named_scripts_in_different_projects_do_not_share_a_cache_entry() {
 
     let ast_a = papyrus_parser::parse(source_a).unwrap();
     let ast_b = papyrus_parser::parse(source_b).unwrap();
-    put_in(
+    put_in_for_game(
         cache_dir.path(),
+        GAME,
         &path_a,
         source_a,
         &ast_a,
         COMPATIBLE_VERSION,
     );
-    put_in(
+    put_in_for_game(
         cache_dir.path(),
+        GAME,
         &path_b,
         source_b,
         &ast_b,
@@ -211,11 +238,17 @@ fn same_named_scripts_in_different_projects_do_not_share_a_cache_entry() {
     );
 
     assert_ne!(
-        cache_file_path(cache_dir.path(), &path_a),
-        cache_file_path(cache_dir.path(), &path_b)
+        cache_file_path_for_game(cache_dir.path(), GAME, &path_a),
+        cache_file_path_for_game(cache_dir.path(), GAME, &path_b)
     );
-    assert_eq!(get_in(cache_dir.path(), &path_a, source_a), Some(ast_a));
-    assert_eq!(get_in(cache_dir.path(), &path_b, source_b), Some(ast_b));
+    assert_eq!(
+        get_in_for_game(cache_dir.path(), GAME, &path_a, source_a),
+        Some(ast_a)
+    );
+    assert_eq!(
+        get_in_for_game(cache_dir.path(), GAME, &path_b, source_b),
+        Some(ast_b)
+    );
 }
 
 #[test]
@@ -234,15 +267,16 @@ fn get_in_primes_papyrus_parsers_in_memory_cache_with_the_disk_cached_ast() {
         "ScriptName PrimesInMemory extends Quest\n\nInt Property Marker = 1 Auto\n",
     )
     .unwrap();
-    put_in(
+    put_in_for_game(
         cache_dir.path(),
+        GAME,
         &source_path,
         source,
         &distinct_ast,
         COMPATIBLE_VERSION,
     );
 
-    let cached = get_in(cache_dir.path(), &source_path, source).unwrap();
+    let cached = get_in_for_game(cache_dir.path(), GAME, &source_path, source).unwrap();
     assert_eq!(cached, distinct_ast);
     assert_eq!(papyrus_parser::parse(source).unwrap(), distinct_ast);
 }
@@ -263,15 +297,16 @@ fn get_tokens_in_primes_papyrus_parsers_in_memory_cache_with_the_disk_cached_tok
         "ScriptName PrimesTokensInMemory extends Quest\n\nInt Property Marker = 1 Auto\n",
     )
     .unwrap();
-    put_tokens_in(
+    put_tokens_in_for_game(
         cache_dir.path(),
+        GAME,
         &source_path,
         source,
         &distinct_tokens,
         COMPATIBLE_VERSION,
     );
 
-    let cached = get_tokens_in(cache_dir.path(), &source_path, source).unwrap();
+    let cached = get_tokens_in_for_game(cache_dir.path(), GAME, &source_path, source).unwrap();
     assert_eq!(cached, distinct_tokens);
     assert_eq!(papyrus_parser::tokenize(source).unwrap(), distinct_tokens);
 }
@@ -283,8 +318,9 @@ fn get_is_a_miss_when_the_source_file_was_deleted() {
     let source_path = project_dir.path().join("Example.psc");
     let source = "ScriptName Example\n";
     std::fs::write(&source_path, source).unwrap();
-    put_in(
+    put_in_for_game(
         cache_dir.path(),
+        GAME,
         &source_path,
         source,
         &sample_ast(),
@@ -292,7 +328,10 @@ fn get_is_a_miss_when_the_source_file_was_deleted() {
     );
     std::fs::remove_file(&source_path).unwrap();
 
-    assert_eq!(get_in(cache_dir.path(), &source_path, source), None);
+    assert_eq!(
+        get_in_for_game(cache_dir.path(), GAME, &source_path, source),
+        None
+    );
 }
 
 #[test]
@@ -303,7 +342,7 @@ fn get_tokens_is_a_miss_for_an_uncached_path() {
     std::fs::write(&source_path, "ScriptName Example\n").unwrap();
 
     assert_eq!(
-        get_tokens_in(cache_dir.path(), &source_path, "ScriptName Example\n"),
+        get_tokens_in_for_game(cache_dir.path(), GAME, &source_path, "ScriptName Example\n"),
         None
     );
 }
@@ -316,8 +355,9 @@ fn get_tokens_is_a_miss_when_the_content_changed_even_if_the_mtime_did_not() {
     let original = "ScriptName Example\n";
     std::fs::write(&source_path, original).unwrap();
 
-    put_tokens_in(
+    put_tokens_in_for_game(
         cache_dir.path(),
+        GAME,
         &source_path,
         original,
         &sample_tokens(),
@@ -325,7 +365,10 @@ fn get_tokens_is_a_miss_when_the_content_changed_even_if_the_mtime_did_not() {
     );
 
     let changed = "ScriptName Renamed\n";
-    assert_eq!(get_tokens_in(cache_dir.path(), &source_path, changed), None);
+    assert_eq!(
+        get_tokens_in_for_game(cache_dir.path(), GAME, &source_path, changed),
+        None
+    );
 }
 
 #[test]
@@ -336,8 +379,9 @@ fn get_tokens_is_a_miss_when_the_file_was_modified_after_caching() {
     let source = "ScriptName Example\n";
     std::fs::write(&source_path, source).unwrap();
 
-    put_tokens_in(
+    put_tokens_in_for_game(
         cache_dir.path(),
+        GAME,
         &source_path,
         source,
         &sample_tokens(),
@@ -348,7 +392,10 @@ fn get_tokens_is_a_miss_when_the_file_was_modified_after_caching() {
     let file = std::fs::File::open(&source_path).unwrap();
     file.set_modified(changed_time).unwrap();
 
-    assert_eq!(get_tokens_in(cache_dir.path(), &source_path, source), None);
+    assert_eq!(
+        get_tokens_in_for_game(cache_dir.path(), GAME, &source_path, source),
+        None
+    );
 }
 
 #[test]
@@ -358,8 +405,9 @@ fn get_tokens_is_a_miss_when_the_source_file_was_deleted() {
     let source_path = project_dir.path().join("Example.psc");
     let source = "ScriptName Example\n";
     std::fs::write(&source_path, source).unwrap();
-    put_tokens_in(
+    put_tokens_in_for_game(
         cache_dir.path(),
+        GAME,
         &source_path,
         source,
         &sample_tokens(),
@@ -367,7 +415,10 @@ fn get_tokens_is_a_miss_when_the_source_file_was_deleted() {
     );
     std::fs::remove_file(&source_path).unwrap();
 
-    assert_eq!(get_tokens_in(cache_dir.path(), &source_path, source), None);
+    assert_eq!(
+        get_tokens_in_for_game(cache_dir.path(), GAME, &source_path, source),
+        None
+    );
 }
 
 #[test]
@@ -389,13 +440,20 @@ fn an_entry_missing_the_tokens_field_still_deserializes_as_a_miss_for_get_tokens
         serde_json::to_string(&sample_ast()).unwrap(),
     );
     std::fs::create_dir_all(cache_dir.path()).unwrap();
-    std::fs::write(cache_file_path(cache_dir.path(), &source_path), raw).unwrap();
+    std::fs::write(
+        cache_file_path_for_game(cache_dir.path(), GAME, &source_path),
+        raw,
+    )
+    .unwrap();
 
     assert_eq!(
-        get_in(cache_dir.path(), &source_path, source),
+        get_in_for_game(cache_dir.path(), GAME, &source_path, source),
         Some(sample_ast())
     );
-    assert_eq!(get_tokens_in(cache_dir.path(), &source_path, source), None);
+    assert_eq!(
+        get_tokens_in_for_game(cache_dir.path(), GAME, &source_path, source),
+        None
+    );
 }
 
 #[test]
@@ -413,7 +471,7 @@ fn get_tokens_is_a_miss_when_the_cached_version_is_older_than_the_minimum_compat
     );
 
     assert_eq!(
-        get_tokens_in(h.cache_dir.path(), &h.source_path, h.source),
+        get_tokens_in_for_game(h.cache_dir.path(), GAME, &h.source_path, h.source),
         None
     );
 }
@@ -433,7 +491,7 @@ fn get_tokens_is_a_miss_when_the_cached_version_does_not_parse() {
     );
 
     assert_eq!(
-        get_tokens_in(h.cache_dir.path(), &h.source_path, h.source),
+        get_tokens_in_for_game(h.cache_dir.path(), GAME, &h.source_path, h.source),
         None
     );
 }
@@ -443,13 +501,13 @@ fn get_tokens_is_a_miss_on_malformed_cache_contents() {
     let h = harness("Example.psc", "ScriptName Example\n");
     std::fs::create_dir_all(h.cache_dir.path()).unwrap();
     std::fs::write(
-        cache_file_path(h.cache_dir.path(), &h.source_path),
+        cache_file_path_for_game(h.cache_dir.path(), GAME, &h.source_path),
         b"not json",
     )
     .unwrap();
 
     assert_eq!(
-        get_tokens_in(h.cache_dir.path(), &h.source_path, h.source),
+        get_tokens_in_for_game(h.cache_dir.path(), GAME, &h.source_path, h.source),
         None
     );
 }
@@ -458,8 +516,9 @@ fn get_tokens_is_a_miss_on_malformed_cache_contents() {
 fn get_tokens_is_a_hit_when_the_cached_version_is_newer_than_the_minimum() {
     let h = harness("Example.psc", "ScriptName Example\n");
     let tokens = sample_tokens();
-    put_tokens_in(
+    put_tokens_in_for_game(
         h.cache_dir.path(),
+        GAME,
         &h.source_path,
         h.source,
         &tokens,
@@ -467,7 +526,7 @@ fn get_tokens_is_a_hit_when_the_cached_version_is_newer_than_the_minimum() {
     );
 
     assert_eq!(
-        get_tokens_in(h.cache_dir.path(), &h.source_path, h.source),
+        get_tokens_in_for_game(h.cache_dir.path(), GAME, &h.source_path, h.source),
         Some(tokens)
     );
 }
@@ -487,9 +546,12 @@ fn get_is_a_miss_when_ast_is_explicitly_null() {
         },
     );
 
-    assert_eq!(get_in(h.cache_dir.path(), &h.source_path, h.source), None);
     assert_eq!(
-        get_tokens_in(h.cache_dir.path(), &h.source_path, h.source),
+        get_in_for_game(h.cache_dir.path(), GAME, &h.source_path, h.source),
+        None
+    );
+    assert_eq!(
+        get_tokens_in_for_game(h.cache_dir.path(), GAME, &h.source_path, h.source),
         Some(tokens)
     );
 }
@@ -510,11 +572,11 @@ fn get_tokens_is_a_miss_when_tokens_is_explicitly_null() {
     );
 
     assert_eq!(
-        get_in(h.cache_dir.path(), &h.source_path, h.source),
+        get_in_for_game(h.cache_dir.path(), GAME, &h.source_path, h.source),
         Some(ast)
     );
     assert_eq!(
-        get_tokens_in(h.cache_dir.path(), &h.source_path, h.source),
+        get_tokens_in_for_game(h.cache_dir.path(), GAME, &h.source_path, h.source),
         None
     );
 }
@@ -522,11 +584,19 @@ fn get_tokens_is_a_miss_when_tokens_is_explicitly_null() {
 #[test]
 fn get_is_a_miss_when_the_cache_file_is_a_directory() {
     let h = harness("Example.psc", "ScriptName Example\n");
-    std::fs::create_dir_all(cache_file_path(h.cache_dir.path(), &h.source_path)).unwrap();
+    std::fs::create_dir_all(cache_file_path_for_game(
+        h.cache_dir.path(),
+        GAME,
+        &h.source_path,
+    ))
+    .unwrap();
 
-    assert_eq!(get_in(h.cache_dir.path(), &h.source_path, h.source), None);
     assert_eq!(
-        get_tokens_in(h.cache_dir.path(), &h.source_path, h.source),
+        get_in_for_game(h.cache_dir.path(), GAME, &h.source_path, h.source),
+        None
+    );
+    assert_eq!(
+        get_tokens_in_for_game(h.cache_dir.path(), GAME, &h.source_path, h.source),
         None
     );
 }
@@ -535,15 +605,16 @@ fn get_is_a_miss_when_the_cache_file_is_a_directory() {
 fn extra_json_fields_do_not_invalidate_a_fresh_entry() {
     let h = harness("ExtraFields.psc", "ScriptName ExtraFields\n");
     let ast = papyrus_parser::parse(h.source).unwrap();
-    put_in(
+    put_in_for_game(
         h.cache_dir.path(),
+        GAME,
         &h.source_path,
         h.source,
         &ast,
         COMPATIBLE_VERSION,
     );
 
-    let file = cache_file_path(h.cache_dir.path(), &h.source_path);
+    let file = cache_file_path_for_game(h.cache_dir.path(), GAME, &h.source_path);
     let mut value: serde_json::Value =
         serde_json::from_slice(&std::fs::read(&file).unwrap()).unwrap();
     value
@@ -553,7 +624,7 @@ fn extra_json_fields_do_not_invalidate_a_fresh_entry() {
     std::fs::write(&file, serde_json::to_vec(&value).unwrap()).unwrap();
 
     assert_eq!(
-        get_in(h.cache_dir.path(), &h.source_path, h.source),
+        get_in_for_game(h.cache_dir.path(), GAME, &h.source_path, h.source),
         Some(ast)
     );
 }

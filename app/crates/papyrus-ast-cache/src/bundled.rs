@@ -96,7 +96,7 @@ fn lookup_name(game: Game, name: &str) -> Option<(&'static BundledCache, IndexEn
 
 /// Cached AST for `source` when it matches a bundled script for `game`.
 /// Also primes `papyrus_parser`'s in-memory memoization, matching
-/// [`crate::ops::get_in`].
+/// [`crate::ops::get_in_for_game`].
 pub(crate) fn ast_for(game: Game, source: &str) -> Option<papyrus_parser::ast::Script> {
     let (cache, entry) = lookup(game, source)?;
     let ast = bundled_blob::decode_ast(cache.payload(), &entry)?;
@@ -106,7 +106,7 @@ pub(crate) fn ast_for(game: Game, source: &str) -> Option<papyrus_parser::ast::S
 
 /// Cached tokens for `source` when it matches a bundled script for `game`.
 /// Also primes `papyrus_parser`'s in-memory memoization, matching
-/// [`crate::ops::get_tokens_in`].
+/// [`crate::ops::get_tokens_in_for_game`].
 pub(crate) fn tokens_for(game: Game, source: &str) -> Option<Vec<papyrus_parser::token::Token>> {
     let (cache, entry) = lookup(game, source)?;
     let tokens = bundled_blob::decode_tokens(cache.payload(), &entry)?;
@@ -138,7 +138,7 @@ pub(crate) fn contains_name(game: Game, name: &str) -> bool {
 
 /// Primes both in-memory caches from `game`'s bundled blob when `source`
 /// is a known bundled script. Returns `true` when both an AST and a token
-/// stream were present, so [`crate::ensure_primed`] can skip the disk
+/// stream were present, so [`crate::ensure_primed_for_game`] can skip the disk
 /// cache (and its process-wide lock) entirely.
 pub(crate) fn prime(game: Game, source: &str) -> bool {
     let Some((cache, entry)) = lookup(game, source) else {
