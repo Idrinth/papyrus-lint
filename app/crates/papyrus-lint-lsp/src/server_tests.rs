@@ -71,6 +71,7 @@ fn document_sync_does_not_publish_diagnostics() {
 #[test]
 fn code_action_and_execute_command_are_empty() {
     let (_code, responses) = exchange(&[
+        request(1, "initialize", json!({})),
         request(2, "textDocument/codeAction", json!({})),
         request(
             3,
@@ -78,17 +79,20 @@ fn code_action_and_execute_command_are_empty() {
             json!({ "command": FIX_FILE_COMMAND, "arguments": [] }),
         ),
     ]);
-    assert_eq!(responses[0]["id"], 2);
-    assert_eq!(responses[0]["result"], json!([]));
-    assert_eq!(responses[1]["id"], 3);
-    assert!(responses[1]["result"].is_null());
+    assert_eq!(responses[1]["id"], 2);
+    assert_eq!(responses[1]["result"], json!([]));
+    assert_eq!(responses[2]["id"], 3);
+    assert!(responses[2]["result"].is_null());
 }
 
 #[test]
 fn unknown_request_is_method_not_found() {
-    let (_code, responses) = exchange(&[request(4, "textDocument/completion", json!({}))]);
-    assert_eq!(responses[0]["error"]["code"], -32601);
-    assert_eq!(responses[0]["id"], 4);
+    let (_code, responses) = exchange(&[
+        request(1, "initialize", json!({})),
+        request(4, "textDocument/completion", json!({})),
+    ]);
+    assert_eq!(responses[1]["error"]["code"], -32601);
+    assert_eq!(responses[1]["id"], 4);
 }
 
 #[test]
@@ -109,12 +113,41 @@ fn exit_without_shutdown_returns_one() {
 #[test]
 fn shutdown_then_exit_returns_zero() {
     let (code, responses) = exchange(&[
+        request(1, "initialize", json!({})),
         request(5, "shutdown", Value::Null),
         json!({ "jsonrpc": "2.0", "method": "exit" }),
     ]);
     assert_eq!(code, 0);
-    assert!(responses[0]["result"].is_null());
-    assert_eq!(responses[0]["id"], 5);
+    assert!(responses[1]["result"].is_null());
+    assert_eq!(responses[1]["id"], 5);
+}
+
+#[test]
+fn request_before_initialize_is_rejected() {
+    let (_code, responses) = exchange(&[request(6, "textDocument/codeAction", json!({}))]);
+    assert_eq!(responses[0]["error"]["code"], -32002);
+    assert_eq!(responses[0]["id"], 6);
+}
+
+#[test]
+fn request_after_shutdown_is_rejected() {
+    let (_code, responses) = exchange(&[
+        request(1, "initialize", json!({})),
+        request(2, "shutdown", Value::Null),
+        request(3, "textDocument/codeAction", json!({})),
+    ]);
+    assert_eq!(responses[2]["error"]["code"], -32600);
+    assert_eq!(responses[2]["id"], 3);
+}
+
+#[test]
+fn second_initialize_is_rejected() {
+    let (_code, responses) = exchange(&[
+        request(1, "initialize", json!({})),
+        request(2, "initialize", json!({})),
+    ]);
+    assert_eq!(responses[1]["error"]["code"], -32600);
+    assert_eq!(responses[1]["id"], 2);
 }
 
 #[test]

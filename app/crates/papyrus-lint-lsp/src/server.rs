@@ -12,6 +12,7 @@ pub const FIX_FILE_COMMAND: &str = "papyrusLint.fixFile";
 const PARSE_ERROR: i64 = -32700;
 const INVALID_REQUEST: i64 = -32600;
 const METHOD_NOT_FOUND: i64 = -32601;
+const SERVER_NOT_INITIALIZED: i64 = -32002;
 
 /// Reads LSP messages from `input` and writes responses to `output`.
 ///
@@ -19,6 +20,7 @@ const METHOD_NOT_FOUND: i64 = -32601;
 /// `shutdown`, otherwise `0`.
 pub fn serve(mut input: impl BufRead, mut output: impl Write) -> io::Result<i32> {
     let mut shutdown = false;
+    let mut initialized = false;
     loop {
         let Some(bytes) = read_message(&mut input)? else {
             return Ok(0);
@@ -46,8 +48,33 @@ pub fn serve(mut input: impl BufRead, mut output: impl Write) -> io::Result<i32>
             write_error(&mut output, id.as_ref(), INVALID_REQUEST, "Invalid Request")?;
             continue;
         };
+        if shutdown {
+            write_error(
+                &mut output,
+                id.as_ref(),
+                INVALID_REQUEST,
+                "Server is shut down",
+            )?;
+            continue;
+        }
+        if !initialized && method != "initialize" {
+            write_error(
+                &mut output,
+                id.as_ref(),
+                SERVER_NOT_INITIALIZED,
+                "Server not initialized",
+            )?;
+            continue;
+        }
+        if initialized && method == "initialize" {
+            write_error(&mut output, id.as_ref(), INVALID_REQUEST, "Invalid Request")?;
+            continue;
+        }
         match method {
-            "initialize" => write_result(&mut output, id.as_ref(), initialize_result())?,
+            "initialize" => {
+                initialized = true;
+                write_result(&mut output, id.as_ref(), initialize_result())?;
+            }
             "shutdown" => {
                 shutdown = true;
                 write_result(&mut output, id.as_ref(), Value::Null)?;
