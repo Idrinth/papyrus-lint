@@ -1,7 +1,7 @@
 use std::fs;
 
 use super::*;
-use crate::project_file::save_compiler_path;
+use crate::compiler_config::save_compiler_path;
 
 fn write_config(dir: &Path, name: &str, contents: &str) {
     fs::write(dir.join(name), contents).expect("failed to write test config file");

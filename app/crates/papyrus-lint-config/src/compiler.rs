@@ -1,7 +1,7 @@
 //! Locates `PapyrusCompiler.exe`: an explicit override stored in a
 //! project's papyrus-lint config file (see
-//! [`crate::project_file::load_compiler_path`]/
-//! [`crate::project_file::save_compiler_path`]), or, absent one, the
+//! [`crate::compiler_config::load_compiler_path`]/
+//! [`crate::compiler_config::save_compiler_path`]), or, absent one, the
 //! Creation Kit tooling's conventional install layout, auto-detected here.
 
 use std::path::{Path, PathBuf};
@@ -32,7 +32,7 @@ pub fn auto_detect_compiler_path(dir: &Path) -> Option<PathBuf> {
 /// an auto-detected path (see [`auto_detect_compiler_path`]). Returns
 /// `None` if neither is available.
 pub fn resolve_compiler_path(dir: &Path) -> Result<Option<String>, String> {
-    if let Some(path) = crate::project_file::load_compiler_path(dir)? {
+    if let Some(path) = crate::compiler_config::load_compiler_path(dir)? {
         return Ok(Some(path));
     }
 

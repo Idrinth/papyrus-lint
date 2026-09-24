@@ -1,4 +1,9 @@
 use super::*;
+use crate::save_config;
+
+fn write_config(dir: &Path, name: &str, contents: &str) {
+    fs::write(dir.join(name), contents).expect("failed to write test config file");
+}
 
 #[test]
 fn load_strict_achlist_scope_defaults_to_false_when_unset() {
