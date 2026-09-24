@@ -44,6 +44,9 @@ fn every_published_fixable_rule_works_through_the_filtered_public_api() {
         ..Config::default()
     };
 
+    let mut unused_disable_config = Config::default();
+    unused_disable_config.rules.unused_disable = true;
+
     let default_config = Config::default();
     let cases = [
         (
@@ -181,6 +184,12 @@ fn every_published_fixable_rule_works_through_the_filtered_public_api() {
             "ScriptName Example\n\nFunction Test()\n    Int a = 1\n    a = a\n    a = 2\nEndFunction\n",
             "ScriptName Example\n\nFunction Test()\n    Int a = 1\n    a = 2\nEndFunction\n",
             &default_config,
+        ),
+        (
+            "unused-disable",
+            "ScriptName Example\nFunction Test()\n    Int x = 1 ; @disable mystery-rule\nEndFunction\n",
+            "ScriptName Example\nFunction Test()\n    Int x = 1\nEndFunction\n",
+            &unused_disable_config,
         ),
     ];
 
