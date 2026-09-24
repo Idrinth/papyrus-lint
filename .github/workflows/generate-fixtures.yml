@@ -237,5 +237,4 @@ jobs:
             --title "test: regenerate base scripts snapshot fixtures" \
             --label "component: ci" \
             --label "type: tests" \
-            --label "ai: grok-4.6" \
             --body "$BODY"
