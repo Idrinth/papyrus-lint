@@ -39,7 +39,7 @@ the same checks locally first:
   `app/crates/papyrus-ast-cache`, `app/crates/papyrus-collision-cache`,
   `app/crates/papyrus-lints`,
   `app/crates/papyrus-lint-config`, `app/crates/papyrus-lint-core`,
-  `app/crates/papyrus-lint-output`, and
+  `app/crates/papyrus-lint-output`, `app/crates/papyrus-lint-lsp`, and
   `app/crates/papyrus-lint-cli` runs each crate's tests via `cargo llvm-cov`.
   If you touched any of those crates, run `cargo test` (or `cargo
   llvm-cov`, to also see coverage — see the

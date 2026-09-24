@@ -234,6 +234,7 @@ jobs:
         - papyrus-lint-core
         - papyrus-lint-output
         - papyrus-lint-cli
+        - papyrus-lint-lsp
         - papyrus-lint-config
     steps:
       - uses: actions/checkout@v7

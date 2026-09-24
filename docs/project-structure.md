@@ -73,7 +73,7 @@ by scenario) so implementation files do not become test containers.
 
 ## Reusable Rust crates
 
-The nine crates under `app/crates/` are independent path dependencies, **not a
+The ten crates under `app/crates/` are independent path dependencies, **not a
 Cargo workspace**. Run Cargo commands against each crate's own `Cargo.toml`.
 
 | Crate | Responsibility |
@@ -87,6 +87,7 @@ Cargo workspace**. Run Cargo commands against each crate's own `Cargo.toml`.
 | `papyrus-lint-core` | Tauri-independent project resolution, cross-script lookup, compilation, and shared workflows. |
 | `papyrus-lint-output` | Plain-text, JSON, and AI-report models and formatting shared by GUI and CLI. |
 | `papyrus-lint-cli` | `PapyrusLinterCLI` argument parsing and lint/fix/init/doctor/blob orchestration. |
+| `papyrus-lint-lsp` | Stdio language server (`PapyrusLinterLsp`). v1 answers the handshake plus empty code-action and execute-command results; it does not lint yet. |
 
 Important internal boundaries:
 
@@ -104,6 +105,8 @@ Important internal boundaries:
   ancestry lookup. Other modules cover `.achlist`/`.ppj` input, source encoding,
   project roots, compilation, diffs, parallel work, PEX headers, and stale
   compiled output.
+- `papyrus-lint-lsp` is a standalone stdio process. It does not depend on the
+  lint crates until diagnostics and fixes are implemented.
 - `papyrus-lint-cli/src/args/`, `doctor/`, and `output/` contain their respective
   command subsystems. `run_scan.rs`, `run_lint.rs`, `run_fix.rs`, and
   `run_lint_command.rs` form the normal lint/fix pipeline; `src/main.rs` is only
@@ -187,6 +190,7 @@ engine.
 | Config discovery, persistence, or presets | `app/crates/papyrus-lint-config/` |
 | Cross-script/project/compiler behavior | `app/crates/papyrus-lint-core/` |
 | CLI command behavior | `app/crates/papyrus-lint-cli/` |
+| LSP editor adapter | `app/crates/papyrus-lint-lsp/` |
 | Shared export shape/formatting | `app/crates/papyrus-lint-output/` |
 | Desktop-only backend command | `app/src-tauri/` |
 | Desktop UI behavior | `app/src/` |
