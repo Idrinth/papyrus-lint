@@ -3,7 +3,6 @@ import {
   type Member,
   completionInsertText,
   completionLabel,
-  completionQueryAt,
   declarationDocumentationOnLine,
   declaredTypes,
   documentationByName,
@@ -113,81 +112,6 @@ EndEvent
 
     expect(types.has("possible")).toBe(false);
     expect(types.has("return")).toBe(false);
-  });
-});
-
-describe("completionQueryAt", () => {
-  it("resolves a query right after typing a receiver's dot", () => {
-    const cursor = SCRIPT.indexOf("self.DoThing") + "self.".length;
-    const query = completionQueryAt(SCRIPT, cursor);
-    expect(query).toEqual({ receiverType: "Example", prefix: "", prefixStart: cursor });
-  });
-
-  it("resolves a query mid-way through typing a member name", () => {
-    const partial = SCRIPT.replace("self.DoThing", "self.DoTh");
-    const cursor = partial.indexOf("self.DoTh") + "self.DoTh".length;
-    const query = completionQueryAt(partial, cursor);
-    expect(query).toEqual({ receiverType: "Example", prefix: "DoTh", prefixStart: cursor - 4 });
-  });
-
-  it("resolves parent. to the script's Extends parent", () => {
-    const cursor = SCRIPT.indexOf("parent.DoThing") + "parent.".length;
-    expect(completionQueryAt(SCRIPT, cursor)?.receiverType).toBe("Quest");
-  });
-
-  it("returns null when the cursor isn't right after a member access", () => {
-    expect(completionQueryAt("Int i = 0", 5)).toBeNull();
-  });
-
-  it("returns null when the receiver's type isn't known", () => {
-    const source = "ScriptName Example\n\nFunction Run()\n    unknownVar.\nEndFunction\n";
-    expect(completionQueryAt(source, source.indexOf("unknownVar.") + "unknownVar.".length)).toBeNull();
-  });
-
-  it("resolves an indexed array element's declared element type", () => {
-    const source = "ScriptName Example\n\nActor[] actors\n\nFunction Run()\n    actors[0].\nEndFunction\n";
-    const cursor = source.indexOf("actors[0].") + "actors[0].".length;
-    expect(completionQueryAt(source, cursor)).toEqual({ receiverType: "Actor", prefix: "", prefixStart: cursor });
-  });
-
-  it("resolves an indexed array element mid-way through typing a member name", () => {
-    const source = "ScriptName Example\n\nActor[] actors\n\nFunction Run()\n    actors[0].Disa\nEndFunction\n";
-    const cursor = source.indexOf("actors[0].Disa") + "actors[0].Disa".length;
-    expect(completionQueryAt(source, cursor)).toEqual({ receiverType: "Actor", prefix: "Disa", prefixStart: cursor - 4 });
-  });
-
-  it("resolves an indexed array element whose index is a variable", () => {
-    const source = "ScriptName Example\n\nActor[] actors\n\nFunction Run()\n    actors[i].\nEndFunction\n";
-    const cursor = source.indexOf("actors[i].") + "actors[i].".length;
-    expect(completionQueryAt(source, cursor)?.receiverType).toBe("Actor");
-  });
-
-  it("allows whitespace inside an array index and before the member-access dot", () => {
-    const source = "ScriptName Example\nActor[] actors\nactors[ index + 1 ] .Get";
-    const cursor = source.length;
-
-    expect(completionQueryAt(source, cursor)).toEqual({
-      receiverType: "Actor",
-      prefix: "Get",
-      prefixStart: cursor - 3,
-    });
-  });
-
-  it("uses only the source before the cursor to identify the typed prefix", () => {
-    const source = "ScriptName Example\nActor target\ntarget.GetName()";
-    const cursor = source.indexOf("GetName") + 3;
-
-    expect(completionQueryAt(source, cursor)).toEqual({
-      receiverType: "Actor",
-      prefix: "Get",
-      prefixStart: cursor - 3,
-    });
-  });
-
-  it("does not resolve a function-call result as a simple receiver", () => {
-    const source = "ScriptName Example\nActor target\ntarget.GetActor().GetName";
-
-    expect(completionQueryAt(source, source.length)).toBeNull();
   });
 });
 

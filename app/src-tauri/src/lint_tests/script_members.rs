@@ -2,6 +2,77 @@ use super::super::*;
 use tempfile::tempdir;
 
 #[test]
+fn resolve_completion_query_finds_declared_receiver_types() {
+    let source = "ScriptName Example Extends Quest\nActor[] actors\nFunction Run(ObjectReference target)\ntarget.\nactors[0].Disa\nEndFunction";
+    let cursor = source.find("Disa").unwrap() + 4;
+
+    assert_eq!(
+        resolve_completion_query(source.to_string(), cursor),
+        Some(CompletionQuery {
+            receiver_type: "Actor".to_string(),
+            prefix: "Disa".to_string(),
+            prefix_start: cursor - 4,
+        })
+    );
+    // The command receives the complete editor buffer; only the cursor limits
+    // the member-access match. Keep the closing function header available so
+    // its parameter declaration can still be resolved.
+    let target_cursor = source.find("target.").unwrap() + "target.".len();
+    assert_eq!(
+        resolve_completion_query(source.to_string(), target_cursor)
+            .unwrap()
+            .receiver_type,
+        "ObjectReference"
+    );
+}
+
+#[test]
+fn resolve_completion_query_handles_self_parent_and_comments() {
+    let source = "ScriptName Example Extends Quest\n; Actor ignored\nself.\nparent.Get";
+    let self_cursor = source.find("self.").unwrap() + 5;
+    assert_eq!(
+        resolve_completion_query(source.to_string(), self_cursor)
+            .unwrap()
+            .receiver_type,
+        "Example"
+    );
+    assert_eq!(
+        resolve_completion_query(source.to_string(), source.len())
+            .unwrap()
+            .receiver_type,
+        "Quest"
+    );
+    let ignored_cursor = source.find("ignored").unwrap() + "ignored".len();
+    assert!(resolve_completion_query(
+        format!("{}.\n", &source[..ignored_cursor]),
+        ignored_cursor + 1
+    )
+    .is_none());
+}
+
+#[test]
+fn resolve_completion_query_rejects_unknown_and_compound_receivers() {
+    assert!(resolve_completion_query("ScriptName Example\nunknown.".to_string(), 28).is_none());
+    let source = "ScriptName Example\nActor target\ntarget.GetActor().GetName";
+    assert!(resolve_completion_query(source.to_string(), source.len()).is_none());
+}
+
+#[test]
+fn resolve_completion_query_accepts_browser_utf16_cursor_offsets() {
+    let source = "ScriptName Example\n; 😀\nActor target\ntarget.Get";
+    let cursor = source.encode_utf16().count();
+
+    assert_eq!(
+        resolve_completion_query(source.to_string(), cursor),
+        Some(CompletionQuery {
+            receiver_type: "Actor".to_string(),
+            prefix: "Get".to_string(),
+            prefix_start: cursor - 3,
+        })
+    );
+}
+
+#[test]
 fn list_script_members_reports_functions_and_properties_including_inherited_ones() {
     let dir = tempdir().unwrap();
     let source_dir = dir.path().join("scripts/source");

@@ -2589,6 +2589,7 @@ dependencies = [
  "papyrus-lint-output",
  "papyrus-lints",
  "papyrus-parser",
+ "regex",
  "serde",
  "serde_json",
  "tauri",

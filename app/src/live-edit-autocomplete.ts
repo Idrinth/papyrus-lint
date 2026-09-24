@@ -1,4 +1,5 @@
-import { completionInsertText, completionLabel, completionQueryAt, filterMembers, memberDocumentation, overlayLocalDocumentation, type CompletionQuery, type Member } from "./autocomplete";
+import { completionInsertText, completionLabel, filterMembers, memberDocumentation, overlayLocalDocumentation, type Member } from "./autocomplete";
+import { resolveCompletionQuery, type CompletionQuery } from "./backend";
 import { codeViewerAutocompleteEl, codeViewerEditTextareaEl, codeViewerMode } from "./code-viewer-state";
 import { updateCodeViewerEditHighlight } from "./live-edit-highlight";
 import { cachedMembersForType } from "./live-edit-members";
@@ -84,16 +85,21 @@ export async function updateAutocomplete() {
     return;
   }
 
-  const query = completionQueryAt(textarea.value, textarea.selectionStart);
+  const source = textarea.value;
+  const cursorIndex = textarea.selectionStart;
+  const requestId = ++autocompleteRequestId;
+  const query = await resolveCompletionQuery(source, cursorIndex);
+  if (requestId !== autocompleteRequestId || !codeViewerEditTextareaEl || codeViewerMode !== "edit") {
+    return;
+  }
   if (!query) {
     hideAutocomplete();
     return;
   }
 
-  const requestId = ++autocompleteRequestId;
   const members = overlayLocalDocumentation(
     filterMembers(await cachedMembersForType(query.receiverType), query.prefix),
-    textarea.value,
+    source,
     query.receiverType,
   );
   // A later keystroke may have started a new request (or left edit mode)

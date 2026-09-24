@@ -345,6 +345,7 @@ describe("code viewer edit mode", () => {
           }),
       });
       const pendingUpdate = updateAutocomplete();
+      await vi.waitFor(() => expect(finishLookup).toBeTypeOf("function"));
 
       hideAutocomplete();
       finishLookup([
@@ -372,8 +373,9 @@ describe("code viewer edit mode", () => {
       const olderUpdate = updateAutocomplete();
       field.setRangeText("b", field.selectionStart, field.selectionEnd, "end");
       const newerUpdate = updateAutocomplete();
+      await vi.waitFor(() => expect(finishes).toHaveLength(1));
 
-      finishes[1]([
+      finishes[0]([
         {
           kind: "property",
           name: "Better",
@@ -381,13 +383,6 @@ describe("code viewer edit mode", () => {
         },
       ]);
       await newerUpdate;
-      finishes[0]([
-        {
-          kind: "property",
-          name: "Ancient",
-          type_name: { name: "Int", is_array: false },
-        },
-      ]);
       await olderUpdate;
 
       expect(autocompleteEl().textContent).toContain("Better");

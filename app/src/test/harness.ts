@@ -198,9 +198,30 @@ function defaultExportHandler(command: string): ((args: unknown) => unknown) | u
   }
 }
 
+function defaultCompletionHandler(command: string): ((args: unknown) => unknown) | undefined {
+  if (command !== "resolve_completion_query") {
+    return undefined;
+  }
+  return (args: unknown) => {
+    const { source, cursorIndex } = args as { source: string; cursorIndex: number };
+    const match = /([A-Za-z_]\w*)(?:\s*\[[^[\]]*\])?\s*\.(\w*)$/.exec(source.slice(0, cursorIndex));
+    if (!match) {
+      return null;
+    }
+    const [, receiver, prefix] = match;
+    const script = /^\s*ScriptName\s+(\w+)(?:\s+Extends\s+(\w+))?/im.exec(source);
+    let receiverType = receiver.toLowerCase() === "self" ? script?.[1] : receiver.toLowerCase() === "parent" ? script?.[2] : undefined;
+    if (!receiverType) {
+      const declaration = new RegExp(`^\\s*(\\w+)(?:\\[\\])?\\s+(?:Property\\s+)?${receiver}\\b`, "im").exec(source);
+      receiverType = declaration?.[1];
+    }
+    return receiverType ? { receiverType, prefix, prefixStart: cursorIndex - prefix.length } : null;
+  };
+}
+
 export function invokeImplFor(handlers: Record<string, (args: unknown) => unknown>) {
   invokeMock.mockImplementation((command: string, args: unknown) => {
-    const handler = handlers[command] ?? defaultProjectRootHandler(command) ?? defaultExportHandler(command);
+    const handler = handlers[command] ?? defaultProjectRootHandler(command) ?? defaultExportHandler(command) ?? defaultCompletionHandler(command);
     if (!handler) {
       return Promise.reject(new Error(`unexpected command: ${command}`));
     }
