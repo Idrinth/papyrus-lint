@@ -21,6 +21,7 @@ fn ast_rules_return_an_ast_visitor() {
     assert_ast(crate::argument_types::visitor());
     assert_ast(crate::array_bounds::visitor());
     assert_ast(crate::array_size_range::visitor());
+    assert_ast(crate::array_used_before_new::visitor());
     assert_ast(crate::circular_dependency::visitor());
     assert_ast(crate::cyclomatic_complexity::visitor());
     assert_ast(crate::default_property_value::visitor());

@@ -1,0 +1,14 @@
+{
+  "id": "array-used-before-new",
+  "name": "Array used before New",
+  "category": "Bugprone",
+  "visitor": "ast",
+  "tags": [
+    "correctness"
+  ],
+  "severity": "warning",
+  "importance": "high",
+  "fixable": false,
+  "description": "Flags indexing or member access (.Length, Find, Add, …) on a local array that is still known to be None because it was never created with New (or assigned another array).",
+  "definition": "Flags, as a `[warning]`, an index (`a[0]`) or member/method access (`a.Length`, `a.Find(...)`) on a local array variable that is still known to be `None` at that point (e.g. `Int[] a` or `Int[] a = None` followed by `a[0] = 1` or `Debug.Trace(a.Length)`), since Papyrus treats an uncreated array the same way it treats a `None` Form: the access logs an error and silently no-ops or returns a default rather than raising a catchable exception. A local whose type is an array (`T[]`) starts out `None` when declared without an initializer or assigned the `None` literal, and stops being tracked the moment it is assigned `new T[N]`, a call result, or any other non-`None` value; assigning it another identifier inherits that identifier's tracked state (`a = b` keeps `a` known-`None` when `b` still is). `If`/`Else` branches and `While` loops are narrowed with the same direct `None` checks `none-form-usage` uses (`x == None`, `x != None`, `!x`, a bare `x`, optionally combined with `&&`/`||`), and a branch that unconditionally `Return`s does not contribute its exit state to what follows the `If`. Script-level array properties are not assumed `None` (the Creation Kit can populate them), and a member/property array or a parameter is left unflagged rather than guessed at."
+}
