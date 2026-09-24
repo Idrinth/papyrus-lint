@@ -94,26 +94,15 @@ fn load_scan_settings(
     is_psc_file: bool,
     script_paths: &[PathBuf],
 ) -> Result<ScanSettings, String> {
-    let lint_config = config_path
-        .map_or_else(
-            || config::load_config(project_root),
-            config::load_config_from_path,
-        )
-        .map_err(|err| format!("error: failed to load lint config: {err}"))?;
+    let lint_config = load_lint_config(project_root, config_path)?;
 
     // `--config` bypasses discovering the project root's own
     // papyrus-lint.yaml/.yml entirely (see USAGE), so its
     // additional_script_roots is skipped too in that case; `--script-root`
     // and a `.ppj` input's own `<Import>` entries still apply on top either
     // way.
-    let mut additional_script_roots = if config_path.is_some() {
-        Vec::new()
-    } else {
-        config::load_script_roots(project_root)
-            .map_err(|err| format!("error: failed to load lint config: {err}"))?
-    };
-    additional_script_roots.extend(ppj_imports);
-    additional_script_roots.extend(cli_script_roots);
+    let mut additional_script_roots =
+        load_additional_script_roots(project_root, config_path, ppj_imports, cli_script_roots)?;
 
     // `strict_achlist_scope` (off by default) picks between two ways of
     // letting an achlist's entries resolve each other across arbitrary,
@@ -139,12 +128,7 @@ fn load_scan_settings(
     // `--config` is used: it isn't a project-root-only setting, so a
     // `--config` file that sets it is honored the same way it is for every
     // other key in that file (see #362).
-    let strict_achlist_scope = config_path
-        .map_or_else(
-            || config::load_strict_achlist_scope(project_root),
-            config::load_strict_achlist_scope_from_path,
-        )
-        .map_err(|err| format!("error: failed to load lint config: {err}"))?;
+    let strict_achlist_scope = load_strict_achlist_scope(project_root, config_path)?;
 
     if !is_psc_file && !strict_achlist_scope {
         add_script_parent_roots(script_paths, project_root, &mut additional_script_roots);
@@ -156,12 +140,7 @@ fn load_scan_settings(
     // is actually in effect, the same as `strict_achlist_scope`. They are
     // never mixed into `additional_script_roots`, so they don't get linted
     // and `conflicting_script_versions` never scans them.
-    let lookup_script_roots = config_path
-        .map_or_else(
-            || config::load_lookup_script_roots(project_root),
-            config::load_lookup_script_roots_from_path,
-        )
-        .map_err(|err| format!("error: failed to load lint config: {err}"))?;
+    let lookup_script_roots = load_lookup_script_roots(project_root, config_path)?;
 
     Ok(ScanSettings {
         lint_config,
@@ -173,17 +152,72 @@ fn load_scan_settings(
     })
 }
 
+fn config_error(err: impl std::fmt::Display) -> String {
+    format!("error: failed to load lint config: {err}")
+}
+
+fn load_lint_config(
+    project_root: &Path,
+    config_path: Option<&Path>,
+) -> Result<papyrus_lints::Config, String> {
+    config_path
+        .map_or_else(
+            || config::load_config(project_root),
+            config::load_config_from_path,
+        )
+        .map_err(config_error)
+}
+
+fn load_additional_script_roots(
+    project_root: &Path,
+    config_path: Option<&Path>,
+    ppj_imports: Vec<String>,
+    cli_script_roots: Vec<String>,
+) -> Result<Vec<String>, String> {
+    let mut roots = if config_path.is_some() {
+        Vec::new()
+    } else {
+        config::load_script_roots(project_root).map_err(config_error)?
+    };
+    roots.extend(ppj_imports);
+    roots.extend(cli_script_roots);
+    Ok(roots)
+}
+
+fn load_strict_achlist_scope(
+    project_root: &Path,
+    config_path: Option<&Path>,
+) -> Result<bool, String> {
+    config_path
+        .map_or_else(
+            || config::load_strict_achlist_scope(project_root),
+            config::load_strict_achlist_scope_from_path,
+        )
+        .map_err(config_error)
+}
+
+fn load_lookup_script_roots(
+    project_root: &Path,
+    config_path: Option<&Path>,
+) -> Result<Vec<String>, String> {
+    config_path
+        .map_or_else(
+            || config::load_lookup_script_roots(project_root),
+            config::load_lookup_script_roots_from_path,
+        )
+        .map_err(config_error)
+}
+
 fn load_compile_settings(project_root: &Path) -> Result<(bool, String), String> {
     // Read from the project root's own config the same way `doctor` reports
     // on them (see `run_doctor`), regardless of `--config` — `compile_check`
     // and `compiler_path` aren't part of the lint settings a `--config`
     // override replaces. `compiler_path` is only resolved when `compile_check`
     // is actually enabled, since it's otherwise unused.
-    let compile_check = config::load_compile_check(project_root)
-        .map_err(|err| format!("error: failed to load lint config: {err}"))?;
+    let compile_check = config::load_compile_check(project_root).map_err(config_error)?;
     let compiler_path = if compile_check {
         config::resolve_compiler_path(project_root)
-            .map_err(|err| format!("error: failed to load lint config: {err}"))?
+            .map_err(config_error)?
             .unwrap_or_default()
     } else {
         String::new()
