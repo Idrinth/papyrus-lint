@@ -103,6 +103,99 @@ pub fn check(
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
 }
 
+/// Removes every redundant `as Type` cast [`check`] would flag from
+/// `source`. Uses [`NoExternalSignatures`], so an ancestor-type cast that
+/// only [`check_with`] can prove redundant is left in place.
+pub fn repair(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+) -> String {
+    let _ = (ast, tokens, config);
+
+    let Ok(tokens) = papyrus_parser::tokenize(source) else {
+        return source.to_string();
+    };
+    let diagnostics = check(
+        source,
+        papyrus_parser::parse(source).ok().as_ref(),
+        Some(&tokens),
+        config,
+        &mut crate::external_signatures::NoExternalSignatures,
+    );
+    if diagnostics.is_empty() {
+        return source.to_string();
+    }
+    let flagged_lines: std::collections::HashSet<usize> =
+        diagnostics.into_iter().map(|diagnostic| diagnostic.line).collect();
+
+    let line_starts = crate::token_walk::line_starts(source);
+    let mut edits = Vec::new();
+    let mut index = 0usize;
+    while index < tokens.len() {
+        if !matches!(tokens[index].kind, papyrus_parser::token::TokenKind::Keyword(papyrus_parser::token::Keyword::As))
+        {
+            index += 1;
+            continue;
+        }
+        if !flagged_lines.contains(&tokens[index].line) {
+            index += 1;
+            continue;
+        }
+        let Some(type_token) = tokens.get(index + 1) else {
+            index += 1;
+            continue;
+        };
+        if !matches!(
+            type_token.kind,
+            papyrus_parser::token::TokenKind::Identifier(_)
+        ) {
+            index += 1;
+            continue;
+        }
+        let mut end_token = type_token;
+        let mut end_index = index + 1;
+        if matches!(
+            tokens.get(index + 2).map(|token| &token.kind),
+            Some(papyrus_parser::token::TokenKind::LBracket)
+        ) && matches!(
+            tokens.get(index + 3).map(|token| &token.kind),
+            Some(papyrus_parser::token::TokenKind::RBracket)
+        ) {
+            end_token = &tokens[index + 3];
+            end_index = index + 3;
+        }
+        let start = token_offset(&line_starts, &tokens[index]);
+        let mut span_start = start;
+        while span_start > 0 && matches!(source.as_bytes()[span_start - 1], b' ' | b'\t') {
+            span_start -= 1;
+        }
+        let end = token_offset(&line_starts, end_token) + token_text(end_token).len();
+        edits.push((span_start, end));
+        index = end_index + 1;
+    }
+    edits.sort_by_key(|edit| std::cmp::Reverse(edit.0));
+
+    let mut repaired = source.to_string();
+    for (start, end) in edits {
+        repaired.replace_range(start..end, "");
+    }
+    repaired
+}
+
+fn token_offset(line_starts: &[usize], token: &papyrus_parser::token::Token) -> usize {
+    line_starts[token.line - 1] + token.col - 1
+}
+
+fn token_text(token: &papyrus_parser::token::Token) -> &str {
+    match &token.kind {
+        papyrus_parser::token::TokenKind::Identifier(name) => name,
+        papyrus_parser::token::TokenKind::RBracket => "]",
+        _ => "",
+    }
+}
+
 /// Like [`check`], but also resolves a cast target that's an ancestor
 /// (rather than an exact match) of the value's known type through
 /// `external`, the same way [`crate::argument_types::check_with`] resolves
