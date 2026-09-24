@@ -845,7 +845,7 @@ jobs:
           category: main
           display_name: "PapyrusLinterCLI (Windows)"
           allow_mod_manager_download: false
-          description: "Windows CLI executable, for other operating systems see github release. Likely you are looking for the other main, PapyrusLinter (Windows)."
+          description: "Windows CLI executable, for other operating systems see github release. Likely you are looking for the other main, PapyrusLinterGUI (Windows)."
       - name: Upload to NexusMods (config)
         uses: Nexus-Mods/upload-action@v1.0.0-beta.10
         with:
