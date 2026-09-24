@@ -9,7 +9,7 @@
   "severity": "warning",
   "importance": "low",
   "enabled_by_default": false,
-  "fixable": false,
+  "fixable": true,
   "description": "Flags unknown @disable/@disable-file rule ids and directives that suppress no diagnostic. Disabled by default.",
-  "definition": "Flags, as a `[warning]`, each rule id in an `@disable`/`@disable-file` comment that is unknown or does not suppress a diagnostic from that rule (on its line for `@disable`, anywhere in the file for `@disable-file`). A bare `@disable` is flagged when its line has no diagnostics to suppress; a bare `@disable-file` is flagged when the whole file has none. Disabled by default; opt in with `rules.unused_disable`."
+  "definition": "Flags, as a `[warning]`, each rule id in an `@disable`/`@disable-file` comment that is unknown or does not suppress a diagnostic from that rule (on its line for `@disable`, anywhere in the file for `@disable-file`). A bare `@disable` is flagged when its line has no diagnostics to suppress; a bare `@disable-file` is flagged when the whole file has none. Disabled by default; opt in with `rules.unused_disable`. Automatically fixable: the fix drops unused rule ids from the directive, or the whole directive when none of its ids suppress a diagnostic."
 }
