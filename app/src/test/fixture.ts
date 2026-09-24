@@ -89,56 +89,7 @@ export const FIXTURE_HTML = `
         <input type="checkbox" id="fail-on-info" />
         <input type="checkbox" id="bool-like-int" checked />
         <input type="checkbox" id="assume-auto-properties-filled" />
-        <fieldset id="lint-rules">
-          <input type="checkbox" id="rule-trailing_whitespace" checked />
-          <input type="checkbox" id="rule-comma_spacing" checked />
-          <input type="checkbox" id="rule-forbidden_functions" checked />
-          <input type="checkbox" id="rule-slow_functions" checked />
-          <input type="checkbox" id="rule-unused_getter" checked />
-          <input type="checkbox" id="rule-unused_nodiscard" checked />
-          <input type="checkbox" id="rule-unused_property" checked />
-          <input type="checkbox" id="rule-semicolon" checked />
-          <input type="checkbox" id="rule-float_int_conversion" checked />
-          <input type="checkbox" id="rule-int_division_to_float" checked />
-          <input type="checkbox" id="rule-strict_boolean" checked />
-          <input type="checkbox" id="rule-argument_types" checked />
-          <input type="checkbox" id="rule-return_types" checked />
-          <input type="checkbox" id="rule-function_override" checked />
-          <input type="checkbox" id="rule-argument_naming" checked />
-          <input type="checkbox" id="rule-argument_override_types" checked />
-          <input type="checkbox" id="rule-state_function_signature" checked />
-          <input type="checkbox" id="rule-numeric_comparison" checked />
-          <input type="checkbox" id="rule-indentation" checked />
-          <input type="checkbox" id="rule-cyclomatic_complexity" checked />
-          <input type="checkbox" id="rule-unreachable_statement" checked />
-          <input type="checkbox" id="rule-static_condition" checked />
-          <input type="checkbox" id="rule-division_by_zero" checked />
-          <input type="checkbox" id="rule-empty_body" checked />
-          <input type="checkbox" id="rule-unused_local_variable" checked />
-          <input type="checkbox" id="rule-variable_used_before_assignment" checked />
-          <input type="checkbox" id="rule-none_form_usage" checked />
-          <input type="checkbox" id="rule-local_variable_shadowing" checked />
-          <input type="checkbox" id="rule-parameter_reassignment" checked />
-          <input type="checkbox" id="rule-chain_whitespace" checked />
-          <input type="checkbox" id="rule-exclamation_spacing" checked />
-          <input type="checkbox" id="rule-identifier_casing" checked />
-          <input type="checkbox" id="rule-type_casing" checked />
-          <input type="checkbox" id="rule-named_arguments" checked />
-          <input type="checkbox" id="rule-operator_spacing" checked />
-          <input type="checkbox" id="rule-property_sorting" />
-          <input type="checkbox" id="rule-explicit_return" checked />
-          <input type="checkbox" id="rule-unchecked_form_parameter" />
-          <input type="checkbox" id="rule-unchecked_array_element" />
-          <input type="checkbox" id="rule-unchecked_cast" checked />
-          <input type="checkbox" id="rule-short_wait_interval" checked />
-          <input type="checkbox" id="rule-goto_state" checked />
-          <input type="checkbox" id="rule-too_many_states" checked />
-          <input type="checkbox" id="rule-multiple_auto_states" checked />
-          <input type="checkbox" id="rule-unused_disable" />
-          <input type="checkbox" id="rule-magic_numbers" />
-          <input type="checkbox" id="rule-native_function_usage" />
-          <input type="checkbox" id="rule-repeated_getvalue" />
-        </fieldset>
+        <fieldset id="lint-rules"></fieldset>
         <button type="button" id="save-config-as-preset">Save current settings as preset&hellip;</button>
         <select id="reset-to-preset-select"></select>
         <button type="button" id="reset-to-preset">Reset&hellip;</button>
