@@ -13,6 +13,10 @@ use papyrus_parser::token::{Token, TokenKind};
 
 use crate::visitor::{LintVisitor, Store, TokenLint, VisitCtx};
 use crate::Diagnostic;
+use crate::token_walk::{
+    is_game_get_form_from_file_call, line_starts, matching_close_paren,
+    skip_named_argument_prefix, split_arguments,
+};
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "get-form-from-file-skyrim-esm";
@@ -146,75 +150,6 @@ fn matching_call(tokens: &[Token], call_index: usize) -> Option<(usize, usize, u
         Some((close, value_start, form_id_arg.1 + 1))
 }
 
-/// Whether `tokens[index]` starts a `GetFormFromFile(...)` call qualified by
-/// the literal `Game` singleton, the same way [`crate::formid_hex_notation`]
-/// only matches it through its literal script name (`Game` is never
-/// subclassed, so this is the only way the call resolves to it).
-fn is_game_get_form_from_file_call(tokens: &[Token], index: usize) -> bool {
-    if !is_identifier(&tokens[index], "GetFormFromFile") {
-        return false;
-    }
-    if !matches!(
-        tokens.get(index + 1).map(|t| &t.kind),
-        Some(TokenKind::LParen)
-    ) {
-        return false;
-    }
-    if index < 2 || !matches!(tokens[index - 1].kind, TokenKind::Dot) {
-        return false;
-    }
-    is_identifier(&tokens[index - 2], "Game")
-}
-
-fn is_identifier(token: &Token, name: &str) -> bool {
-    matches!(&token.kind, TokenKind::Identifier(actual) if actual.eq_ignore_ascii_case(name))
-}
-
-/// Index of the `)` matching the `(` at `open_index`.
-fn matching_close_paren(tokens: &[Token], open_index: usize) -> Option<usize> {
-    let mut depth = 0usize;
-    for (index, token) in tokens.iter().enumerate().skip(open_index) {
-        match token.kind {
-            TokenKind::LParen => depth += 1,
-            TokenKind::RParen => {
-                depth -= 1;
-                if depth == 0 {
-                    return Some(index);
-                }
-            }
-            _ => {}
-        }
-    }
-    None
-}
-
-/// Splits the arguments between `(` at `open` and its matching `)` at
-/// `close` into top-level, comma-separated `(start, end)` token index
-/// ranges (both inclusive), splitting only on commas outside any nested
-/// parentheses. Returns an empty `Vec` for a call with no arguments at all.
-fn split_arguments(tokens: &[Token], open: usize, close: usize) -> Vec<(usize, usize)> {
-    let mut args = Vec::new();
-    if open + 1 >= close {
-        return args;
-    }
-
-    let mut segment_start = open + 1;
-    let mut depth = 0usize;
-    for (index, token) in tokens.iter().enumerate().take(close).skip(open + 1) {
-        match token.kind {
-            TokenKind::LParen => depth += 1,
-            TokenKind::RParen => depth -= 1,
-            TokenKind::Comma if depth == 0 => {
-                args.push((segment_start, index - 1));
-                segment_start = index + 1;
-            }
-            _ => {}
-        }
-    }
-    args.push((segment_start, close - 1));
-    args
-}
-
 /// Whether the argument spanning `tokens[start..=end]` is, once an optional
 /// `name =` named-argument prefix is skipped, the bare string literal
 /// `"Skyrim.esm"` (case-insensitively) and nothing else.
@@ -227,34 +162,6 @@ fn is_skyrim_esm_literal(tokens: &[Token], start: usize, end: usize) -> bool {
         &tokens[value_start].kind,
         TokenKind::StringLiteral(value) if value.eq_ignore_ascii_case("Skyrim.esm")
     )
-}
-
-/// Skips a leading `identifier =` named-argument prefix within
-/// `tokens[start..=end]`, returning the index the actual value starts at
-/// (`start` itself when there's no such prefix).
-fn skip_named_argument_prefix(tokens: &[Token], start: usize, end: usize) -> usize {
-    if start < end
-        && matches!(tokens[start].kind, TokenKind::Identifier(_))
-        && matches!(
-            tokens.get(start + 1).map(|t| &t.kind),
-            Some(TokenKind::Assign)
-        )
-    {
-        start + 2
-    } else {
-        start
-    }
-}
-
-fn line_starts(source: &str) -> Vec<usize> {
-    std::iter::once(0)
-        .chain(
-            source
-                .bytes()
-                .enumerate()
-                .filter_map(|(index, byte)| (byte == b'\n').then_some(index + 1)),
-        )
-        .collect()
 }
 
 fn token_offset(line_starts: &[usize], token: &Token) -> usize {

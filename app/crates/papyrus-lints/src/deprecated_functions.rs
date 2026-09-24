@@ -14,6 +14,7 @@ use crate::Diagnostic;
 use papyrus_parser::ast::{Deprecation, FunctionDecl, Script};
 use papyrus_parser::token::{Keyword, Token, TokenKind};
 use papyrus_parser::types::TypeEnv;
+use crate::token_walk::{qualifier_matches};
 
 pub struct DeprecatedFunctionRule {
     pub script: &'static str,
@@ -161,16 +162,6 @@ pub fn check(
     external: &mut impl crate::external_signatures::ExternalSignatures,
 ) -> Vec<Diagnostic> {
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
-}
-
-fn qualifier_matches(tokens: &[Token], call_index: usize, script: &str) -> bool {
-    if call_index < 2 || !matches!(tokens[call_index - 1].kind, TokenKind::Dot) {
-        return false;
-    }
-    let TokenKind::Identifier(qualifier) = &tokens[call_index - 2].kind else {
-        return false;
-    };
-    qualifier.eq_ignore_ascii_case(script)
 }
 
 /// The qualifier preceding a call, distinguishing an unqualified call

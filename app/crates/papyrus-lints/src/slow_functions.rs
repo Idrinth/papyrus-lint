@@ -9,6 +9,7 @@
 use crate::visitor::{LintVisitor, Store, TokenLint, VisitCtx};
 use crate::Diagnostic;
 use papyrus_parser::token::TokenKind;
+use crate::token_walk::{line_starts, matching_close_paren, qualifier_matches};
 
 pub struct SlowFunctionRule {
     pub object: &'static str,
@@ -202,37 +203,6 @@ fn repair_with_rules(source: &str, rules: &'static [SlowFunctionRule]) -> String
     repaired
 }
 
-fn matching_close_paren(
-    tokens: &[papyrus_parser::token::Token],
-    open_index: usize,
-) -> Option<usize> {
-    let mut depth = 0usize;
-    for (index, token) in tokens.iter().enumerate().skip(open_index) {
-        match token.kind {
-            TokenKind::LParen => depth += 1,
-            TokenKind::RParen => {
-                depth -= 1;
-                if depth == 0 {
-                    return Some(index);
-                }
-            }
-            _ => {}
-        }
-    }
-    None
-}
-
-fn line_starts(source: &str) -> Vec<usize> {
-    std::iter::once(0)
-        .chain(
-            source
-                .bytes()
-                .enumerate()
-                .filter_map(|(index, byte)| (byte == b'\n').then_some(index + 1)),
-        )
-        .collect()
-}
-
 fn token_offset(line_starts: &[usize], token: &papyrus_parser::token::Token) -> usize {
     line_starts[token.line - 1] + token.col - 1
 }
@@ -250,25 +220,6 @@ fn check_with_rules(
         &crate::config::Config::default(),
         &mut crate::external_signatures::NoExternalSignatures,
     )
-}
-
-/// Whether the call at `tokens[call_index]` is qualified with `object`
-/// (case-insensitively), i.e. preceded by `object.`.
-fn qualifier_matches(
-    tokens: &[papyrus_parser::token::Token],
-    call_index: usize,
-    object: &str,
-) -> bool {
-    if call_index < 2 {
-        return false;
-    }
-    if !matches!(tokens[call_index - 1].kind, TokenKind::Dot) {
-        return false;
-    }
-    let TokenKind::Identifier(qualifier) = &tokens[call_index - 2].kind else {
-        return false;
-    };
-    qualifier.eq_ignore_ascii_case(object)
 }
 
 fn find_rule(rules: &'static [SlowFunctionRule], name: &str) -> Option<&'static SlowFunctionRule> {

@@ -18,6 +18,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::visitor::{AstLint, LintVisitor, Store, VisitCtx};
 use crate::Diagnostic;
+use crate::token_walk::{line_starts};
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "named-arguments";
@@ -416,21 +417,6 @@ fn resolve_call_at<'a>(
     } else {
         None
     }
-}
-
-/// Byte offset of the start of each line in `source` (index 0 is always
-/// `0`), so a token's 1-indexed `(line, col)` position (`col` itself a
-/// byte offset within its line) can be converted into a byte offset into
-/// `source` as a whole.
-fn line_starts(source: &str) -> Vec<usize> {
-    std::iter::once(0)
-        .chain(
-            source
-                .bytes()
-                .enumerate()
-                .filter_map(|(index, byte)| (byte == b'\n').then_some(index + 1)),
-        )
-        .collect()
 }
 
 #[cfg(test)]

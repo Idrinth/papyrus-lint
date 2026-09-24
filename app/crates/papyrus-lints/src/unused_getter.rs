@@ -4,6 +4,7 @@ use papyrus_parser::token::{Token, TokenKind};
 
 use crate::visitor::{LintVisitor, Store, TokenLint, VisitCtx};
 use crate::Diagnostic;
+use crate::token_walk::{matching_open_paren, top_level_operands};
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "unused-getter";
@@ -130,72 +131,6 @@ fn check_operand(operand: &[Token]) -> Option<Diagnostic> {
         ),
         rule: RULE,
     })
-}
-
-/// Splits `tokens` into the operands of any top-level comparison,
-/// arithmetic, or logical operator (i.e. one at parenthesis/bracket depth
-/// zero), dropping the operators themselves. A statement with no such
-/// operator yields a single operand equal to the whole statement,
-/// preserving the previous (pre-operator-aware) behavior for a bare call.
-fn top_level_operands(tokens: &[Token]) -> Vec<&[Token]> {
-    let mut operands = Vec::new();
-    let mut start = 0;
-    let mut paren_depth: usize = 0;
-    let mut bracket_depth: usize = 0;
-
-    for (index, token) in tokens.iter().enumerate() {
-        match token.kind {
-            TokenKind::LParen => paren_depth += 1,
-            TokenKind::RParen => paren_depth = paren_depth.saturating_sub(1),
-            TokenKind::LBracket => bracket_depth += 1,
-            TokenKind::RBracket => bracket_depth = bracket_depth.saturating_sub(1),
-            TokenKind::Plus
-            | TokenKind::Minus
-            | TokenKind::Star
-            | TokenKind::Slash
-            | TokenKind::Percent
-            | TokenKind::Eq
-            | TokenKind::NotEq
-            | TokenKind::Gt
-            | TokenKind::Lt
-            | TokenKind::GtEq
-            | TokenKind::LtEq
-            | TokenKind::AndAnd
-            | TokenKind::OrOr
-            | TokenKind::Not
-                if paren_depth == 0 && bracket_depth == 0 =>
-            {
-                if index > start {
-                    operands.push(&tokens[start..index]);
-                }
-                start = index + 1;
-            }
-            _ => {}
-        }
-    }
-
-    if start < tokens.len() {
-        operands.push(&tokens[start..]);
-    }
-
-    operands
-}
-
-fn matching_open_paren(tokens: &[Token], close_index: usize) -> Option<usize> {
-    let mut depth = 0;
-    for index in (0..=close_index).rev() {
-        match tokens[index].kind {
-            TokenKind::RParen => depth += 1,
-            TokenKind::LParen => {
-                depth -= 1;
-                if depth == 0 {
-                    return Some(index);
-                }
-            }
-            _ => {}
-        }
-    }
-    None
 }
 
 #[cfg(test)]

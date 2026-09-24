@@ -24,6 +24,7 @@ mod registry;
 mod state_count;
 mod state_reference;
 pub mod tags;
+mod token_walk;
 mod type_flow;
 mod visitor;
 

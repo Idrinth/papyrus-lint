@@ -40,6 +40,7 @@ use papyrus_parser::token::{Token, TokenKind};
 
 use crate::visitor::{AstLint, LintVisitor, Store, VisitCtx};
 use crate::Diagnostic;
+use crate::token_walk::{line_starts, matching_close_paren};
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "global-variable-increment";
@@ -238,34 +239,6 @@ fn build_edit(
     }
 
     Some((setvalue_start, close_offset + 1, format!("Mod({x_text})")))
-}
-
-fn matching_close_paren(tokens: &[Token], open_index: usize) -> Option<usize> {
-    let mut depth = 0usize;
-    for (index, token) in tokens.iter().enumerate().skip(open_index) {
-        match token.kind {
-            TokenKind::LParen => depth += 1,
-            TokenKind::RParen => {
-                depth -= 1;
-                if depth == 0 {
-                    return Some(index);
-                }
-            }
-            _ => {}
-        }
-    }
-    None
-}
-
-fn line_starts(source: &str) -> Vec<usize> {
-    std::iter::once(0)
-        .chain(
-            source
-                .bytes()
-                .enumerate()
-                .filter_map(|(index, byte)| (byte == b'\n').then_some(index + 1)),
-        )
-        .collect()
 }
 
 fn token_offset(line_starts: &[usize], token: &Token) -> usize {
