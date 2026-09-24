@@ -54,6 +54,22 @@ EndFunction
 }
 
 #[test]
+fn accepts_declaration_flags_as_named_argument_labels() {
+    let source = r#"ScriptName CKKeywordNamedArgs
+
+Function SetStates(Int conditional, Bool hidden)
+EndFunction
+
+Function UpdateStates()
+    SetStates(conditional = 1, hidden = false)
+EndFunction
+"#;
+
+    parse_with_mode(source, GameEdition::Skyrim)
+        .expect("Skyrim permits Conditional and Hidden as named argument labels");
+}
+
+#[test]
 fn rejects_struct_declarations() {
     assert_skyrim_rejects(
         "ScriptName Rejected\n\nStruct Coordinates\n    Float X\nEndStruct\n",

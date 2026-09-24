@@ -224,7 +224,13 @@ impl Parser {
     /// argument (`name = value`), Papyrus's syntax for passing an argument
     /// by parameter name instead of by position.
     fn parse_arg(&mut self) -> PResult<Expr> {
-        if let TokenKind::Identifier(name) = self.kind().clone() {
+        let name = match self.kind().clone() {
+            TokenKind::Identifier(name) => Some(name),
+            TokenKind::Keyword(Keyword::Hidden) => Some("hidden".to_string()),
+            TokenKind::Keyword(Keyword::Conditional) => Some("conditional".to_string()),
+            _ => None,
+        };
+        if let Some(name) = name {
             if matches!(self.peek_kind(1), TokenKind::Assign) {
                 self.advance();
                 self.advance();
