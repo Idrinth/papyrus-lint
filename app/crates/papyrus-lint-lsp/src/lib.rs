@@ -1,9 +1,10 @@
 //! Stdio Language Server Protocol adapter for Papyrus Lint.
 //!
-//! v1 speaks the handshake and accepts the document-sync, code-action, and
-//! execute-command messages editors will send. It does not lint, publish
-//! diagnostics, or apply fixes yet.
+//! Document sync publishes diagnostics from `papyrus_lints`. Code actions and
+//! `workspace/executeCommand` are still empty until those follow-ups land.
 
+mod diagnostics;
+mod documents;
 mod framing;
 mod server;
 

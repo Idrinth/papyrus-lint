@@ -59,8 +59,9 @@
   `app/crates/papyrus-lint-output/`.
 - LSP: `cargo test` from `app/crates/papyrus-lint-lsp/`, or
   `cargo run --manifest-path app/crates/papyrus-lint-lsp/Cargo.toml` for the
-  `PapyrusLinterLsp` stdio binary. It speaks the handshake and returns empty
-  code actions / execute-command results; it does not lint yet.
+  `PapyrusLinterLsp` stdio binary. Document sync publishes diagnostics from
+  `papyrus_lints` (project `papyrus-lint.yaml` when one is found by walking up
+  from the file URI). Code actions and `papyrusLint.fixFile` still return empty.
 - CLI: `cargo run --manifest-path app/crates/papyrus-lint-cli/Cargo.toml --
   <path-to-achlist>`, or `cargo build --release --manifest-path
   app/crates/papyrus-lint-cli/Cargo.toml` for a standalone `PapyrusLinterCLI`
