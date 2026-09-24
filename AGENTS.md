@@ -25,7 +25,7 @@ Do not paste those files back into this index. Update the file you read.
 
 ## Crate map
 
-The nine reusable linting crates under `app/crates/` are **path dependencies, not
+The ten reusable linting crates under `app/crates/` are **path dependencies, not
 Cargo workspace members**. Run `cargo test` / `cargo fmt` / `cargo clippy`
 against each crate's own `Cargo.toml`. Only `app/src-tauri` needs Tauri
 system deps. Paths and roles live in
@@ -45,6 +45,7 @@ From the repo root, typical loops:
 - Core: `cargo test --manifest-path app/crates/papyrus-lint-core/Cargo.toml`
 - Output formatting: `cargo test --manifest-path app/crates/papyrus-lint-output/Cargo.toml`
 - CLI: `cargo test --manifest-path app/crates/papyrus-lint-cli/Cargo.toml`
+- LSP: `cargo test --manifest-path app/crates/papyrus-lint-lsp/Cargo.toml`
 - Frontend (`app/`): `npm test`, `npm run lint`, `npm run build`
 - VS Code (`vscode-extension/`): `npm test`, `npm run lint`, `npm run compile`
 - Sublime: `python -m unittest discover -s SublimeLinter-contrib-papyrus-lint/tests -v`

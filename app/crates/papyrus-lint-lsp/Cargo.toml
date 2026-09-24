@@ -1,0 +1,17 @@
+[package]
+name = "papyrus-lint-lsp"
+version = "0.1.0"
+description = "Stdio language server that will surface Papyrus Lint diagnostics to LSP editors"
+authors = ["Idrinth"]
+edition = "2021"
+
+[lib]
+name = "papyrus_lint_lsp"
+path = "src/lib.rs"
+
+[[bin]]
+name = "PapyrusLinterLsp"
+path = "src/main.rs"
+
+[dependencies]
+serde_json = "1"
