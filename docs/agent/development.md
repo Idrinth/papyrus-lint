@@ -12,7 +12,9 @@
   `npm run generate:config-types` runs `app/scripts/generate-config-types.mjs`
   against `shared/rules/*.json` and `configuration/papyrus-lint.default.yaml`;
   the result is git-ignored, the same way `papyrus-lints/build.rs` writes
-  `Rules` into `$OUT_DIR`. `npm run test` runs the frontend's
+  `Rules` into `$OUT_DIR`. That file's `RULE_SETTINGS` is also what fills
+  the Settings tab's lint-rule checkboxes; `app/index.html` only keeps the
+  empty `#lint-rules` fieldset. `npm run test` runs the frontend's
   Vitest unit tests (`src/**/*.test.ts`); `npm run test:coverage` runs the
   same suite instrumented with `@vitest/coverage-v8`, printing a text
   report and writing HTML/lcov reports to `coverage/`.

@@ -127,7 +127,11 @@ Minimum touch list (see also [`CONTRIBUTING.md`](CONTRIBUTING.md)):
    `registry.rs`'s `KNOWN_RULE_IDS`/`FIXABLE_RULE_IDS`, `tags.rs`'s
    `RULE_TAGS`, `config.rs`'s `Rules`/`default_rules()`,
    `collect_diagnostics`/`apply_repairs`, and `lib.rs`'s rule `mod`s from
-   this file at build time — don't hand-edit those;
+   this file at build time — don't hand-edit those. The desktop Settings
+   tab's per-rule checkboxes are the same: `app/scripts/generate-config-types.mjs`
+   writes `RULE_SETTINGS` into `app/src/config-types.ts`, and
+   `bindConfigSettings` renders `#lint-rules` from that. Don't add a
+   checkbox to `app/index.html` (or the test fixture) for a new rule.
    `doc_url()` links straight to `rules.html#rule-<rule>`, derived from
    the rule id alone, so it needs no separate slug field either. A new
    `"low"` importance rule is turned off by default in the generated

@@ -1,33 +1,11 @@
 import { type PscParseOutcome } from "./backend-types";
 import { isFixableFinding } from "./finding-fixability";
+import { RULE_SETTINGS } from "./config-types";
 import { handleMassFixClick } from "./results-list-actions";
 import { pscResultMassFixEl, pscResultMassFixListEl } from "./results-list-state";
-// Human-readable names for FIXABLE_RULE_IDS, used to label each rule in the
-// "mass fix" panel instead of its raw id. Kept in sync by hand with each
-// rule's own settings-tab checkbox label text in index.html.
-const FIXABLE_RULE_DISPLAY_NAMES: Record<string, string> = {
-  "identifier-casing": "Identifier casing",
-  "slow-functions": "Slow function usage",
-  semicolon: "Semicolon at end of line",
-  indentation: "Formatting checks / Indentation",
-  "property-sorting": "Property sorting",
-  "comma-spacing": "Space after comma",
-  "chain-whitespace": "Whitespace interrupting property/method chaining",
-  "exclamation-spacing": "Exclamation mark spacing",
-  "operator-spacing": "Spacing around logical/comparison operators",
-  "assignment-operator-spacing": "Spacing around assignment operators",
-  "type-casing": "Type name casing",
-  "trailing-whitespace": "Trailing whitespace",
-  "global-variable-increment": "GlobalVariable increment via SetValue(GetValue() + x)",
-  "unused-import": "Unused import",
-  "final-newline": "Final newline",
-  "get-form-from-file-load-index": "Game.GetFormFromFile load index",
-  "useless-downcast": "Useless downcast",
-  "self-assignment": "Self-assignment",
-};
 
 export function massFixRuleDisplayName(rule: string): string {
-  return FIXABLE_RULE_DISPLAY_NAMES[rule] ?? rule;
+  return RULE_SETTINGS.find((setting) => setting.id === rule)?.name ?? rule;
 }
 
 // Counts, per rule id, how many currently fixable findings (see

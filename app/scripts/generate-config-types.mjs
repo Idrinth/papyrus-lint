@@ -163,6 +163,10 @@ function tsDefault(key, raw) {
   return STRING_LINT_CONFIG_KEYS.has(key) ? `"${raw}"` : raw;
 }
 
+function tsString(value) {
+  return JSON.stringify(value);
+}
+
 export function renderConfigTypes(rules, defaultYaml) {
   const parsed = parseDefaultYaml(defaultYaml);
   const top = parsed.top;
@@ -211,6 +215,28 @@ export function renderConfigTypes(rules, defaultYaml) {
   lines.push("};");
   lines.push("");
   lines.push("export const RULE_KEYS = Object.keys(DEFAULT_RULES) as (keyof LintRules)[];");
+  lines.push("");
+  lines.push("export interface RuleSetting {");
+  lines.push("  key: keyof LintRules;");
+  lines.push("  id: string;");
+  lines.push("  name: string;");
+  lines.push("  description: string;");
+  lines.push("}");
+  lines.push("");
+  lines.push("export const RULE_SETTINGS: readonly RuleSetting[] = [");
+  for (const rule of ordered) {
+    if (typeof rule.name !== "string" || rule.name.length === 0) {
+      throw new Error(`shared/rules/${rule.id}.json is missing name`);
+    }
+    if (typeof rule.description !== "string" || rule.description.length === 0) {
+      throw new Error(`shared/rules/${rule.id}.json is missing description`);
+    }
+    const key = configKeyFor(rule.id);
+    lines.push(
+      `  { key: ${tsString(key)}, id: ${tsString(rule.id)}, name: ${tsString(rule.name)}, description: ${tsString(rule.description)} },`,
+    );
+  }
+  lines.push("];");
   lines.push("");
   lines.push("export let currentLintConfig: LintConfig = DEFAULT_LINT_CONFIG;");
   lines.push("");
