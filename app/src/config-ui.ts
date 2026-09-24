@@ -1,6 +1,6 @@
 import { markLintResultsStale } from "./drop";
 import { loadLintConfig, loadLintConfigFromPath, saveLintConfig, saveLintConfigToPath } from "./config-io";
-import { type Game, type IdentifierCasingStyle, type LintConfig, type LintRules, type MagicNumbersMode, type NamedArgumentsStyle, type TypeCasingStyle, DEFAULT_RULES, RULE_KEYS, currentLintConfig, setCurrentLintConfig } from "./config-types";
+import { type Game, type IdentifierCasingStyle, type LintConfig, type LintRules, type MagicNumbersMode, type NamedArgumentsStyle, type TypeCasingStyle, DEFAULT_RULES, RULE_KEYS, RULE_SETTINGS, currentLintConfig, setCurrentLintConfig } from "./config-types";
 import { isSelectableGame } from "./main-types";
 import { configPathOverride } from "./project-settings-dom";
 import { currentProjectDir } from "./project-state";
@@ -21,6 +21,29 @@ let failOnInfoEl: HTMLInputElement | null;
 let boolLikeIntEl: HTMLInputElement | null;
 let assumeAutoPropertiesFilledEl: HTMLInputElement | null;
 let ruleEls: Partial<Record<keyof LintRules, HTMLInputElement>> = {};
+
+// Fills `#lint-rules` from RULE_SETTINGS (generated with the rest of
+// config-types.ts). index.html and the test fixture only keep the empty
+// fieldset, so a new shared/rules entry shows up here without another edit.
+function mountRuleControls() {
+  const fieldset = document.querySelector("#lint-rules");
+  if (!fieldset) {
+    return;
+  }
+  for (const label of Array.from(fieldset.querySelectorAll("label"))) {
+    label.remove();
+  }
+  for (const rule of RULE_SETTINGS) {
+    const label = document.createElement("label");
+    label.title = rule.description;
+    const input = document.createElement("input");
+    input.type = "checkbox";
+    input.id = `rule-${rule.key}`;
+    input.checked = DEFAULT_RULES[rule.key];
+    label.append(input, document.createTextNode(` ${rule.name}`));
+    fieldset.append(label);
+  }
+}
 
 // Reflects `config` onto the formatting controls without firing their
 // `change` listeners (assigning `.value` does not dispatch `change`).
@@ -194,6 +217,7 @@ export async function loadAndApplyLintConfig(dir: string, overridePath: string):
 }
 
 export function bindConfigSettings() {
+  mountRuleControls();
   gameEl = document.querySelector("#game-select");
   semicolonStyleEl = document.querySelector("#semicolon-style");
   indentationStyleEl = document.querySelector("#indentation-style");
@@ -240,19 +264,11 @@ export function bindConfigSettings() {
   }
 }
 
-// Mirrors RULE_ID_TO_CONFIG_KEY in scripts/generate-config-types.mjs: the
-// handful of rule ids whose config key isn't just hyphens-to-underscores.
-const RULE_ID_TO_CONFIG_KEY: Record<string, keyof LintRules> = {
-  "float-to-int": "float_int_conversion",
-  "too-many-named-states": "too_many_states",
-};
-
-// Maps a hyphenated lint rule id (Diagnostic.rule) onto its LintRules key,
-// or undefined when the id isn't a configurable papyrus-lints rule (e.g. a
-// compiler diagnostic).
+// Mirrors the id → Rules-field map `generate-config-types.mjs` bakes into
+// RULE_SETTINGS. A hyphenated diagnostic id that isn't one of those rules
+// (a compiler diagnostic, for example) has no Settings checkbox.
 export function configKeyForRuleId(ruleId: string): keyof LintRules | undefined {
-  const key = (RULE_ID_TO_CONFIG_KEY[ruleId] ?? ruleId.replace(/-/g, "_")) as keyof LintRules;
-  return RULE_KEYS.includes(key) ? key : undefined;
+  return RULE_SETTINGS.find((rule) => rule.id === ruleId)?.key;
 }
 
 // Turns off every configurable rule in `ruleIds` in the in-memory lint

@@ -36,8 +36,8 @@ describe("generate-config-types", () => {
   it("renders rules in YAML order with enabled_by_default", () => {
     const rendered = renderConfigTypes(
       [
-        { id: "comma-spacing", enabled_by_default: true },
-        { id: "property-sorting", enabled_by_default: false },
+        { id: "comma-spacing", name: "Space after comma", description: "Requires whitespace after commas.", enabled_by_default: true },
+        { id: "property-sorting", name: "Property sorting", description: "Flags unsorted properties.", enabled_by_default: false },
       ],
       yamlFor("comma_spacing: true", "property_sorting: false"),
     );
@@ -50,12 +50,18 @@ describe("generate-config-types", () => {
     expect(rendered).toContain('game: "skyrim"');
     expect(rendered).toContain('export type Game = "skyrim" | "fallout4";');
     expect(rendered).toContain("app/scripts/generate-config-types.mjs");
+    expect(rendered).toContain(
+      '{ key: "comma_spacing", id: "comma-spacing", name: "Space after comma", description: "Requires whitespace after commas." }',
+    );
+    expect(rendered).toContain(
+      '{ key: "property_sorting", id: "property-sorting", name: "Property sorting", description: "Flags unsorted properties." }',
+    );
   });
 
   it("rejects a YAML rule missing from shared/rules", () => {
     expect(() =>
       renderConfigTypes(
-        [{ id: "comma-spacing", enabled_by_default: true }],
+        [{ id: "comma-spacing", name: "Space after comma", description: "Requires whitespace.", enabled_by_default: true }],
         yamlFor("comma_spacing: true", "missing_rule: true"),
       ),
     ).toThrow(/no matching id/);
@@ -65,8 +71,8 @@ describe("generate-config-types", () => {
     expect(() =>
       renderConfigTypes(
         [
-          { id: "comma-spacing", enabled_by_default: true },
-          { id: "unused-property", enabled_by_default: true },
+          { id: "comma-spacing", name: "Space after comma", description: "Requires whitespace.", enabled_by_default: true },
+          { id: "unused-property", name: "Unused script properties", description: "Flags unused properties.", enabled_by_default: true },
         ],
         yamlFor("comma_spacing: true"),
       ),
