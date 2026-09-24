@@ -247,3 +247,7 @@ impl ExternalSignatures for NoExternalSignatures {
         None
     }
 }
+
+#[cfg(test)]
+#[path = "external_signatures_tests.rs"]
+mod tests;
