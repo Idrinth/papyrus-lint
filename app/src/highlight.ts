@@ -5,7 +5,7 @@
 // needing to go through Tauri to re-tokenize on the Rust side.
 
 // Keeps in sync with `Keyword::from_word` in app/crates/papyrus-parser/src/token.rs.
-// Exported so autocomplete.ts's declaration scanner can avoid mistaking a
+// Exported so papyrus-source.ts's declaration scanner can avoid mistaking a
 // keyword for a type/identifier pair (e.g. "If bReady" or "Return akRef").
 export const KEYWORDS = new Set([
   "scriptname",
