@@ -74,6 +74,7 @@ fn defaults_match_documented_default() {
     assert!(!config.semicolon);
     assert_eq!(config.indentation, Indentation::Tab);
     assert_eq!(config.indentation_width, 4);
+    assert_eq!(config.max_line_length, 120);
     assert_eq!(config.identifier_casing, IdentifierCasing::PascalCase);
     assert_eq!(config.cyclomatic_complexity_warning, 10);
     assert_eq!(config.cyclomatic_complexity_error, 20);

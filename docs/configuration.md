@@ -201,6 +201,8 @@ per line.
   by the "Formatting checks" lint and the indentation automatic fix.
 - `indentation_width`: the number of spaces per indentation level, used
   only when `indentation` is `space`.
+- `max_line_length`: the maximum number of characters allowed on one line
+  before the "Line length" lint reports a warning. Defaults to `120`.
 - `identifier_casing`: the casing style declared identifiers must match:
   `camelCase`, `PascalCase`, `snake_case`, or `CONSTANT_CASE`. Read by the
   "Identifier casing" lint.

@@ -60,6 +60,7 @@ export const FIXTURE_HTML = `
           <option value="spaces">Spaces</option>
         </select>
         <input id="indentation-width" type="number" min="1" max="16" value="4" disabled />
+        <input id="max-line-length" type="number" min="1" value="120" />
         <select id="type-casing-style">
           <option value="PascalCase">PascalCase</option>
           <option value="camelCase">camelCase</option>

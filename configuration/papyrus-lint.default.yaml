@@ -29,6 +29,8 @@ semicolon: false
 indentation: tab
 # Non-negative integer; used only when indentation is space
 indentation_width: 4
+# Non-negative integer; maximum characters allowed on one line
+max_line_length: 120
 # camelCase, PascalCase, snake_case, CONSTANT_CASE
 identifier_casing: PascalCase
 # Non-negative integer
@@ -54,6 +56,7 @@ bool_like_int: true
 assume_auto_properties_filled: false
 # Each rule accepts true or false
 rules:
+  line_length: true
   trailing_whitespace: true
   final_newline: true
   comma_spacing: true

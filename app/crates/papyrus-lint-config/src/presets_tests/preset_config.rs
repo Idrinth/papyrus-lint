@@ -10,6 +10,7 @@ fn standard_preset_turns_off_purely_stylistic_rules_but_keeps_formatting() {
     assert!(!config.rules.identifier_casing);
     assert!(!config.rules.final_newline);
     assert!(config.rules.trailing_whitespace);
+    assert!(config.rules.line_length);
 }
 
 #[test]
@@ -40,6 +41,12 @@ fn strict_preset_matches_the_built_in_default() {
         fs::read_to_string(&default_path).expect("failed to read generated config");
 
     assert_eq!(generated, default_generated);
+    assert!(
+        load_config_from_path(&path)
+            .expect("generated config should parse")
+            .rules
+            .line_length
+    );
     let config = load_config_from_path(&path).expect("generated config should parse");
     assert!(config.rules.final_newline);
 }

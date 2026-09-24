@@ -7,6 +7,7 @@ import { currentProjectDir } from "./project-state";
 let gameEl: HTMLSelectElement | null;
 let indentationStyleEl: HTMLSelectElement | null;
 let indentationWidthEl: HTMLInputElement | null;
+let maxLineLengthEl: HTMLInputElement | null;
 let typeCasingStyleEl: HTMLSelectElement | null;
 let identifierCasingStyleEl: HTMLSelectElement | null;
 let namedArgumentsStyleEl: HTMLSelectElement | null;
@@ -34,6 +35,9 @@ export function applyLintConfigToUI(config: LintConfig) {
   if (indentationWidthEl) {
     indentationWidthEl.value = String(config.indentation_width);
     indentationWidthEl.disabled = config.indentation !== "space";
+  }
+  if (maxLineLengthEl) {
+    maxLineLengthEl.value = String(config.max_line_length);
   }
   if (cyclomaticComplexityWarningEl) {
     cyclomaticComplexityWarningEl.value = String(config.cyclomatic_complexity_warning);
@@ -137,6 +141,7 @@ export function lintConfigFromUI(): LintConfig {
     semicolon: semicolonStyleEl?.value === "require",
     indentation,
     indentation_width: Math.min(16, Math.max(1, indentationWidthEl?.valueAsNumber || 4)),
+    max_line_length: Math.max(1, maxLineLengthEl?.valueAsNumber || 120),
     identifier_casing: (identifierCasingStyleEl?.value as IdentifierCasingStyle | undefined) ?? "PascalCase",
     cyclomatic_complexity_warning: cyclomaticComplexityWarning,
     // Never below the warning threshold: an error severity that kicks in
@@ -193,6 +198,7 @@ export function bindConfigSettings() {
   semicolonStyleEl = document.querySelector("#semicolon-style");
   indentationStyleEl = document.querySelector("#indentation-style");
   indentationWidthEl = document.querySelector("#indentation-width");
+  maxLineLengthEl = document.querySelector("#max-line-length");
   typeCasingStyleEl = document.querySelector("#type-casing-style");
   identifierCasingStyleEl = document.querySelector("#identifier-casing-style");
   namedArgumentsStyleEl = document.querySelector("#named-arguments-style");
@@ -217,6 +223,7 @@ export function bindConfigSettings() {
     handleLintConfigChanged();
   });
   indentationWidthEl?.addEventListener("change", handleLintConfigChanged);
+  maxLineLengthEl?.addEventListener("change", handleLintConfigChanged);
   typeCasingStyleEl?.addEventListener("change", handleLintConfigChanged);
   identifierCasingStyleEl?.addEventListener("change", handleLintConfigChanged);
   namedArgumentsStyleEl?.addEventListener("change", handleLintConfigChanged);

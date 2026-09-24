@@ -8,6 +8,7 @@ const MINIMAL_TOP = `game: skyrim
 semicolon: false
 indentation: tab
 indentation_width: 4
+max_line_length: 120
 identifier_casing: PascalCase
 cyclomatic_complexity_warning: 10
 cyclomatic_complexity_error: 20
