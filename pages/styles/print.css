@@ -188,6 +188,30 @@
     display: block;
   }
 
+  .rules-content .lint-rules-table td::before {
+    font-weight: 600;
+  }
+
+  .rules-content .lint-rules-table td:nth-child(1)::before {
+    content: "Rule: ";
+  }
+
+  .rules-content .lint-rules-table td:nth-child(2)::before {
+    content: "Severity: ";
+  }
+
+  .rules-content .lint-rules-table td:nth-child(3)::before {
+    content: "Tags: ";
+  }
+
+  .rules-content .lint-rules-table td:nth-child(4)::before {
+    content: "Description: ";
+  }
+
+  .rules-content .lint-rules-table td:nth-child(5)::before {
+    content: "Auto-fix: ";
+  }
+
   .rules-content .lint-rules-table th:nth-child(n),
   .rules-content .lint-rules-table td:nth-child(n) {
     width: auto;
