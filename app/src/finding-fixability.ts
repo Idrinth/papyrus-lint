@@ -22,6 +22,7 @@ export const FIXABLE_RULE_IDS = new Set([
   "final-newline",
   "get-form-from-file-load-index",
   "useless-downcast",
+  "self-assignment",
 ]);
 
 // Some findings from a fixable rule still require a substantive rename and

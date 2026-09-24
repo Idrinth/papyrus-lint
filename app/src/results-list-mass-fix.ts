@@ -23,6 +23,7 @@ const FIXABLE_RULE_DISPLAY_NAMES: Record<string, string> = {
   "final-newline": "Final newline",
   "get-form-from-file-load-index": "Game.GetFormFromFile load index",
   "useless-downcast": "Useless downcast",
+  "self-assignment": "Self-assignment",
 };
 
 export function massFixRuleDisplayName(rule: string): string {

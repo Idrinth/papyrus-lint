@@ -129,3 +129,21 @@ fn returns_no_diagnostics_for_a_script_that_fails_to_parse() {
 
     assert!(diagnostics.is_empty());
 }
+
+fn repair(source: &str) -> String {
+    super::repair(
+        source,
+        None,
+        None,
+        &crate::config::Config::default(),
+    )
+}
+
+#[test]
+fn repair_deletes_a_self_assignment() {
+    let source = "ScriptName Example\n\nFunction Test()\n    Int a = 1\n    a = a\n    a = 2\nEndFunction\n";
+    let repaired = repair(source);
+    assert!(!repaired.contains("a = a"));
+    assert!(repaired.contains("a = 2"));
+    assert!(check(&repaired).is_empty());
+}

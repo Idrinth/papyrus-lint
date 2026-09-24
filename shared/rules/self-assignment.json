@@ -8,7 +8,8 @@
   ],
   "severity": "warning",
   "importance": "medium",
-  "fixable": false,
+  "fixable": true,
+  "repair_order": 21,
   "description": "Flags a plain = assignment whose right side is the exact same reference as its own target (e.g. a = a, Self.Foo = Self.Foo), since it can never change the value and is almost always a mistake. Only a bare name or a chain of member accesses is compared this way; calls, indexes, and compound assignments (+=, ...) are never flagged.",
-  "definition": "Flags, as a `[warning]`, a plain `=` assignment whose right-hand side is the exact same reference as its own target (e.g. `a = a`, `Self.Foo = Self.Foo`, `akRef.Foo = akRef.Foo`), since it can never change the value it reads and is almost always a copy-paste mistake or leftover from a refactor. Only a bare identifier or a chain of member accesses rooted at one (or at `Self`) is ever compared this way; a call, an index, or any other expression shape never counts as a self-assignment, since re-evaluating it on both sides of the same line isn't guaranteed to read the same value twice. A compound assignment (`+=`, `-=`, ...) is never flagged, since unlike plain `=` it does change the target's value."
+  "definition": "Flags, as a `[warning]`, a plain `=` assignment whose right-hand side is the exact same reference as its own target (e.g. `a = a`, `Self.Foo = Self.Foo`, `akRef.Foo = akRef.Foo`), since it can never change the value it reads and is almost always a copy-paste mistake or leftover from a refactor. Only a bare identifier or a chain of member accesses rooted at one (or at `Self`) is ever compared this way; a call, an index, or any other expression shape never counts as a self-assignment, since re-evaluating it on both sides of the same line isn't guaranteed to read the same value twice. A compound assignment (`+=`, `-=`, ...) is never flagged, since unlike plain `=` it does change the target's value. Automatically fixable: the fix deletes the self-assignment statement."
 }
