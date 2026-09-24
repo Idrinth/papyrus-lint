@@ -20,6 +20,7 @@ const FIXABLE_RULE_DISPLAY_NAMES: Record<string, string> = {
   "trailing-whitespace": "Trailing whitespace",
   "global-variable-increment": "GlobalVariable increment via SetValue(GetValue() + x)",
   "unused-import": "Unused import",
+  "final-newline": "Final newline",
 };
 
 export function massFixRuleDisplayName(rule: string): string {

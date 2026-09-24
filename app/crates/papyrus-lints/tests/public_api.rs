@@ -158,6 +158,12 @@ fn every_published_fixable_rule_works_through_the_filtered_public_api() {
             "ScriptName Example\n\nFunction Test()\n    Form theForm = Game.GetForm(0x12345)\nEndFunction\n",
             &default_config,
         ),
+        (
+            "final-newline",
+            "ScriptName Example",
+            "ScriptName Example\n",
+            &default_config,
+        ),
     ];
 
     let exercised: HashSet<_> = cases.iter().map(|(rule, ..)| *rule).collect();
