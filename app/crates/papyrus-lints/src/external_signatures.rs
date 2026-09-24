@@ -135,6 +135,14 @@ pub trait ExternalSignatures {
         Vec::new()
     }
 
+    /// Whether `type_name` or one of its ancestors declares `event_name`
+    /// as an `Event`. `Some(false)` means the complete ancestry was resolved
+    /// and no matching event exists; `None` means resolution was incomplete,
+    /// so callers must not guess that the event is undefined.
+    fn has_event(&mut self, _type_name: &str, _event_name: &str) -> Option<bool> {
+        None
+    }
+
     /// Whether `type_name`'s script declares `function_name` as a
     /// `Global` function, i.e. one callable through Papyrus's static call
     /// syntax (`ScriptName.Function(...)`) without an instance. Both names

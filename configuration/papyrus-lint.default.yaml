@@ -145,3 +145,4 @@ rules:
   unused_import: true
   event_signature_mismatch: false
   circular_dependency: false
+  undefined_event: true

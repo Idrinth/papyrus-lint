@@ -154,6 +154,22 @@ fn returns_none_for_unknown_function() {
 }
 
 #[test]
+fn external_event_lookup_distinguishes_events_functions_and_unknown_ancestry() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    write_script(
+        root.path(),
+        "ParentScript",
+        "ScriptName ParentScript\n\nFunction NotAnEvent()\nEndFunction\n\nEvent OnReady()\nEndEvent\n",
+    );
+
+    let mut table = FunctionTable::new(root.path().to_path_buf());
+    assert_eq!(table.has_event("ParentScript", "onready"), Some(true));
+    assert_eq!(table.has_event("ParentScript", "NotAnEvent"), Some(false));
+    assert_eq!(table.has_event("ParentScript", "Missing"), Some(false));
+    assert_eq!(table.has_event("MissingParent", "OnKnown"), None);
+}
+
+#[test]
 fn preserves_function_modifiers_array_types_and_events_in_signatures() {
     let root = tempfile::tempdir().expect("failed to create temp dir");
     write_script(

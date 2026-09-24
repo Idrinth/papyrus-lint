@@ -99,6 +99,13 @@ impl papyrus_lints::ExternalSignatures for SharedFunctionTable<'_> {
         )
     }
 
+    fn has_event(&mut self, type_name: &str, event_name: &str) -> Option<bool> {
+        self.probe_or_load(
+            |table| table.has_event_cached(type_name, event_name),
+            |table| papyrus_lints::ExternalSignatures::has_event(table, type_name, event_name),
+        )
+    }
+
     fn is_global_function(&mut self, type_name: &str, function_name: &str) -> Option<bool> {
         self.probe_or_load(
             |table| {

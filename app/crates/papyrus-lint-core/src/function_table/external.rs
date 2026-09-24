@@ -74,6 +74,10 @@ impl papyrus_lints::ExternalSignatures for FunctionTable {
         self.ancestor_states(type_name)
     }
 
+    fn has_event(&mut self, type_name: &str, event_name: &str) -> Option<bool> {
+        FunctionTable::has_event(self, type_name, event_name)
+    }
+
     fn is_global_function(&mut self, type_name: &str, function_name: &str) -> Option<bool> {
         self.lookup_function(type_name, function_name)
             .map(|signature| signature.is_global)
