@@ -433,6 +433,34 @@ fn cached_lookup_index_rebuilds_after_a_new_file_is_added() {
 }
 
 #[test]
+fn cached_script_index_reuses_a_scan_until_a_source_directory_changes() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    let source = root.path().join("scripts/source");
+    fs::create_dir_all(&source).expect("failed to create source dir");
+    write_file(&source, "Example.psc");
+
+    let first = cached_script_index(root.path(), &[]);
+    assert!(first.contains_key("example.psc"));
+    assert!(std::sync::Arc::ptr_eq(
+        &first,
+        &cached_script_index(root.path(), &[])
+    ));
+
+    write_file(&source, "Other.psc");
+    let later = std::time::SystemTime::now() + std::time::Duration::from_secs(2);
+    if let Ok(dir) = fs::File::open(&source) {
+        let _ = dir.set_modified(later);
+    }
+
+    let second = cached_script_index(root.path(), &[]);
+    assert!(
+        second.contains_key("other.psc"),
+        "a newer directory mtime must invalidate the cached script index"
+    );
+    assert!(!std::sync::Arc::ptr_eq(&first, &second));
+}
+
+#[test]
 fn reports_conflicts_from_additional_roots_in_sorted_path_order() {
     let root = tempfile::tempdir().expect("failed to create temp dir");
     let primary = root.path().join("scripts/source");

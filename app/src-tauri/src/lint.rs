@@ -194,27 +194,15 @@ pub(crate) fn lint_with_compile_check<E: papyrus_lints::ExternalSignatures>(
     // own docs).
     let mut project_diagnostics = Vec::new();
     if context.config.rules.conflicting_script_versions {
-        let index =
-            script_locator::build_script_index(Path::new(&context.root), &context.additional_roots);
-        collision_cache::preload(
-            context.config.game,
-            index
-                .values()
-                .flatten()
-                .map(PathBuf::as_path)
-                .chain(std::iter::once(path)),
-        );
+        let root = Path::new(&context.root);
+        let index = script_locator::cached_script_index(root, &context.additional_roots);
         collision_cache::remember_source(context.config.game, path, source);
-        let files = script_locator::project_files(
-            index.into_values().flatten(),
-            Path::new(&context.root),
+        project_diagnostics.extend(script_locator::conflicting_script_versions_in_index(
+            path,
+            &index,
+            root,
             false,
             context.config.game,
-        );
-        project_diagnostics.extend(papyrus_lints::conflicting_script_versions::check(
-            path,
-            &papyrus_lint_core::content_hash::sha256_hex(source),
-            &files,
         ));
         collision_cache::flush();
     }
