@@ -180,7 +180,7 @@ describe("renderPscResults", () => {
     const second = outcome({ path: "/b.psc", detail: 'parsed as "B"', findings: [{ line: 1, column: 1, message: "[warning] from B" }] });
     appendStreamedPscResult([first, second], second);
 
-    const items = document.querySelectorAll("#psc-result-list > li");
+    const items = document.querySelectorAll<HTMLLIElement>("#psc-result-list > li");
     expect(items).toHaveLength(2);
     expect(items[0].dataset.kept).toBe("yes");
     expect(items[1].textContent).toContain("from B");
