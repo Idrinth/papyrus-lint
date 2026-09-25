@@ -36,7 +36,7 @@ impl AstLint for Collect {
         let Expr::Call { callee, args, .. } = expr else {
             return;
         };
-        let Some(function) = matching_function(callee) else {
+        let Some(function) = matching_function(callee, ctx.ast) else {
             return;
         };
         let Some(argument) = args.first() else {
@@ -122,19 +122,37 @@ pub fn check(
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
 }
 
+/// Whether `script` imports `name` (Papyrus identifiers are case-insensitive).
+pub(crate) fn script_imports(script: Option<&papyrus_parser::ast::Script>, name: &str) -> bool {
+    script
+        .map(|script| {
+            script
+                .imports
+                .iter()
+                .any(|import| import.name.eq_ignore_ascii_case(name))
+        })
+        .unwrap_or(false)
+}
+
 /// Whether `callee` is a call to one of [`WAIT_FUNCTIONS`], honoring each
 /// rule's `global` flag the same way `forbidden_functions`/`slow_functions`
-/// do: a `global` rule (`Utility.Wait`) only matches when explicitly
-/// qualified by that literal script name, while a non-`global` rule (the
-/// `RegisterFor*` family) matches unqualified or through any receiver.
+/// do: a `global` rule (`Utility.Wait`) matches when explicitly qualified
+/// by that literal script name *or* when the call is unqualified and the
+/// current script `Import`s `Utility` (the compiler-equivalent form).
+/// A non-`global` rule (the `RegisterFor*` family) matches unqualified or
+/// through any receiver.
 ///
 /// Also used by [`crate::magic_numbers`] to exempt these same calls'
 /// interval arguments from its "loose" mode.
-pub(crate) fn matching_function(callee: &Expr) -> Option<&'static WaitFunction> {
+pub(crate) fn matching_function(
+    callee: &Expr,
+    script: Option<&papyrus_parser::ast::Script>,
+) -> Option<&'static WaitFunction> {
     match callee {
-        Expr::Identifier(name) => WAIT_FUNCTIONS
-            .iter()
-            .find(|function| !function.global && function.name.eq_ignore_ascii_case(name)),
+        Expr::Identifier(name) => WAIT_FUNCTIONS.iter().find(|function| {
+            function.name.eq_ignore_ascii_case(name)
+                && (!function.global || script_imports(script, "Utility"))
+        }),
         Expr::Member { object, property } => {
             let function = WAIT_FUNCTIONS
                 .iter()
