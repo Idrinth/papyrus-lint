@@ -40,9 +40,7 @@ fn flags_file(game: papyrus_lints::Game) -> &'static str {
     match game {
         papyrus_lints::Game::Skyrim => "TESV_Papyrus_Flags.flg",
         papyrus_lints::Game::Fallout4 => "Institute_Papyrus_Flags.flg",
-        papyrus_lints::Game::Starfield => {
-            panic!("{}", papyrus_lint_globals::UNSUPPORTED_GAME_MESSAGE)
-        }
+        papyrus_lints::Game::Starfield => "Starfield_Papyrus_Flags.flg",
     }
 }
 

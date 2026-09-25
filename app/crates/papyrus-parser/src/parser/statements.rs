@@ -197,8 +197,10 @@ impl Parser {
         })
     }
 
-    /// Starfield only. `LockGuard <Name>` .. `EndLockGuard`, or
-    /// `TryLockGuard <Name>` .. `ElseTryLockGuard` .. `EndTryLockGuard`.
+    /// Starfield only. `LockGuard <Name>[, <Name>...]` /
+    /// `LockGuard(<Name>[, <Name>...])` .. `EndLockGuard`, or
+    /// `TryLockGuard <Name>[, <Name>...]` /
+    /// `ElseTryLockGuard` / `Else` .. `EndTryLockGuard`.
     /// Only called when [`GameEdition::has_starfield_dialect`] is set.
     fn parse_lock_guard(&mut self, is_try: bool) -> PResult<Stmt> {
         let line = self.current().line;
@@ -208,21 +210,37 @@ impl Parser {
         } else {
             self.expect_keyword(Keyword::LockGuard)?;
         }
-        let name = self.expect_identifier()?;
+        let parenthesized = matches!(self.kind(), TokenKind::LParen);
+        if parenthesized {
+            self.advance();
+        }
+        let mut names = vec![self.expect_identifier()?];
+        while matches!(self.kind(), TokenKind::Comma) {
+            self.advance();
+            names.push(self.expect_identifier()?);
+        }
+        if parenthesized {
+            self.expect(TokenKind::RParen)?;
+        }
         self.expect_terminator()?;
 
         let (body, else_body, else_line, else_col) = if is_try {
-            let body = self.parse_block(&[Keyword::ElseTryLockGuard, Keyword::EndTryLockGuard])?;
-            let (else_body, else_line, else_col) = if self.at_keyword(Keyword::ElseTryLockGuard) {
-                let else_line = self.current().line;
-                let else_col = self.current().col;
-                self.advance();
-                self.expect_terminator()?;
-                let else_body = self.parse_block(&[Keyword::EndTryLockGuard])?;
-                (else_body, Some(else_line), Some(else_col))
-            } else {
-                (Vec::new(), None, None)
-            };
+            let body = self.parse_block(&[
+                Keyword::ElseTryLockGuard,
+                Keyword::Else,
+                Keyword::EndTryLockGuard,
+            ])?;
+            let (else_body, else_line, else_col) =
+                if self.at_keyword(Keyword::ElseTryLockGuard) || self.at_keyword(Keyword::Else) {
+                    let else_line = self.current().line;
+                    let else_col = self.current().col;
+                    self.advance();
+                    self.expect_terminator()?;
+                    let else_body = self.parse_block(&[Keyword::EndTryLockGuard])?;
+                    (else_body, Some(else_line), Some(else_col))
+                } else {
+                    (Vec::new(), None, None)
+                };
             self.expect_keyword(Keyword::EndTryLockGuard)?;
             (body, else_body, else_line, else_col)
         } else {
@@ -238,7 +256,7 @@ impl Parser {
             } else {
                 LockKind::Lock
             },
-            name,
+            names,
             body,
             else_body,
             else_line,

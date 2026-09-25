@@ -19,17 +19,17 @@
 //! There is no implicit cross-game fallback: a Fallout 4 lookup never reads
 //! a Skyrim cache file or Skyrim's bundled blob, and vice versa.
 //!
-//! Vanilla Skyrim/SKSE and Fallout 4/F4SE scripts shipped under
+//! Vanilla Skyrim/SKSE, Fallout 4/F4SE, and Starfield scripts shipped under
 //! `shared/scripts/` are also compiled into the binary as one
 //! content-addressed AST/token blob per game (see [`bundled`]).
 //! [`get_for_game`]/[`get_tokens_for_game`]/[`ensure_primed_for_game`]
-//! consult that game's blob first when `game` is `skyrim` or `fallout4`,
-//! keyed only by an MD5 of the decoded source, so a stock `Actor.psc` or
-//! `SKSE.psc`/`F4SE.psc` hits on the first analysis even when the file was
-//! just extracted to a new path (Docker, `--script-root`, the user's game
-//! install). [`ast_for_script_name`]/[`contains_script_name`] look the
-//! same game's blob up by `ScriptName` when no matching `.psc` is on disk
-//! and `game` has a bundled blob, so `FunctionTable` can still walk
+//! consult that game's blob first when `game` is `skyrim`, `fallout4`, or
+//! `starfield`, keyed only by an MD5 of the decoded source, so a stock
+//! `Actor.psc` or `SKSE.psc`/`F4SE.psc` hits on the first analysis even
+//! when the file was just extracted to a new path (Docker, `--script-root`,
+//! the user's game install). [`ast_for_script_name`]/[`contains_script_name`]
+//! look the same game's blob up by `ScriptName` when no matching `.psc` is
+//! on disk and `game` has a bundled blob, so `FunctionTable` can still walk
 //! vanilla `Extends` chains without game data. A bundled hit does not take
 //! the disk-cache lock below, so parallel lint workers resolving the same
 //! base type do not serialize on each other for that lookup. A modified
@@ -119,8 +119,7 @@ mod version;
 static CACHE_LOCK: Mutex<()> = Mutex::new(());
 
 fn has_bundled_blob(game: Game) -> bool {
-    game.assert_supported();
-    matches!(game, Game::Skyrim | Game::Fallout4)
+    matches!(game, Game::Skyrim | Game::Fallout4 | Game::Starfield)
 }
 
 /// Returns the cached AST for `source_path` if `game`'s bundled-script cache
@@ -252,9 +251,8 @@ pub fn ensure_primed_for_game(game: Game, source_path: &Path, source: &str) {
 
 /// Cached AST of a bundled vanilla/extender script looked up by
 /// `ScriptName` (case-insensitive) in `game`'s bundled blob. Used by
-/// `FunctionTable` when no matching `.psc` is on disk. Returns `None` for
-/// a game with no bundled blob (currently only Starfield), and when the
-/// name is not in that blob.
+/// `FunctionTable` when no matching `.psc` is on disk. Returns `None` when
+/// the name is not in that blob.
 pub fn ast_for_script_name(game: Game, name: &str) -> Option<papyrus_parser::ast::Script> {
     if !has_bundled_blob(game) {
         return None;
@@ -263,9 +261,8 @@ pub fn ast_for_script_name(game: Game, name: &str) -> Option<papyrus_parser::ast
 }
 
 /// Whether `game`'s bundled vanilla/extender blob has a script whose
-/// `ScriptName` matches `name` (case-insensitive). Always `false` for a
-/// game with no bundled blob (currently only Starfield). Does not
-/// deserialize the AST.
+/// `ScriptName` matches `name` (case-insensitive). Does not deserialize
+/// the AST.
 pub fn contains_script_name(game: Game, name: &str) -> bool {
     has_bundled_blob(game) && bundled::contains_name(game, name)
 }

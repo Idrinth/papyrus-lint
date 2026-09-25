@@ -391,12 +391,10 @@ fn selects_the_flags_file_for_each_supported_game() {
         flags_file(papyrus_lints::Game::Fallout4),
         "Institute_Papyrus_Flags.flg"
     );
-}
-
-#[test]
-#[should_panic(expected = "Starfield is not supported yet")]
-fn rejects_a_flags_file_for_starfield() {
-    let _ = flags_file(papyrus_lints::Game::Starfield);
+    assert_eq!(
+        flags_file(papyrus_lints::Game::Starfield),
+        "Starfield_Papyrus_Flags.flg"
+    );
 }
 
 #[test]

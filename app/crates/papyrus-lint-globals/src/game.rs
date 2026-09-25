@@ -5,9 +5,6 @@ use std::str::FromStr;
 
 use serde::{Deserialize, Serialize};
 
-/// Error used when code reaches a recognized target that is not implemented.
-pub const UNSUPPORTED_GAME_MESSAGE: &str = "Starfield is not supported yet";
-
 /// The game whose Papyrus dialect and runtime APIs a project targets.
 ///
 /// Serialized as the lowercase config/cache key (`skyrim`, `fallout4`,
@@ -24,8 +21,7 @@ pub enum Game {
 }
 
 impl Game {
-    /// Every recognized target, including targets that are not supported yet,
-    /// in configuration and JSON-schema order.
+    /// Every recognized target, in configuration and JSON-schema order.
     pub const ALL: [Game; 3] = [Game::Skyrim, Game::Fallout4, Game::Starfield];
 
     /// The lowercase key used in YAML, cache paths, and schema enums.
@@ -37,12 +33,9 @@ impl Game {
         }
     }
 
-    /// Panics when this target is not supported by the linter yet.
-    pub fn assert_supported(self) {
-        if self == Self::Starfield {
-            panic!("{UNSUPPORTED_GAME_MESSAGE}");
-        }
-    }
+    /// Every [`Game`] variant is a supported analysis target.
+    #[allow(clippy::unused_self)]
+    pub fn assert_supported(self) {}
 
     /// Whether this game's Papyrus dialect includes Fallout 4's extensions
     /// (`Struct`/`Group`, `DebugOnly`/`BetaOnly`, `New <StructName>`).

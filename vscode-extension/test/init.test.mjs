@@ -74,6 +74,21 @@ describe('papyrusLint.initializeConfig', () => {
     assert.deepEqual(harness.execCalls[0].args, ['init', '--game', 'fallout4', '--preset', 'standard']);
   });
 
+  it('passes Starfield as the target game', async () => {
+    const harness = createHarness({
+      workspaceFolders: [{ uri: uri('/project') }],
+      quickPickResults: [
+        { label: 'standard', preset: 'standard' },
+        { label: 'Starfield', game: 'starfield' },
+      ],
+      result: { error: null, stdout: 'Created /project/papyrus-lint.yaml\n', stderr: '' },
+    });
+
+    await harness.commands.get('papyrusLint.initializeConfig')();
+
+    assert.deepEqual(harness.execCalls[0].args, ['init', '--game', 'starfield', '--preset', 'standard']);
+  });
+
   it('does nothing when the game prompt is cancelled', async () => {
     const harness = createHarness({
       workspaceFolders: [{ uri: uri('/project') }],
