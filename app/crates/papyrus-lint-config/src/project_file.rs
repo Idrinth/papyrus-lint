@@ -9,7 +9,6 @@ use std::path::{Path, PathBuf};
 use serde::{Deserialize, Serialize};
 
 use crate::comments::with_field_comments;
-use crate::script_roots::{merge_detected_lookup_script_roots, seed_lookup_script_roots};
 
 /// Candidate config file names, checked in order, inside a project's
 /// directory (conventionally the directory containing its `.achlist`
@@ -31,17 +30,9 @@ pub(crate) struct ProjectFile {
     /// resolving a script by name for analysis (cross-script type/function
     /// lookups, `Extends`, autocompletion). Scripts found only here are
     /// never linted, and these directories are never considered by
-    /// `conflicting_script_versions`. Intended for the game's own vanilla
-    /// sources (e.g. Skyrim Special Edition's `Data/Scripts/Source` and
-    /// `Data/Source/Scripts`).
+    /// `conflicting_script_versions`. Intended for dependencies that are not
+    /// part of the project itself.
     pub(crate) lookup_script_roots: Vec<String>,
-    /// Whether the loaded YAML actually contained a `lookup_script_roots`
-    /// key. Missing is treated as "not yet configured", so creating or
-    /// updating a config can fill the configured `game`'s vanilla source
-    /// directories from the Windows registry. An explicit empty list is
-    /// left empty rather than re-filled.
-    #[serde(skip)]
-    pub(crate) lookup_script_roots_explicit: bool,
     /// Whether the desktop app and the CLI also run PapyrusCompiler.exe (at
     /// `compiler_path`, above) against a `.psc` as part of linting it,
     /// surfacing any errors it reports as additional `[error]` diagnostics
@@ -99,11 +90,7 @@ pub(crate) fn load_project_file(dir: &Path) -> Result<ProjectFile, String> {
 }
 
 /// Reads and parses the papyrus-lint YAML at `path`. Empty files become
-/// [`ProjectFile::default`]. A file that does not yet contain
-/// `lookup_script_roots` is seeded in memory with the project's configured
-/// game's vanilla source directories when those can be found (see
-/// [`crate::game_install::detected_script_lookup_dirs_for_game`]); an
-/// explicit empty list is kept.
+/// [`ProjectFile::default`].
 pub(crate) fn load_project_file_from_path(path: &Path) -> Result<ProjectFile, String> {
     let contents = fs::read_to_string(path).map_err(|err| format!("{}: {err}", path.display()))?;
     project_file_from_yaml(&contents).map_err(|err| format!("{}: {err}", path.display()))
@@ -113,20 +100,7 @@ pub(crate) fn project_file_from_yaml(contents: &str) -> Result<ProjectFile, Stri
     if contents.trim().is_empty() {
         return Ok(ProjectFile::default());
     }
-    let mut project: ProjectFile =
-        serde_norway::from_str(contents).map_err(|err| err.to_string())?;
-    project.lookup_script_roots_explicit = yaml_has_top_level_key(contents, "lookup_script_roots");
-    if !project.lookup_script_roots_explicit {
-        merge_detected_lookup_script_roots(&mut project);
-    }
-    Ok(project)
-}
-
-fn yaml_has_top_level_key(contents: &str, key: &str) -> bool {
-    let Ok(serde_norway::Value::Mapping(map)) = serde_norway::from_str(contents) else {
-        return false;
-    };
-    map.contains_key(serde_norway::Value::String(key.to_string()))
+    serde_norway::from_str(contents).map_err(|err| err.to_string())
 }
 
 /// Writes `project` to `dir`'s papyrus-lint YAML config file. Overwrites
@@ -144,9 +118,7 @@ pub(crate) fn save_project_file(dir: &Path, project: &ProjectFile) -> Result<(),
 /// from a project directory) and [`save_config_at_path`] (which targets an
 /// explicit file directly).
 pub(crate) fn save_project_file_at(path: &Path, project: &ProjectFile) -> Result<(), String> {
-    let mut project = project.clone();
-    seed_lookup_script_roots(&mut project);
-    let yaml = serde_norway::to_string(&project).map_err(|err| err.to_string())?;
+    let yaml = serde_norway::to_string(project).map_err(|err| err.to_string())?;
     let yaml = game_key_first(&yaml);
     fs::write(path, with_field_comments(&yaml)).map_err(|err| err.to_string())
 }

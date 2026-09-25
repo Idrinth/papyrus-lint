@@ -1,5 +1,4 @@
 use super::*;
-use crate::fallout4::detected_fallout4_script_lookup_dirs;
 
 #[test]
 fn load_lookup_script_roots_returns_empty_when_unset() {
@@ -41,7 +40,7 @@ fn save_and_load_lookup_script_roots_round_trips_without_disturbing_other_settin
 }
 
 #[test]
-fn save_lookup_script_roots_empty_is_kept_explicit_and_not_refilled() {
+fn save_lookup_script_roots_can_clear_the_list() {
     let dir = tempfile::tempdir().expect("failed to create temp dir");
     save_lookup_script_roots(dir.path(), &["C:/Skyrim/Data/Scripts/Source".to_string()])
         .expect("saving lookup roots should succeed");
@@ -91,53 +90,10 @@ fn save_config_preserves_existing_lookup_script_roots() {
 }
 
 #[test]
-fn seed_lookup_script_roots_fills_only_when_the_key_was_missing() {
-    let mut unset = ProjectFile::default();
-    merge_lookup_roots(
-        &mut unset.lookup_script_roots,
-        &["C:/Skyrim/Data/Scripts/Source".to_string()],
-    );
-    assert_eq!(
-        unset.lookup_script_roots,
-        vec!["C:/Skyrim/Data/Scripts/Source".to_string()]
-    );
-
-    let mut explicit = ProjectFile {
-        lookup_script_roots_explicit: true,
-        ..ProjectFile::default()
-    };
-    seed_lookup_script_roots(&mut explicit);
-    assert!(explicit.lookup_script_roots.is_empty());
-}
-
-#[test]
-fn project_file_from_yaml_seeds_lookup_script_roots_from_the_configured_game_not_skyrim() {
+fn project_file_from_yaml_does_not_prefill_lookup_script_roots() {
     let project = project_file_from_yaml("game: fallout4\n").expect("parsing should succeed");
 
-    assert_eq!(
-        project.lookup_script_roots,
-        detected_fallout4_script_lookup_dirs(),
-        "a fallout4 project must be seeded from Fallout 4's own detected install, \
-         never Skyrim's (see issue #1187)"
-    );
-}
-
-#[test]
-fn seed_lookup_script_roots_uses_the_projects_configured_game() {
-    let mut fallout4 = ProjectFile {
-        lint: papyrus_lints::Config {
-            game: papyrus_lints::Game::Fallout4,
-            ..papyrus_lints::Config::default()
-        },
-        ..ProjectFile::default()
-    };
-
-    seed_lookup_script_roots(&mut fallout4);
-
-    assert_eq!(
-        fallout4.lookup_script_roots,
-        detected_fallout4_script_lookup_dirs()
-    );
+    assert!(project.lookup_script_roots.is_empty());
 }
 
 #[test]

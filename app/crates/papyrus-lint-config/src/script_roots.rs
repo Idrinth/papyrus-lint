@@ -2,10 +2,7 @@
 
 use std::path::Path;
 
-use crate::game_install::{detected_script_lookup_dirs_for_game, merge_lookup_roots};
-use crate::project_file::{
-    load_project_file, load_project_file_from_path, save_project_file, ProjectFile,
-};
+use crate::project_file::{load_project_file, load_project_file_from_path, save_project_file};
 
 /// Reads `dir`'s additional script-root directories, which are used alongside
 /// the conventional `scripts/source` and `source/scripts` directories to
@@ -39,11 +36,7 @@ pub fn save_script_roots(dir: &Path, roots: &[String]) -> Result<(), String> {
 /// [`crate::function_table::FunctionTable::with_lookup_roots`]). These are
 /// searched only after the conventional and `additional_script_roots`
 /// directories, never linted, and never considered by
-/// `conflicting_script_versions`. Empty (or blank) entries are dropped. A
-/// config that does not yet set the key is seeded in memory with the
-/// project's configured game's vanilla source directories when those can
-/// be found (see
-/// [`crate::game_install::detected_script_lookup_dirs_for_game`]).
+/// `conflicting_script_versions`. Empty (or blank) entries are dropped.
 pub fn load_lookup_script_roots(dir: &Path) -> Result<Vec<String>, String> {
     Ok(trimmed_roots(load_project_file(dir)?.lookup_script_roots))
 }
@@ -61,13 +54,10 @@ pub fn load_lookup_script_roots_from_path(path: &Path) -> Result<Vec<String>, St
 
 /// Persists `roots` as `dir`'s papyrus-lint config file's analysis-only
 /// lookup directories, preserving its other settings. Empty (or blank)
-/// entries are dropped. Setting this (including to an empty list) marks
-/// the key as explicit so a later save does not re-fill the configured
-/// game's vanilla source directories from the registry.
+/// entries are dropped.
 pub fn save_lookup_script_roots(dir: &Path, roots: &[String]) -> Result<(), String> {
     let mut project = load_project_file(dir)?;
     project.lookup_script_roots = trimmed_roots(roots.iter().cloned());
-    project.lookup_script_roots_explicit = true;
     save_project_file(dir, &project)
 }
 
@@ -77,26 +67,6 @@ fn trimmed_roots(roots: impl IntoIterator<Item = String>) -> Vec<String> {
         .map(|root| root.trim().to_string())
         .filter(|root| !root.is_empty())
         .collect()
-}
-
-/// Seeds `project`'s `lookup_script_roots` with the detected vanilla
-/// source directories for `project.lint.game` (see
-/// [`crate::game_install::detected_script_lookup_dirs_for_game`]) if it
-/// hasn't been set explicitly yet, and marks it explicit afterward either
-/// way so a later save never re-fills it again.
-pub(crate) fn seed_lookup_script_roots(project: &mut ProjectFile) {
-    if project.lookup_script_roots_explicit {
-        return;
-    }
-    merge_detected_lookup_script_roots(project);
-    project.lookup_script_roots_explicit = true;
-}
-
-pub(crate) fn merge_detected_lookup_script_roots(project: &mut ProjectFile) {
-    merge_lookup_roots(
-        &mut project.lookup_script_roots,
-        &detected_script_lookup_dirs_for_game(project.lint.game),
-    );
 }
 
 #[cfg(test)]

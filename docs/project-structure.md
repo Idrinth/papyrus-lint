@@ -85,7 +85,7 @@ copy those into `docs/agent/`.
 | `papyrus-ast-cache` | Disk and bundled-base-script cache for parsed ASTs and token streams. |
 | `papyrus-collision-cache` | Persistent content-hash cache used to detect conflicting script copies. |
 | `papyrus-lints` | Diagnostics, suppression/repair infrastructure, lint visitors, and individual rules. |
-| `papyrus-lint-config` | Config discovery and YAML I/O, compiler/game detection, script roots, and presets. |
+| `papyrus-lint-config` | Config discovery and YAML I/O, compiler detection, script roots, and presets. |
 | `papyrus-lint-core` | Tauri-independent project resolution, cross-script lookup, compilation, and shared workflows. |
 | `papyrus-lint-output` | Plain-text, JSON, and AI-report models and formatting shared by GUI and CLI. |
 | `papyrus-lint-live` | In-memory source linting shared by CLI `--blob`, the language server, and desktop live edit. |

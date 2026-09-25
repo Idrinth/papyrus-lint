@@ -1,6 +1,5 @@
 use super::*;
 use crate::presets::{initialize_default_config, Preset};
-use crate::skyrim::detected_skyrim_script_lookup_dirs;
 
 #[test]
 fn parse_lint_yaml_returns_defaults_for_empty_and_whitespace_only_documents() {
@@ -87,20 +86,10 @@ fn default_config_matches_the_checked_in_configuration_copy() {
     let checked_in_copy = fs::read_to_string(&checked_in_path)
         .expect("failed to read configuration/papyrus-lint.default.yaml");
 
-    let detected = detected_skyrim_script_lookup_dirs();
-    if detected.is_empty() {
-        assert_eq!(
-            generated, checked_in_copy,
-            "configuration/papyrus-lint.default.yaml is out of date; regenerate it with `PapyrusLinterCLI init`"
-        );
-    } else {
-        for dir in &detected {
-            assert!(
-                generated.contains(dir),
-                "init should fill lookup_script_roots with {dir}"
-            );
-        }
-    }
+    assert_eq!(
+        generated, checked_in_copy,
+        "configuration/papyrus-lint.default.yaml is out of date; regenerate it with `PapyrusLinterCLI init`"
+    );
 }
 
 #[test]
