@@ -1,4 +1,4 @@
-use super::{GameEdition, PResult, Parser};
+use super::{PResult, Parser};
 use crate::ast::*;
 use crate::token::{Keyword, TokenKind};
 
@@ -83,7 +83,7 @@ impl Parser {
             } else if self.at_keyword(Keyword::Native) {
                 self.advance();
                 flags.is_native = true;
-            } else if self.mode == GameEdition::Fallout4
+            } else if self.mode.has_fallout4_dialect()
                 && (self.at_keyword(Keyword::DebugOnly)
                     || self.at_keyword(Keyword::BetaOnly)
                     || self.at_identifier_ignore_ascii_case("Const")
@@ -99,12 +99,12 @@ impl Parser {
     }
 
     fn parse_member(&mut self, script: &mut Script) -> PResult<()> {
-        if self.mode == GameEdition::Fallout4 && self.at_keyword(Keyword::Struct) {
+        if self.mode.has_fallout4_dialect() && self.at_keyword(Keyword::Struct) {
             script.structs.push(self.parse_struct()?);
             return Ok(());
         }
 
-        if self.mode == GameEdition::Fallout4 && self.at_keyword(Keyword::Group) {
+        if self.mode.has_fallout4_dialect() && self.at_keyword(Keyword::Group) {
             script.groups.push(self.parse_group()?);
             return Ok(());
         }
@@ -224,7 +224,7 @@ impl Parser {
             } else if self.at_keyword(Keyword::Conditional) {
                 self.advance();
                 flags.is_conditional = true;
-            } else if self.mode == GameEdition::Fallout4
+            } else if self.mode.has_fallout4_dialect()
                 && (self.at_identifier_ignore_ascii_case("Const")
                     || self.at_identifier_ignore_ascii_case("Mandatory"))
             {
@@ -241,7 +241,7 @@ impl Parser {
 
     /// Fallout 4 only: `Struct <Name>` .. `EndStruct`, a block of typed
     /// member declarations with optional default values. Only called in
-    /// [`GameEdition::Fallout4`] mode.
+    /// Fallout 4 / Starfield mode.
     fn parse_struct(&mut self) -> PResult<StructDecl> {
         let line = self.current().line;
         self.expect_keyword(Keyword::Struct)?;
@@ -291,7 +291,7 @@ impl Parser {
 
     /// Fallout 4 only: `Group <Name> [Collapsed|CollapsedOnBase]
     /// [CollapsedOnRef]` .. `EndGroup`, a block of property declarations.
-    /// Only called in [`GameEdition::Fallout4`] mode.
+    /// Only called in Fallout 4 / Starfield mode.
     fn parse_group(&mut self) -> PResult<GroupDecl> {
         let line = self.current().line;
         self.expect_keyword(Keyword::Group)?;
@@ -363,7 +363,7 @@ impl Parser {
             if self.at_keyword(Keyword::Conditional) {
                 self.advance();
                 is_conditional = true;
-            } else if self.mode == GameEdition::Fallout4
+            } else if self.mode.has_fallout4_dialect()
                 && self.at_identifier_ignore_ascii_case("Const")
             {
                 self.advance();
@@ -439,7 +439,7 @@ impl Parser {
         // colon-qualified script (`Event DLC03:Foo.Bar(...)`). Skyrim
         // events are a bare identifier; a `.` there is still
         // `expected LParen, found Dot`.
-        if is_event && self.mode == GameEdition::Fallout4 && matches!(self.kind(), TokenKind::Dot) {
+        if is_event && self.mode.has_fallout4_dialect() && matches!(self.kind(), TokenKind::Dot) {
             self.advance();
             name.push('.');
             name.push_str(&self.expect_identifier()?);
@@ -488,12 +488,14 @@ impl Parser {
             } else if self.at_keyword(Keyword::Native) {
                 self.advance();
                 flags.is_native = true;
-            } else if self.mode == GameEdition::Fallout4 && self.at_keyword(Keyword::DebugOnly) {
+            } else if self.mode.has_fallout4_dialect() && self.at_keyword(Keyword::DebugOnly) {
                 self.advance();
                 flags.is_debug_only = true;
-            } else if self.mode == GameEdition::Fallout4 && self.at_keyword(Keyword::BetaOnly) {
+            } else if self.mode.has_fallout4_dialect() && self.at_keyword(Keyword::BetaOnly) {
                 self.advance();
                 flags.is_beta_only = true;
+            } else if self.mode.has_starfield_dialect() && self.at_starfield_access_flag() {
+                flags.access_level = self.parse_starfield_access_flag();
             } else if matches!(self.kind(), TokenKind::CommentAnnotation(_)) {
                 flags.access_level = self.parse_access_level()?;
             } else {
@@ -513,6 +515,30 @@ impl Parser {
             "protected" => Ok(AccessLevel::Protected),
             "private" => Ok(AccessLevel::Private),
             _ => unreachable!("the lexer only emits supported access level annotations"),
+        }
+    }
+
+    /// Starfield writes access the same way `; @private` / `; @protected`
+    /// do, but as header flags (`Private`, `Protected`, `SelfOnly`,
+    /// `Internal`) instead of comment annotations. `SelfOnly` is the
+    /// native-header companion to `Protected` (`native protected selfonly`
+    /// on `ScriptObject`); `Internal` is the script-local companion to
+    /// `Private`.
+    fn at_starfield_access_flag(&self) -> bool {
+        ["private", "protected", "selfonly", "internal"]
+            .iter()
+            .any(|flag| self.at_identifier_ignore_ascii_case(flag))
+    }
+
+    fn parse_starfield_access_flag(&mut self) -> AccessLevel {
+        let TokenKind::Identifier(name) = self.kind().clone() else {
+            unreachable!("parse_starfield_access_flag is only called for an identifier flag");
+        };
+        self.advance();
+        match name.to_ascii_lowercase().as_str() {
+            "private" | "internal" => AccessLevel::Private,
+            "protected" | "selfonly" => AccessLevel::Protected,
+            _ => unreachable!("at_starfield_access_flag already filtered the spelling"),
         }
     }
 

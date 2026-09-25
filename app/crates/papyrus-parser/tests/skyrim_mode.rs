@@ -1,7 +1,8 @@
 //! Skyrim's Papyrus dialect is the default: [`parse`] and
 //! [`parse_with_mode`] with [`GameEdition::Skyrim`] must reject every
-//! construct that [`GameEdition::Fallout4`] added. Positive coverage for
-//! those constructs lives in `fallout4_mode.rs`.
+//! construct that [`GameEdition::Fallout4`] or [`GameEdition::Starfield`]
+//! added. Positive coverage for those constructs lives in
+//! `fallout4_mode.rs` and `starfield_mode.rs`.
 
 use papyrus_parser::parser::GameEdition;
 use papyrus_parser::{parse, parse_with_mode, PapyrusError};
@@ -232,4 +233,14 @@ EndFunction
 "#,
         "colon-qualified `is` type names are Fallout 4 only",
     );
+}
+
+#[test]
+fn rejects_starfield_access_flags() {
+    for flag in ["Private", "Protected", "SelfOnly", "Internal"] {
+        assert_skyrim_rejects(
+            &format!("ScriptName Rejected\n\nFunction Hide() {flag}\nEndFunction\n"),
+            &format!("{flag} is Starfield only"),
+        );
+    }
 }
