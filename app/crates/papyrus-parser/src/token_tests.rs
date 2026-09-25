@@ -57,6 +57,7 @@ fn maps_every_keyword_spelling() {
 #[test]
 fn rejects_non_keywords_and_non_normalized_case() {
     assert_eq!(Keyword::from_word("identifier"), None);
+    assert_eq!(Keyword::from_word("customevent"), None);
     assert_eq!(Keyword::from_word("Function"), None);
     assert_eq!(Keyword::from_word(""), None);
 }

@@ -33,8 +33,33 @@ fn parse_and_skyrim_mode_agree_on_a_plain_script() {
     assert!(!via_parse.functions[0].is_beta_only);
     assert!(via_parse.structs.is_empty());
     assert!(via_parse.groups.is_empty());
+    assert!(via_parse.custom_events.is_empty());
     assert!(via_mode.structs.is_empty());
     assert!(via_mode.groups.is_empty());
+    assert!(via_mode.custom_events.is_empty());
+}
+
+#[test]
+fn rejects_custom_event_declarations() {
+    assert_skyrim_rejects(
+        "ScriptName Example\nCustomEvent OnReady\n",
+        "CustomEvent is a Fallout 4 and later declaration",
+    );
+}
+
+#[test]
+fn accepts_custom_event_as_an_identifier() {
+    let script = parse(
+        "ScriptName CustomEvent\n\n\
+         Int customEvent = 1\n\n\
+         Function CustomEvent()\nEndFunction\n",
+    )
+    .expect("Skyrim does not reserve CustomEvent");
+
+    assert_eq!(script.name, "CustomEvent");
+    assert_eq!(script.variables[0].name, "customEvent");
+    assert_eq!(script.functions[0].name, "CustomEvent");
+    assert!(script.custom_events.is_empty());
 }
 
 #[test]

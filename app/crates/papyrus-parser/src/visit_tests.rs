@@ -46,6 +46,7 @@ fn default_visitors_walk_complete_inputs() {
     let script = crate::parse_with_mode(
         "ScriptName DefaultVisit\n\n\
          Import Utility\n\
+         CustomEvent OnReady\n\
          Int Property Count = 1 Auto\n\
          Int total = 0\n\n\
          Struct Entry\n    Int Value = 2\nEndStruct\n\n\

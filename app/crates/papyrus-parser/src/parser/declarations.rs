@@ -53,6 +53,7 @@ impl Parser {
             imports: Vec::new(),
             properties: Vec::new(),
             variables: Vec::new(),
+            custom_events: Vec::new(),
             functions: Vec::new(),
             states: Vec::new(),
             structs: Vec::new(),
@@ -136,6 +137,21 @@ impl Parser {
 
         if self.at_keyword(Keyword::Event) {
             script.functions.push(self.parse_function(None, true)?);
+            return Ok(());
+        }
+
+        // Not a reserved word: Skyrim still uses it as a name
+        // (`ScriptName CustomEvent`). Fallout 4 and later recognize the
+        // declaration here; Skyrim rejects that form instead of the token.
+        if self.at_identifier_ignore_ascii_case("CustomEvent") {
+            if !self.mode.has_fallout4_dialect() {
+                return Err(self.error("CustomEvent is a Fallout 4 and later declaration"));
+            }
+            let line = self.current().line;
+            self.advance();
+            let name = self.expect_identifier()?;
+            self.expect_terminator()?;
+            script.custom_events.push(CustomEventDecl { name, line });
             return Ok(());
         }
 

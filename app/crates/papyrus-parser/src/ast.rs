@@ -28,6 +28,10 @@ pub struct Script {
     pub imports: Vec<ImportDecl>,
     pub properties: Vec<PropertyDecl>,
     pub variables: Vec<VariableDecl>,
+    /// Fallout 4 and later: events declared by this script for use with
+    /// `SendCustomEvent` and `RegisterForCustomEvent`.
+    #[serde(default)]
+    pub custom_events: Vec<CustomEventDecl>,
     pub functions: Vec<FunctionDecl>,
     pub states: Vec<StateDecl>,
     /// Fallout 4 only (`GameEdition::Fallout4`): the script's own custom
@@ -79,6 +83,12 @@ pub struct VariableDecl {
     pub name: String,
     pub value: Option<Expr>,
     pub is_conditional: bool,
+    pub line: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct CustomEventDecl {
+    pub name: String,
     pub line: usize,
 }
 
