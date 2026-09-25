@@ -269,7 +269,7 @@ class MarkdownToHtmlTest(unittest.TestCase):
             lambda href: f"docs/{href}",
         )
 
-        self.assertIn("<h2>Setup <strong>now</strong></h2>", result)
+        self.assertIn('<h2 id="setup-now">Setup <strong>now</strong></h2>', result)
         self.assertIn('<p>Read <a href="docs/guide.md">the guide</a> on the next line.</p>', result)
         self.assertIn(
             '<pre class="code-block language-yaml" tabindex="0"><code>unsafe: &lt;value&gt;</code></pre>',
@@ -295,7 +295,7 @@ class MarkdownToHtmlTest(unittest.TestCase):
         self.assertEqual(rewritten, ["setup.md", "guide.md"])
         self.assertEqual(
             result,
-            '<h2><a href="published/setup.md">Setup</a></h2>\n'
+            '<h2 id="setup"><a href="published/setup.md">Setup</a></h2>\n'
             '<p>Read the <a href="published/guide.md">guide</a>.</p>',
         )
 
@@ -323,7 +323,7 @@ class MarkdownToHtmlTest(unittest.TestCase):
 
         self.assertEqual(
             result,
-            "<h6>&lt;Advanced&gt; &amp; <strong>safe</strong></h6>\n"
+            '<h6 id="-safe">&lt;Advanced&gt; &amp; <strong>safe</strong></h6>\n'
             '<pre class="code-block" tabindex="0"><code>'
             '&lt;script data-x=&quot;1&quot;&gt;</code></pre>',
         )
@@ -369,7 +369,7 @@ class MarkdownToHtmlTest(unittest.TestCase):
     def test_markdown_to_html_ends_a_list_at_a_blank_line_or_heading(self) -> None:
         result = markdown_render.markdown_to_html(["- Only item", "", "## Next"])
 
-        self.assertEqual(result, "<ul><li>Only item</li></ul>\n<h2>Next</h2>")
+        self.assertEqual(result, '<ul><li>Only item</li></ul>\n<h2 id="next">Next</h2>')
 
     def test_markdown_to_html_rewrites_links_inside_list_items(self) -> None:
         result = markdown_render.markdown_to_html(
@@ -381,6 +381,35 @@ class MarkdownToHtmlTest(unittest.TestCase):
             '<ul><li>See <a href="docs/guide.md">the guide</a> for more.</li></ul>',
         )
 
+    def test_markdown_to_html_assigns_github_compatible_heading_ids(self) -> None:
+        result = markdown_render.markdown_to_html(
+            [
+                "# Getting Started!",
+                "## Repeated heading",
+                "## Repeated heading",
+                "## Name",
+                "## Name-1",
+                "## Name",
+                "## Linked [`code`](elsewhere.md) & details",
+            ]
+        )
+
+        self.assertIn("<h1 id=\"getting-started\">Getting Started!</h1>", result)
+        self.assertIn("<h2 id=\"repeated-heading\">Repeated heading</h2>", result)
+        self.assertIn("<h2 id=\"repeated-heading-1\">Repeated heading</h2>", result)
+        self.assertIn("<h2 id=\"name\">Name</h2>", result)
+        self.assertIn("<h2 id=\"name-1\">Name-1</h2>", result)
+        self.assertIn("<h2 id=\"name-2\">Name</h2>", result)
+        self.assertIn(
+            '<h2 id="linked-code--details">Linked <a href="elsewhere.md"><code>code</code></a> &amp; details</h2>',
+            result,
+        )
+
+    def test_github_heading_id_strips_markup_and_punctuation(self) -> None:
+        self.assertEqual(markdown_render.github_heading_id("Getting Started!"), "getting-started")
+        self.assertEqual(markdown_render.github_heading_id("[Setup](setup.md)"), "setup")
+        self.assertEqual(markdown_render.github_heading_id("Setup **now**"), "setup-now")
+
     def test_markdown_to_html_does_not_treat_a_bare_hyphen_as_a_list(self) -> None:
         result = markdown_render.markdown_to_html(["A dash - mid sentence, not a list."])
 
@@ -389,7 +418,7 @@ class MarkdownToHtmlTest(unittest.TestCase):
     def test_markdown_to_html_ends_a_list_at_a_heading_with_no_blank_separator(self) -> None:
         result = markdown_render.markdown_to_html(["- Only item", "## Next"])
 
-        self.assertEqual(result, "<ul><li>Only item</li></ul>\n<h2>Next</h2>")
+        self.assertEqual(result, '<ul><li>Only item</li></ul>\n<h2 id="next">Next</h2>')
 
     def test_markdown_to_html_ends_a_list_at_a_code_fence_with_no_blank_separator(self) -> None:
         result = markdown_render.markdown_to_html(["- Only item", "```text", "code", "```"])
