@@ -849,7 +849,7 @@ jobs:
           update_mod_version: true
           allow_mod_manager_download: false
           primary_mod_manager_download: true
-          description: "Windows GUI executable, for other operating systems see github release. This is likely the main you are looking for."
+          description: "Windows GUI executable, for other operating systems see github release."
           mod_id: ${{ env.MOD_ID }}
           changelog: ${{ steps.nexus_changelog.outputs.changelog }}
       - name: Upload to NexusMods (cli)
@@ -859,10 +859,10 @@ jobs:
           file_id: "8013795"
           filename: cli.exe
           version: ${{ github.ref_name }}
-          category: main
+          category: optional
           display_name: "PapyrusLinterCLI (Windows)"
           allow_mod_manager_download: false
-          description: "Windows CLI executable, for other operating systems see github release. Likely you are looking for the other main, PapyrusLinterGUI (Windows)."
+          description: "Windows CLI executable, for other operating systems see github release."
       - name: Upload to NexusMods (config)
         uses: Nexus-Mods/upload-action@v1.0.0-beta.10
         with:
