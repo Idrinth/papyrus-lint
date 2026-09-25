@@ -32,6 +32,26 @@ function defaultProjectRootHandler(command: string): ((args: unknown) => unknown
   }
 }
 
+// Default backend behavior for the startup metadata commands that
+// main.ts fires on DOMContentLoaded when isTauri() is true (see
+// loadAppVersion/loadRuleTags/refreshPresetManagementTab). Tests that
+// import the harness and therefore load main.ts hit these even when they
+// never call invokeImplFor themselves; rejecting them would just
+// console.error from the wrappers. A test that cares about the returned
+// version/tags/presets still supplies its own handlers.
+function defaultStartupHandler(command: string): ((args: unknown) => unknown) | undefined {
+  switch (command) {
+    case "get_app_version":
+      return () => "";
+    case "list_rule_tags":
+      return () => [];
+    case "list_config_presets":
+      return () => [];
+    default:
+      return undefined;
+  }
+}
+
 // Test-only stand-ins for the format_issues_as_text/format_issues_as_json/
 // format_issues_for_ai_base Tauri commands (app/src-tauri/src/export.rs),
 // which vitest can't invoke for real since it never runs the Rust
@@ -277,7 +297,7 @@ export function invokeImplFor(handlers: Record<string, (args: unknown) => unknow
     if (command === "lint_project_scripts" && !handlers[command]) {
       return emulateLintProjectScripts(handlers, args);
     }
-    const handler = handlers[command] ?? defaultProjectRootHandler(command) ?? defaultExportHandler(command) ?? defaultCompletionHandler(command);
+    const handler = handlers[command] ?? defaultProjectRootHandler(command) ?? defaultExportHandler(command) ?? defaultCompletionHandler(command) ?? defaultStartupHandler(command);
     if (!handler) {
       return Promise.reject(new Error(`unexpected command: ${command}`));
     }
@@ -320,11 +340,12 @@ export async function loadProjectConfigConfirmed(dir: string): Promise<void> {
 
 beforeEach(() => {
   invokeMock.mockReset();
-  // Installs the default project-root/export-formatting fallbacks (see
-  // defaultProjectRootHandler/defaultExportHandler above) so a test that
-  // never calls invokeImplFor itself still gets sensible behavior for
-  // those commands; a test that does call invokeImplFor merges its own
-  // handlers back on top of this same default chain.
+  // Installs the default project-root/export-formatting/startup fallbacks
+  // (see defaultProjectRootHandler/defaultExportHandler/defaultStartupHandler
+  // above) so a test that never calls invokeImplFor itself still gets
+  // sensible behavior for those commands; a test that does call
+  // invokeImplFor merges its own handlers back on top of this same
+  // default chain.
   invokeImplFor({});
   localStorage.clear();
   mountFixture();
