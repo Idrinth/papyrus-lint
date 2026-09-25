@@ -58,6 +58,7 @@ impl Parser {
             states: Vec::new(),
             structs: Vec::new(),
             groups: Vec::new(),
+            guards: Vec::new(),
             line,
         };
 
@@ -107,6 +108,17 @@ impl Parser {
 
         if self.mode.has_fallout4_dialect() && self.at_keyword(Keyword::Group) {
             script.groups.push(self.parse_group()?);
+            return Ok(());
+        }
+
+        // Not a reserved word: Skyrim uses it as a name (`Actor guard`).
+        // Starfield recognizes the declaration here; other editions reject
+        // that form instead of the token.
+        if self.at_identifier_ignore_ascii_case("Guard") {
+            if !self.mode.has_starfield_dialect() {
+                return Err(self.error("Guard is a Starfield declaration"));
+            }
+            script.guards.push(self.parse_guard()?);
             return Ok(());
         }
 
@@ -177,6 +189,27 @@ impl Parser {
             .variables
             .push(self.parse_variable_tail(type_name, name, line)?);
         Ok(())
+    }
+
+    /// Starfield only: `Guard <Name> [ProtectsFunctionLogic]`.
+    /// The caller has already recognized the leading `Guard` identifier.
+    fn parse_guard(&mut self) -> PResult<GuardDecl> {
+        let line = self.current().line;
+        self.advance();
+        let name = self.expect_identifier()?;
+        let protects_function_logic =
+            if self.at_identifier_ignore_ascii_case("ProtectsFunctionLogic") {
+                self.advance();
+                true
+            } else {
+                false
+            };
+        self.expect_terminator()?;
+        Ok(GuardDecl {
+            name,
+            protects_function_logic,
+            line,
+        })
     }
 
     pub(super) fn parse_type_name(&mut self) -> PResult<TypeName> {

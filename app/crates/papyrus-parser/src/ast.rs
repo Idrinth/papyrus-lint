@@ -44,6 +44,11 @@ pub struct Script {
     /// here, not in `properties`. Always empty when parsed in Skyrim mode.
     #[serde(default)]
     pub groups: Vec<GroupDecl>,
+    /// Starfield only (`GameEdition::Starfield`): named `Guard`
+    /// declarations, optionally flagged `ProtectsFunctionLogic`. Always
+    /// empty outside Starfield mode.
+    #[serde(default)]
+    pub guards: Vec<GuardDecl>,
     /// The line the `ScriptName` keyword itself starts on. Lets downstream
     /// tooling (see `property-sorting` in `papyrus-lints`) locate the
     /// `ScriptName` declaration without re-scanning the original source
@@ -123,6 +128,17 @@ pub struct GroupDecl {
     pub is_collapsed_on_base: bool,
     pub is_collapsed_on_ref: bool,
     pub properties: Vec<PropertyDecl>,
+    pub line: usize,
+}
+
+/// A Starfield only (`GameEdition::Starfield`) `Guard <Name>
+/// [ProtectsFunctionLogic]` declaration. Named by `LockGuard` /
+/// `RequiresGuard` (parsed separately). Not a variable.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct GuardDecl {
+    pub name: String,
+    /// Set when the declaration carries the `ProtectsFunctionLogic` flag.
+    pub protects_function_logic: bool,
     pub line: usize,
 }
 
