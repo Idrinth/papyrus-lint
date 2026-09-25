@@ -109,10 +109,10 @@ function gameFromControls(): Game {
   if (isSelectableGame(selected)) {
     return selected;
   }
-  // A loaded game the picker does not offer (CLI-only `starfield`) is shown
-  // as an extra option. Honor that option when it is the current selection
-  // so a later edit does not silently rewrite the key to Skyrim, and so
-  // switching back to it still round-trips.
+  // A loaded game the picker does not offer is shown as an extra option.
+  // Honor that option when it is the current selection so a later edit
+  // does not silently rewrite the key to Skyrim, and so switching back
+  // to it still round-trips.
   const unlisted = gameEl?.selectedOptions[0]?.hasAttribute("data-unlisted-game") === true;
   if (unlisted && selected) {
     return selected as Game;
@@ -121,9 +121,8 @@ function gameFromControls(): Game {
   return currentLintConfig.game;
 }
 
-// The Settings select only lists games the linter can actually check. A
-// project created with `init --game starfield` still has to display and
-// preserve that value until the user picks Skyrim or Fallout 4.
+// The Settings select lists the supported games. An unrecognized loaded
+// value is still shown and preserved until the user picks a listed game.
 function reflectGameControl(game: string) {
   if (!gameEl) {
     return;

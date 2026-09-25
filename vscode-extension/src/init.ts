@@ -10,8 +10,8 @@ interface InitPresetQuickPickItem extends vscode.QuickPickItem {
 }
 
 interface InitGameQuickPickItem extends vscode.QuickPickItem {
-  /** The `--game` value. Starfield parses but is not supported by the linter yet. */
-  game: 'skyrim' | 'fallout4';
+  /** The `--game` value. */
+  game: 'skyrim' | 'fallout4' | 'starfield';
 }
 
 function initPresetQuickPickItems(): InitPresetQuickPickItem[] {
@@ -27,6 +27,7 @@ function initGameQuickPickItems(): InitGameQuickPickItem[] {
   return [
     { label: 'Skyrim (default)', game: 'skyrim', description: 'Skyrim Special Edition / Anniversary Edition' },
     { label: 'Fallout 4', game: 'fallout4', description: 'Fallout 4' },
+    { label: 'Starfield', game: 'starfield', description: 'Starfield' },
   ];
 }
 

@@ -23,10 +23,9 @@ If a change would violate one, update the cited code *and* this list.
 Anything that belongs to one crate, or to the desktop UI, belongs in that
 README.
 
-- VS Code and Sublime `init` prompts write `game` as `skyrim` or
-  `fallout4`. Starfield stays CLI-only (`init --game starfield`). The
-  desktop picker is
-  [`app/src/README.md`](../../app/src/README.md).
+- VS Code `init` prompts and the desktop first-run / Settings pickers
+  write `game` as `skyrim`, `fallout4`, or `starfield`. The desktop
+  picker is [`app/src/README.md`](../../app/src/README.md).
 - A `.ppj`'s `<Import>` entries are `additional_script_roots`, never
   `lookup_script_roots`. Parsing is the
   [`papyrus-lint-core`](../../app/crates/papyrus-lint-core/README.md)
