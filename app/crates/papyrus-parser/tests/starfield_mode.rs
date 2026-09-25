@@ -300,6 +300,51 @@ fn parses_try_lock_guard_with_and_without_else() {
 }
 
 #[test]
+fn parses_try_lock_guard_with_bare_else() {
+    let script = parse_with_mode(
+        "ScriptName SQ_TraitsQuestScript\n\n\
+         Function TaskmasterPossibleRestore()\n\
+             TryLockGuard TaskMasterRestoreGuard\n\
+                 If IsValid()\n\
+                     Debug.Trace(\"valid\")\n\
+                 Else\n\
+                     Debug.Trace(\"invalid\")\n\
+                 EndIf\n\
+             Else\n\
+                 Debug.Trace(\"locked\")\n\
+             EndTryLockGuard\n\
+         EndFunction\n",
+        GameEdition::Starfield,
+    )
+    .expect("a bare Else should parse as the TryLockGuard else-clause");
+
+    let Stmt::LockGuard {
+        body,
+        else_body,
+        else_line,
+        ..
+    } = &script.functions[0].body[0]
+    else {
+        panic!(
+            "expected a TryLockGuard, got {:?}",
+            script.functions[0].body[0]
+        );
+    };
+    let Stmt::If {
+        else_body: if_else_body,
+        else_line: if_else_line,
+        ..
+    } = &body[0]
+    else {
+        panic!("expected an If, got {:?}", body[0]);
+    };
+    assert_eq!(*if_else_line, Some(7));
+    assert!(matches!(if_else_body[0], Stmt::Expr { .. }));
+    assert_eq!(*else_line, Some(10));
+    assert!(matches!(else_body[0], Stmt::Expr { .. }));
+}
+
+#[test]
 fn parses_guard_with_protects_function_logic() {
     let script = parse_with_mode(
         "ScriptName ATMScript\n\nGuard stealGuard ProtectsFunctionLogic\nint tempStealCount = 0\n",
