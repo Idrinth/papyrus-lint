@@ -28,7 +28,6 @@ use crate::preset_files::{executable_dir, find_user_preset_file, user_presets_di
 use crate::project_file::{
     existing_config_path, game_key_first, non_lint_yaml, ProjectFile, CONFIG_FILE_NAMES,
 };
-use crate::script_roots::seed_lookup_script_roots;
 use crate::yaml_merge::deep_merge;
 
 pub use crate::preset_files::{list_user_preset_names, user_presets_dir};
@@ -458,8 +457,7 @@ fn initialize_config_with_base(
         return Err(format!("config already exists at {}", path.display()));
     }
 
-    let mut base = resolve_preset_project_file(base_dir, &preset)?;
-    seed_lookup_script_roots(&mut base);
+    let base = resolve_preset_project_file(base_dir, &preset)?;
 
     let path = dir.join(CONFIG_FILE_NAMES[0]);
     let lint_yaml = crate::lint_config_to_yaml(&base.lint)?;
