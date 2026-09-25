@@ -13,7 +13,12 @@ class PageTemplatesTest(unittest.TestCase):
             "action.template.html": {"<!--ACTION_TITLE-->", "<!--ACTION_DESCRIPTION-->", "<!--ACTION_CONTENT-->"},
             "coverage.template.html": {"<!--COVERAGE_VERSION-->", "<!--COVERAGE_CONTENT-->"},
             "imprint.template.html": set(),
-            "docs.template.html": {"<!--DOC_TITLE-->", "<!--DOC_DESCRIPTION-->", "<!--DOC_URL-->", "<!--DOC_CONTENT-->"},
+            "docs.template.html": {
+                "<!--DOC_TITLE-->",
+                "<!--DOC_DESCRIPTION-->",
+                "<!--DOC_URL-->",
+                "<!--DOC_CONTENT-->",
+            },
         }
 
         for filename, markers in required_markers.items():

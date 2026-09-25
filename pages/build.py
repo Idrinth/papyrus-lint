@@ -78,25 +78,24 @@ try:
         DOCS,
         build_action_page,
         build_doc_pages,
-        doc_url_prefix,
         render_doc,
         render_docs_list_items,
     )
     from pages.minify import minify_css, minify_js
     from pages.rules_page import build_rules_page
     from pages.site_assets import ASSETS, MODERN_FORMAT_ASSETS, convert_to_modern_formats, copy_json_schemas
-    from pages.site_chrome import CNAME_FILE, SITE_URL, finalize_page, render_shared_components
+    from pages.site_chrome import CNAME_FILE, finalize_page, render_shared_components
     from pages.site_index import build_robots_txt, build_sitemap
     from pages.static_pages import build_imprint_page
     from pages.videos_page import build_videos_page
 except ImportError:  # running as pages/build.py
     from coverage_report import build_coverage_page
     from css import inline_css_imports
-    from docs_pages import DOCS, build_action_page, build_doc_pages, doc_url_prefix, render_doc, render_docs_list_items
+    from docs_pages import DOCS, build_action_page, build_doc_pages, render_doc, render_docs_list_items
     from minify import minify_css, minify_js
     from rules_page import build_rules_page
     from site_assets import ASSETS, MODERN_FORMAT_ASSETS, convert_to_modern_formats, copy_json_schemas
-    from site_chrome import CNAME_FILE, SITE_URL, finalize_page, render_shared_components
+    from site_chrome import CNAME_FILE, finalize_page, render_shared_components
     from site_index import build_robots_txt, build_sitemap
     from static_pages import build_imprint_page
     from videos_page import build_videos_page

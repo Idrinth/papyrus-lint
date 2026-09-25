@@ -13,7 +13,15 @@ from unittest.mock import MagicMock, patch
 from PIL import Image
 
 from pages import build as page_builder
-from pages import docs_pages, rules_page, site_assets, site_chrome, static_pages, videos_page
+from pages import (
+    docs_pages,
+    rules_page,
+    site_assets,
+    site_chrome,
+    site_index,
+    static_pages,
+    videos_page,
+)
 
 
 class RepositoryBuildIntegrationTest(unittest.TestCase):
@@ -268,16 +276,16 @@ class BuildTest(unittest.TestCase):
 
             robots_output = (out_dir / "robots.txt").read_text(encoding="utf-8")
             self.assertIn("Allow: /", robots_output)
-            self.assertIn(f"Sitemap: {page_builder.SITE_URL}sitemap.xml", robots_output)
+            self.assertIn(f"Sitemap: {site_index.SITE_URL}sitemap.xml", robots_output)
 
             sitemap_output = (out_dir / "sitemap.xml").read_text(encoding="utf-8")
-            self.assertIn(f"<loc>{page_builder.SITE_URL}</loc>", sitemap_output)
-            self.assertIn(f"<loc>{page_builder.SITE_URL}action.html</loc>", sitemap_output)
-            self.assertIn(f"<loc>{page_builder.SITE_URL}rules.html</loc>", sitemap_output)
-            self.assertIn(f"<loc>{page_builder.SITE_URL}videos.html</loc>", sitemap_output)
-            self.assertIn(f"<loc>{page_builder.SITE_URL}coverage.html</loc>", sitemap_output)
-            self.assertIn(f"<loc>{page_builder.SITE_URL}imprint.html</loc>", sitemap_output)
-            self.assertIn(f"<loc>{page_builder.SITE_URL}docs/index.html</loc>", sitemap_output)
+            self.assertIn(f"<loc>{site_index.SITE_URL}</loc>", sitemap_output)
+            self.assertIn(f"<loc>{site_index.SITE_URL}action.html</loc>", sitemap_output)
+            self.assertIn(f"<loc>{site_index.SITE_URL}rules.html</loc>", sitemap_output)
+            self.assertIn(f"<loc>{site_index.SITE_URL}videos.html</loc>", sitemap_output)
+            self.assertIn(f"<loc>{site_index.SITE_URL}coverage.html</loc>", sitemap_output)
+            self.assertIn(f"<loc>{site_index.SITE_URL}imprint.html</loc>", sitemap_output)
+            self.assertIn(f"<loc>{site_index.SITE_URL}docs/index.html</loc>", sitemap_output)
 
             coverage_output = (out_dir / "coverage.html").read_text(encoding="utf-8")
             self.assertIn("v1.2.3", coverage_output)
