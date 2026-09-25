@@ -93,6 +93,8 @@ jobs:
             --certificate-oidc-issuer https://token.actions.githubusercontent.com \
             "$IMAGE"
 
+  # The checked-in Nexus template has no lint rows. Generate them from the
+  # tagged rules, then render version/coverage/link markers into the asset.
   nexus-page:
     name: Package version-specific Nexus page
     runs-on: ubuntu-latest

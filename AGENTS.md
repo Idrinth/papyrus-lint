@@ -17,8 +17,8 @@ them. `CLAUDE.md` is a pointer here, not a second copy.
 | Crate / folder layout | [`docs/project-structure.md`](docs/project-structure.md) |
 | How to run tests or the desktop app | [`docs/agent/development.md`](docs/agent/development.md) |
 | `.github/workflows/ci.*.yml` or CI scripts | The explanatory comments in the related workflow |
-| `pages/` or the GitHub Pages workflow | [`docs/agent/pages.md`](docs/agent/pages.md) |
-| `.github/workflows/release.yml` | [`docs/agent/releases.md`](docs/agent/releases.md) |
+| `pages/` or the GitHub Pages workflow | The explanatory comments in `.github/workflows/pages.yml` |
+| `.github/workflows/release.yml` | The explanatory comments in that workflow |
 | Lint descriptions / rule docs | [`README.md`](README.md#implemented-lints) |
 
 Do not paste those files back into this index. Update the file you read.
@@ -87,7 +87,7 @@ CI treats clippy warnings as errors.
    in `src/lib.rs` from the generated `shared/rules.json` at build time;
    `pages/build.py` generates the website's searchable `rules.html`
    straight from it; and release tooling fills in `templates/nexuspage.bbcode`'s
-   five lint tables from it (see Releases in `docs/agent/releases.md`) —
+   five lint tables from it (see the comments in `.github/workflows/release.yml`) —
    the checked-in `templates/nexuspage.bbcode` carries no rows itself. `README.md`'s own
    "Implemented Lints" section only keeps a short per-category blurb and a
    link to `rules.html` — it carries no per-rule text to keep in sync.
@@ -124,8 +124,8 @@ Minimum touch list (see also [`CONTRIBUTING.md`](CONTRIBUTING.md)):
    .github/scripts/build_rules_json.py` afterward (and before building or
    testing anything below) to regenerate the git-ignored `shared/rules.json`
    every consumer below actually reads. No Nexus page regeneration step
-   is needed here — that happens at release time (see Releases in
-   `docs/agent/releases.md`). `build.rs` generates
+   is needed here — that happens at release time (see the comments in
+   `.github/workflows/release.yml`). `build.rs` generates
    `registry.rs`'s `KNOWN_RULE_IDS`/`FIXABLE_RULE_IDS`, `tags.rs`'s
    `RULE_TAGS`, `config.rs`'s `Rules`/`default_rules()`,
    `collect_diagnostics`/`apply_repairs`, and `lib.rs`'s rule `mod`s from
@@ -160,8 +160,8 @@ If the rule introduces a new *kind* keyword (not `style` /
 - README lint tables → `shared/rules/<id>.json` (rule 4). `shared/rules/*.json` →
   the generated `shared/rules.json` (`.github/scripts/build_rules_json.py`,
   also git-ignored) → `templates/nexuspage.bbcode`'s lint tables (filled in at
-  release time, never checked in — see Releases in
-  `docs/agent/releases.md`) and `papyrus-lints`'s `registry.rs`/`tags.rs`/
+  release time, never checked in — see `.github/workflows/release.yml`) and
+  `papyrus-lints`'s `registry.rs`/`tags.rs`/
   `lib.rs` rule `mod`s (via `build.rs`) — all generated, never hand-edited.
 - `docs/cli.md`/`docs/configuration.md` CLI usage / default config →
   `templates/nexuspage.bbcode` CLI or configuration section (hand-edited; not
@@ -172,9 +172,9 @@ If the rule introduces a new *kind* keyword (not `style` /
   or [`docs/project-structure.md`](docs/project-structure.md) instead of
   pasting those files back here.
 - `pages/index.template.html`'s CLI examples and every `docs/` subpage are
-  generated from `README.md`/`docs/*.md` on deploy — see Pages in
-  `docs/agent/pages.md` for the `<!--CLI_EXAMPLES-->` extraction and the
-  `DOCS` list a new `docs/*.md` file needs an entry in.
+  generated from `README.md`/`docs/*.md` on deploy. `<!--CLI_EXAMPLES-->`
+  extracts the README examples; add publishable docs to `pages/docs_pages.py`'s
+  `DOCS` list.
 - Contact / download / documentation URLs → `shared/links.yaml`. Markers
   (`<!--CONTACT-LINKS-->`, `<CONTACT-LINKS>`, `<LINKS>`) are filled at
   build time by the tag in the marker; never name a YAML key at a

@@ -1,5 +1,9 @@
 name: GitHub Pages
 
+# Deploy only for an explicit dispatch, normally release.yml's update-pages
+# job. A push trigger could publish unreleased content from the-one while the
+# footer still identifies the site as the latest release. Keep workflow_call
+# available for callers already running on a Pages-approved branch.
 on:
   workflow_dispatch:
     inputs:
@@ -44,6 +48,8 @@ jobs:
         id: version
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # Manual runs default to the latest release; the release workflow pins
+        # the tag so the generated footer describes the artifacts just built.
         run: |
           VERSION="${{ inputs.version }}"
           if [ -z "$VERSION" ]; then
@@ -56,6 +62,8 @@ jobs:
         if: steps.version.outputs.version != ''
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # Coverage is optional: a missing release or successful CI run leaves
+        # the generated coverage page in its "data unavailable" state.
         run: |
           SHA=$(gh api "repos/${{ github.repository }}/commits/${{ steps.version.outputs.version }}" --jq .sha 2>/dev/null || echo "")
           RUN_ID=""
