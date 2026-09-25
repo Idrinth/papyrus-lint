@@ -844,7 +844,7 @@ jobs:
         run: |
           cd nexus-dist
           mv ./*setup.exe ../setup.exe
-          mv ./*Lsp.exe ../lsp.exe
+          mv ./*Lsp-windows.exe ../lsp.exe
           mv SublimeLinter-contrib-papyrus-lint.zip ../sublime.zip
           mv PapyrusLinterCLI-windows.exe ../cli.exe
 
