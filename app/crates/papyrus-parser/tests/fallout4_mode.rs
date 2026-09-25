@@ -556,6 +556,10 @@ fn fallout4_mode_rejects_lock_guard_statements() {
     ] {
         let error = parse_with_mode(source, GameEdition::Fallout4)
             .expect_err("guard locks are Starfield only");
+        assert!(
+            matches!(error, PapyrusError::Parse(_)),
+            "expected a parse error, got {error}"
+        );
   }
 }
 
