@@ -354,3 +354,31 @@ fn fix_file_routes_responses_to_nested_requests() {
     }
     assert!(responses.iter().all(|message| message["error"].is_null()));
 }
+
+#[test]
+fn fix_file_rejects_an_id_bearing_message_without_response_fields() {
+    let uri = "file:///Quest.psc";
+    let (_code, responses) = exchange(&[
+        request(1, "initialize", json!({})),
+        json!({
+            "jsonrpc": "2.0",
+            "method": "textDocument/didOpen",
+            "params": { "textDocument": { "uri": uri, "version": 1, "text": "Scriptname Quest \n" } }
+        }),
+        request(
+            7,
+            "workspace/executeCommand",
+            json!({ "command": FIX_FILE_COMMAND, "arguments": [uri] }),
+        ),
+        json!({ "jsonrpc": "2.0", "id": 9 }),
+        json!({
+            "jsonrpc": "2.0",
+            "id": "papyrus-lint-1",
+            "result": { "applied": true }
+        }),
+    ]);
+
+    let invalid = responses.iter().find(|message| message["id"] == 9).unwrap();
+    assert_eq!(invalid["error"]["code"], -32600);
+    assert!(responses.iter().any(|message| message["id"] == 7));
+}
