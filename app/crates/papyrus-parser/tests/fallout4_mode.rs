@@ -1,4 +1,4 @@
-//! Fallout 4's Papyrus dialect: custom `Struct`s, property `Group`s,
+//! Fallout 4's Papyrus dialect: `CustomEvent` declarations, custom `Struct`s, property `Group`s,
 //! Fallout-specific declaration flags, colon-qualified names, the `is`
 //! type-check operator, and remote / custom events
 //! (`Event OtherScript.EventName(...)`). All are opt-in through
@@ -9,6 +9,41 @@
 use papyrus_parser::ast::Expr;
 use papyrus_parser::parser::GameEdition;
 use papyrus_parser::{parse_with_mode, PapyrusError};
+
+#[test]
+fn parses_custom_event_declarations_as_first_class_members() {
+    let script = parse_with_mode(
+        "ScriptName BuriedArtifact extends ObjectReference\n\n\
+         CustomEvent OnArtifactAcquireStarted\n\
+         CustomEvent OnArtifactAcquireEnded\n\n\
+         Struct SpawnEventArgs\n    Int SpawnGroupNumber\nEndStruct\n",
+        GameEdition::Fallout4,
+    )
+    .unwrap();
+
+    assert_eq!(script.custom_events.len(), 2);
+    assert_eq!(script.custom_events[0].name, "OnArtifactAcquireStarted");
+    assert_eq!(script.custom_events[0].line, 3);
+    assert_eq!(script.custom_events[1].name, "OnArtifactAcquireEnded");
+    assert!(script.variables.is_empty());
+    assert_eq!(script.structs.len(), 1);
+}
+
+#[test]
+fn custom_event_stays_an_identifier_outside_the_declaration() {
+    let script = parse_with_mode(
+        "ScriptName CustomEvent\n\n\
+         CustomEvent OnReady\n\n\
+         Int Function CustomEvent()\n    Return 0\nEndFunction\n",
+        GameEdition::Fallout4,
+    )
+    .unwrap();
+
+    assert_eq!(script.name, "CustomEvent");
+    assert_eq!(script.custom_events.len(), 1);
+    assert_eq!(script.custom_events[0].name, "OnReady");
+    assert_eq!(script.functions[0].name, "CustomEvent");
+}
 
 #[test]
 fn parses_a_struct_declaration_with_typed_members_and_defaults() {

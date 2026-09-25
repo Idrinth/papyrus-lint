@@ -5,8 +5,8 @@
 //! `walk_*` helper when it still wants the children visited.
 
 use crate::ast::{
-    Expr, FunctionDecl, GroupDecl, GuardDecl, IfBranch, ImportDecl, Param, PropertyDecl, Script,
-    StateDecl, Stmt, StructDecl, TypeName, VariableDecl,
+    CustomEventDecl, Expr, FunctionDecl, GroupDecl, GuardDecl, IfBranch, ImportDecl, Param,
+    PropertyDecl, Script, StateDecl, Stmt, StructDecl, TypeName, VariableDecl,
 };
 use crate::token::Token;
 
@@ -26,6 +26,10 @@ pub trait Visitor {
 
     fn visit_variable(&mut self, variable: &VariableDecl) {
         walk_variable(self, variable);
+    }
+
+    fn visit_custom_event(&mut self, custom_event: &CustomEventDecl) {
+        let _ = custom_event;
     }
 
     fn visit_state(&mut self, state: &StateDecl) {
@@ -94,6 +98,9 @@ pub fn walk_script<V: Visitor + ?Sized>(visitor: &mut V, script: &Script) {
     }
     for variable in &script.variables {
         visitor.visit_variable(variable);
+    }
+    for custom_event in &script.custom_events {
+        visitor.visit_custom_event(custom_event);
     }
     for function in &script.functions {
         visitor.visit_function(function);
