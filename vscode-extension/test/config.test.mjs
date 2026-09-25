@@ -26,10 +26,10 @@ describe('resource-scoped settings in a multi-root workspace', () => {
     await new Promise((resolve) => setImmediate(resolve));
 
     assert.deepEqual(harness.execCalls[0].args, [
-      '--config', '/root/folderA/custom.yaml', 'lint', '--format', 'json', '/root/folderA/Test.psc',
+      'lint', '--config', '/root/folderA/custom.yaml', '--format', 'json', '/root/folderA/Test.psc',
     ]);
     assert.deepEqual(harness.execCalls[1].args, [
-      '--config', '/root/folderB/other.yaml', 'lint', '--format', 'json', '/root/folderB/Test.psc',
+      'lint', '--config', '/root/folderB/other.yaml', '--format', 'json', '/root/folderB/Test.psc',
     ]);
   });
 
@@ -54,7 +54,7 @@ describe('resource-scoped settings in a multi-root workspace', () => {
 
     assert.equal(harness.execCalls.length, 1);
     assert.deepEqual(harness.execCalls[0].args, [
-      '--config', '/root/folderB/other.yaml', 'lint', '--format', 'json', '--blob', 'ScriptName B\n',
+      'lint', '--config', '/root/folderB/other.yaml', '--format', 'json', '--blob', 'ScriptName B\n',
     ]);
   });
 
@@ -101,7 +101,7 @@ describe('resource-scoped settings in a multi-root workspace', () => {
     await new Promise((resolve) => setImmediate(resolve));
 
     assert.deepEqual(harness.execCalls[0].args, [
-      '--config', '/global/papyrus-lint.yaml', 'lint', '--format', 'json', '/outside/Test.psc',
+      'lint', '--config', '/global/papyrus-lint.yaml', '--format', 'json', '/outside/Test.psc',
     ]);
   });
 });

@@ -52,7 +52,9 @@ export async function runCli(args: string[], cwd: string): Promise<CliResult> {
         checkedConfiguredCli = configured;
         configuredCliCheck = (async () => {
           await verifyConfiguredExecutable(configured);
-          return executeCli(configured, ['--version'], cwd);
+          // PapyrusLinterCLI 2.x prints the version from the `version` subcommand.
+          // `--version` is a usage error (exit 2) and dumps USAGE on stderr.
+          return executeCli(configured, ['version'], cwd);
         })();
       }
       try {

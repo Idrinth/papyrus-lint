@@ -28,7 +28,7 @@ describe('PapyrusLinter', () => {
 
     assert.deepEqual(harness.execCalls[0], {
       executable: '/tools/PapyrusLinterCLI',
-      args: ['--config', '/project/custom.yaml', 'lint', '--format', 'json', '/project/Test.PSC'],
+      args: ['lint', '--config', '/project/custom.yaml', '--format', 'json', '/project/Test.PSC'],
       options: { cwd: '/project', maxBuffer: 10 * 1024 * 1024 },
     });
     const published = harness.diagnostics.published[0][1][0];
@@ -325,7 +325,7 @@ describe('workspace-root config auto-detection', () => {
 
     await harness.commands.get('papyrusLint.lintFile')(uri(scriptPath));
 
-    assert.deepEqual(harness.execCalls[0].args, ['--config', configFile, 'lint', '--format', 'json', scriptPath]);
+    assert.deepEqual(harness.execCalls[0].args, ['lint', '--config', configFile, '--format', 'json', scriptPath]);
   });
 
   it('leaves args untouched when the document is outside every open workspace folder', async () => {
@@ -362,6 +362,6 @@ describe('workspace-root config auto-detection', () => {
 
     await harness.commands.get('papyrusLint.lintFile')(uri(scriptPath));
 
-    assert.deepEqual(harness.execCalls[0].args, ['--config', '/explicit/override.yaml', 'lint', '--format', 'json', scriptPath]);
+    assert.deepEqual(harness.execCalls[0].args, ['lint', '--config', '/explicit/override.yaml', '--format', 'json', scriptPath]);
   });
 });
