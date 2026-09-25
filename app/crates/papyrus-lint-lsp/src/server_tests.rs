@@ -224,7 +224,11 @@ fn fix_file_applies_every_automatic_fix() {
         .iter()
         .find(|message| message["method"] == "workspace/applyEdit")
         .unwrap();
-    let new_text = edit["params"]["edit"]["changes"][uri][0]["newText"]
+    assert_eq!(
+        edit["params"]["edit"]["documentChanges"][0]["textDocument"],
+        json!({ "uri": uri, "version": 1 })
+    );
+    let new_text = edit["params"]["edit"]["documentChanges"][0]["edits"][0]["newText"]
         .as_str()
         .unwrap();
     assert_eq!(new_text, "Scriptname Quest\n");
@@ -240,4 +244,64 @@ fn fix_file_applies_every_automatic_fix() {
         .unwrap()
         .iter()
         .all(|diagnostic| diagnostic["code"] != "trailing-whitespace"));
+}
+
+#[test]
+fn fix_file_preserves_a_change_received_while_applying_the_edit() {
+    let uri = "file:///Quest.psc";
+    let changed = "Scriptname Quest\n; typing after the fix was requested\n";
+    let (_code, responses) = exchange(&[
+        request(1, "initialize", json!({})),
+        json!({
+            "jsonrpc": "2.0",
+            "method": "textDocument/didOpen",
+            "params": { "textDocument": { "uri": uri, "version": 1, "text": "Scriptname Quest \n" } }
+        }),
+        request(
+            7,
+            "workspace/executeCommand",
+            json!({ "command": FIX_FILE_COMMAND, "arguments": [uri] }),
+        ),
+        json!({
+            "jsonrpc": "2.0",
+            "method": "textDocument/didChange",
+            "params": {
+                "textDocument": { "uri": uri, "version": 2 },
+                "contentChanges": [{ "text": changed }]
+            }
+        }),
+        json!({
+            "jsonrpc": "2.0",
+            "id": "papyrus-lint-1",
+            "result": { "applied": true }
+        }),
+        request(
+            8,
+            "textDocument/codeAction",
+            json!({
+                "textDocument": { "uri": uri },
+                "range": {
+                    "start": { "line": 1, "character": 0 },
+                    "end": { "line": 1, "character": 0 }
+                },
+                "context": { "diagnostics": [] }
+            }),
+        ),
+    ]);
+
+    let edit = responses
+        .iter()
+        .find(|message| message["method"] == "workspace/applyEdit")
+        .unwrap();
+    assert_eq!(
+        edit["params"]["edit"]["documentChanges"][0]["textDocument"]["version"],
+        1
+    );
+    let published: Vec<_> = responses
+        .iter()
+        .filter(|message| message["method"] == "textDocument/publishDiagnostics")
+        .collect();
+    assert_eq!(published.len(), 2);
+    assert_eq!(published.last().unwrap()["params"]["version"], 2);
+    assert_eq!(responses.last().unwrap()["id"], 8);
 }

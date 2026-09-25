@@ -28,7 +28,7 @@ pub(crate) fn provide(documents: &Documents, params: &Value) -> Value {
                 actions.push(action(
                     &format!("Fix this issue ({rule})"),
                     &diagnostic,
-                    replace_edit(uri, &document.text, &updated),
+                    replace_edit(uri, document.version, &document.text, &updated),
                 ));
             }
         }
@@ -41,7 +41,7 @@ pub(crate) fn provide(documents: &Documents, params: &Value) -> Value {
             actions.push(action(
                 &format!("Ignore this lint for the line ({rule})"),
                 &diagnostic,
-                replace_edit(uri, &document.text, &ignored_line),
+                replace_edit(uri, document.version, &document.text, &ignored_line),
             ));
         }
         let ignored_file = add_disable_file_comment(&document.text, line, &rules);
@@ -49,7 +49,7 @@ pub(crate) fn provide(documents: &Documents, params: &Value) -> Value {
             actions.push(action(
                 &format!("Ignore this lint for the file ({rule})"),
                 &diagnostic,
-                replace_edit(uri, &document.text, &ignored_file),
+                replace_edit(uri, document.version, &document.text, &ignored_file),
             ));
         }
         if let Some(project) = project_disable_edit(uri, rule) {
@@ -111,14 +111,20 @@ fn action(title: &str, diagnostic: &Value, edit: Value) -> Value {
     })
 }
 
-pub(crate) fn replace_edit(uri: &str, original: &str, updated: &str) -> Value {
+pub(crate) fn replace_edit(
+    uri: &str,
+    version: Option<i64>,
+    original: &str,
+    updated: &str,
+) -> Value {
     json!({
-        "changes": {
-            uri: [{
+        "documentChanges": [{
+            "textDocument": { "uri": uri, "version": version },
+            "edits": [{
                 "range": full_range(original),
                 "newText": updated,
             }]
-        }
+        }]
     })
 }
 
@@ -137,7 +143,7 @@ fn project_disable_edit(script_uri: &str, rule: &str) -> Option<Value> {
     }
     let uri = path_to_uri(&path);
     if path.is_file() {
-        Some(replace_edit(&uri, &original, &updated))
+        Some(replace_edit(&uri, None, &original, &updated))
     } else {
         Some(json!({
             "documentChanges": [
