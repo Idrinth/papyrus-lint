@@ -305,3 +305,52 @@ fn fix_file_preserves_a_change_received_while_applying_the_edit() {
     assert_eq!(published.last().unwrap()["params"]["version"], 2);
     assert_eq!(responses.last().unwrap()["id"], 8);
 }
+
+#[test]
+fn fix_file_routes_responses_to_nested_requests() {
+    let uri = "file:///Quest.psc";
+    let (_code, responses) = exchange(&[
+        request(1, "initialize", json!({})),
+        json!({
+            "jsonrpc": "2.0",
+            "method": "textDocument/didOpen",
+            "params": { "textDocument": { "uri": uri, "version": 1, "text": "Scriptname Quest \n" } }
+        }),
+        request(
+            7,
+            "workspace/executeCommand",
+            json!({ "command": FIX_FILE_COMMAND, "arguments": [uri] }),
+        ),
+        request(
+            8,
+            "workspace/executeCommand",
+            json!({ "command": FIX_FILE_COMMAND, "arguments": [uri] }),
+        ),
+        json!({
+            "jsonrpc": "2.0",
+            "id": "papyrus-lint-1",
+            "result": { "applied": true }
+        }),
+        json!({
+            "jsonrpc": "2.0",
+            "id": "papyrus-lint-2",
+            "result": { "applied": true }
+        }),
+    ]);
+
+    assert_eq!(
+        responses
+            .iter()
+            .filter(|message| message["method"] == "workspace/applyEdit")
+            .count(),
+        2
+    );
+    for id in [7, 8] {
+        let command_result = responses
+            .iter()
+            .find(|message| message["id"] == id)
+            .unwrap();
+        assert!(command_result["result"].is_null());
+    }
+    assert!(responses.iter().all(|message| message["error"].is_null()));
+}
