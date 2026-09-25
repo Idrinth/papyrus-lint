@@ -1,0 +1,14 @@
+[package]
+name = "papyrus-lint-live"
+version = "0.1.0"
+description = "In-memory Papyrus source linting shared by PapyrusLinterCLI --blob and the language server"
+authors = ["Idrinth"]
+edition = "2021"
+
+[dependencies]
+papyrus-parser = { path = "../papyrus-parser" }
+papyrus-lints = { path = "../papyrus-lints" }
+papyrus-lint-config = { path = "../papyrus-lint-config" }
+
+[dev-dependencies]
+tempfile = "3"

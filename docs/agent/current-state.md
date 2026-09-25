@@ -116,6 +116,7 @@ update the cited code *and* this list.
 | A single rule | `app/crates/papyrus-lints/src/<rule>.rs` + `shared/rules/<id>.json` |
 | Project root, achlist/ppj, script index, FunctionTable, compile/stale `.pex` | `app/crates/papyrus-lint-core/src/` |
 | `papyrus-lint.yaml`, presets, compiler/game-install detection | `app/crates/papyrus-lint-config/src/` |
+| Live / blob buffer lint | `app/crates/papyrus-lint-live/src/` |
 | CLI (`run`, `run_blob`, `fix`, `doctor`, `--tag`) | `app/crates/papyrus-lint-cli/src/` |
 | LSP stdio server | `app/crates/papyrus-lint-lsp/src/` (`server.rs`, `documents.rs`, `diagnostics.rs`, `code_actions.rs`, `commands.rs`) |
 | Text / JSON / AI report formatting | `app/crates/papyrus-lint-output/` and `schema/` |
@@ -131,7 +132,7 @@ the other column before calling the work done.
 
 | Engine piece | Also used by |
 | --- | --- |
-| `papyrus_lints::lint` / `repair` | CLI, Tauri, editor plugins (via CLI), LSP (open-document snapshot) |
+| `papyrus_lints::lint` / `repair` | `papyrus-lint-live` (CLI `--blob`, LSP snapshot), Tauri, editor plugins (via CLI), project-aware CLI |
 | `*_with_external_arguments` | CLI `fix` and Tauri apply-fix commands — not preview |
 | `ExternalSignatures` / `FunctionTable` | CLI threads (`SharedFunctionTable`), desktop per-project table |
 | `find_candidate_pair_root` / script locator | CLI path resolution, Tauri `find_project_root`, drop-folder scan |

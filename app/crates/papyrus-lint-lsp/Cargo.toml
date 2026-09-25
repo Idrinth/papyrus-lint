@@ -14,7 +14,7 @@ name = "PapyrusLinterLsp"
 path = "src/main.rs"
 
 [dependencies]
-papyrus-lint-config = { path = "../papyrus-lint-config" }
+papyrus-lint-live = { path = "../papyrus-lint-live" }
 papyrus-lints = { path = "../papyrus-lints" }
 serde_json = "1"
 
