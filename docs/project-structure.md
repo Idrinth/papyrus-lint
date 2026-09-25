@@ -75,6 +75,8 @@ by scenario) so implementation files do not become test containers.
 
 The eleven crates under `app/crates/` are independent path dependencies, **not a
 Cargo workspace**. Run Cargo commands against each crate's own `Cargo.toml`.
+Each crate's README holds its local invariants and test command; do not
+copy those into `docs/agent/`.
 
 | Crate | Responsibility |
 | --- | --- |
@@ -206,4 +208,5 @@ engine.
 | Website generation | `pages/` |
 | CI/release automation | `.github/workflows/` and `.github/scripts/` |
 
-For setup and exact validation commands, see `docs/agent/development.md`.
+For desktop, frontend, and editor-plugin setup, see `docs/agent/development.md`.
+For a crate's own commands, see that crate's `README.md`.

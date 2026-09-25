@@ -7,5 +7,8 @@ contributors in [`../project-structure.md`](../project-structure.md).
 
 | File | When to read |
 | --- | --- |
-| [development.md](development.md) | Running tests, coverage, or the desktop app |
-| [current-state.md](current-state.md) | Changing parser, lints, CLI, GUI, or editor plugins — invariants and pointers into code, not a narrative spec |
+| [development.md](development.md) | Frontend, desktop app, editor plugins, or coverage — not per-crate commands |
+| [current-state.md](current-state.md) | A change that crosses crates, the GUI, or an editor plugin |
+
+Crate-local invariants and `cargo` commands live in that crate's `README.md`,
+not in this directory.

@@ -5,17 +5,19 @@ desktop app, a standalone CLI (`PapyrusLinterCLI`), and VS Code /
 SublimeLinter plugins. Default branch is `the-one` (not `main`).
 
 This file is the **always-on** agent index. Keep it short. Deep notes live
-in [`docs/agent/`](docs/agent/) and are loaded only when the task needs
-them. `CLAUDE.md` is a pointer here, not a second copy.
+in [`docs/agent/`](docs/agent/) and in each crate's `README.md`, and are
+loaded only when the task needs them. `CLAUDE.md` is a pointer here, not
+a second copy.
 
 ## Read on demand
 
 | If you are changing… | Read |
 | --- | --- |
 | Anything, first time in this repo | This file, then [`CONTRIBUTING.md`](CONTRIBUTING.md) |
-| Parser, a lint rule, CLI, GUI, or editor plugin | [`docs/agent/current-state.md`](docs/agent/current-state.md) |
+| One crate | That crate's `README.md` (`app/crates/` or `app/src-tauri/`) |
+| Behavior that crosses crates, the GUI, or an editor plugin | [`docs/agent/current-state.md`](docs/agent/current-state.md) |
 | Crate / folder layout | [`docs/project-structure.md`](docs/project-structure.md) |
-| How to run tests or the desktop app | [`docs/agent/development.md`](docs/agent/development.md) |
+| Frontend, desktop app, or editor-plugin setup | [`docs/agent/development.md`](docs/agent/development.md) |
 | `.github/workflows/ci.*.yml` or CI scripts | The explanatory comments in the related workflow |
 | `pages/` or the GitHub Pages workflow | The explanatory comments in `.github/workflows/pages.yml` |
 | `.github/workflows/release.yml` | The explanatory comments in that workflow |
@@ -34,7 +36,8 @@ that table here.
 
 ## Commands
 
-From the repo root, typical loops:
+From the repo root, typical loops (crate invariants stay in that crate's
+README):
 
 - Parser: `cargo test --manifest-path app/crates/papyrus-parser/Cargo.toml`
 - AST cache: `cargo test --manifest-path app/crates/papyrus-ast-cache/Cargo.toml`
@@ -66,9 +69,10 @@ CI treats clippy warnings as errors.
    `type:` if none fit).
 2. **Stay on `the-one`.** Rebase/merge `the-one` into a PR branch before
    asking for merge.
-3. **Do not duplicate agent docs.** Edit `AGENTS.md` (this index) or a
-   file under `docs/agent/`. `CLAUDE.md` must remain a pointer to this
-   file, not a copy of it and shall not be filled with further content.
+3. **Do not duplicate agent docs.** Edit `AGENTS.md` (this index), a file
+   under `docs/agent/`, or the crate `README.md` that owns the note.
+   `CLAUDE.md` must remain a pointer to this file, not a copy of it and
+   shall not be filled with further content.
 4. **`shared/rules/<id>.json` is the single source of truth for lint
    metadata.** Each rule is one file there (one JSON object: `id`, `name`,
    `definition` — the long text, `description` — a shorter blurb matching
@@ -169,9 +173,9 @@ If the rule introduces a new *kind* keyword (not `style` /
   covered by the generator above). Other README/`docs/*.md` edits do not
   need a Nexus update.
 - `CONTRIBUTING.md` development setup and this index's crate map are
-  pointers, not copies: edit [`docs/agent/development.md`](docs/agent/development.md)
-  or [`docs/project-structure.md`](docs/project-structure.md) instead of
-  pasting those files back here.
+  pointers, not copies: edit [`docs/agent/development.md`](docs/agent/development.md),
+  the crate's `README.md`, or [`docs/project-structure.md`](docs/project-structure.md)
+  instead of pasting those files back here.
 - `pages/index.template.html`'s CLI examples and every `docs/` subpage are
   generated from `README.md`/`docs/*.md` on deploy. `<!--CLI_EXAMPLES-->`
   extracts the README examples; add publishable docs to `pages/docs_pages.py`'s

@@ -1,9 +1,12 @@
 <!-- Extracted from AGENTS.md so the always-on agent index stays small. -->
 # Development
 
+Crate-local test and run commands live in that crate's `README.md`
+(`app/crates/*/README.md`, and `app/src-tauri/README.md` for the desktop
+shell). Do not copy them here.
 
 - Rule metadata: `shared/rules.json` (read by the Rust crates' build
-  scripts below, `pages/build.py`, and its own tests) is generated, not
+  scripts, `pages/build.py`, and its own tests) is generated, not
   checked in — run `python3 .github/scripts/build_rules_json.py` after
   cloning and again whenever a `shared/rules/*.json` file changes, before
   any of the commands below that touch it.
@@ -43,40 +46,12 @@
   it requires Tauri's platform prerequisites (a Rust toolchain, plus the
   usual webview dependencies for your OS — see the
   [Tauri prerequisites guide](https://v2.tauri.app/start/prerequisites/)).
-- Rust backend only: `cargo check` / `cargo test` from `app/src-tauri/`.
-  `app/src-tauri/build.rs` generates `icons/` from `shared/images/logo.png`
-  during the build, so those platform-specific PNG/ICO/ICNS variants are
-  not checked in (except `icons/icon.png`, which the Pages builder copies).
-- Parser crate only: `cargo test` from `app/crates/papyrus-parser/`.
-- AST cache crate only: `cargo test` from `app/crates/papyrus-ast-cache/`.
-- Collision cache crate only: `cargo test` from
-  `app/crates/papyrus-collision-cache/`.
-- Lints crate only: `cargo test` from `app/crates/papyrus-lints/`.
-- Config crate only: `cargo test` from `app/crates/papyrus-lint-config/`.
-- Shared project-resolution crate only: `cargo test` from
-  `app/crates/papyrus-lint-core/`.
-- Output formatting crate only: `cargo test` from
-  `app/crates/papyrus-lint-output/`.
-- Live / blob lint crate only: `cargo test` from
-  `app/crates/papyrus-lint-live/`.
-- LSP: `cargo test` from `app/crates/papyrus-lint-lsp/`, or
-  `cargo run --manifest-path app/crates/papyrus-lint-lsp/Cargo.toml` for the
-  `PapyrusLinterLsp` stdio binary. Document sync publishes diagnostics from
-  `papyrus_lints` (project `papyrus-lint.yaml` when one is found by walking up
-  from the file URI). `textDocument/codeAction` returns a workspace edit for
-  the diagnostic's automatic fix, or for line, file, and project ignore.
-  `workspace/executeCommand` `papyrusLint.fixFile` applies every automatic
-  fix through `workspace/applyEdit`.
-- CLI: `cargo run --manifest-path app/crates/papyrus-lint-cli/Cargo.toml --
-  <path-to-achlist>`, or `cargo build --release --manifest-path
-  app/crates/papyrus-lint-cli/Cargo.toml` for a standalone `PapyrusLinterCLI`
-  binary (at `app/crates/papyrus-lint-cli/target/release/PapyrusLinterCLI`).
-  `cargo test` from `app/crates/papyrus-lint-cli/` runs its tests.
+  Rust-only checks for that shell are in `app/src-tauri/README.md`.
 - VS Code extension (`vscode-extension/`): `npm install`, then `npm run
   watch` (or `npm run compile` for a one-off build) and F5 in VS Code to
   launch an Extension Development Host. Not part of the app's npm
   project — it has its own `package.json`/`tsconfig.json`/`eslint.config.js`.
-- Rust coverage for any of the reusable linting crates above: `cargo llvm-cov
-  --manifest-path <crate>/Cargo.toml` (requires the
+- Rust coverage for a linting crate: `cargo llvm-cov --manifest-path
+  <crate>/Cargo.toml` (requires the
   [`cargo-llvm-cov`](https://github.com/taiki-e/cargo-llvm-cov) subcommand
   and the `llvm-tools-preview` rustup component).
