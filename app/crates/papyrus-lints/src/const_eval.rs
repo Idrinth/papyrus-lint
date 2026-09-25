@@ -7,24 +7,32 @@
 //!
 //! [`eval_const`] folds any expression built entirely from literals combined
 //! with arithmetic (`+`/`-`/`*`/`/`/`%`, including string `+`), comparison,
-//! logical, and unary operators. `/` and `%` by a constant zero are a miss
-//! (the folder must not divide by zero itself); anything that depends on
-//! runtime state (an identifier, a call, `Self`/`Parent`, a member/index
-//! access, a cast, a `new` array) is a miss too. [`eval_const_int`] is the
-//! `Int`-only view of the same folder: a result that isn't an `Int` (a
-//! `Float`, a `Bool`, …) is a miss.
+//! logical, and unary operators. It also folds `x - x` when both sides are
+//! the same side-effect-free expression (an identifier, `Self`/`Parent`, a
+//! member/index access, a cast, or any combination of those with the same
+//! operators), since that difference is always zero. `/` and `%` by a
+//! constant zero are a miss (the folder must not divide by zero itself);
+//! a call or a `new` array/struct is a miss too, including when it appears
+//! on both sides of a subtraction. [`eval_const_int`] is the `Int`-only
+//! view of the same folder: a result that isn't an `Int` (a `Float`, a
+//! `Bool`, …) is a miss.
 
 use papyrus_parser::ast::{BinaryOp, Expr, Literal, UnaryOp};
 
 /// Attempts to fold `expr` down to a single constant [`Literal`], returning
 /// `None` as soon as any part of it depends on something that can't be
-/// known without running the script (an identifier, a call, `Self`/
-/// `Parent`, a member/index access, a cast, or a `new` array).
+/// known without running the script (a call or a `new` array/struct).
+/// Identifiers, `Self`/`Parent`, member/index access, and casts are not
+/// folded on their own, but `x - x` of two structurally identical
+/// side-effect-free operands still folds to integer zero.
 pub(crate) fn eval_const(expr: &Expr) -> Option<Literal> {
     match expr {
         Expr::Literal(literal) => Some(literal.clone()),
         Expr::Unary { op, operand } => eval_unary(*op, &eval_const(operand)?),
         Expr::Binary { left, op, right } => {
+            if *op == BinaryOp::Sub && left == right && is_side_effect_free(left) {
+                return Some(Literal::int(0));
+            }
             eval_binary(&eval_const(left)?, *op, &eval_const(right)?)
         }
         Expr::Identifier(_)
@@ -38,6 +46,25 @@ pub(crate) fn eval_const(expr: &Expr) -> Option<Literal> {
         | Expr::NewArray { .. }
         | Expr::NewStruct { .. }
         | Expr::NamedArg { .. } => None,
+    }
+}
+
+/// True when evaluating `expr` cannot change script state and must yield
+/// the same value if evaluated twice in a row. Calls and `new` are
+/// excluded; everything else is treated as a read.
+fn is_side_effect_free(expr: &Expr) -> bool {
+    match expr {
+        Expr::Literal(_) | Expr::Identifier(_) | Expr::Self_ | Expr::Parent => true,
+        Expr::Call { .. }
+        | Expr::NamedArg { .. }
+        | Expr::NewArray { .. }
+        | Expr::NewStruct { .. } => false,
+        Expr::Unary { operand, .. } => is_side_effect_free(operand),
+        Expr::Binary { left, right, .. } => is_side_effect_free(left) && is_side_effect_free(right),
+        Expr::Member { object, .. }
+        | Expr::Cast { value: object, .. }
+        | Expr::Is { value: object, .. } => is_side_effect_free(object),
+        Expr::Index { object, index } => is_side_effect_free(object) && is_side_effect_free(index),
     }
 }
 

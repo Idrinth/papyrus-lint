@@ -1,12 +1,12 @@
 //! Flags a `/` or `%` whose right-hand operand is a compile-time-constant
-//! zero (e.g. `x / 0`, `x % 0.0`, `x / (1 - 1)`), since dividing (or taking
-//! the modulo) by zero crashes the script at runtime.
+//! zero (e.g. `x / 0`, `x % 0.0`, `x / (1 - 1)`, `x / (values.Length - values.Length)`),
+//! since dividing (or taking the modulo) by zero crashes the script at runtime.
 //!
-//! Like [`crate::static_condition`], this only folds an operand built
-//! entirely from literals (optionally combined with arithmetic, comparison,
-//! logical, and unary operators); a divisor that depends on an identifier,
-//! a call, `Self`/`Parent`, a member/index access, a cast, or a `new` array
-//! is left unflagged rather than guessed at.
+//! Like [`crate::static_condition`], this folds an operand built from
+//! literals (optionally combined with arithmetic, comparison, logical, and
+//! unary operators) and also folds `x - x` when both sides are the same
+//! side-effect-free expression. A divisor that depends on a call or a `new`
+//! array/struct is left unflagged rather than guessed at.
 
 use papyrus_parser::ast::{BinaryOp, Expr, Literal};
 
