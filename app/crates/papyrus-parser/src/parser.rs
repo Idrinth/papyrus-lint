@@ -23,10 +23,9 @@ type PResult<T> = Result<T, ParseError>;
 
 /// Which game's Papyrus dialect a [`Parser`] accepts. Skyrim is the
 /// original language `papyrus-parser` was built for; Fallout 4 adds a
-/// handful of new constructs (`CustomEvent` declarations, custom `Struct`s,
-/// property `Group`s, the `DebugOnly`/`BetaOnly` script and function flags,
-/// and colon-qualified names such as `DLC03:Foo` on types, `extends`, `new`,
-/// and calls) on top of it.
+/// handful of new constructs (custom `Struct`s, property `Group`s, the
+/// `DebugOnly`/`BetaOnly` script and function flags, and colon-qualified names such
+/// as `DLC03:Foo` on types, `extends`, `new`, and calls) on top of it.
 /// Starfield keeps that Fallout 4 dialect and adds further flags
 /// (`Private` / `Protected` / `SelfOnly` on function headers). A construct
 /// that a later edition added is rejected the same way an unrecognized
