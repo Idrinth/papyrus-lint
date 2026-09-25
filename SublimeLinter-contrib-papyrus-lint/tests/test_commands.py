@@ -291,7 +291,7 @@ class PapyrusLintFixIssueCommandTests(unittest.TestCase):
         self.assertEqual(
             run.call_args_list[0],
             unittest.mock.call(
-                ('/cache/PapyrusLinterCLI', '--json', '/scripts/Example.psc'),
+                ('/cache/PapyrusLinterCLI', 'lint', '--format', 'json', '/scripts/Example.psc'),
                 capture_output=True,
                 startupinfo=None,
             ),
@@ -451,7 +451,7 @@ class PapyrusLintFixIssueCommandTests(unittest.TestCase):
             unittest.mock.call(
                 (
                     '/cache/PapyrusLinterCLI',
-                    '--json',
+                    'lint', '--format', 'json',
                     '--config',
                     '/project/custom.yaml',
                     '/scripts/Example.psc',

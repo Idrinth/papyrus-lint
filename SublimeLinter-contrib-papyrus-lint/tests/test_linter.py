@@ -113,19 +113,19 @@ class PapyrusLintTests(unittest.TestCase):
 
         self.assertEqual(
             self.linter.cmd(),
-            ['/tools/PapyrusLinterCLI', '--json', '--config', '/project/custom-lint.yaml', '${file}'],
+            ['/tools/PapyrusLinterCLI', 'lint', '--format', 'json', '--config', '/project/custom-lint.yaml', '${file}'],
         )
 
     def test_cmd_ignores_a_blank_config_path(self):
         self.linter.settings = {'executable': '/tools/cli', 'config_path': '   '}
 
-        self.assertEqual(self.linter.cmd(), ['/tools/cli', '--json', '${file}'])
+        self.assertEqual(self.linter.cmd(), ['/tools/cli', 'lint', '--format', 'json', '${file}'])
 
     def test_cmd_uses_configured_executable(self):
         self.linter.settings = {'executable': '/tools/PapyrusLinter'}
 
         self.assertEqual(
-            self.linter.cmd(), ['/tools/PapyrusLinter', '--json', '${file}']
+            self.linter.cmd(), ['/tools/PapyrusLinter', 'lint', '--format', 'json', '${file}']
         )
 
     def test_cmd_rejects_configured_executable_from_a_different_release(self):
@@ -143,7 +143,7 @@ class PapyrusLintTests(unittest.TestCase):
 
         self.assertEqual(
             self.linter.cmd(),
-            ['/tools/PapyrusLinterCLI', '--json', '--blob', 'ScriptName Test\n'],
+            ['/tools/PapyrusLinterCLI', 'lint', '--format', 'json', '--blob', 'ScriptName Test\n'],
         )
 
     def test_cmd_still_inserts_config_flag_before_a_blob(self):
@@ -157,7 +157,7 @@ class PapyrusLintTests(unittest.TestCase):
             self.linter.cmd(),
             [
                 '/tools/PapyrusLinterCLI',
-                '--json',
+                'lint', '--format', 'json',
                 '--config',
                 '/project/custom-lint.yaml',
                 '--blob',
@@ -171,7 +171,7 @@ class PapyrusLintTests(unittest.TestCase):
 
         self.assertEqual(
             self.linter.cmd(),
-            ['/tools/PapyrusLinterCLI', '--json', '${file}'],
+            ['/tools/PapyrusLinterCLI', 'lint', '--format', 'json', '${file}'],
         )
 
     def test_cmd_downloads_matching_cli_when_executable_is_not_configured(self):
@@ -187,7 +187,7 @@ class PapyrusLintTests(unittest.TestCase):
             command,
             [
                 '/tmp/sublime-cache/PapyrusLinterCLI-linux',
-                '--json',
+                'lint', '--format', 'json',
                 '${file}',
             ],
         )

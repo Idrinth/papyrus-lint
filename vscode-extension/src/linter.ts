@@ -20,7 +20,7 @@ export class PapyrusLinter {
   }
 
   async lint(uri: vscode.Uri): Promise<void> {
-    const result = await runCli(await withConfigOverride(['--json', uri.fsPath], uri), path.dirname(uri.fsPath));
+    const result = await runCli(await withConfigOverride(['lint', '--format', 'json', uri.fsPath], uri), path.dirname(uri.fsPath));
     this.applyResult(uri, result);
   }
 
@@ -41,7 +41,7 @@ export class PapyrusLinter {
     shouldApply: () => boolean = () => true,
   ): Promise<void> {
     const result = await runCli(
-      await withConfigOverride(['--json', '--blob', document.getText()], document.uri),
+      await withConfigOverride(['lint', '--format', 'json', '--blob', document.getText()], document.uri),
       path.dirname(document.uri.fsPath),
     );
     if (shouldApply()) {
@@ -51,7 +51,7 @@ export class PapyrusLinter {
 
   async fix(uri: vscode.Uri): Promise<void> {
     const result = await runCli(
-      await withConfigOverride(['fix', '--json', uri.fsPath], uri),
+      await withConfigOverride(['fix', '--format', 'json', uri.fsPath], uri),
       path.dirname(uri.fsPath),
     );
     const report = this.applyResult(uri, result);
@@ -73,7 +73,7 @@ export class PapyrusLinter {
    * in the file untouched. Used by the "Fix this issue" quick fix on a single diagnostic. */
   async fixIssue(uri: vscode.Uri, rule: string, line: number): Promise<void> {
     const result = await runCli(
-      await withConfigOverride(['fix', '--type', rule, '--line', String(line), '--json', uri.fsPath], uri),
+      await withConfigOverride(['fix', '--type', rule, '--line', String(line), '--format', 'json', uri.fsPath], uri),
       path.dirname(uri.fsPath),
     );
     const report = this.applyResult(uri, result);
