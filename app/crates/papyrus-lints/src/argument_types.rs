@@ -81,6 +81,7 @@ impl AstLint for Collect {
             &params,
             args,
             env,
+            ctx.config.bool_like_int,
             ctx.external,
             &mut diagnostics,
         );
@@ -222,12 +223,17 @@ fn resolve_signature<E: ExternalSignatures + ?Sized>(
         .map(|params| (function_name, params))
 }
 
+fn is_bool_like_int_literal(expr: &Expr) -> bool {
+    matches!(expr, Expr::Literal(Literal::Int { value: 0 | 1, .. }))
+}
+
 fn check_args<E: ExternalSignatures + ?Sized>(
     (line, col): (usize, usize),
     function_name: &str,
     params: &[ParamInfo],
     args: &[Expr],
     env: &TypeEnv,
+    allow_bool_like_int: bool,
     external: &mut E,
     diagnostics: &mut Vec<Diagnostic>,
 ) {
@@ -259,6 +265,14 @@ fn check_args<E: ExternalSignatures + ?Sized>(
                     "None",
                 ));
             }
+            continue;
+        }
+
+        if allow_bool_like_int
+            && !param_type.is_array
+            && param_type.name.eq_ignore_ascii_case("bool")
+            && is_bool_like_int_literal(arg)
+        {
             continue;
         }
 
