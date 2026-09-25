@@ -18,6 +18,7 @@ import { bindConfigSettings } from "./config-ui";
 import { bindProjectSettings } from "./project-settings";
 import { bindTheme } from "./theme";
 import { bindWatchMode } from "./watch";
+import { bindContextMenu } from "./context-menu";
 import { TAB_IDS, switchTab } from "./main-tabs";
 let appVersionEl: HTMLElement | null;
 let dropZoneEl: HTMLElement | null;
@@ -119,6 +120,7 @@ window.addEventListener("DOMContentLoaded", () => {
   bindLintProgress();
   bindTheme();
   bindWatchMode();
+  bindContextMenu();
 
   for (const id of TAB_IDS) {
     const button = document.querySelector<HTMLButtonElement>(`#tab-${id}`);
