@@ -10,6 +10,13 @@ Rule metadata is generated from [`shared/rules/`](../../shared/rules)
 (see `AGENTS.md`). How to run tests is in
 [`development.md`](development.md).
 
+Latest published release is `v2.1.0`. Work on `the-one` after that includes
+the `papyrus-lint-lsp` stdio server (`PapyrusLinterLsp`): diagnostics on
+open documents, `textDocument/codeAction` quick fixes, and
+`papyrusLint.fixFile` applying every automatic fix via
+`workspace/applyEdit`. VS Code and Sublime still drive analysis through
+`PapyrusLinterCLI`; they do not host the LSP process yet.
+
 ## Invariants
 
 These are the easy-to-miss contracts. If a change would violate one,
@@ -93,11 +100,15 @@ update the cited code *and* this list.
   event. The index is not used for an incomplete chain. It is dropped when
   a chained script's mtime changes, or when a live search directory's mtime
   changes because a script appeared or disappeared.
+- The LSP server is a separate stdio binary. It lints the in-memory
+  document snapshot (not a re-read from disk) and applies repairs through
+  LSP edits. Do not route those paths through Tauri or the CLI process.
 
 ## Where to read
 
 | If you are changing… | Open |
 | --- | --- |
+| Shared game/constants types | `app/crates/papyrus-lint-globals/src/` |
 | Parser / AST / lexer / in-memory memo | `app/crates/papyrus-parser/src/` (`ast.rs`, `parser.rs`, `lexer.rs`, `cache.rs`, `types.rs`) |
 | Disk AST/token cache, bundled vanilla scripts | `app/crates/papyrus-ast-cache/src/` |
 | Script-collision content-hash cache | `app/crates/papyrus-collision-cache/src/` |
@@ -106,11 +117,11 @@ update the cited code *and* this list.
 | Project root, achlist/ppj, script index, FunctionTable, compile/stale `.pex` | `app/crates/papyrus-lint-core/src/` |
 | `papyrus-lint.yaml`, presets, compiler/game-install detection | `app/crates/papyrus-lint-config/src/` |
 | CLI (`run`, `run_blob`, `fix`, `doctor`, `--tag`) | `app/crates/papyrus-lint-cli/src/` |
-| LSP stdio adapter (diagnostics, code actions, and whole-file fix) | `app/crates/papyrus-lint-lsp/src/` |
+| LSP stdio server | `app/crates/papyrus-lint-lsp/src/` (`server.rs`, `documents.rs`, `diagnostics.rs`, `code_actions.rs`, `commands.rs`) |
 | Text / JSON / AI report formatting | `app/crates/papyrus-lint-output/` and `schema/` |
 | Tauri commands | `app/src-tauri/src/` (`files.rs`, `lint.rs`, `repair.rs`, `export.rs`, `lint_config.rs`) |
 | Desktop UI (drop, results, live edit, watch, presets) | `app/src/` (`drop.ts`, `results-filter.ts`, `live-edit.ts`, `watch.ts`, `presets.ts`) |
-| VS Code live lint / ignore | `vscode-extension/src/liveLint.ts`, `linter.ts`, `ignore.ts` |
+| VS Code CLI-backed lint / ignore / actions | `vscode-extension/src/` (`liveLint.ts`, `linter.ts`, `ignore.ts`, `codeActions.ts`, `suppressions.ts`) |
 | Sublime unsaved-buffer lint | `SublimeLinter-contrib-papyrus-lint/linter.py` |
 
 ## Surfaces that must stay aligned
@@ -120,13 +131,14 @@ the other column before calling the work done.
 
 | Engine piece | Also used by |
 | --- | --- |
-| `papyrus_lints::lint` / `repair` | CLI, Tauri, editor plugins (via CLI) |
+| `papyrus_lints::lint` / `repair` | CLI, Tauri, editor plugins (via CLI), LSP (open-document snapshot) |
 | `*_with_external_arguments` | CLI `fix` and Tauri apply-fix commands — not preview |
 | `ExternalSignatures` / `FunctionTable` | CLI threads (`SharedFunctionTable`), desktop per-project table |
 | `find_candidate_pair_root` / script locator | CLI path resolution, Tauri `find_project_root`, drop-folder scan |
 | `strict_achlist_scope` / `lookup_script_roots` | CLI + config; lookup roots are analysis-only (never linted, never on compiler `-i`) |
-| Rule tags / `doc_url` | CLI reports, GUI badges/filters, VS Code diagnostic code, Sublime message text |
+| Rule tags / `doc_url` | CLI reports, GUI badges/filters, VS Code diagnostic code, Sublime message text, LSP diagnostic code |
 | Presets / executable-adjacent base config | `init --preset`, GUI picker / Presets tab |
+| Automatic-fix edit application | Tauri apply-fix, CLI `fix`, VS Code / Sublime CLI wrappers, LSP code actions and `papyrusLint.fixFile` |
 
 ## Do not put here
 
