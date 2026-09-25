@@ -16,11 +16,9 @@ export interface ConfigPreset {
   description: string;
 }
 
-// Games the desktop picker, and the editor init prompts, can write. Starfield
-// parses as a config value but the linter does not support it yet, so it is
-// not offered here.
+// Games the desktop picker, and the editor init prompts, can write.
 export function isSelectableGame(value: string | null | undefined): value is Game {
-  return value === "skyrim" || value === "fallout4";
+  return value === "skyrim" || value === "fallout4" || value === "starfield";
 }
 
 // What promptForConfigSelection resolved to (see loadProjectConfig): stick
