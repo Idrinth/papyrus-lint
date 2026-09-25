@@ -2,6 +2,7 @@ import type { Diagnostic } from "./backend-types";
 import { findingsGroupedByLine, lineSeverityOf } from "./code-viewer-view";
 import { codeViewerEditGutterEl, codeViewerEditHighlightEl, codeViewerEditTextareaEl } from "./code-viewer-state";
 import { highlightPapyrusLines } from "./highlight";
+import { findingsPassingActiveFilters } from "./results-filter";
 let codeViewerEditFindingsByLine: Map<number, Diagnostic[]> = new Map();
 let codeViewerEditLiveFindings: Diagnostic[] = [];
 
@@ -28,7 +29,7 @@ export function updateCodeViewerEditHighlight() {
   if (!code || !codeViewerEditTextareaEl) {
     return;
   }
-  const findings = codeViewerEditLiveFindings;
+  const findings = findingsPassingActiveFilters(codeViewerEditLiveFindings);
   const findingsByLine = findingsGroupedByLine(findings);
   codeViewerEditFindingsByLine = findingsByLine;
   const highlightedLines = highlightPapyrusLines(codeViewerEditTextareaEl.value);

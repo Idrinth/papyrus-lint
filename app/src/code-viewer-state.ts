@@ -1,5 +1,6 @@
 import { type Diagnostic } from "./backend-types";
 import { hasFixableFindings } from "./finding-fixability";
+import { findingsPassingActiveFilters } from "./results-filter";
 
 export interface CodeViewerState {
   path: string;
@@ -39,13 +40,16 @@ export function setCodeViewerModeValue(mode: "view" | "edit") {
 
 // Shows the "Apply fixes"/"Preview fixes" buttons only in view mode, and
 // only while the currently loaded file still has at least one fixable
-// finding (the same check the Lint results list uses to decide whether to
-// show its own per-file "Apply fixes" button), so they disappear on their
-// own once nothing is left to fix. Called both on every mode change and
-// whenever codeViewerState's findings change without a mode change (e.g.
-// right after a fix is applied).
+// finding that also passes the Lint results tab's active filters (the
+// same check the list uses to decide what is currently worth acting on),
+// so they disappear on their own once nothing visible is left to fix.
+// Called both on every mode change and whenever codeViewerState's
+// findings change without a mode change (e.g. right after a fix is
+// applied).
 export function updateCodeViewerFixButtonsVisibility() {
-  const hidden = codeViewerMode !== "view" || !hasFixableFindings(codeViewerState?.findings ?? []);
+  const hidden =
+    codeViewerMode !== "view" ||
+    !hasFixableFindings(findingsPassingActiveFilters(codeViewerState?.findings ?? []));
   if (codeViewerFixButtonEl) {
     codeViewerFixButtonEl.hidden = hidden;
   }

@@ -7,13 +7,17 @@ import { bindResultsFilters } from "./results-filter";
 import { handleExportAiClick, handleExportIssuesClick } from "./results-list-export";
 import { renderPscResults } from "./results-list-render";
 import { bindResultsListDom, exportAiButtonEl, exportIssuesButtonEl } from "./results-list-state";
+import { refreshCodeViewerForActiveFilters } from "./code-viewer";
 
 export { renderPscResults } from "./results-list-render";
 
 export function bindResultsList() {
   bindResultsListDom();
 
-  bindResultsFilters(() => renderPscResults(currentPscOutcomes));
+  bindResultsFilters(() => {
+    renderPscResults(currentPscOutcomes);
+    refreshCodeViewerForActiveFilters();
+  });
 
   exportIssuesButtonEl?.addEventListener("click", () => void handleExportIssuesClick());
   exportAiButtonEl?.addEventListener("click", () => void handleExportAiClick());

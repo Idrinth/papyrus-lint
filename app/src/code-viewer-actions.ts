@@ -8,6 +8,7 @@ import { renderPscResults } from "./results-list-render";
 import { codeViewerDiffOutputEl, codeViewerFixButtonEl, codeViewerState, setCodeViewerState, updateCodeViewerFixButtonsVisibility } from "./code-viewer-state";
 import { hideDiffOutput } from "./code-viewer-diff";
 import { renderCodeViewerView } from "./code-viewer-view";
+import { findingsPassingActiveFilters } from "./results-filter";
 // Re-reads `path` after a disk mutation, refreshes the viewer's source and
 // findings in place, and re-syncs the matching Lint results list entry so
 // acting on a file no longer requires closing the viewer first.
@@ -108,7 +109,7 @@ export async function handleCodeViewerFixLineClick(line: number, button: HTMLBut
   const { path, findings: initialFindings } = codeViewerState;
   const rules = Array.from(
     new Set(
-      initialFindings
+      findingsPassingActiveFilters(initialFindings)
         .filter((finding) => finding.line === line && isFixableFinding(finding))
         .map((finding) => finding.rule as string),
     ),
@@ -142,7 +143,7 @@ export async function handleCodeViewerIgnoreLineClick(line: number, button: HTML
     return;
   }
   const { path, findings: initialFindings } = codeViewerState;
-  const rules = uniqueRulesOnLine(initialFindings, line);
+  const rules = uniqueRulesOnLine(findingsPassingActiveFilters(initialFindings), line);
   if (rules.length === 0) {
     return;
   }
@@ -168,7 +169,7 @@ export async function handleCodeViewerFileDisableLineClick(line: number, button:
     return;
   }
   const { path, findings: initialFindings } = codeViewerState;
-  const rules = uniqueRulesOnLine(initialFindings, line);
+  const rules = uniqueRulesOnLine(findingsPassingActiveFilters(initialFindings), line);
   if (rules.length === 0) {
     return;
   }
@@ -193,7 +194,7 @@ export async function handleCodeViewerConfigDisableLineClick(line: number, butto
     return;
   }
   const { path, findings: initialFindings } = codeViewerState;
-  const rules = uniqueRulesOnLine(initialFindings, line);
+  const rules = uniqueRulesOnLine(findingsPassingActiveFilters(initialFindings), line);
   if (rules.length === 0) {
     return;
   }
