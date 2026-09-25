@@ -2,7 +2,8 @@ use std::io::Cursor;
 
 use serde_json::{json, Value};
 
-use super::{serve, FIX_FILE_COMMAND};
+use super::{serve, Server, FIX_FILE_COMMAND};
+use crate::documents::Documents;
 use crate::framing::write_message;
 
 fn exchange(messages: &[Value]) -> (i32, Vec<Value>) {
@@ -353,6 +354,41 @@ fn fix_file_routes_responses_to_nested_requests() {
         assert!(command_result["result"].is_null());
     }
     assert!(responses.iter().all(|message| message["error"].is_null()));
+}
+
+#[test]
+fn read_response_discards_responses_for_unknown_request_ids() {
+    let mut input = Vec::new();
+    write_message(
+        &mut input,
+        json!({ "jsonrpc": "2.0", "id": "unknown", "result": null })
+            .to_string()
+            .as_bytes(),
+    )
+    .unwrap();
+    write_message(
+        &mut input,
+        json!({ "jsonrpc": "2.0", "id": "papyrus-lint-1", "result": { "applied": true } })
+            .to_string()
+            .as_bytes(),
+    )
+    .unwrap();
+    let request_id = json!("papyrus-lint-1");
+    let mut server = Server {
+        input: Cursor::new(input),
+        output: Vec::new(),
+        shutdown: false,
+        initialized: true,
+        documents: Documents::default(),
+        next_request: 1,
+        active_requests: vec![request_id.clone()],
+        pending_responses: Vec::new(),
+    };
+
+    let response = server.read_response(&request_id).unwrap();
+
+    assert_eq!(response["id"], request_id);
+    assert!(server.pending_responses.is_empty());
 }
 
 #[test]

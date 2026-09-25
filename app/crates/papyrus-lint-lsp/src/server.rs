@@ -28,6 +28,7 @@ pub fn serve(input: impl BufRead, output: impl Write) -> io::Result<i32> {
         initialized: false,
         documents: Documents::default(),
         next_request: 0,
+        active_requests: Vec::new(),
         pending_responses: Vec::new(),
     }
     .run()
@@ -40,6 +41,7 @@ struct Server<R, W> {
     initialized: bool,
     documents: Documents,
     next_request: u64,
+    active_requests: Vec<Value>,
     pending_responses: Vec<Value>,
 }
 
@@ -195,7 +197,10 @@ impl<R: BufRead, W: Write> Server<R, W> {
         }))
         .expect("applyEdit json");
         write_message(&mut self.output, &body)?;
-        let response = self.read_response(&request_id)?;
+        self.active_requests.push(request_id.clone());
+        let response = self.read_response(&request_id);
+        self.active_requests.pop();
+        let response = response?;
         if response.get("error").is_some() || response["result"]["applied"] == false {
             return write_error(&mut self.output, id, REQUEST_FAILED, "edit was not applied");
         }
@@ -232,7 +237,13 @@ impl<R: BufRead, W: Write> Server<R, W> {
                 && (message.get("result").is_some() || message.get("error").is_some())
                 && message.get("id").is_some_and(|id| !id.is_null())
             {
-                self.pending_responses.push(message);
+                if self
+                    .active_requests
+                    .iter()
+                    .any(|request_id| message.get("id") == Some(request_id))
+                {
+                    self.pending_responses.push(message);
+                }
                 continue;
             }
             if let Some(code) = self.dispatch(message)? {
