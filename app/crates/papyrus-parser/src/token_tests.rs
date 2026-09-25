@@ -47,6 +47,7 @@ fn maps_every_keyword_spelling() {
         ("collapsed", Collapsed),
         ("collapsedonbase", CollapsedOnBase),
         ("collapsedonref", CollapsedOnRef),
+        ("guard", Guard),
     ];
 
     for (spelling, expected) in cases {

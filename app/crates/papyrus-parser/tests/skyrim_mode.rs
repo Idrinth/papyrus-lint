@@ -244,3 +244,15 @@ fn rejects_starfield_access_flags() {
         );
     }
 }
+
+#[test]
+fn rejects_guard_declarations() {
+    assert_skyrim_rejects(
+        "ScriptName Rejected\n\nGuard stealGuard ProtectsFunctionLogic\n",
+        "Guard is Starfield only",
+    );
+    assert_skyrim_rejects(
+        "ScriptName Rejected\n\nGuard CoraGuardCount\n",
+        "a bare Guard is Starfield only",
+    );
+}

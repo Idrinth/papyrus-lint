@@ -5,8 +5,8 @@
 //! `walk_*` helper when it still wants the children visited.
 
 use crate::ast::{
-    Expr, FunctionDecl, GroupDecl, IfBranch, ImportDecl, Param, PropertyDecl, Script, StateDecl,
-    Stmt, StructDecl, TypeName, VariableDecl,
+    Expr, FunctionDecl, GroupDecl, GuardDecl, IfBranch, ImportDecl, Param, PropertyDecl, Script,
+    StateDecl, Stmt, StructDecl, TypeName, VariableDecl,
 };
 use crate::token::Token;
 
@@ -46,6 +46,11 @@ pub trait Visitor {
     /// parsed in Skyrim mode.
     fn visit_group(&mut self, group: &GroupDecl) {
         walk_group(self, group);
+    }
+
+    /// Starfield only: `script.guards` is always empty outside Starfield mode.
+    fn visit_guard(&mut self, guard: &GuardDecl) {
+        let _ = guard;
     }
 
     fn visit_param(&mut self, param: &Param) {
@@ -101,6 +106,9 @@ pub fn walk_script<V: Visitor + ?Sized>(visitor: &mut V, script: &Script) {
     }
     for group in &script.groups {
         visitor.visit_group(group);
+    }
+    for guard in &script.guards {
+        visitor.visit_guard(guard);
     }
 }
 

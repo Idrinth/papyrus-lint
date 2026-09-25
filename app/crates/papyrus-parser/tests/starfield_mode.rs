@@ -2,8 +2,7 @@
 //! written as identifiers (`Private`, `Protected`, `SelfOnly`, `Internal`).
 //! Those flags map onto the same [`AccessLevel`] values as `; @private` /
 //! `; @protected`. Fallout 4 constructs that Starfield inherited are
-//! covered in `fallout4_mode.rs`; this file is the Starfield-only delta
-//! and the check that Fallout 4 mode still rejects those flags.
+//! covered in `fallout4_mode.rs`; this file is the Starfield-only delta.
 
 use papyrus_parser::ast::AccessLevel;
 use papyrus_parser::parser::GameEdition;
@@ -126,4 +125,40 @@ fn game_edition_helpers_describe_the_dialect_stack() {
     assert!(!GameEdition::Fallout4.has_starfield_dialect());
     assert!(GameEdition::Starfield.has_fallout4_dialect());
     assert!(GameEdition::Starfield.has_starfield_dialect());
+}
+
+#[test]
+fn parses_guard_with_protects_function_logic() {
+    let script = parse_with_mode(
+        "ScriptName ATMScript\n\nGuard stealGuard ProtectsFunctionLogic\nint tempStealCount = 0\n",
+        GameEdition::Starfield,
+    )
+    .expect("a flagged Guard should parse in Starfield mode");
+
+    assert_eq!(script.guards.len(), 1);
+    assert!(script
+        .variables
+        .iter()
+        .all(|variable| variable.name != "stealGuard"));
+    let guard = &script.guards[0];
+    assert_eq!(guard.name, "stealGuard");
+    assert!(guard.protects_function_logic);
+    assert_eq!(script.variables.len(), 1);
+    assert_eq!(script.variables[0].name, "tempStealCount");
+}
+
+#[test]
+fn parses_bare_guards() {
+    let script = parse_with_mode(
+        "ScriptName COM_CoraBookGuard\n\nGuard CoraGuardCount\nGuard CoraGuardReward\n",
+        GameEdition::Starfield,
+    )
+    .expect("bare Guards should parse in Starfield mode");
+
+    assert_eq!(script.guards.len(), 2);
+    assert!(script.variables.is_empty());
+    assert_eq!(script.guards[0].name, "CoraGuardCount");
+    assert!(!script.guards[0].protects_function_logic);
+    assert_eq!(script.guards[1].name, "CoraGuardReward");
+    assert!(!script.guards[1].protects_function_logic);
 }
