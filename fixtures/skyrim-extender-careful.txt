@@ -20,7 +20,6 @@ Scripts/Source/Actor.psc:41:2: [empty-body] [warning] Empty Else body; this look
 Scripts/Source/Actor.psc:430:121: [line-length] [warning] Line is 246 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
 Scripts/Source/Actor.psc:438:1: [unchecked-cast] [warning] 'akActorBase' holds an unchecked cast result and may be None here; accessing '.IsUnique' on it will crash the script (https://papyrus-lint.idrinth.de/rules.html#rule-unchecked-cast)
 Scripts/Source/Actor.psc:439:1: [unchecked-cast] [warning] 'akActorBase' holds an unchecked cast result and may be None here; accessing '.SetEssential' on it will crash the script (https://papyrus-lint.idrinth.de/rules.html#rule-unchecked-cast)
-Scripts/Source/Actor.psc:439:27: [argument-types] [error] Argument 1 to 'SetEssential' expects bool but got Int (https://papyrus-lint.idrinth.de/rules.html#rule-argument-types)
 Scripts/Source/Actor.psc:642:121: [line-length] [warning] Line is 127 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
 Scripts/Source/Actor.psc:658:121: [line-length] [warning] Line is 147 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
 Scripts/Source/Actor.psc:660:121: [line-length] [warning] Line is 145 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
@@ -223,4 +222,4 @@ Scripts/Source/Spell.psc:16:10: [forbidden-functions] [warning] Spell.Preload: S
 Scripts/Source/Spell.psc:22:10: [forbidden-functions] [warning] Spell.Unload: Spell.Unload is documented as likely to be deprecated; misuse can unload in-use spell art and leak memory. Avoid calling it (https://papyrus-lint.idrinth.de/rules.html#rule-forbidden-functions)
 Scripts/Source/Utility.psc:55:121: [line-length] [warning] Line is 125 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
 Scripts/Source/WornObject.psc:50:121: [line-length] [warning] Line is 173 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-PapyrusLinterCLI: 225 problem(s) found in 16 of 62 script(s).
+PapyrusLinterCLI: 224 problem(s) found in 16 of 62 script(s).

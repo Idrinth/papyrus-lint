@@ -41,7 +41,6 @@ Scripts/Source/Actor.psc:171:1: [indentation] [warning] Line should be indented 
 Scripts/Source/Actor.psc:430:121: [line-length] [warning] Line is 246 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
 Scripts/Source/Actor.psc:438:1: [unchecked-cast] [warning] 'akActorBase' holds an unchecked cast result and may be None here; accessing '.IsUnique' on it will crash the script (https://papyrus-lint.idrinth.de/rules.html#rule-unchecked-cast)
 Scripts/Source/Actor.psc:439:1: [unchecked-cast] [warning] 'akActorBase' holds an unchecked cast result and may be None here; accessing '.SetEssential' on it will crash the script (https://papyrus-lint.idrinth.de/rules.html#rule-unchecked-cast)
-Scripts/Source/Actor.psc:439:27: [argument-types] [error] Argument 1 to 'SetEssential' expects bool but got Int (https://papyrus-lint.idrinth.de/rules.html#rule-argument-types)
 Scripts/Source/Actor.psc:452:1: [indentation] [warning] Line should be indented with 1 tab (https://papyrus-lint.idrinth.de/rules.html#rule-indentation)
 Scripts/Source/Actor.psc:458:74: [trailing-whitespace] [warning] Line contains trailing whitespace (https://papyrus-lint.idrinth.de/rules.html#rule-trailing-whitespace)
 Scripts/Source/Actor.psc:505:1: [indentation] [warning] Line should be indented with 1 tab (https://papyrus-lint.idrinth.de/rules.html#rule-indentation)
@@ -802,4 +801,4 @@ Scripts/Source/Weather.psc:10:36: [assignment-operator-spacing] [warning] '=' mu
 Scripts/Source/Weather.psc:10:61: [assignment-operator-spacing] [warning] '=' must be preceded by exactly one space (https://papyrus-lint.idrinth.de/rules.html#rule-assignment-operator-spacing)
 Scripts/Source/Weather.psc:10:61: [assignment-operator-spacing] [warning] '=' must be followed by exactly one space (https://papyrus-lint.idrinth.de/rules.html#rule-assignment-operator-spacing)
 Scripts/Source/WornObject.psc:50:121: [line-length] [warning] Line is 173 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-PapyrusLinterCLI: 804 problem(s) found in 28 of 62 script(s).
+PapyrusLinterCLI: 803 problem(s) found in 28 of 62 script(s).

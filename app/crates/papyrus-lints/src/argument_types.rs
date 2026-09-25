@@ -74,17 +74,15 @@ impl AstLint for Collect {
         let Some((name, params)) = resolve_signature(callee, env, &self.locals, ctx.external) else {
             return;
         };
-        let mut diagnostics = Vec::new();
-        check_args(
+        self.store.extend(check_args(
             (*line, *col),
             &name,
             &params,
             args,
             env,
+            ctx.config.bool_like_int,
             ctx.external,
-            &mut diagnostics,
-        );
-        self.store.extend(diagnostics);
+        ));
     }
 }
 
@@ -222,15 +220,20 @@ fn resolve_signature<E: ExternalSignatures + ?Sized>(
         .map(|params| (function_name, params))
 }
 
+fn is_bool_like_int_literal(expr: &Expr) -> bool {
+    matches!(expr, Expr::Literal(Literal::Int { value: 0 | 1, .. }))
+}
+
 fn check_args<E: ExternalSignatures + ?Sized>(
     (line, col): (usize, usize),
     function_name: &str,
     params: &[ParamInfo],
     args: &[Expr],
     env: &TypeEnv,
+    allow_bool_like_int: bool,
     external: &mut E,
-    diagnostics: &mut Vec<Diagnostic>,
-) {
+) -> Vec<Diagnostic> {
+    let mut diagnostics = Vec::new();
     for (index, arg) in args.iter().enumerate() {
         let (param_index, arg) = match arg {
             Expr::NamedArg { name, value } => {
@@ -262,6 +265,14 @@ fn check_args<E: ExternalSignatures + ?Sized>(
             continue;
         }
 
+        if allow_bool_like_int
+            && !param_type.is_array
+            && param_type.name.eq_ignore_ascii_case("bool")
+            && is_bool_like_int_literal(arg)
+        {
+            continue;
+        }
+
         let Some(arg_type) = infer_type(arg, env) else {
             continue;
         };
@@ -276,6 +287,7 @@ fn check_args<E: ExternalSignatures + ?Sized>(
             ));
         }
     }
+    diagnostics
 }
 
 fn mismatch(
