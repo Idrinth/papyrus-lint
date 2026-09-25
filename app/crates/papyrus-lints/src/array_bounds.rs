@@ -128,6 +128,12 @@ fn walk_body(body: &[Stmt], sizes: &mut HashMap<String, i64>, diagnostics: &mut 
                 // inside its body can't be assumed to still hold once
                 // execution reaches the code after the loop.
             }
+            Stmt::LockGuard { body, else_body, .. } => {
+                let mut locked = sizes.clone();
+                walk_body(body, &mut locked, diagnostics);
+                let mut alternate = sizes.clone();
+                walk_body(else_body, &mut alternate, diagnostics);
+            }
         }
     }
 }

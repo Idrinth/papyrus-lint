@@ -155,6 +155,12 @@ fn walk_body(
                 // even if the body just reassigned a fresh cast to it.
                 clear_checked(condition, unchecked_vars);
             }
+            Stmt::LockGuard { body, else_body, .. } => {
+                let mut locked = unchecked_vars.clone();
+                walk_body(body, protected, &mut locked, diagnostics);
+                let mut alternate = unchecked_vars.clone();
+                walk_body(else_body, protected, &mut alternate, diagnostics);
+            }
         }
     }
 }

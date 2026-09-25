@@ -368,6 +368,12 @@ fn collect_var_decl_names(body: &[Stmt], locals: &mut HashSet<String>) {
                 collect_var_decl_names(else_body, locals);
             }
             Stmt::While { body, .. } => collect_var_decl_names(body, locals),
+            Stmt::LockGuard {
+                body, else_body, ..
+            } => {
+                collect_var_decl_names(body, locals);
+                collect_var_decl_names(else_body, locals);
+            }
             _ => {}
         }
     }
@@ -420,6 +426,12 @@ fn scan_stmts(
             } => {
                 scan_expr(condition, called);
                 scan_stmts(body, locals, writes, called);
+            }
+            Stmt::LockGuard {
+                body, else_body, ..
+            } => {
+                scan_stmts(body, locals, writes, called);
+                scan_stmts(else_body, locals, writes, called);
             }
         }
     }

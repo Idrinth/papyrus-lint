@@ -218,6 +218,14 @@ fn state_has_handler(
 fn has_disqualifying_branch(body: &[Stmt]) -> bool {
     body.iter().any(|stmt| match stmt {
         Stmt::While { .. } => true,
+        Stmt::LockGuard {
+            kind, body, else_body, ..
+        } => match kind {
+            papyrus_parser::ast::LockKind::Lock => has_disqualifying_branch(body),
+            papyrus_parser::ast::LockKind::Try => {
+                has_disqualifying_branch(body) && has_disqualifying_branch(else_body)
+            }
+        },
         Stmt::If {
             branches,
             else_body,
@@ -245,6 +253,9 @@ fn contains_return(body: &[Stmt]) -> bool {
                 || contains_return(else_body)
         }
         Stmt::While { body, .. } => contains_return(body),
+        Stmt::LockGuard { body, else_body, .. } => {
+            contains_return(body) || contains_return(else_body)
+        }
         Stmt::VarDecl(_) | Stmt::Assign { .. } | Stmt::Expr { .. } => false,
     })
 }
@@ -262,7 +273,7 @@ fn stmt_exprs(stmt: &Stmt) -> Vec<&Expr> {
         Stmt::Assign { target, value, .. } => vec![target, value],
         Stmt::Expr { value, .. } => vec![value],
         Stmt::Return { value, .. } => value.iter().collect(),
-        Stmt::If { .. } | Stmt::While { .. } => Vec::new(),
+        Stmt::If { .. } | Stmt::While { .. } | Stmt::LockGuard { .. } => Vec::new(),
     }
 }
 

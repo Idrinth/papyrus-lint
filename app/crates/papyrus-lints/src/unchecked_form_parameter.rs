@@ -124,6 +124,12 @@ fn walk_body(body: &[Stmt], unchecked: &mut HashSet<String>, diagnostics: &mut V
                 // false, since this language has no `break`/`continue`.
                 narrow_for_falsy(condition, unchecked);
             }
+            Stmt::LockGuard { body, else_body, .. } => {
+                let mut locked = unchecked.clone();
+                walk_body(body, &mut locked, diagnostics);
+                let mut alternate = unchecked.clone();
+                walk_body(else_body, &mut alternate, diagnostics);
+            }
         }
     }
 }

@@ -152,6 +152,10 @@ fn collect_var_decls(body: &[Stmt]) -> Vec<&VariableDecl> {
                 decls.extend(collect_var_decls(else_body));
             }
             Stmt::While { body, .. } => decls.extend(collect_var_decls(body)),
+            Stmt::LockGuard { body, else_body, .. } => {
+                decls.extend(collect_var_decls(body));
+                decls.extend(collect_var_decls(else_body));
+            }
             _ => {}
         }
     }

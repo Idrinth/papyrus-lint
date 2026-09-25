@@ -97,6 +97,36 @@ impl AstLint for Collect {
                     );
                 }
             }
+            Stmt::LockGuard {
+                body,
+                else_body,
+                else_line,
+                else_col,
+                line,
+                col,
+                ..
+            } => {
+                if body.is_empty() {
+                    self.store.emit(
+                        *line,
+                        *col,
+                        "[warning] LockGuard body is empty; this looks like an oversight \
+                         rather than something intentional",
+                        RULE,
+                    );
+                }
+                if let (Some(line), Some(column)) = (else_line, else_col) {
+                    if else_body.is_empty() {
+                        self.store.emit(
+                            *line,
+                            *column,
+                            "[warning] Empty ElseTryLockGuard body; this looks like an oversight \
+                             rather than something intentional",
+                            RULE,
+                        );
+                    }
+                }
+            }
             Stmt::VarDecl(_) | Stmt::Assign { .. } | Stmt::Expr { .. } | Stmt::Return { .. } => {}
         }
     }

@@ -550,6 +550,13 @@ fn collect_stmt(statement: &Stmt, push: &mut impl FnMut(&str)) {
                 collect_stmt(statement, push);
             }
         }
+        Stmt::LockGuard {
+            body, else_body, ..
+        } => {
+            for statement in body.iter().chain(else_body) {
+                collect_stmt(statement, push);
+            }
+        }
     }
 }
 

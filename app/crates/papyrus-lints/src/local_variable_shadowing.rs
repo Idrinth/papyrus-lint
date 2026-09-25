@@ -235,6 +235,10 @@ fn collect_var_decls(body: &[papyrus_parser::ast::Stmt]) -> Vec<&VariableDecl> {
             papyrus_parser::ast::Stmt::While { body, .. } => {
                 decls.extend(collect_var_decls(body))
             }
+            papyrus_parser::ast::Stmt::LockGuard { body, else_body, .. } => {
+                decls.extend(collect_var_decls(body));
+                decls.extend(collect_var_decls(else_body));
+            }
             _ => {}
         }
     }

@@ -16,6 +16,7 @@ struct PropertyFlags {
     is_hidden: bool,
     is_conditional: bool,
     access_level: AccessLevel,
+    requires_guard: Option<String>,
 }
 
 #[derive(Default)]
@@ -25,6 +26,7 @@ struct FunctionFlags {
     is_debug_only: bool,
     is_beta_only: bool,
     access_level: AccessLevel,
+    requires_guard: Option<String>,
 }
 
 impl Parser {
@@ -58,6 +60,7 @@ impl Parser {
             states: Vec::new(),
             structs: Vec::new(),
             groups: Vec::new(),
+            guards: Vec::new(),
             line,
         };
 
@@ -107,6 +110,17 @@ impl Parser {
 
         if self.mode.has_fallout4_dialect() && self.at_keyword(Keyword::Group) {
             script.groups.push(self.parse_group()?);
+            return Ok(());
+        }
+
+        // Not a reserved word: Skyrim uses it as a name (`Actor guard`).
+        // Starfield recognizes the declaration here; other editions reject
+        // that form instead of the token.
+        if self.at_identifier_ignore_ascii_case("Guard") {
+            if !self.mode.has_starfield_dialect() {
+                return Err(self.error("Guard is a Starfield declaration"));
+            }
+            script.guards.push(self.parse_guard()?);
             return Ok(());
         }
 
@@ -179,6 +193,27 @@ impl Parser {
         Ok(())
     }
 
+    /// Starfield only: `Guard <Name> [ProtectsFunctionLogic]`.
+    /// The caller has already recognized the leading `Guard` identifier.
+    fn parse_guard(&mut self) -> PResult<GuardDecl> {
+        let line = self.current().line;
+        self.advance();
+        let name = self.expect_identifier()?;
+        let protects_function_logic =
+            if self.at_identifier_ignore_ascii_case("ProtectsFunctionLogic") {
+                self.advance();
+                true
+            } else {
+                false
+            };
+        self.expect_terminator()?;
+        Ok(GuardDecl {
+            name,
+            protects_function_logic,
+            line,
+        })
+    }
+
     pub(super) fn parse_type_name(&mut self) -> PResult<TypeName> {
         let name = self.expect_qualified_name()?;
         let mut is_array = false;
@@ -221,6 +256,7 @@ impl Parser {
             is_hidden: flags.is_hidden,
             is_conditional: flags.is_conditional,
             access_level: flags.access_level,
+            requires_guard: flags.requires_guard,
             line,
         })
     }
@@ -245,6 +281,10 @@ impl Parser {
                     || self.at_identifier_ignore_ascii_case("Mandatory"))
             {
                 self.advance();
+            } else if self.mode.has_starfield_dialect()
+                && self.at_identifier_ignore_ascii_case("RequiresGuard")
+            {
+                flags.requires_guard = Some(self.parse_requires_guard()?);
             } else if matches!(self.kind(), TokenKind::CommentAnnotation(_)) {
                 flags.access_level = self.parse_access_level()?;
             } else {
@@ -375,6 +415,7 @@ impl Parser {
             value = Some(self.parse_expr()?);
         }
         let mut is_conditional = false;
+        let mut requires_guard = None;
         loop {
             if self.at_keyword(Keyword::Conditional) {
                 self.advance();
@@ -383,6 +424,10 @@ impl Parser {
                 && self.at_identifier_ignore_ascii_case("Const")
             {
                 self.advance();
+            } else if self.mode.has_starfield_dialect()
+                && self.at_identifier_ignore_ascii_case("RequiresGuard")
+            {
+                requires_guard = Some(self.parse_requires_guard()?);
             } else {
                 break;
             }
@@ -393,6 +438,7 @@ impl Parser {
             name,
             value,
             is_conditional,
+            requires_guard,
             line,
         })
     }
@@ -488,6 +534,7 @@ impl Parser {
             is_debug_only: flags.is_debug_only,
             is_beta_only: flags.is_beta_only,
             access_level: flags.access_level,
+            requires_guard: flags.requires_guard,
             deprecation: None,
             body,
             line,
@@ -512,6 +559,10 @@ impl Parser {
                 flags.is_beta_only = true;
             } else if self.mode.has_starfield_dialect() && self.at_starfield_access_flag() {
                 flags.access_level = self.parse_starfield_access_flag();
+            } else if self.mode.has_starfield_dialect()
+                && self.at_identifier_ignore_ascii_case("RequiresGuard")
+            {
+                flags.requires_guard = Some(self.parse_requires_guard()?);
             } else if matches!(self.kind(), TokenKind::CommentAnnotation(_)) {
                 flags.access_level = self.parse_access_level()?;
             } else {
@@ -520,6 +571,14 @@ impl Parser {
         }
         self.expect_terminator()?;
         Ok(flags)
+    }
+
+    fn parse_requires_guard(&mut self) -> PResult<String> {
+        self.advance();
+        self.expect(TokenKind::LParen)?;
+        let guard = self.expect_identifier()?;
+        self.expect(TokenKind::RParen)?;
+        Ok(guard)
     }
 
     fn parse_access_level(&mut self) -> PResult<AccessLevel> {

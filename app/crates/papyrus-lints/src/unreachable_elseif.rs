@@ -79,6 +79,10 @@ fn check_body(body: &[Stmt], diagnostics: &mut Vec<Diagnostic>) {
                 check_body(else_body, diagnostics);
             }
             Stmt::While { body, .. } => check_body(body, diagnostics),
+            Stmt::LockGuard { body, else_body, .. } => {
+                check_body(body, diagnostics);
+                check_body(else_body, diagnostics);
+            }
             Stmt::VarDecl(_) | Stmt::Assign { .. } | Stmt::Expr { .. } | Stmt::Return { .. } => {}
         }
     }
