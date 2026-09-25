@@ -6,6 +6,9 @@ Framework-free TypeScript UI for the Tauri app. Reusable linting stays in
 - A dropped `.ppj`'s `<Import>` entries land in `currentPpjImportRoots`
   (`project-state.ts`) and are folded into `effectiveScriptRoots()` the
   same way `currentAchlistScriptRoots` is. Never `lookup_script_roots`.
+- Dropped and re-linted batches go through one `lint_project_scripts`
+  command (`drop.ts`). Watch mode and the code viewer still lint one
+  file at a time via `lint_psc_file`.
 - The Settings tab and first-run picker offer `skyrim`, `fallout4`, and
   `starfield`. A project already set to an unrecognized `game` value is
   shown and kept, not rewritten.

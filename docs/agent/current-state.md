@@ -51,7 +51,7 @@ the other column before calling the work done.
 | --- | --- |
 | `papyrus_lints::lint` / `repair` | `papyrus-lint-live` (CLI `--blob`, LSP snapshot, desktop live edit), editor plugins (via CLI), project-aware CLI / Tauri file lint |
 | `*_with_external_arguments` | CLI `fix` and Tauri apply-fix commands — not preview |
-| `ExternalSignatures` / `FunctionTable` | CLI threads (`SharedFunctionTable`), desktop per-project table |
+| `ExternalSignatures` / `FunctionTable` | CLI threads (`SharedFunctionTable`), desktop per-project table. Desktop batch lint (`lint_project_scripts`) uses the same parse-closure, preload, and `map_in_parallel` lint as the CLI; `lint_psc_file` remains the one-file path |
 | `find_candidate_pair_root` / script locator | CLI path resolution, Tauri `find_project_root`, drop-folder scan |
 | `strict_achlist_scope` / `lookup_script_roots` | CLI + config; lookup roots are analysis-only (never linted, never on compiler `-i`) |
 | Rule tags / `doc_url` | CLI reports, GUI badges/filters, VS Code diagnostic code, Sublime message text, LSP diagnostic code |

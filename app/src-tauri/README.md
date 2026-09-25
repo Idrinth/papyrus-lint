@@ -5,6 +5,9 @@ Tauri commands and the `PapyrusLinter` process. Reusable linting stays in
 
 - Filesystem commands that parse, lint, repair, or compile are
   `#[tauri::command(async)]`. Only instant in-memory commands stay sync.
+- A dropped batch is `lint_project_scripts`: one parse of the type
+  closure, one function-table preload, then in-process parallel lint.
+  `lint_psc_file` stays for a single file.
 - Per-file commands reuse `cached_script_index` while the source
   directories' mtimes are unchanged.
 - `build.rs` generates `icons/` from `shared/images/logo.png`. Those

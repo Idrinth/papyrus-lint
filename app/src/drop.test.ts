@@ -173,8 +173,14 @@ describe("handleDroppedPaths", () => {
     await pending;
 
     expect(document.querySelector("#achlist-result-title")!.textContent).toBe("Loaded /proj/scripts/source");
-    expect(invokeMock).toHaveBeenCalledWith("parse_psc_file", { path: "/proj/scripts/source/A.psc", game: DEFAULT_LINT_CONFIG.game });
-    expect(invokeMock).toHaveBeenCalledWith("parse_psc_file", { path: "/proj/scripts/source/Requiem/B.psc", game: DEFAULT_LINT_CONFIG.game });
+    expect(invokeMock).toHaveBeenCalledWith(
+      "lint_project_scripts",
+      expect.objectContaining({
+        paths: ["/proj/scripts/source/A.psc", "/proj/scripts/source/Requiem/B.psc"],
+      }),
+    );
+    expect(invokeMock).not.toHaveBeenCalledWith("parse_psc_file", expect.anything());
+    expect(invokeMock).not.toHaveBeenCalledWith("lint_psc_file", expect.anything());
   });
 
   it("falls back to the dropped directory itself as project root when no scripts/source pair is found", async () => {
@@ -209,40 +215,39 @@ describe("handleDroppedPaths", () => {
 
     expect(document.querySelector("#achlist-result-title")!.textContent).toBe("Loaded /proj/list.achlist");
     // readme.txt isn't a .psc file, so only A.psc should have been linted.
-    expect(invokeMock).toHaveBeenCalledWith("parse_psc_file", { path: "A.psc", game: DEFAULT_LINT_CONFIG.game });
-    expect(invokeMock).not.toHaveBeenCalledWith("parse_psc_file", { path: "readme.txt", game: DEFAULT_LINT_CONFIG.game });
+    expect(invokeMock).toHaveBeenCalledWith(
+      "lint_project_scripts",
+      expect.objectContaining({ paths: ["A.psc"] }),
+    );
+    expect(invokeMock).not.toHaveBeenCalledWith("parse_psc_file", expect.anything());
   });
 
-  it("preloads the achlist's own .psc entries' function table before lint_psc_file", async () => {
-    const order: string[] = [];
+  it("lints an achlist's .psc entries with one batch command", async () => {
     invokeImplFor({
       parse_achlist_file: () => ["A.psc", "readme.txt"],
       load_lint_config: () => DEFAULT_LINT_CONFIG,
-      preload_project_scripts: (args) => {
-        order.push("preload_project_scripts");
-        expect((args as { paths: string[] }).paths).toEqual(["A.psc"]);
-      },
-      parse_psc_file: () => ({ name: "A" }),
-      lint_psc_file: () => {
-        order.push("lint_psc_file");
-        return [];
-      },
+      lint_project_scripts: () => undefined,
     });
 
     const pending = handleDroppedPaths(["/proj/list.achlist"]);
     await confirmDetectedConfig();
     await pending;
 
-    expect(order).toEqual(["preload_project_scripts", "lint_psc_file"]);
+    expect(invokeMock).toHaveBeenCalledWith(
+      "lint_project_scripts",
+      expect.objectContaining({ paths: ["A.psc"] }),
+    );
+    expect(invokeMock).not.toHaveBeenCalledWith("preload_project_scripts", expect.anything());
+    expect(invokeMock).not.toHaveBeenCalledWith("lint_psc_file", expect.anything());
+    expect(invokeMock).not.toHaveBeenCalledWith("parse_psc_file", expect.anything());
   });
 
-  it("grows one Parsing bar while referenced scripts are preloaded", async () => {
+  it("grows one Parsing bar while the batch command reports referenced scripts, then switches to Linting", async () => {
     invokeImplFor({
       parse_achlist_file: () => ["A.psc"],
       load_lint_config: () => DEFAULT_LINT_CONFIG,
-      parse_psc_file: () => ({ name: "A" }),
-      preload_project_scripts: (args) => {
-        const channel = (args as { onProgress: { onmessage: (payload: unknown) => void } }).onProgress;
+      lint_project_scripts: (args) => {
+        const channel = (args as { onEvent: { onmessage: (payload: unknown) => void } }).onEvent;
         const label = () => document.querySelector("#lint-progress-label")!.textContent;
         const bar = document.querySelector<HTMLProgressElement>("#lint-progress-bar")!;
         const busy = () => document.querySelector("#lint-progress")!.classList.contains("lint-progress--busy");
@@ -252,18 +257,26 @@ describe("handleDroppedPaths", () => {
         expect(bar.value).toBe(0);
         expect(bar.max).toBe(1);
 
-        channel.onmessage({ phase: "Parsing", completed: 1, total: 2 });
+        channel.onmessage({ kind: "progress", phase: "Parsing", completed: 1, total: 2 });
         expect(label()).toBe("Parsing 1 / 2 files");
         expect(bar.value).toBe(1);
         expect(bar.max).toBe(2);
         expect(busy()).toBe(false);
 
-        channel.onmessage({ phase: "Indexing scripts", completed: 0, total: 0 });
+        channel.onmessage({ kind: "progress", phase: "Indexing scripts", completed: 0, total: 0 });
         expect(label()).toBe("Indexing scripts");
         expect(busy()).toBe(true);
         expect(bar.hasAttribute("value")).toBe(false);
+
+        channel.onmessage({
+          kind: "result",
+          path: "A.psc",
+          ok: true,
+          detail: 'parsed as "A"',
+          findings: [],
+        });
+        channel.onmessage({ kind: "progress", phase: "Linting", completed: 1, total: 1 });
       },
-      lint_psc_file: () => [],
     });
 
     const pending = handleDroppedPaths(["/proj/list.achlist"]);
@@ -334,16 +347,20 @@ describe("handleDroppedPaths", () => {
     await pending;
 
     expect(document.querySelector("#achlist-result-title")!.textContent).toBe("Loaded /proj/project.ppj");
-    expect(invokeMock).toHaveBeenCalledWith("parse_psc_file", { path: "/proj/Source/Scripts/A.psc", game: DEFAULT_LINT_CONFIG.game });
-    expect(invokeMock).toHaveBeenCalledWith("lint_psc_file", {
-      path: "/proj/Source/Scripts/A.psc",
-      context: expect.objectContaining({
-        additional_roots: expect.arrayContaining([
-          "/proj/Source/Scripts",
-          "/vendor/Skyrim/Source/Scripts",
-        ]),
+    const lintCall = invokeMock.mock.calls.find(([command]) => command === "lint_project_scripts");
+    expect(lintCall?.[1]).toEqual(
+      expect.objectContaining({
+        paths: ["/proj/Source/Scripts/A.psc"],
+        context: expect.objectContaining({
+          additional_roots: expect.arrayContaining([
+            "/proj/Source/Scripts",
+            "/vendor/Skyrim/Source/Scripts",
+          ]),
+        }),
       }),
-    });
+    );
+    expect(invokeMock).not.toHaveBeenCalledWith("parse_psc_file", expect.anything());
+    expect(invokeMock).not.toHaveBeenCalledWith("lint_psc_file", expect.anything());
   });
 
   it("shows an error when the ppj itself fails to parse", async () => {
@@ -410,7 +427,11 @@ describe("handleDroppedPaths", () => {
     expect(document.querySelector("#achlist-result-title")!.textContent).toBe(
       "Loaded /proj/scripts/source/A.psc",
     );
-    expect(invokeMock).toHaveBeenCalledWith("parse_psc_file", { path: "/proj/scripts/source/A.psc", game: DEFAULT_LINT_CONFIG.game });
+    expect(invokeMock).toHaveBeenCalledWith(
+      "lint_project_scripts",
+      expect.objectContaining({ paths: ["/proj/scripts/source/A.psc"] }),
+    );
+    expect(invokeMock).not.toHaveBeenCalledWith("parse_psc_file", expect.anything());
   });
 
   it("clears previous findings before re-rendering, so re-dropping the same achlist can't show stale diagnostics while it reloads", async () => {
@@ -739,7 +760,7 @@ describe("relintCurrentFiles / Lint results tab settings staleness", () => {
     document.querySelector<HTMLButtonElement>("#tab-lint")!.click();
     // The results panel is hidden synchronously (the same "empty" signal a
     // fresh drop uses while its own lint pass is still running) before the
-    // re-lint pass's async work (parse_psc_file/lint_psc_file) runs.
+    // re-lint batch starts.
     expect(document.querySelector("#psc-result")!.hasAttribute("hidden")).toBe(true);
     expect(document.querySelector<HTMLElement>("#panel-lint")!.hidden).toBe(false);
 
@@ -747,7 +768,10 @@ describe("relintCurrentFiles / Lint results tab settings staleness", () => {
       await Promise.resolve();
     }
 
-    expect(invokeMock).toHaveBeenCalledWith("parse_psc_file", { path: "A.psc", game: DEFAULT_LINT_CONFIG.game });
+    expect(invokeMock).toHaveBeenCalledWith(
+      "lint_project_scripts",
+      expect.objectContaining({ paths: ["A.psc"] }),
+    );
     expect(document.querySelector("#psc-result")!.hasAttribute("hidden")).toBe(false);
     const items = document.querySelectorAll("#psc-result-list > li");
     expect(items).toHaveLength(1);
@@ -803,7 +827,7 @@ describe("relintCurrentFiles / Lint results tab settings staleness", () => {
     for (let i = 0; i < 10; i++) {
       await Promise.resolve();
     }
-    const raceLintCall = invokeMock.mock.calls.find(([command]) => command === "lint_psc_file");
+    const raceLintCall = invokeMock.mock.calls.find(([command]) => command === "lint_project_scripts");
     expect((raceLintCall?.[1] as { context: { config: LintConfig } }).context.config.semicolon).toBe(false);
 
     // The override's config load now finishes, well after that race relint
@@ -821,7 +845,7 @@ describe("relintCurrentFiles / Lint results tab settings staleness", () => {
       await Promise.resolve();
     }
 
-    const secondLintCall = invokeMock.mock.calls.find(([command]) => command === "lint_psc_file");
+    const secondLintCall = invokeMock.mock.calls.find(([command]) => command === "lint_project_scripts");
     expect((secondLintCall?.[1] as { context: { config: LintConfig } }).context.config.semicolon).toBe(true);
   });
 });

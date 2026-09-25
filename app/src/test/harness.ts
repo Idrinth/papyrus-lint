@@ -219,8 +219,64 @@ function defaultCompletionHandler(command: string): ((args: unknown) => unknown)
   };
 }
 
+// Stand-in for `lint_project_scripts` when a test still describes the batch
+// in the old per-file commands. The frontend only invokes the batch command;
+// this drives `parse_psc_file` / `lint_psc_file` / `preload_project_scripts`
+// handlers directly (not through `invoke`) and streams the same events the
+// real command would, so a pending lint still updates the list one file at
+// a time. A test that supplies its own `lint_project_scripts` handler skips
+// this.
+async function emulateLintProjectScripts(
+  handlers: Record<string, (args: unknown) => unknown>,
+  args: unknown,
+): Promise<{ path: string; ok: boolean; detail: string; findings: unknown[] }[]> {
+  const { paths, context, onEvent } = args as {
+    paths: string[];
+    context: { config?: { game?: string } };
+    onEvent?: { onmessage: (event: unknown) => void };
+  };
+  const emit = (event: unknown) => onEvent?.onmessage?.(event);
+  if (handlers.preload_project_scripts) {
+    await handlers.preload_project_scripts({
+      paths,
+      context,
+      onProgress: {
+        onmessage: (progress: { phase: string; completed: number; total: number }) => {
+          emit({ kind: "progress", ...progress });
+        },
+      },
+    });
+  }
+  const outcomes: { path: string; ok: boolean; detail: string; findings: unknown[] }[] = [];
+  const parse = handlers.parse_psc_file;
+  const lint = handlers.lint_psc_file;
+  const game = context?.config?.game;
+  for (let index = 0; index < paths.length; index++) {
+    const path = paths[index];
+    let outcome: { path: string; ok: boolean; detail: string; findings: unknown[] };
+    try {
+      if (!parse || !lint) {
+        outcome = { path, ok: true, detail: 'parsed as ""', findings: [] };
+      } else {
+        const script = (await parse({ path, game })) as { name: string };
+        const findings = (await lint({ path, context })) as unknown[];
+        outcome = { path, ok: true, detail: `parsed as "${script.name}"`, findings };
+      }
+    } catch (error) {
+      outcome = { path, ok: false, detail: String(error), findings: [] };
+    }
+    outcomes.push(outcome);
+    emit({ kind: "result", ...outcome });
+    emit({ kind: "progress", phase: "Linting", completed: index + 1, total: paths.length });
+  }
+  return outcomes;
+}
+
 export function invokeImplFor(handlers: Record<string, (args: unknown) => unknown>) {
   invokeMock.mockImplementation((command: string, args: unknown) => {
+    if (command === "lint_project_scripts" && !handlers[command]) {
+      return emulateLintProjectScripts(handlers, args);
+    }
     const handler = handlers[command] ?? defaultProjectRootHandler(command) ?? defaultExportHandler(command) ?? defaultCompletionHandler(command);
     if (!handler) {
       return Promise.reject(new Error(`unexpected command: ${command}`));

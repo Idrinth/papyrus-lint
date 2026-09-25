@@ -20,9 +20,9 @@ function clearLintProgressBusy() {
 
 // Shows the progress bar reset to 0/`total`, for a drop about to start
 // parsing/linting `total` files. `phase` names the step this bar is
-// currently tracking -- "Parsing" for the single type-closure pass
-// (see runParseThenLint in drop.ts; `total` grows as referenced scripts
-// are enqueued), then "Linting" once the per-file parsePscFiles loop starts.
+// currently tracking -- "Parsing" for the type-closure pass inside
+// `lint_project_scripts` (see runParseThenLint in drop.ts; `total` grows
+// as referenced scripts are enqueued), then "Linting" as files finish.
 export function showLintProgress(total: number, phase: string = "Linting") {
   if (lintProgressHideTimer !== null) {
     clearTimeout(lintProgressHideTimer);

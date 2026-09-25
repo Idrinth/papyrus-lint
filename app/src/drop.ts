@@ -5,7 +5,7 @@
 // results.
 import { invoke } from "@tauri-apps/api/core";
 import { type PapyrusScript, type PscParseOutcome } from "./backend-types";
-import { type PreloadProgress, lintPscFile, preloadProjectScripts } from "./backend";
+import { type ProjectLintEvent, lintPscFile, lintProjectScripts } from "./backend";
 import { currentLintConfig } from "./config-types";
 import { clearError, setDropZoneLoading, showError, showResult } from "./main";
 import { switchTab } from "./main-tabs";
@@ -76,44 +76,43 @@ export async function parsePscFiles(
   });
 }
 
-function applyPreloadProgress(progress: PreloadProgress) {
-  if (progress.total <= 0) {
-    showLintActivity(progress.phase);
+function applyProjectLintEvent(event: ProjectLintEvent) {
+  if (event.kind === "result") {
+    currentPscOutcomes.push({
+      path: event.path,
+      ok: event.ok,
+      detail: event.detail,
+      findings: event.findings,
+    });
+    renderPscResults(currentPscOutcomes);
     return;
   }
-  // Same contract as the CLI's "Parsing: n/total" line: one bar, and `total`
-  // grows when a referenced script is pushed onto the parse queue.
-  updateLintProgress(progress.completed, progress.total, "Parsing");
+  if (event.total <= 0) {
+    showLintActivity(event.phase);
+    return;
+  }
+  // Same contract as the CLI's "Parsing: n/total" line, then "Linting":
+  // one bar, and `total` grows when a referenced script is pushed onto
+  // the parse queue.
+  updateLintProgress(event.completed, event.total, event.phase);
 }
 
 async function runParseThenLint(paths: string[], generation: number) {
-  // Seeds and the scripts they name are one parse. `preload_project_scripts`
-  // reads that queue and pushes newly found types onto it; the bar starts at
-  // the lint-target count and grows instead of opening a second batch.
+  // One in-process batch: parse the type closure (the bar starts at the
+  // lint-target count and grows as referenced scripts are enqueued), index
+  // the function table, then lint. Results stream in completion order.
   showLintProgress(paths.length, "Parsing");
-  await preloadProjectScripts(
+  await lintProjectScripts(
     paths,
     paths.length === 0
       ? undefined
-      : (progress) => {
+      : (event) => {
           if (generation !== currentParseGeneration) {
             return;
           }
-          applyPreloadProgress(progress);
+          applyProjectLintEvent(event);
         },
   );
-  if (generation !== currentParseGeneration) {
-    return;
-  }
-  showLintProgress(paths.length, "Linting");
-  await parsePscFiles(paths, (outcome) => {
-    if (generation !== currentParseGeneration) {
-      return;
-    }
-    currentPscOutcomes.push(outcome);
-    renderPscResults(currentPscOutcomes);
-    updateLintProgress(currentPscOutcomes.length, paths.length);
-  });
   if (generation === currentParseGeneration) {
     scheduleHideLintProgress();
   }

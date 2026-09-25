@@ -203,3 +203,119 @@ fn preload_project_scripts_reports_parsing_progress_including_parents_outside_th
     );
     assert!(seen.iter().any(|json| json.contains("Indexing scripts")));
 }
+
+fn project_lint_events(paths: Vec<String>, context: ProjectLintContext) -> Vec<serde_json::Value> {
+    let seen = std::sync::Arc::new(std::sync::Mutex::new(Vec::new()));
+    let captured = std::sync::Arc::clone(&seen);
+    let channel = tauri::ipc::Channel::new(move |body| {
+        let tauri::ipc::InvokeResponseBody::Json(json) = body else {
+            return Ok(());
+        };
+        if let Ok(event) = serde_json::from_str::<serde_json::Value>(&json) {
+            captured.lock().unwrap().push(event);
+        }
+        Ok(())
+    });
+    lint_project_scripts(paths, context, Some(channel).into());
+    let events = seen.lock().unwrap().clone();
+    events
+}
+
+#[test]
+fn lint_project_scripts_resolves_a_sibling_and_reports_its_findings() {
+    let dir = tempdir().unwrap();
+    let source_dir = dir.path().join("scripts/source");
+    std::fs::create_dir_all(&source_dir).unwrap();
+    let base_path = source_dir.join("BaseScript.psc");
+    std::fs::write(
+        &base_path,
+        "ScriptName BaseScript\n\nFunction DoIt()\nEndFunction\n",
+    )
+    .unwrap();
+    let derived_path = source_dir.join("DerivedScript.psc");
+    std::fs::write(
+        &derived_path,
+        "ScriptName DerivedScript extends BaseScript\n\nFunction DoIt()\nEndFunction\n",
+    )
+    .unwrap();
+
+    let events = project_lint_events(
+        vec![
+            base_path.to_string_lossy().into_owned(),
+            derived_path.to_string_lossy().into_owned(),
+        ],
+        ProjectLintContext {
+            root: dir.path().to_string_lossy().into_owned(),
+            ..Default::default()
+        },
+    );
+
+    let derived = events.iter().find(|event| {
+        event["kind"] == "result"
+            && event["path"]
+                .as_str()
+                .is_some_and(|path| path.ends_with("DerivedScript.psc"))
+    });
+    let derived = derived.expect("derived script result");
+    assert_eq!(derived["ok"], true);
+    assert_eq!(derived["detail"], "parsed as \"DerivedScript\"");
+    let findings = derived["findings"].as_array().expect("findings");
+    assert!(findings
+        .iter()
+        .any(|finding| finding["rule"] == "function-override"));
+    assert!(events.iter().any(|event| {
+        event["kind"] == "progress" && event["phase"] == "Indexing scripts" && event["total"] == 0
+    }));
+    assert!(events.iter().any(|event| {
+        event["kind"] == "progress"
+            && event["phase"] == "Linting"
+            && event["completed"] == 2
+            && event["total"] == 2
+    }));
+}
+
+#[test]
+fn lint_project_scripts_reports_an_unparseable_file_without_linting_it() {
+    let dir = tempdir().unwrap();
+    let broken_path = dir.path().join("Broken.psc");
+    std::fs::write(&broken_path, "this is not papyrus\n").unwrap();
+    let ok_path = dir.path().join("Example.psc");
+    std::fs::write(
+        &ok_path,
+        "ScriptName Example\n\nFunction Run()\n    Game.GetPlayer()\nEndFunction\n",
+    )
+    .unwrap();
+
+    let events = project_lint_events(
+        vec![
+            broken_path.to_string_lossy().into_owned(),
+            ok_path.to_string_lossy().into_owned(),
+        ],
+        ProjectLintContext {
+            root: dir.path().to_string_lossy().into_owned(),
+            ..Default::default()
+        },
+    );
+
+    let broken = events
+        .iter()
+        .find(|event| event["kind"] == "result" && event["ok"] == false)
+        .expect("broken script result");
+    assert_eq!(broken["findings"].as_array().map(Vec::len), Some(0));
+    assert!(
+        !broken["detail"].as_str().unwrap_or("").is_empty(),
+        "parse failure should explain itself"
+    );
+    let example = events.iter().find(|event| {
+        event["kind"] == "result"
+            && event["path"]
+                .as_str()
+                .is_some_and(|path| path.ends_with("Example.psc"))
+    });
+    let findings = example.expect("example result")["findings"]
+        .as_array()
+        .expect("findings");
+    assert!(findings
+        .iter()
+        .any(|finding| finding["rule"] == "forbidden-functions"));
+}
