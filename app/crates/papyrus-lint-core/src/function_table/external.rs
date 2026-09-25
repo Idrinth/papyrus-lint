@@ -106,6 +106,15 @@ impl papyrus_lints::ExternalSignatures for FunctionTable {
             .map(|signature| signature.has_side_effects)
     }
 
+    fn function_return_type(
+        &mut self,
+        type_name: &str,
+        function_name: &str,
+    ) -> Option<papyrus_parser::ast::TypeName> {
+        self.lookup_function(type_name, function_name)
+            .and_then(|signature| signature.return_type)
+    }
+
     fn ancestry_fully_known(&mut self, type_name: &str) -> bool {
         self.ancestry_fully_known(type_name)
     }

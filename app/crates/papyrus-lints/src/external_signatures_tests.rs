@@ -13,6 +13,10 @@ fn no_external_signatures_leaves_member_metadata_unresolved() {
     assert_eq!(external.is_nodiscard_function("Form", "GetName"), None);
     assert_eq!(external.deprecated_function("Form", "OldFunction"), None);
     assert_eq!(external.function_has_side_effects("Form", "Delete"), None);
+    assert_eq!(
+        external.function_return_type("ObjectReference", "GetItemCount"),
+        None
+    );
 }
 
 #[test]

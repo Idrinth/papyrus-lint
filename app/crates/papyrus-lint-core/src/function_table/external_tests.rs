@@ -68,10 +68,20 @@ fn function_table_forwards_every_external_signature_lookup() {
         external.function_has_side_effects("Child", "RegisterFoo"),
         Some(true)
     );
+    assert_eq!(
+        external.function_return_type("Child", "RegisterFoo"),
+        Some(papyrus_parser::ast::TypeName {
+            name: "Int".to_string(),
+            is_array: false,
+        })
+    );
+
     assert_eq!(external.is_global_function("Child", "Missing"), None);
     assert_eq!(external.is_nodiscard_function("Child", "Missing"), None);
     assert_eq!(external.deprecated_function("Child", "Missing"), None);
     assert_eq!(external.function_has_side_effects("Child", "Missing"), None);
+    assert_eq!(external.function_return_type("Child", "Missing"), None);
+
     assert!(external.ancestry_fully_known("Child"));
     assert!(!external.ancestry_fully_known("DefinitelyMissing"));
     assert_eq!(external.property_types("Child"), vec!["Form"]);
@@ -168,6 +178,24 @@ fn resolves_an_armor_return_value_for_a_form_return_type_through_the_return_type
     );
 
     assert!(diagnostics.is_empty());
+}
+
+#[test]
+fn flags_getitemcount_returned_from_a_bool_function_through_the_return_type_check_lint() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    let source = "ScriptName Example\n\nBool Function HasEnoughGold(Actor akActor, Int amount)\n    Return akActor.GetItemCount(Gold001)\nEndFunction\n";
+    write_script(root.path(), "Example", source);
+
+    let mut table = FunctionTable::new(root.path().to_path_buf());
+    let diagnostics = diagnostics_for("return-types", source, &mut table);
+
+    assert_eq!(diagnostics.len(), 1);
+    assert!(diagnostics[0].message.contains("'HasEnoughGold'"));
+    assert!(diagnostics[0].message.contains("declares return type Bool"));
+    assert!(diagnostics[0]
+        .message
+        .to_ascii_lowercase()
+        .contains("returns int"));
 }
 
 #[test]

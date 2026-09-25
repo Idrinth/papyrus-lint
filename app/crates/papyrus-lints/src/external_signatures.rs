@@ -215,6 +215,24 @@ pub trait ExternalSignatures {
         None
     }
 
+    /// Declared return type of `function_name` when it is callable on
+    /// `type_name` (including through `Extends`). `None` means the
+    /// function could not be resolved, or it was resolved but declares no
+    /// return type — callers must not guess either way. Used by the
+    /// "Return type check" lint (`crate::return_types`) so a value that is
+    /// itself a call (`akActor.GetItemCount(...)`) can be checked against
+    /// the enclosing function's declared type.
+    ///
+    /// The default always returns `None`, keeping existing behavior for
+    /// callers that can't resolve scripts (see [`NoExternalSignatures`]).
+    fn function_return_type(
+        &mut self,
+        _type_name: &str,
+        _function_name: &str,
+    ) -> Option<papyrus_parser::ast::TypeName> {
+        None
+    }
+
     /// Whether `type_name`'s script can be located by this resolver at
     /// all, with enough project data to answer for it. Used by the "Unused
     /// import" lint (`crate::unused_import`) as a gate before flagging an
