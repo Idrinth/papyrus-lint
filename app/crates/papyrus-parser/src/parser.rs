@@ -27,7 +27,8 @@ type PResult<T> = Result<T, ParseError>;
 /// `DebugOnly`/`BetaOnly` script and function flags, and colon-qualified names such
 /// as `DLC03:Foo` on types, `extends`, `new`, and calls) on top of it.
 /// Starfield keeps that Fallout 4 dialect and adds further flags
-/// (`Private` / `Protected` / `SelfOnly` on function headers). A construct
+/// (`Private` / `Protected` / `SelfOnly` on function headers and
+/// `RequiresGuard(GuardName)` on declarations). A construct
 /// that a later edition added is rejected the same way an unrecognized
 /// token always is -- as an ordinary [`ParseError`] -- when parsed in a
 /// mode that does not include it.
@@ -37,7 +38,7 @@ pub enum GameEdition {
     Skyrim,
     Fallout4,
     /// Starfield's Papyrus: Fallout 4's dialect plus Starfield-only
-    /// header flags (`Private`, `Protected`, `SelfOnly`, `Internal`).
+    /// header flags and guarded declarations.
     Starfield,
 }
 
@@ -51,7 +52,8 @@ impl GameEdition {
     }
 
     /// Whether this edition includes Starfield-only constructs such as
-    /// header access flags and `LockGuard` / `TryLockGuard` blocks.
+    /// header access flags and `LockGuard` / `TryLockGuard` blocks as well as
+    /// `Guard` declarations.
     pub fn has_starfield_dialect(self) -> bool {
         matches!(self, Self::Starfield)
     }

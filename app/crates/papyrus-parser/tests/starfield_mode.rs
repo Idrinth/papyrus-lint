@@ -2,8 +2,7 @@
 //! written as identifiers (`Private`, `Protected`, `SelfOnly`, `Internal`).
 //! Those flags map onto the same [`AccessLevel`] values as `; @private` /
 //! `; @protected`. Fallout 4 constructs that Starfield inherited are
-//! covered in `fallout4_mode.rs`; this file is the Starfield-only delta
-//! and the check that Fallout 4 mode still rejects those flags.
+//! covered in `fallout4_mode.rs`; this file is the Starfield-only delta.
 
 use papyrus_parser::ast::{AccessLevel, LockKind, Stmt};
 use papyrus_parser::parser::GameEdition;
@@ -119,6 +118,57 @@ fn fallout4_and_skyrim_reject_starfield_access_flags() {
 }
 
 #[test]
+fn parses_requires_guard_on_variables_properties_and_functions() {
+    let script = parse_with_mode(
+        r#"ScriptName GuardedScript
+
+Guard CoraGuardCount
+int CoraStartingBookCount RequiresGuard(CoraGuardCount)
+int property CurrentStateIndex = 0 Auto Hidden Conditional RequiresGuard(SetAnimationStateGuard)
+RefCollectionAlias Property Alias_Passengers Mandatory RequiresGuard(PassengerGuard) Const Auto
+
+Function Private_SetAnimationStateIndex(int newStateIndex, bool shouldUseJumpAnims=False) RequiresGuard(SetAnimationStateGuard) Private
+EndFunction
+"#,
+        GameEdition::Starfield,
+    )
+    .expect("RequiresGuard should parse on Starfield declarations");
+
+    assert_eq!(script.variables[0].requires_guard, None);
+    assert_eq!(
+        script.variables[1].requires_guard.as_deref(),
+        Some("CoraGuardCount")
+    );
+    assert_eq!(
+        script.properties[0].requires_guard.as_deref(),
+        Some("SetAnimationStateGuard")
+    );
+    assert_eq!(
+        script.properties[1].requires_guard.as_deref(),
+        Some("PassengerGuard")
+    );
+    assert_eq!(
+        script.functions[0].requires_guard.as_deref(),
+        Some("SetAnimationStateGuard")
+    );
+    assert_eq!(script.functions[0].access_level, AccessLevel::Private);
+}
+
+#[test]
+fn non_starfield_modes_reject_requires_guard() {
+    let source = "ScriptName Rejected\nint Guarded RequiresGuard(MyGuard)\n";
+    for mode in [GameEdition::Skyrim, GameEdition::Fallout4] {
+        let error = parse_with_mode(source, mode)
+            .expect_err("RequiresGuard is a Starfield-only declaration flag");
+        assert!(matches!(error, PapyrusError::Parse(_)), "{mode:?}: {error}");
+        assert!(
+            error.to_string().contains("expected end of line"),
+            "{mode:?}: {error}"
+        );
+    }
+}
+
+#[test]
 fn game_edition_helpers_describe_the_dialect_stack() {
     assert!(!GameEdition::Skyrim.has_fallout4_dialect());
     assert!(!GameEdition::Skyrim.has_starfield_dialect());
@@ -216,4 +266,40 @@ fn parses_try_lock_guard_with_and_without_else() {
     assert_eq!(name, "TaskMasterRestoreGuard");
     assert!(locked.is_empty());
     assert!(else_line.is_none());
+}
+
+#[test]
+fn parses_guard_with_protects_function_logic() {
+    let script = parse_with_mode(
+        "ScriptName ATMScript\n\nGuard stealGuard ProtectsFunctionLogic\nint tempStealCount = 0\n",
+        GameEdition::Starfield,
+    )
+    .expect("a flagged Guard should parse in Starfield mode");
+
+    assert_eq!(script.guards.len(), 1);
+    assert!(script
+        .variables
+        .iter()
+        .all(|variable| variable.name != "stealGuard"));
+    let guard = &script.guards[0];
+    assert_eq!(guard.name, "stealGuard");
+    assert!(guard.protects_function_logic);
+    assert_eq!(script.variables.len(), 1);
+    assert_eq!(script.variables[0].name, "tempStealCount");
+}
+
+#[test]
+fn parses_bare_guards() {
+    let script = parse_with_mode(
+        "ScriptName COM_CoraBookGuard\n\nGuard CoraGuardCount\nGuard CoraGuardReward\n",
+        GameEdition::Starfield,
+    )
+    .expect("bare Guards should parse in Starfield mode");
+
+    assert_eq!(script.guards.len(), 2);
+    assert!(script.variables.is_empty());
+    assert_eq!(script.guards[0].name, "CoraGuardCount");
+    assert!(!script.guards[0].protects_function_logic);
+    assert_eq!(script.guards[1].name, "CoraGuardReward");
+    assert!(!script.guards[1].protects_function_logic);
 }

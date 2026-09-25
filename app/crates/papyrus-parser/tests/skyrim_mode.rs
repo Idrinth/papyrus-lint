@@ -281,3 +281,31 @@ fn rejects_lock_guard_statements() {
         "TryLockGuard is Starfield only",
     );
 }
+
+#[test]
+fn rejects_guard_declarations() {
+    assert_skyrim_rejects(
+        "ScriptName Rejected\n\nGuard stealGuard ProtectsFunctionLogic\n",
+        "Guard is Starfield only",
+    );
+    assert_skyrim_rejects(
+        "ScriptName Rejected\n\nGuard CoraGuardCount\n",
+        "a bare Guard is Starfield only",
+    );
+}
+
+#[test]
+fn accepts_guard_as_an_identifier() {
+    let script = parse(
+        "ScriptName UsesGuard\n\n\
+         Actor guard\n\n\
+         Function Warn(Actor guard)\n\
+             guard.StartCombat(guard)\n\
+         EndFunction\n",
+    )
+    .expect("Skyrim does not reserve Guard");
+
+    assert_eq!(script.variables[0].name, "guard");
+    assert_eq!(script.functions[0].params[0].name, "guard");
+    assert!(script.guards.is_empty());
+}
