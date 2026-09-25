@@ -8,6 +8,4 @@ contributors in [`../project-structure.md`](../project-structure.md).
 | File | When to read |
 | --- | --- |
 | [development.md](development.md) | Running tests, coverage, or the desktop app |
-| [pages.md](pages.md) | Changing `pages/` or the GitHub Pages workflow |
-| [releases.md](releases.md) | Changing `.github/workflows/release.yml` |
 | [current-state.md](current-state.md) | Changing parser, lints, CLI, GUI, or editor plugins — invariants and pointers into code, not a narrative spec |
