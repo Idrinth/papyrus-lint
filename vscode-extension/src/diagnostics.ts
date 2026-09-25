@@ -25,7 +25,7 @@ interface JsonFileReport {
   parser_errors?: JsonParserError[];
 }
 
-/** Mirrors `papyrus_lint_cli::JsonReport`, as printed by `PapyrusLinterCLI --json`. */
+/** Mirrors `papyrus_lint_cli::JsonReport`, as printed by `PapyrusLinterCLI lint --format json`. */
 export interface JsonReport {
   files: JsonFileReport[];
   scripts_checked: number;
