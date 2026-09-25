@@ -18,12 +18,9 @@ A JSON Schema is available both at
 `https://papyrus-lint.idrinth.de/schema/papyrus-lint.schema.json` for editors
 that support YAML schema association.
 
-Papyrus Lint supports `skyrim`, `fallout4`, and `starfield`. Skyrim is the
-default for configurations that omit `game`. The desktop app's new-project
-picker currently offers Skyrim and Fallout 4; use
-`PapyrusLinterCLI init --game starfield` to create a Starfield configuration.
-The desktop app preserves and displays `starfield` when it opens an existing
-Starfield project.
+Papyrus Lint supports `skyrim` (Skyrim Special Edition/Anniversary Edition),
+`fallout4`, and `starfield`. Skyrim is the default for configurations that omit
+`game`. The desktop app's new-project picker offers all three games.
 
 ## Suppressing one diagnostic
 

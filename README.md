@@ -91,7 +91,8 @@ Papyrus Lint is automatically tested with
 [public coverage reports](https://papyrus-lint.idrinth.de/coverage.html)
 against a combination of real life examples and synthetic tests.
 
-Papyrus Lint supports both Skyrim Special Edition, Fallout 4 and Starfield,
+Papyrus Lint supports Skyrim Special Edition/Anniversary Edition, Fallout 4,
+and Starfield,
 including each game's Papyrus dialect and game-specific runtime APIs. It is
 also regularly run against the base game and extender scripts and different
 mods whose authors permitted the usage explicitly.

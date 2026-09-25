@@ -18,9 +18,10 @@ and options or read on for explanations.
 directory for the target selected by the required `--game` and the selected
 `--preset` (`strict`, `standard`, or `careful`, matched case-insensitively;
 defaults to `strict`, identical to today's built-in default — see the
-[configuration reference](configuration.md)). Skyrim Special Edition and
-Fallout 4 are supported; the selected game enables the matching Papyrus
-dialect and game-specific runtime API and lint-rule data. For example,
+[configuration reference](configuration.md)). Skyrim Special
+Edition/Anniversary Edition, Fallout 4, and Starfield are supported; the
+selected game enables the matching Papyrus dialect and game-specific runtime
+API and lint-rule data. For example,
 initialize a Fallout 4 project with
 `PapyrusLinterCLI init --game fallout4`.
 Any other `--preset` name is looked up
