@@ -262,7 +262,6 @@ Scripts/Source/Actor.psc:436:1: [identifier-casing] [warning] Parameter 'akKille
 Scripts/Source/Actor.psc:437:1: [identifier-casing] [warning] Variable 'akActorBase' does not match the configured PascalCase casing style (https://papyrus-lint.idrinth.de/rules.html#rule-identifier-casing)
 Scripts/Source/Actor.psc:438:1: [unchecked-cast] [warning] 'akActorBase' holds an unchecked cast result and may be None here; accessing '.IsUnique' on it will crash the script (https://papyrus-lint.idrinth.de/rules.html#rule-unchecked-cast)
 Scripts/Source/Actor.psc:439:1: [unchecked-cast] [warning] 'akActorBase' holds an unchecked cast result and may be None here; accessing '.SetEssential' on it will crash the script (https://papyrus-lint.idrinth.de/rules.html#rule-unchecked-cast)
-Scripts/Source/Actor.psc:439:27: [argument-types] [error] Argument 1 to 'SetEssential' expects bool but got Int (https://papyrus-lint.idrinth.de/rules.html#rule-argument-types)
 Scripts/Source/Actor.psc:445:1: [identifier-casing] [warning] Parameter 'akKiller' does not match the configured PascalCase casing style (https://papyrus-lint.idrinth.de/rules.html#rule-identifier-casing)
 Scripts/Source/Actor.psc:448:1: [identifier-casing] [warning] Parameter 'asValueName' does not match the configured PascalCase casing style (https://papyrus-lint.idrinth.de/rules.html#rule-identifier-casing)
 Scripts/Source/Actor.psc:448:1: [identifier-casing] [warning] Parameter 'afAmount' does not match the configured PascalCase casing style (https://papyrus-lint.idrinth.de/rules.html#rule-identifier-casing)
@@ -3320,4 +3319,4 @@ Scripts/Source/WornObject.psc:62:1: [identifier-casing] [warning] Parameter 'akA
 Scripts/Source/WornObject.psc:62:1: [identifier-casing] [warning] Parameter 'handSlot' does not match the configured PascalCase casing style (https://papyrus-lint.idrinth.de/rules.html#rule-identifier-casing)
 Scripts/Source/WornObject.psc:62:1: [identifier-casing] [warning] Parameter 'slotMask' does not match the configured PascalCase casing style (https://papyrus-lint.idrinth.de/rules.html#rule-identifier-casing)
 Scripts/Source/WornObject.psc:62:103: [final-newline] [warning] File does not end with a newline (https://papyrus-lint.idrinth.de/rules.html#rule-final-newline)
-PapyrusLinterCLI: 3322 problem(s) found in 61 of 62 script(s).
+PapyrusLinterCLI: 3321 problem(s) found in 61 of 62 script(s).
