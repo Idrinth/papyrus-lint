@@ -68,7 +68,6 @@ from __future__ import annotations
 
 import argparse
 import html
-import json
 import shutil
 from pathlib import Path
 
@@ -79,104 +78,30 @@ try:
         DOCS,
         build_action_page,
         build_doc_pages,
-        doc_url_prefix,
         render_doc,
         render_docs_list_items,
     )
     from pages.minify import minify_css, minify_js
     from pages.rules_page import build_rules_page
     from pages.site_assets import ASSETS, MODERN_FORMAT_ASSETS, convert_to_modern_formats, copy_json_schemas
-    from pages.site_chrome import CNAME_FILE, SITE_URL, finalize_page, render_shared_components
+    from pages.site_chrome import CNAME_FILE, finalize_page, render_shared_components
+    from pages.site_index import build_robots_txt, build_sitemap
+    from pages.static_pages import build_imprint_page
+    from pages.videos_page import build_videos_page
 except ImportError:  # running as pages/build.py
     from coverage_report import build_coverage_page
     from css import inline_css_imports
-    from docs_pages import DOCS, build_action_page, build_doc_pages, doc_url_prefix, render_doc, render_docs_list_items
+    from docs_pages import DOCS, build_action_page, build_doc_pages, render_doc, render_docs_list_items
     from minify import minify_css, minify_js
     from rules_page import build_rules_page
     from site_assets import ASSETS, MODERN_FORMAT_ASSETS, convert_to_modern_formats, copy_json_schemas
-    from site_chrome import CNAME_FILE, SITE_URL, finalize_page, render_shared_components
+    from site_chrome import CNAME_FILE, finalize_page, render_shared_components
+    from site_index import build_robots_txt, build_sitemap
+    from static_pages import build_imprint_page
+    from videos_page import build_videos_page
 
 ROOT = Path(__file__).resolve().parent.parent
 PAGES_DIR = Path(__file__).resolve().parent
-
-# Simple list of YouTube video IDs/titles rendered onto videos.html, so a new
-# video can be added without touching build.py or its template.
-VIDEOS_FILE = PAGES_DIR / "videos.json"
-
-
-def render_videos_list(videos: list[dict]) -> str:
-    items = []
-    for video in videos:
-        video_id = html.escape(video["id"], quote=True)
-        title = html.escape(video["title"])
-        items.append(
-            '<figure class="video-card">'
-            '<div class="video-card__frame">'
-            f'<iframe src="https://www.youtube-nocookie.com/embed/{video_id}" title="{title}" '
-            'loading="lazy" allow="encrypted-media; picture-in-picture" allowfullscreen></iframe>'
-            "</div>"
-            f"<figcaption>{title}</figcaption>"
-            "</figure>"
-        )
-    return "\n".join(items)
-
-
-def build_videos_page(out_dir: Path, version: str = "") -> None:
-    videos = json.loads(VIDEOS_FILE.read_text(encoding="utf-8"))
-    template = (PAGES_DIR / "videos.template.html").read_text(encoding="utf-8")
-    if "<!--VIDEOS_LIST-->" not in template:
-        raise SystemExit("videos.template.html: missing marker <!--VIDEOS_LIST-->")
-    page = template.replace("<!--VIDEOS_LIST-->", render_videos_list(videos))
-    page = render_shared_components(page, "", version)
-    (out_dir / "videos.html").write_text(finalize_page(page), encoding="utf-8")
-
-
-def build_imprint_page(out_dir: Path, version: str = "") -> None:
-    """Renders the fully static legal-notice page (no build-time content of
-    its own to substitute in, unlike every other page above) into
-    imprint.html, so it still shares the site's header/footer/version chrome
-    like every other page."""
-    template = (PAGES_DIR / "imprint.template.html").read_text(encoding="utf-8")
-    page = render_shared_components(template, "", version)
-    (out_dir / "imprint.html").write_text(finalize_page(page), encoding="utf-8")
-
-
-def sitemap_urls(doc_results: dict) -> list[str]:
-    """Every page build() renders, as absolute SITE_URL-rooted URLs, in the
-    same order sitemap.xml lists them. Kept in one place so the sitemap can
-    never drift from the pages actually published."""
-    urls = [
-        SITE_URL,
-        f"{SITE_URL}action.html",
-        f"{SITE_URL}rules.html",
-        f"{SITE_URL}videos.html",
-        f"{SITE_URL}coverage.html",
-        f"{SITE_URL}imprint.html",
-        f"{SITE_URL}docs/index.html",
-    ]
-    for doc in DOCS:
-        if doc["slug"] in doc_results:
-            urls.append(f"{SITE_URL}{doc_url_prefix(doc)}/{doc['slug']}.html")
-    return urls
-
-
-def build_sitemap(out_dir: Path, doc_results: dict) -> None:
-    entries = "\n".join(
-        f"  <url><loc>{html.escape(url, quote=True)}</loc></url>" for url in sitemap_urls(doc_results)
-    )
-    xml = (
-        '<?xml version="1.0" encoding="UTF-8"?>\n'
-        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
-        f"{entries}\n"
-        "</urlset>\n"
-    )
-    (out_dir / "sitemap.xml").write_text(xml, encoding="utf-8")
-
-
-def build_robots_txt(out_dir: Path) -> None:
-    content = f"User-agent: *\nAllow: /\n\nSitemap: {SITE_URL}sitemap.xml\n"
-    (out_dir / "robots.txt").write_text(content, encoding="utf-8")
-
 
 def build(out_dir: Path, version: str = "", coverage_dir: Path | None = None) -> None:
     cli_examples = html.escape(Path(ROOT / "docs" / "papyrus-cli-usage.txt").read_text(
