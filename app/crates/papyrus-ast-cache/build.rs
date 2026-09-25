@@ -1,13 +1,15 @@
 //! Compiles each supported game's vanilla/extender script archives under
 //! `shared/scripts/` (Skyrim: `skyrim-scripts.zip` +
 //! `skyrim-extender-scripts.zip`; Fallout 4: `fallout4-scripts.zip` +
-//! `fallout4-extender-scripts.zip`) into a gzip-compressed AST/token blob
-//! per game (`{game}-ast-cache.bin.gz` in `OUT_DIR`) that [`bundled`]
-//! embeds at compile time. Keyed by MD5 of decoded source *and* by
-//! lowercased `ScriptName`, so a known script hits regardless of extract
-//! path, and a vanilla type can resolve when no matching `.psc` is on
-//! disk. Scripts the parser cannot currently lex are skipped (a
-//! `cargo:warning`); an empty blob is a hard error.
+//! `fallout4-extender-scripts.zip`; Starfield: `starfield-scripts.zip`)
+//! into a gzip-compressed AST/token blob per game
+//! (`{game}-ast-cache.bin.gz` in `OUT_DIR`) that [`bundled`] embeds at
+//! compile time. Keyed by MD5 of decoded source *and* by lowercased
+//! `ScriptName`, so a known script hits regardless of extract path, and a
+//! vanilla type can resolve when no matching `.psc` is on disk. Scripts
+//! the parser cannot currently lex are skipped (a `cargo:warning`); an
+//! empty blob is a hard error. A missing archive (no Starfield extender
+//! zip yet) is skipped.
 
 use std::collections::HashMap;
 use std::env;
@@ -39,26 +41,33 @@ struct DeprecatedFunction {
 /// scripts parse under, and the `OUT_DIR` filename [`bundled`] embeds.
 struct GameArchives {
     display_name: &'static str,
-    archives: [&'static str; 2],
-    deprecated_data: &'static str,
+    archives: &'static [&'static str],
+    deprecated_data: Option<&'static str>,
     mode: GameEdition,
     out_file: &'static str,
 }
 
-const GAMES: [GameArchives; 2] = [
+const GAMES: [GameArchives; 3] = [
     GameArchives {
         display_name: "Skyrim",
-        archives: ["skyrim-scripts.zip", "skyrim-extender-scripts.zip"],
-        deprecated_data: "skyrim/deprecated-functions.yaml",
+        archives: &["skyrim-scripts.zip", "skyrim-extender-scripts.zip"],
+        deprecated_data: Some("skyrim/deprecated-functions.yaml"),
         mode: GameEdition::Skyrim,
         out_file: "skyrim-ast-cache.bin.gz",
     },
     GameArchives {
         display_name: "Fallout 4",
-        archives: ["fallout4-scripts.zip", "fallout4-extender-scripts.zip"],
-        deprecated_data: "fallout4/deprecated-functions.yaml",
+        archives: &["fallout4-scripts.zip", "fallout4-extender-scripts.zip"],
+        deprecated_data: Some("fallout4/deprecated-functions.yaml"),
         mode: GameEdition::Fallout4,
         out_file: "fallout4-ast-cache.bin.gz",
+    },
+    GameArchives {
+        display_name: "Starfield",
+        archives: &["starfield-scripts.zip"],
+        deprecated_data: None,
+        mode: GameEdition::Starfield,
+        out_file: "starfield-ast-cache.bin.gz",
     },
 ];
 
@@ -72,23 +81,27 @@ fn main() {
 }
 
 fn build_game_blob(manifest_dir: &str, out_dir: &str, game: &GameArchives) {
-    let deprecated_path = Path::new(manifest_dir)
-        .join("../../../shared/rules/data")
-        .join(game.deprecated_data);
-    println!("cargo:rerun-if-changed={}", deprecated_path.display());
-    let deprecated: Vec<DeprecatedFunction> =
-        serde_norway::from_reader(File::open(&deprecated_path).unwrap_or_else(|err| {
-            panic!(
-                "failed to open deprecated-function data at {}: {err}",
-                deprecated_path.display()
-            )
-        }))
-        .unwrap_or_else(|err| {
-            panic!(
-                "failed to parse deprecated-function data at {}: {err}",
-                deprecated_path.display()
-            )
-        });
+    let deprecated: Vec<DeprecatedFunction> = match game.deprecated_data {
+        Some(relative) => {
+            let deprecated_path = Path::new(manifest_dir)
+                .join("../../../shared/rules/data")
+                .join(relative);
+            println!("cargo:rerun-if-changed={}", deprecated_path.display());
+            serde_norway::from_reader(File::open(&deprecated_path).unwrap_or_else(|err| {
+                panic!(
+                    "failed to open deprecated-function data at {}: {err}",
+                    deprecated_path.display()
+                )
+            }))
+            .unwrap_or_else(|err| {
+                panic!(
+                    "failed to parse deprecated-function data at {}: {err}",
+                    deprecated_path.display()
+                )
+            })
+        }
+        None => Vec::new(),
+    };
     let started = Instant::now();
     // Insertion order is zip order (vanilla, then extender). The name index
     // last-write-wins, so an extender script of the same `ScriptName` as a
@@ -103,6 +116,13 @@ fn build_game_blob(manifest_dir: &str, out_dir: &str, game: &GameArchives) {
             .join("../../../shared/scripts")
             .join(archive_name);
         println!("cargo:rerun-if-changed={}", zip_path.display());
+        if !zip_path.exists() {
+            println!(
+                "cargo:warning=skipping missing {} archive {}",
+                game.display_name, archive_name
+            );
+            continue;
+        }
         let file = File::open(&zip_path).unwrap_or_else(|err| {
             panic!(
                 "failed to open bundled {} scripts at {}: {err}",

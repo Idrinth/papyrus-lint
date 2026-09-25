@@ -1,6 +1,6 @@
-//! Content-addressed AST/token cache of the Skyrim/SKSE and Fallout
-//! 4/F4SE scripts in `shared/scripts/{skyrim,fallout4}-scripts.zip` and
-//! `shared/scripts/{skyrim,fallout4}-extender-scripts.zip`, compiled into
+//! Content-addressed AST/token cache of the Skyrim/SKSE, Fallout
+//! 4/F4SE, and Starfield scripts in `shared/scripts/{skyrim,fallout4,starfield}-scripts.zip`
+//! and `shared/scripts/{skyrim,fallout4}-extender-scripts.zip`, compiled into
 //! the binary by `build.rs` as one blob per game.
 //!
 //! Lookups are keyed by an MD5 of the decoded source text *or* by the
@@ -37,6 +37,8 @@ static SKYRIM_COMPRESSED: &[u8] =
     include_bytes!(concat!(env!("OUT_DIR"), "/skyrim-ast-cache.bin.gz"));
 static FALLOUT4_COMPRESSED: &[u8] =
     include_bytes!(concat!(env!("OUT_DIR"), "/fallout4-ast-cache.bin.gz"));
+static STARFIELD_COMPRESSED: &[u8] =
+    include_bytes!(concat!(env!("OUT_DIR"), "/starfield-ast-cache.bin.gz"));
 
 struct BundledCache {
     index: HashMap<[u8; 16], IndexEntry>,
@@ -65,11 +67,11 @@ fn parse_cache(compressed: &[u8]) -> Option<BundledCache> {
 }
 
 /// The bundled cache for `game`, decompressed and indexed at most once per
-/// game per process. `None` for any game with no bundled blob (currently
-/// only Starfield).
+/// game per process.
 fn cache(game: Game) -> Option<&'static BundledCache> {
     static SKYRIM_CACHE: OnceLock<Option<BundledCache>> = OnceLock::new();
     static FALLOUT4_CACHE: OnceLock<Option<BundledCache>> = OnceLock::new();
+    static STARFIELD_CACHE: OnceLock<Option<BundledCache>> = OnceLock::new();
     match game {
         Game::Skyrim => SKYRIM_CACHE
             .get_or_init(|| parse_cache(SKYRIM_COMPRESSED))
@@ -77,7 +79,9 @@ fn cache(game: Game) -> Option<&'static BundledCache> {
         Game::Fallout4 => FALLOUT4_CACHE
             .get_or_init(|| parse_cache(FALLOUT4_COMPRESSED))
             .as_ref(),
-        Game::Starfield => None,
+        Game::Starfield => STARFIELD_CACHE
+            .get_or_init(|| parse_cache(STARFIELD_COMPRESSED))
+            .as_ref(),
     }
 }
 
