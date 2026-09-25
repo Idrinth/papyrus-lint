@@ -197,8 +197,9 @@ impl Parser {
         })
     }
 
-    /// Starfield only. `LockGuard <Name>` / `LockGuard(<Name>)` ..
-    /// `EndLockGuard`, or `TryLockGuard <Name>` / `TryLockGuard(<Name>)` ..
+    /// Starfield only. `LockGuard <Name>[, <Name>...]` /
+    /// `LockGuard(<Name>[, <Name>...])` .. `EndLockGuard`, or
+    /// `TryLockGuard <Name>[, <Name>...]` /
     /// `ElseTryLockGuard` / `Else` .. `EndTryLockGuard`.
     /// Only called when [`GameEdition::has_starfield_dialect`] is set.
     fn parse_lock_guard(&mut self, is_try: bool) -> PResult<Stmt> {
@@ -213,7 +214,11 @@ impl Parser {
         if parenthesized {
             self.advance();
         }
-        let name = self.expect_identifier()?;
+        let mut names = vec![self.expect_identifier()?];
+        while matches!(self.kind(), TokenKind::Comma) {
+            self.advance();
+            names.push(self.expect_identifier()?);
+        }
         if parenthesized {
             self.expect(TokenKind::RParen)?;
         }
@@ -251,7 +256,7 @@ impl Parser {
             } else {
                 LockKind::Lock
             },
-            name,
+            names,
             body,
             else_body,
             else_line,
