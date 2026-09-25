@@ -6,7 +6,7 @@ fn merge_lookup_roots_appends_unique_paths_ignoring_slash_and_case() {
     merge_lookup_roots(
         &mut roots,
         &[
-            r"c:\\Games\\Skyrim Special Edition\\Data\\Scripts\\Source".to_string(),
+            r"c:\Games\Skyrim Special Edition\Data\Scripts\Source".to_string(),
             "C:/Games/Skyrim Special Edition/Data/Source/Scripts".to_string(),
         ],
     );
