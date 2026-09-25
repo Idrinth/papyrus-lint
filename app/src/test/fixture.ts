@@ -53,6 +53,7 @@ export const FIXTURE_HTML = `
         <select id="game-select">
           <option value="skyrim">Skyrim</option>
           <option value="fallout4">Fallout 4</option>
+          <option value="starfield">Starfield</option>
         </select>
         <select id="semicolon-style">
           <option value="forbid">Remove where possible</option>
@@ -183,7 +184,7 @@ export const FIXTURE_HTML = `
         <button type="button" id="code-viewer-fix" class="code-viewer__action" hidden>Apply fixes</button>
         <button type="button" id="code-viewer-preview-fix" class="code-viewer__action" hidden>Preview fixes</button>
         <button type="button" id="code-viewer-save" class="code-viewer__action" hidden>Save</button>
-        <button type="button" id="code-viewer-save-compile" class="code-viewer__action" hidden>Save &amp; Compile</button>
+        <button type="button" id="code-viewer-save-compile" class="code-viewer__action" hidden>Save & Compile</button>
         <button type="button" id="code-viewer-cancel" class="code-viewer__action" hidden>Cancel</button>
       </div>
       <button type="button" id="code-viewer-fullscreen" aria-label="Enter fullscreen" aria-pressed="false">⛶</button>
@@ -222,6 +223,7 @@ export const FIXTURE_HTML = `
       <select id="config-picker-game-select">
         <option value="skyrim">Skyrim</option>
         <option value="fallout4">Fallout 4</option>
+        <option value="starfield">Starfield</option>
       </select>
     </div>
     <div id="config-picker-preset-list" class="config-picker__list" hidden></div>

@@ -41,7 +41,7 @@ jobs:
       fail-fast: false
       matrix:
         preset: [strict, standard, careful]
-        game: [skyrim]
+        game: [skyrim, fallout4, starfield]
     steps:
       - uses: actions/checkout@v7
 
@@ -74,6 +74,7 @@ jobs:
           load: true
           build-args: |
             PRESET=${{ matrix.preset }}
+            GAME=${{ matrix.game }}
           tags: papyrus-lint:${{ matrix.preset }}
 
       - name: Smoke test container image

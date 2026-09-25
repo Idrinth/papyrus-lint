@@ -98,6 +98,7 @@
           <select id="game-select">
             <option value="skyrim">Skyrim</option>
             <option value="fallout4">Fallout 4</option>
+            <option value="starfield">Starfield</option>
           </select>
           <div class="compiler-path-setting">
             <label for="config-path-override">Configuration file</label>
@@ -204,12 +205,12 @@
 
           <fieldset class="settings-group">
             <legend>Strict boolean check</legend>
-            <label title="Whether the &quot;Strict boolean check&quot; lint accepts the Int literal 1 or 0 used directly as an If/ElseIf/While condition as bool-like, instead of flagging it. Any other Int value (a variable or property that happens to hold 0/1, or a literal other than 1/0) is still flagged either way."><input type="checkbox" id="bool-like-int" checked /> Allow 1/0 as bool-like</label>
+            <label title="Whether the "Strict boolean check" lint accepts the Int literal 1 or 0 used directly as an If/ElseIf/While condition as bool-like, instead of flagging it. Any other Int value (a variable or property that happens to hold 0/1, or a literal other than 1/0) is still flagged either way."><input type="checkbox" id="bool-like-int" checked /> Allow 1/0 as bool-like</label>
           </fieldset>
 
           <fieldset class="settings-group">
             <legend>None used as an existing Form</legend>
-            <label title="Whether the &quot;None used as an existing Form&quot; lint treats a script-level Auto/AutoReadOnly property as already filled in by the time a function runs, instead of possibly still None. A local variable is always tracked either way."><input type="checkbox" id="assume-auto-properties-filled" /> Assume Auto properties are filled</label>
+            <label title="Whether the "None used as an existing Form" lint treats a script-level Auto/AutoReadOnly property as already filled in by the time a function runs, instead of possibly still None. A local variable is always tracked either way."><input type="checkbox" id="assume-auto-properties-filled" /> Assume Auto properties are filled</label>
           </fieldset>
 
           <fieldset id="lint-rules" class="settings-group">
@@ -353,7 +354,7 @@
             Preview fixes
           </button>
           <button type="button" id="code-viewer-save" class="code-viewer__action" hidden>Save</button>
-          <button type="button" id="code-viewer-save-compile" class="code-viewer__action" hidden>Save &amp; Compile</button>
+          <button type="button" id="code-viewer-save-compile" class="code-viewer__action" hidden>Save & Compile</button>
           <button type="button" id="code-viewer-cancel" class="code-viewer__action" hidden>Cancel</button>
         </div>
         <button
@@ -412,6 +413,7 @@
         <select id="config-picker-game-select">
           <option value="skyrim">Skyrim</option>
           <option value="fallout4">Fallout 4</option>
+          <option value="starfield">Starfield</option>
         </select>
       </div>
       <div id="config-picker-preset-list" class="config-picker__list" hidden></div>

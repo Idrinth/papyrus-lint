@@ -72,8 +72,8 @@ are not executing something untrusted.
   Either way, prompts for a preset to start from — the built-in `strict`
   (the default), `standard`, or `careful`, or a custom preset name added
   via `PapyrusLinterCLI preset add` or the desktop app's "Save current
-  settings as preset…" button — and then for the target game (`skyrim` or
-  `fallout4`), passed through as `init --game`.
+  settings as preset…" button — and then for the target game (`skyrim`, `fallout4`, or
+  `starfield`), passed through as `init --game`.
 
 Only the currently open or selected `.psc` file is linted or fixed, not the
 whole project.

@@ -1,0 +1,91 @@
+# Starfield's built-in Actor Values, per public console / AVIF lists and
+# Game.Get*AV helpers documented on the Papyrus Index. Compiled in by
+# papyrus-lint-core's build.rs for the "Unknown Actor Value" lint
+# (see ../app/crates/papyrus-lints/src/actor_value.rs), which flags a
+# string literal passed to an Actor Value function that doesn't match a
+# name listed here — a strong signal of a typo. Starfield's Papyrus API
+# usually takes an `ActorValue` form rather than a string (ObjectReference
+# GetValue/SetValue/ModValue/DamageValue/RestoreValue), so this lint is
+# disabled by default (see rules.unknown_actor_value). A mod-added Actor
+# Value defined by a project's own plugin has no way to appear here.
+#
+# This is a curated engine/hardcoded set, not the 1,000+ quest and item
+# AVIFs shipped in Starfield.esm. Quest-prefixed names (AFFL_*, CF0*, …)
+# are omitted on purpose.
+#
+# Each entry is the Actor Value's own case-insensitive name, exactly as
+# passed to an Actor Value function or used as the AVIF editor ID.
+
+# S.P.E.C.I.A.L. (Game.GetStrengthAV and siblings still exist)
+- Strength
+- Perception
+- Endurance
+- Charisma
+- Intelligence
+- Agility
+- Luck
+
+# Primary statistics
+- Health
+- Oxygen
+- ActionPoints
+- Experience
+- CarryWeight
+- CarryWeightShielded
+- HealRate
+- HealRateMult
+- ActionPointsRate
+- SpeedMult
+- CritChance
+- MeleeDamage
+- UnarmedDamage
+- Mass
+- InventoryWeight
+- WeaponSpeedMult
+- AttackDamageMult
+- AimStability
+- Invulnerable
+
+# AI data
+- Aggression
+- Confidence
+- Energy
+- Morality
+- Mood
+- Assistance
+- Suspicious
+- WaitingForPlayer
+
+# Resistances (engine leftovers still present as AVIFs)
+- DamageResist
+- PoisonResist
+- FireResist
+- ElectricResist
+- FrostResist
+- EnergyResist
+
+# Limb / condition values
+- PerceptionCondition
+- EnduranceCondition
+- LeftAttackCondition
+- RightAttackCondition
+- LeftMobilityCondition
+- RightMobilityCondition
+- BrainCondition
+- IgnoreCrippledLimbs
+
+# Status effects and leftover engine values
+- Paralysis
+- Invisibility
+
+# User-defined Actor Values
+- Variable01
+- Variable02
+- Variable03
+- Variable04
+- Variable05
+- Variable06
+- Variable07
+- Variable08
+- Variable09
+- Variable10

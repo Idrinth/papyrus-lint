@@ -1,5 +1,5 @@
 //! Hand-maintained lint policy tables loaded from
-//! `shared/rules/data/{skyrim,fallout4}/`.
+//! `shared/rules/data/{skyrim,fallout4,starfield}/`.
 //!
 //! Deprecated, forbidden, and slow function lists are **not** derived from
 //! Creation Kit comments: those comments often sit next to the wrong

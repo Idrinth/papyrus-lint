@@ -6,9 +6,9 @@ Framework-free TypeScript UI for the Tauri app. Reusable linting stays in
 - A dropped `.ppj`'s `<Import>` entries land in `currentPpjImportRoots`
   (`project-state.ts`) and are folded into `effectiveScriptRoots()` the
   same way `currentAchlistScriptRoots` is. Never `lookup_script_roots`.
-- The Settings tab and first-run picker offer `skyrim` and `fallout4`
-  only. A project already set to `starfield` is shown and kept, not
-  rewritten.
+- The Settings tab and first-run picker offer `skyrim`, `fallout4`, and
+  `starfield`. A project already set to an unrecognized `game` value is
+  shown and kept, not rewritten.
 - Lint-rule checkboxes come from generated `RULE_SETTINGS` in
   `config-types.ts`. `index.html` only keeps the empty `#lint-rules`
   fieldset.

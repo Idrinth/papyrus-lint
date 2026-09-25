@@ -66,47 +66,72 @@ The name cannot be blank or one of the built-in names (`strict`, `standard`,
 `careful`). Existing custom presets are not overwritten unless `--yes` is
 passed.
 
-## Desktop app configuration management
+- `game`: the game whose Papyrus dialect and runtime APIs the project
+  targets. Accepts `skyrim`, `fallout4`, or `starfield`; omitted keys
+  default to `skyrim` for compatibility with existing configuration files.
+- `compiler_path`: an explicit path to `PapyrusCompiler.exe`, set via the
+  app's Settings tab. When unset (or blank), the app auto-detects it at
+  `PapyrusCompiler.exe` inside a `Papyrus Compiler` directory one level
+  above the project's `.achlist` directory (the layout used by Bethesda's
+  Creation Kit tooling, where a game's `Data` directory sits alongside a
+  `Papyrus Compiler` directory in the game's install root).
+- `additional_script_roots`: extra directories, besides the conventional
+  `scripts/source` and `source/scripts` under the project root, to search
+  for `.psc` files — set via the app's Settings tab, one per line. Each
+  entry is resolved relative to the project root unless it's already an
+  absolute path. Searched (after the two conventional directories, in the
+  order listed) when resolving cross-script lookups for the "Argument type
+  check"/"Return type check"/"Function override" lints and autocompletion,
+  and appended to the compiler's `-i` argument (see
+  [Compiling a script](compiling-scripts.md)) — useful when a script
+  imports from a shared library location outside the project. The CLI also
+  accepts one or more `--script-root <path>` flags on top of this setting
+  (see the [CLI reference](cli.md)), and, for a `.ppj` (Papyrus Project XML)
+  input, feeds that file's own `<Import>` entries in on top too. `init` also
+  seeds this setting itself from a `.ppj` file found in the directory it
+  initializes, if that config has none of its own yet (see the
+  [CLI reference](cli.md)'s "Initializing a project" section).
+- `lookup_script_roots`: extra directories searched only as a last-resort
+  fallback when resolving a script by name for analysis — argument/return
+  types, `Extends`, autocompletion — set via the app's Settings tab, one
+  per line. Each entry is resolved relative to the project root unless
+  it's already an absolute path. They are searched only after the two
+  conventional directories and `additional_script_roots` above, are never
+  linted themselves, are ignored by `conflicting-script-versions`, and are
+  not added to the compiler's `-i` argument. Intended for the game's own
+  vanilla sources so a project can type-check against them without treating
+  them as part of the project. Creating a new config (`init`, or the
+  desktop app's first-run preset picker) or updating an existing config
+  that does not yet set this key fills the vanilla source directories for
+  the project's own `game` (above) when those directories exist and the
+  matching install path can be read from the Windows registry:
+  - `skyrim`: `Data/Scripts/Source` and `Data/Source/Scripts` under the
+    path from `HKLM\\Software\\Bethesda Softworks\\Skyrim Special Edition` or
+    `HKLM\\Software\\Wow6432Node\\Bethesda Softworks\\Skyrim Special Edition`
+    (value `installed path`).
+  - `fallout4`: `Data/Scripts/Source/Base` and `Data/Scripts/Source/User`
+    under the path from `HKLM\\Software\\Bethesda Softworks\\Fallout4` or
+    `HKLM\\Software\\Wow6432Node\\Bethesda Softworks\\Fallout4` (value
+    `installed path`).
+  - `starfield`: `Data/Scripts/Source`, `Data/Scripts/Source/Base`, and
+    `Data/Scripts/Source/User` under the path from
+    `HKLM\\Software\\Bethesda Softworks\\Starfield` or
+    `HKLM\\Software\\Wow6432Node\\Bethesda Softworks\\Starfield` (value
+    `installed path`).
 
-The Settings tab's **Configuration file** field overrides project-based config
-detection. The selected file can have any name or location, is remembered
-across restarts, and is read and written regardless of the currently loaded
-project. Clear the field to restore automatic detection.
-
-When a project has no config and no override, the app asks for a preset and a
-target game. Choosing a preset writes a project config; continuing without a
-preset writes one only when needed to preserve a non-default game selection.
-Closing the dialog leaves the built-in defaults in effect and asks again the
-next time that project opens.
-
-**Save current settings as preset…** stores the current Settings values in the
-executable-adjacent `presets` directory. When custom presets exist, the
-**Presets** tab can rename, export, or delete them. Built-in presets cannot be
-edited or overwritten.
-
-## Behavior not captured by the YAML comments
-
-- Relative `additional_script_roots` and `lookup_script_roots` are resolved
-  from the project root. CLI `--script-root` values and a `.ppj` file's
-  `<Import>` entries supplement `additional_script_roots`; `init` can also seed
-  additional roots from a `.ppj` in the directory being initialized.
-- `lookup_script_roots` are consulted only after conventional and additional
-  roots. Files found only there provide type and inheritance information but
-  are not linted, included in compilation, or considered by
-  `conflicting-script-versions`. New or updated Skyrim and Fallout 4 configs
-  are seeded with detected vanilla source directories when their install paths
-  are available from the Windows registry. Starfield roots must currently be
-  configured explicitly.
-- With `strict_achlist_scope: false`, directories containing listed `.achlist`
-  entries also become lookup roots, so unlisted neighboring scripts can
-  resolve. Setting it to `true` restricts resolution to listed entries and is
-  substantially faster when an achlist spans many directories, but every
-  dependency must then be listed. See
-  [issue #311](https://github.com/Idrinth/papyrus-lint/issues/311).
-- If `compiler_path` is unset, the desktop app looks for
-  `PapyrusCompiler.exe` in a `Papyrus Compiler` directory beside the game's
-  `Data` directory. `compile_check` uses a temporary output directory and never
-  writes compiled files into the project; see
+  An explicit empty list is left empty rather than re-filled.
+- `compile_check`: whether the desktop app and the CLI also run
+  PapyrusCompiler.exe against a `.psc` as part of linting it — set via the
+  app's Settings tab, alongside `compiler_path`. `false` by default, since
+  it's slower than the lint engine's own, dependency-free checks and
+  requires a compiler path — configured or auto-detected (see
+  `compiler_path` above). When enabled, PapyrusCompiler.exe's
+  own reported errors (e.g. a syntax mistake the lint engine's more
+  forgiving parser lets through) are added to the results as `[error]`
+  diagnostics, the same way the app's other lints are. Compiles into a
+  throwaway temporary directory rather than the project's real output
+  directory, so enabling this never touches (or requires write access to)
+  the project's actual compiled `.pex` output — see
   [Compiling a script](compiling-scripts.md).
 - `fail_on_warning` and `fail_on_info` affect only the CLI exit status. The
   diagnostics are still printed, and the desktop app always displays every

@@ -6,15 +6,15 @@ use papyrus_lints::Game;
 
 use crate::fallout4::detected_fallout4_script_lookup_dirs;
 use crate::skyrim::detected_skyrim_script_lookup_dirs;
+use crate::starfield::detected_starfield_script_lookup_dirs;
 
 /// Vanilla Papyrus source directories for `game`'s install, used to seed a
-/// project's `lookup_script_roots`. Games without registry-based detection
-/// support yet (currently Starfield) return an empty list.
+/// project's `lookup_script_roots`.
 pub(crate) fn detected_script_lookup_dirs_for_game(game: Game) -> Vec<String> {
     match game {
         Game::Skyrim => detected_skyrim_script_lookup_dirs(),
         Game::Fallout4 => detected_fallout4_script_lookup_dirs(),
-        Game::Starfield => Vec::new(),
+        Game::Starfield => detected_starfield_script_lookup_dirs(),
     }
 }
 

@@ -1,0 +1,29 @@
+# Slow function calls for the papyrus-lint "slow function usage" rule
+# (see the "Planned Lints" section of README.md).
+#
+# HAND-MAINTAINED. Do not regenerate or remove this file from script comments.
+# Nearby comments in the Creation Kit sources are often attached to the wrong
+# function or mix performance notes with unrelated remarks, so scraping them
+# produces false positives and drops real entries. Edit this list by hand.
+#
+# Sourced from public Starfield Papyrus documentation. GlobalVariable still
+# exposes GetValueInt/SetValueInt as convenience wrappers around GetValue/
+# SetValue, the same as Fallout 4.
+#
+# Each entry:
+#   object:      the script (native/global or object) the function is defined on
+#   function:    the function name, as written in Papyrus source
+#   replacement: the faster call to use instead
+#   global:      true if `object` is a native singleton that's always called
+#                through its literal name (e.g. `Game`, `Utility`) rather
+#                than a base type called through a variable of some
+#                subclass (e.g. `GlobalVariable`). Defaults to false. See
+#                `shared/rules/data/starfield/forbidden-functions.yaml` for the full rationale.
+
+- object: GlobalVariable
+  function: GetValueInt
+  replacement: GetValue() As Int
+
+- object: GlobalVariable
+  function: SetValueInt
+  replacement: SetValue(value As Float)
