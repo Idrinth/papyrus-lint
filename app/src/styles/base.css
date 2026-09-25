@@ -82,9 +82,37 @@ h1 {
   display: none;
 }
 
+.lint-progress__status {
+  display: flex;
+  gap: 0.5em;
+  align-items: center;
+}
+
 .lint-progress__label {
   font-size: 0.85em;
   opacity: 0.75;
+}
+
+/* Hidden until indexing (the only indeterminate phase). The sliding bar
+   below is easy to miss; the spinner is the loading indicator. */
+.lint-progress__spinner {
+  display: none;
+  width: 0.85em;
+  height: 0.85em;
+  border: 0.16em solid var(--color-accent);
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: lint-progress-spin 0.7s linear infinite;
+}
+
+.lint-progress--busy .lint-progress__spinner {
+  display: inline-block;
+}
+
+@keyframes lint-progress-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .lint-progress progress {
@@ -93,9 +121,9 @@ h1 {
   accent-color: var(--color-accent);
 }
 
-/* Indeterminate stand-in for the gap after "Parsing n/n", while referenced
-   scripts are still being closed over. The native indeterminate animation
-   is easy to miss on the dark theme, so the bar itself slides. */
+/* Indeterminate stand-in while the function table is indexed. The native
+   indeterminate animation is easy to miss on the dark theme, so the bar
+   itself slides, next to the spinner above. */
 .lint-progress--busy progress {
   appearance: none;
   border: none;
@@ -120,6 +148,10 @@ h1 {
 @media (prefers-reduced-motion: reduce) {
   .lint-progress--busy progress {
     animation-duration: 2.2s;
+  }
+
+  .lint-progress__spinner {
+    animation-duration: 1.5s;
   }
 }
 

@@ -15,14 +15,14 @@ const LINT_PROGRESS_BUSY_CLASS = "lint-progress--busy";
 
 function clearLintProgressBusy() {
   lintProgressEl?.classList.remove(LINT_PROGRESS_BUSY_CLASS);
+  lintProgressEl?.removeAttribute("aria-busy");
 }
 
 // Shows the progress bar reset to 0/`total`, for a drop about to start
 // parsing/linting `total` files. `phase` names the step this bar is
-// currently tracking -- "Parsing" while each project file is read, then
-// "Resolving" while preloadProjectScripts closes over referenced scripts
-// (see runParseThenLint in drop.ts), then "Linting" once the per-file
-// parsePscFiles loop actually starts.
+// currently tracking -- "Parsing" for the single type-closure pass
+// (see runParseThenLint in drop.ts; `total` grows as referenced scripts
+// are enqueued), then "Linting" once the per-file parsePscFiles loop starts.
 export function showLintProgress(total: number, phase: string = "Linting") {
   if (lintProgressHideTimer !== null) {
     clearTimeout(lintProgressHideTimer);
@@ -43,10 +43,10 @@ export function showLintProgress(total: number, phase: string = "Linting") {
   lintProgressEl.hidden = false;
 }
 
-// An in-between step with no known fraction yet (the reference walk inside
-// preload_project_scripts, then indexing the function table once that walk
-// finishes). A determinate bar left sitting at 100% reads as a hang; an
-// indeterminate one keeps moving until the next counted update arrives.
+// An in-between step with no known fraction yet (indexing the function table
+// after the parse queue drains). A determinate bar left sitting at 100% reads
+// as a hang; an indeterminate one keeps moving until the next counted update
+// arrives.
 export function showLintActivity(label: string) {
   if (lintProgressHideTimer !== null) {
     clearTimeout(lintProgressHideTimer);
@@ -58,6 +58,7 @@ export function showLintActivity(label: string) {
   lintProgressBarEl.removeAttribute("value");
   lintProgressLabelEl.textContent = label;
   lintProgressEl.classList.add(LINT_PROGRESS_BUSY_CLASS);
+  lintProgressEl.setAttribute("aria-busy", "true");
   lintProgressEl.hidden = false;
 }
 

@@ -81,33 +81,16 @@ function applyPreloadProgress(progress: PreloadProgress) {
     showLintActivity(progress.phase);
     return;
   }
-  updateLintProgress(progress.completed, progress.total, progress.phase);
+  // Same contract as the CLI's "Parsing: n/total" line: one bar, and `total`
+  // grows when a referenced script is pushed onto the parse queue.
+  updateLintProgress(progress.completed, progress.total, "Parsing");
 }
 
 async function runParseThenLint(paths: string[], generation: number) {
+  // Seeds and the scripts they name are one parse. `preload_project_scripts`
+  // reads that queue and pushes newly found types onto it; the bar starts at
+  // the lint-target count and grows instead of opening a second batch.
   showLintProgress(paths.length, "Parsing");
-  let parsed = 0;
-  await mapWithConcurrency(paths, parseConcurrencyLimit(), async (path) => {
-    try {
-      await invoke<PapyrusScript>("parse_psc_file", { path, game: currentLintConfig.game });
-    } catch {
-      // The lint-phase parsePscFiles call reports the real per-file error.
-    }
-    parsed += 1;
-    if (generation === currentParseGeneration) {
-      updateLintProgress(parsed, paths.length, "Parsing");
-    }
-  });
-  if (generation !== currentParseGeneration) {
-    return;
-  }
-  // parse_psc_file above only counts the lint targets. preload_project_scripts
-  // then closes over every referenced script (parents, imports, `new`/`as`
-  // types) and indexes them -- a long stretch that used to leave the bar
-  // sitting full at "Parsing n/n".
-  if (paths.length > 0) {
-    showLintActivity("Resolving references");
-  }
   await preloadProjectScripts(
     paths,
     paths.length === 0
