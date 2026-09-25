@@ -6,7 +6,7 @@ fn merge_lookup_roots_appends_unique_paths_ignoring_slash_and_case() {
     merge_lookup_roots(
         &mut roots,
         &[
-            r"c:\Games\Skyrim Special Edition\Data\Scripts\Source".to_string(),
+            r"c:\\Games\\Skyrim Special Edition\\Data\\Scripts\\Source".to_string(),
             "C:/Games/Skyrim Special Edition/Data/Source/Scripts".to_string(),
         ],
     );
@@ -20,8 +20,9 @@ fn merge_lookup_roots_appends_unique_paths_ignoring_slash_and_case() {
     );
 }
 
+#[cfg(not(windows))]
 #[test]
-fn detected_script_lookup_dirs_for_game_returns_empty_for_starfield() {
+fn detected_script_lookup_dirs_for_starfield_is_empty_without_a_windows_registry() {
     assert_eq!(
         detected_script_lookup_dirs_for_game(Game::Starfield),
         Vec::<String>::new()

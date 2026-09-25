@@ -10,8 +10,8 @@
 //! [`script_roots`], and [`achlist_config`] own their settings APIs and tests;
 //! the generated [`comments`] module injects the default config's explanatory
 //! comments above each saved key;
-//! [`skyrim`] and [`fallout4`] each own detecting their game's install (via
-//! the Windows registry) and its vanilla script directories, with
+//! [`skyrim`], [`fallout4`], and [`starfield`] each own detecting their game's
+//! install (via the Windows registry) and its vanilla script directories, with
 //! [`game_install`] dispatching to whichever of them matches a project's
 //! configured game and merging the result into `lookup_script_roots`;
 //! [`yaml_merge`] owns recursive YAML layering; and [`compiler`] owns
@@ -33,6 +33,7 @@ pub mod presets;
 mod project_file;
 mod script_roots;
 mod skyrim;
+mod starfield;
 mod yaml_merge;
 
 pub use achlist_config::{load_strict_achlist_scope, load_strict_achlist_scope_from_path};
@@ -51,3 +52,4 @@ pub use script_roots::{
     save_lookup_script_roots, save_script_roots,
 };
 pub use skyrim::{detected_skyrim_install_path, detected_skyrim_script_lookup_dirs};
+pub use starfield::{detected_starfield_install_path, detected_starfield_script_lookup_dirs};
