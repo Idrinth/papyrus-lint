@@ -32,6 +32,12 @@
     "vscode-marketplace": "https://marketplace.visualstudio.com/items?itemName=Idrinth.papyrus-lint-vscode",
     "papyrus-lint-vscode.vsix":
       "https://github.com/idrinth/papyrus-lint/releases/latest/download/papyrus-lint-vscode.vsix",
+    "papyrus-lint-sublime-lint":
+     "https://github.com/idrinth/papyrus-lint/releases/latest/download/SublimeLinter-contrib-papyrus-lint.zip",
+    "github-action": "https://github.com/marketplace/actions/papyrus-lint",
+    "papyrus-lint-lsp.exe": "https://github.com/idrinth/papyrus-lint/releases/latest/download/PapyrusLinterLsp-windows.exe",
+    "papyrus-lint-lsp.mac": "https://github.com/idrinth/papyrus-lint/releases/latest/download/PapyrusLinterLSP-macos",
+    "papyrus-lint-lsp.linux": "https://github.com/idrinth/papyrus-lint/releases/latest/download/PapyrusLinterLSP-linux"
   };
 
   function detectOS() {
