@@ -262,8 +262,8 @@ pub enum Stmt {
     },
     /// Starfield only: `LockGuard` / `TryLockGuard` .. `EndLockGuard` /
     /// `EndTryLockGuard`. `else_line` is set only when a `TryLockGuard`
-    /// has an `ElseTryLockGuard` clause. An absent clause and an empty
-    /// one both leave `else_body` empty.
+    /// has an `ElseTryLockGuard` or `Else` clause. An absent clause and
+    /// an empty one both leave `else_body` empty.
     LockGuard {
         kind: LockKind,
         name: String,

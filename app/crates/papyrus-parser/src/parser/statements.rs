@@ -199,7 +199,7 @@ impl Parser {
 
     /// Starfield only. `LockGuard <Name>` / `LockGuard(<Name>)` ..
     /// `EndLockGuard`, or `TryLockGuard <Name>` / `TryLockGuard(<Name>)` ..
-    /// `ElseTryLockGuard` .. `EndTryLockGuard`.
+    /// `ElseTryLockGuard` / `Else` .. `EndTryLockGuard`.
     /// Only called when [`GameEdition::has_starfield_dialect`] is set.
     fn parse_lock_guard(&mut self, is_try: bool) -> PResult<Stmt> {
         let line = self.current().line;
@@ -220,17 +220,22 @@ impl Parser {
         self.expect_terminator()?;
 
         let (body, else_body, else_line, else_col) = if is_try {
-            let body = self.parse_block(&[Keyword::ElseTryLockGuard, Keyword::EndTryLockGuard])?;
-            let (else_body, else_line, else_col) = if self.at_keyword(Keyword::ElseTryLockGuard) {
-                let else_line = self.current().line;
-                let else_col = self.current().col;
-                self.advance();
-                self.expect_terminator()?;
-                let else_body = self.parse_block(&[Keyword::EndTryLockGuard])?;
-                (else_body, Some(else_line), Some(else_col))
-            } else {
-                (Vec::new(), None, None)
-            };
+            let body = self.parse_block(&[
+                Keyword::ElseTryLockGuard,
+                Keyword::Else,
+                Keyword::EndTryLockGuard,
+            ])?;
+            let (else_body, else_line, else_col) =
+                if self.at_keyword(Keyword::ElseTryLockGuard) || self.at_keyword(Keyword::Else) {
+                    let else_line = self.current().line;
+                    let else_col = self.current().col;
+                    self.advance();
+                    self.expect_terminator()?;
+                    let else_body = self.parse_block(&[Keyword::EndTryLockGuard])?;
+                    (else_body, Some(else_line), Some(else_col))
+                } else {
+                    (Vec::new(), None, None)
+                };
             self.expect_keyword(Keyword::EndTryLockGuard)?;
             (body, else_body, else_line, else_col)
         } else {
