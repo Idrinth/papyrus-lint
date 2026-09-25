@@ -14,7 +14,7 @@ on:
       game:
         description: Game whose snapshot fixtures to regenerate
         type: choice
-        options: [all, skyrim, fallout4]
+        options: [all, skyrim, fallout4, starfield]
         default: all
       preset:
         description: Preset whose snapshot fixtures to regenerate
@@ -54,7 +54,7 @@ jobs:
             const game = '${{ inputs.game }}';
             const preset = '${{ inputs.preset }}';
             const scripts = '${{ inputs.scripts }}';
-            const games = game === 'all' ? ['skyrim', 'fallout4'] : [game];
+            const games = game === 'all' ? ['skyrim', 'fallout4', 'starfield'] : [game];
             const presets = preset === 'all' ? ['strict', 'standard', 'careful'] : [preset];
             const extenders = scripts === 'all'
               ? ['yes', 'no']
