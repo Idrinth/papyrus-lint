@@ -187,7 +187,7 @@ fn parses_lock_guard_around_nested_statements() {
         "ScriptName ATMScript\n\n\
          Function StealFromATM()\n\
              tempStealCount += 1\n\
-             LockGuard stealGuard\n\
+             LockGuard stealGuard, auditGuard\n\
                  if GetState() == \"locked\"\n\
                      Return\n\
                  endif\n\
@@ -199,7 +199,7 @@ fn parses_lock_guard_around_nested_statements() {
 
     let Stmt::LockGuard {
         kind,
-        name,
+        names,
         body,
         else_body,
         else_line,
@@ -213,7 +213,7 @@ fn parses_lock_guard_around_nested_statements() {
         );
     };
     assert_eq!(*kind, LockKind::Lock);
-    assert_eq!(name, "stealGuard");
+    assert_eq!(names, &["stealGuard", "auditGuard"]);
     assert_eq!(*line, 5);
     assert!(else_body.is_empty());
     assert!(else_line.is_none());
@@ -230,7 +230,7 @@ fn parses_try_lock_guard_with_and_without_else() {
              ElseTryLockGuard\n\
                  Return\n\
              endTryLockGuard\n\
-             trylockguard TaskMasterRestoreGuard\n\
+             trylockguard TaskMasterRestoreGuard, TaskMasterBackupGuard\n\
              EndTryLockGuard\n\
          EndFunction\n",
         GameEdition::Starfield,
@@ -240,7 +240,7 @@ fn parses_try_lock_guard_with_and_without_else() {
     let body = &script.functions[0].body;
     let Stmt::LockGuard {
         kind,
-        name,
+        names,
         body: locked,
         else_body,
         else_line,
@@ -250,14 +250,14 @@ fn parses_try_lock_guard_with_and_without_else() {
         panic!("expected a TryLockGuard, got {:?}", body[0]);
     };
     assert_eq!(*kind, LockKind::Try);
-    assert_eq!(name, "ShipCriticalHitGuard");
+    assert_eq!(names, &["ShipCriticalHitGuard"]);
     assert!(matches!(locked[0], Stmt::Expr { .. }));
     assert!(matches!(else_body[0], Stmt::Return { .. }));
     assert_eq!(*else_line, Some(6));
 
     let Stmt::LockGuard {
         kind,
-        name,
+        names,
         body: locked,
         else_line,
         ..
@@ -266,7 +266,7 @@ fn parses_try_lock_guard_with_and_without_else() {
         panic!("expected a bare TryLockGuard, got {:?}", body[1]);
     };
     assert_eq!(*kind, LockKind::Try);
-    assert_eq!(name, "TaskMasterRestoreGuard");
+    assert_eq!(names, &["TaskMasterRestoreGuard", "TaskMasterBackupGuard"]);
     assert!(locked.is_empty());
     assert!(else_line.is_none());
 }

@@ -266,7 +266,7 @@ pub enum Stmt {
     /// one both leave `else_body` empty.
     LockGuard {
         kind: LockKind,
-        name: String,
+        names: Vec<String>,
         body: Vec<Stmt>,
         else_body: Vec<Stmt>,
         else_line: Option<usize>,
