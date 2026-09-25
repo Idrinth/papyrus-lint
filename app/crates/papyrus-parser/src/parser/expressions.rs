@@ -1,4 +1,4 @@
-use super::{GameEdition, PResult, Parser};
+use super::{PResult, Parser};
 use crate::ast::*;
 use crate::token::{Keyword, TokenKind};
 
@@ -150,7 +150,7 @@ impl Parser {
                 };
                 continue;
             }
-            if self.mode == GameEdition::Fallout4 && self.at_keyword(Keyword::Is) {
+            if self.mode.has_fallout4_dialect() && self.at_keyword(Keyword::Is) {
                 self.advance();
                 let type_name = self.expect_qualified_name()?;
                 left = Expr::Is {
@@ -291,8 +291,7 @@ impl Parser {
             TokenKind::Keyword(Keyword::New) => {
                 self.advance();
                 let name = self.expect_qualified_name()?;
-                if self.mode == GameEdition::Fallout4 && !matches!(self.kind(), TokenKind::LBracket)
-                {
+                if self.mode.has_fallout4_dialect() && !matches!(self.kind(), TokenKind::LBracket) {
                     // Fallout 4 only: `New <StructName>`, creating a struct
                     // instance rather than an array.
                     return Ok(Expr::NewStruct { type_name: name });
@@ -311,7 +310,7 @@ impl Parser {
             TokenKind::Identifier(ref name) => {
                 let name = name.clone();
                 self.advance();
-                let name = if self.mode == GameEdition::Fallout4 {
+                let name = if self.mode.has_fallout4_dialect() {
                     self.append_colon_segments(name)?
                 } else {
                     name

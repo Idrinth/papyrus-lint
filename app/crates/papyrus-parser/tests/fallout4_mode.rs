@@ -2,8 +2,9 @@
 //! Fallout-specific declaration flags, colon-qualified names, the `is`
 //! type-check operator, and remote / custom events
 //! (`Event OtherScript.EventName(...)`). All are opt-in through
-//! [`GameEdition::Fallout4`]. Rejection of the same constructs in Skyrim
-//! mode lives in `skyrim_mode.rs`.
+//! [`GameEdition::Fallout4`]. Rejection of Fallout 4 constructs in Skyrim
+//! mode lives in `skyrim_mode.rs`; Starfield-only flags are rejected here
+//! and accepted in `starfield_mode.rs`.
 
 use papyrus_parser::ast::Expr;
 use papyrus_parser::parser::GameEdition;
@@ -512,4 +513,21 @@ EndFunction
         panic!("expected an `is` expression");
     };
     assert_eq!(type_name, "DLC03:WorkshopNPCScript");
+}
+
+#[test]
+fn fallout4_mode_rejects_starfield_access_flags() {
+    for flag in ["Private", "Protected", "SelfOnly", "Internal"] {
+        let source = format!("ScriptName Rejected\nFunction Hide() {flag}\nEndFunction\n");
+        let error = parse_with_mode(&source, GameEdition::Fallout4)
+            .expect_err("Starfield header access flags are invalid in Fallout 4 mode");
+        assert!(
+            matches!(error, PapyrusError::Parse(_)),
+            "{flag}: expected a parse error, got {error}"
+        );
+        assert!(
+            error.to_string().contains("expected end of line"),
+            "{flag}: Fallout 4 mode should stop at the header terminator, got {error}"
+        );
+    }
 }
