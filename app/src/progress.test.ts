@@ -45,10 +45,13 @@ describe("showLintProgress / updateLintProgress / hideLintProgress", () => {
     expect(document.querySelector<HTMLElement>("#lint-progress")!.classList.contains("lint-progress--busy")).toBe(true);
     expect(bar.hasAttribute("value")).toBe(false);
     expect(document.querySelector("#lint-progress-label")!.textContent).toBe("Resolving references");
+    expect(document.querySelector<HTMLElement>("#lint-progress")!.getAttribute("aria-busy")).toBe("true");
+    expect(document.querySelector(".lint-progress__spinner")).not.toBeNull();
 
     updateLintProgress(1, 4, "Resolving");
 
     expect(document.querySelector<HTMLElement>("#lint-progress")!.classList.contains("lint-progress--busy")).toBe(false);
+    expect(document.querySelector<HTMLElement>("#lint-progress")!.hasAttribute("aria-busy")).toBe(false);
     expect(bar.value).toBe(1);
     expect(bar.max).toBe(4);
     expect(document.querySelector("#lint-progress-label")!.textContent).toBe("Resolving 1 / 4 files");

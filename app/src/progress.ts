@@ -15,6 +15,7 @@ const LINT_PROGRESS_BUSY_CLASS = "lint-progress--busy";
 
 function clearLintProgressBusy() {
   lintProgressEl?.classList.remove(LINT_PROGRESS_BUSY_CLASS);
+  lintProgressEl?.removeAttribute("aria-busy");
 }
 
 // Shows the progress bar reset to 0/`total`, for a drop about to start
@@ -57,6 +58,7 @@ export function showLintActivity(label: string) {
   lintProgressBarEl.removeAttribute("value");
   lintProgressLabelEl.textContent = label;
   lintProgressEl.classList.add(LINT_PROGRESS_BUSY_CLASS);
+  lintProgressEl.setAttribute("aria-busy", "true");
   lintProgressEl.hidden = false;
 }
 
