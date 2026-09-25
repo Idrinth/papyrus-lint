@@ -74,8 +74,7 @@ impl AstLint for Collect {
         let Some((name, params)) = resolve_signature(callee, env, &self.locals, ctx.external) else {
             return;
         };
-        let mut diagnostics = Vec::new();
-        check_args(
+        self.store.extend(check_args(
             (*line, *col),
             &name,
             &params,
@@ -83,9 +82,7 @@ impl AstLint for Collect {
             env,
             ctx.config.bool_like_int,
             ctx.external,
-            &mut diagnostics,
-        );
-        self.store.extend(diagnostics);
+        ));
     }
 }
 
@@ -235,8 +232,8 @@ fn check_args<E: ExternalSignatures + ?Sized>(
     env: &TypeEnv,
     allow_bool_like_int: bool,
     external: &mut E,
-    diagnostics: &mut Vec<Diagnostic>,
-) {
+) -> Vec<Diagnostic> {
+    let mut diagnostics = Vec::new();
     for (index, arg) in args.iter().enumerate() {
         let (param_index, arg) = match arg {
             Expr::NamedArg { name, value } => {
@@ -290,6 +287,7 @@ fn check_args<E: ExternalSignatures + ?Sized>(
             ));
         }
     }
+    diagnostics
 }
 
 fn mismatch(
