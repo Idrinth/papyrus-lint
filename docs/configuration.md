@@ -168,16 +168,20 @@ per line.
   the project's own `game` (above) when those directories exist and the
   matching install path can be read from the Windows registry:
   - `skyrim`: `Data/Scripts/Source` and `Data/Source/Scripts` under the
-    path from `HKLM\Software\Bethesda Softworks\Skyrim Special Edition` or
-    `HKLM\Software\Wow6432Node\Bethesda Softworks\Skyrim Special Edition`
+    path from `HKLM\\Software\\Bethesda Softworks\\Skyrim Special Edition` or
+    `HKLM\\Software\\Wow6432Node\\Bethesda Softworks\\Skyrim Special Edition`
     (value `installed path`).
   - `fallout4`: `Data/Scripts/Source/Base` and `Data/Scripts/Source/User`
-    under the path from `HKLM\Software\Bethesda Softworks\Fallout4` or
-    `HKLM\Software\Wow6432Node\Bethesda Softworks\Fallout4` (value
+    under the path from `HKLM\\Software\\Bethesda Softworks\\Fallout4` or
+    `HKLM\\Software\\Wow6432Node\\Bethesda Softworks\\Fallout4` (value
+    `installed path`).
+  - `starfield`: `Data/Scripts/Source`, `Data/Scripts/Source/Base`, and
+    `Data/Scripts/Source/User` under the path from
+    `HKLM\\Software\\Bethesda Softworks\\Starfield` or
+    `HKLM\\Software\\Wow6432Node\\Bethesda Softworks\\Starfield` (value
     `installed path`).
 
-  A project targeting any other `game` (currently `starfield`) is left
-  unseeded. An explicit empty list is left empty rather than re-filled.
+  An explicit empty list is left empty rather than re-filled.
 - `compile_check`: whether the desktop app and the CLI also run
   PapyrusCompiler.exe against a `.psc` as part of linting it — set via the
   app's Settings tab, alongside `compiler_path`. `false` by default, since
