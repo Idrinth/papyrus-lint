@@ -9,8 +9,8 @@ use std::path::{Path, PathBuf};
 /// install directory when seeding a project's `lookup_script_roots`.
 #[cfg(windows)]
 const STARFIELD_REGISTRY_KEYS: [&str; 2] = [
-    r"Software\\Bethesda Softworks\\Starfield",
-    r"Software\\Wow6432Node\\Bethesda Softworks\\Starfield",
+    r"Software\Bethesda Softworks\Starfield",
+    r"Software\Wow6432Node\Bethesda Softworks\Starfield",
 ];
 
 /// Registry value name holding Starfield's install path.
