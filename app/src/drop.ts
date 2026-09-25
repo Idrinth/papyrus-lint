@@ -19,7 +19,7 @@ import {
   projectDirForPscPath,
 } from "./project-io";
 import { setAchlistScriptRoots, setPpjImportRoots } from "./project-state";
-import { renderPscResults } from "./results-list-render";
+import { appendStreamedPscResult, renderPscResults } from "./results-list-render";
 export let currentPscOutcomes: PscParseOutcome[] = [];
 
 interface PpjParseResult {
@@ -78,13 +78,16 @@ export async function parsePscFiles(
 
 function applyProjectLintEvent(event: ProjectLintEvent) {
   if (event.kind === "result") {
-    currentPscOutcomes.push({
+    const outcome = {
       path: event.path,
       ok: event.ok,
       detail: event.detail,
       findings: event.findings,
-    });
-    renderPscResults(currentPscOutcomes);
+    };
+    currentPscOutcomes.push(outcome);
+    // Append this file only. Rebuilding the whole list (and every finding
+    // row) as each file finished was quadratic in the batch size.
+    appendStreamedPscResult(currentPscOutcomes, outcome);
     return;
   }
   if (event.total <= 0) {

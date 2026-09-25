@@ -10,7 +10,7 @@ import { applyRuleTags } from "./main";
 import { SEVERITIES } from "./main-severity";
 import { switchTab } from "./main-tabs";
 import { type PscParseOutcome } from "./backend-types";
-import { renderPscResults } from "./results-list-render";
+import { appendStreamedPscResult, FINDING_DOM_CAP, renderPscResults } from "./results-list-render";
 
 describe("renderPscResults", () => {
   function outcome(overrides: Partial<PscParseOutcome> = {}): PscParseOutcome {
@@ -47,6 +47,7 @@ describe("renderPscResults", () => {
     renderPscResults([{ findings: [{ line: 1, column: 1, message: "[error] x" }], ok: true, path: "/a.psc", detail: "" }]);
     renderPscResults([]);
     expect(document.querySelector("#psc-result")!.hasAttribute("hidden")).toBe(true);
+    expect(document.querySelectorAll("#psc-result-list > li")).toHaveLength(0);
   });
 
   it("renderPscResults lists visible findings without forcing the lint tab", () => {
@@ -159,5 +160,83 @@ describe("renderPscResults", () => {
       filterInput.value = "";
       filterInput.dispatchEvent(new Event("input"));
     }
+  });
+
+  function warningFindings(count: number) {
+    return Array.from({ length: count }, (_, index) => ({
+      line: index + 1,
+      column: 1,
+      message: "[warning] noisy",
+    }));
+  }
+
+  it("appends a finished file without rebuilding rows already on the list", () => {
+    renderPscResults([]);
+    const first = outcome({ findings: [{ line: 1, column: 1, message: "[warning] from A" }] });
+    appendStreamedPscResult([first], first);
+    const row = document.querySelector<HTMLLIElement>("#psc-result-list > li")!;
+    row.dataset.kept = "yes";
+
+    const second = outcome({ path: "/b.psc", detail: 'parsed as "B"', findings: [{ line: 1, column: 1, message: "[warning] from B" }] });
+    appendStreamedPscResult([first, second], second);
+
+    const items = document.querySelectorAll<HTMLLIElement>("#psc-result-list > li");
+    expect(items).toHaveLength(2);
+    expect(items[0].dataset.kept).toBe("yes");
+    expect(items[1].textContent).toContain("from B");
+  });
+
+  it("renderPscResults mounts finding rows only until the cap, then leaves later files collapsed", () => {
+    renderPscResults([]);
+    try {
+      renderPscResults([
+        outcome({ path: "/a.psc", findings: warningFindings(FINDING_DOM_CAP) }),
+        outcome({ path: "/b.psc", findings: warningFindings(1) }),
+      ]);
+
+      const items = document.querySelectorAll("#psc-result-list > li");
+      expect(items[0].querySelectorAll(".psc-result__finding")).toHaveLength(FINDING_DOM_CAP);
+      expect(items[1].querySelector(".psc-result__finding")).toBeNull();
+      expect(items[1].querySelector(".psc-result__findings-toggle")!.textContent).toBe("Show 1 finding");
+    } finally {
+      renderPscResults([]);
+    }
+  });
+
+  it("leaves a file past the finding cap collapsed until its findings are opened", () => {
+    renderPscResults([]);
+    try {
+      const findings = warningFindings(FINDING_DOM_CAP + 1);
+      renderPscResults([outcome({ findings })]);
+      expect(document.querySelectorAll("#psc-result-list .psc-result__finding")).toHaveLength(0);
+
+      document.querySelector<HTMLButtonElement>(".psc-result__findings-toggle")!.click();
+      expect(document.querySelectorAll("#psc-result-list .psc-result__finding")).toHaveLength(FINDING_DOM_CAP + 1);
+    } finally {
+      renderPscResults([]);
+    }
+  });
+
+  it("grows a mass-fix count as files stream in without replacing the button", () => {
+    renderPscResults([]);
+    const finding = {
+      line: 1,
+      column: 1,
+      message: "[warning] Line contains trailing whitespace",
+      rule: "trailing-whitespace",
+    };
+    const first = outcome({ findings: [finding] });
+    appendStreamedPscResult([first], first);
+    const button = document.querySelector<HTMLButtonElement>("#psc-result-mass-fix-list button")!;
+    button.dataset.kept = "yes";
+
+    const second = outcome({ path: "/b.psc", findings: [finding] });
+    appendStreamedPscResult([first, second], second);
+
+    expect(document.querySelector("#psc-result-mass-fix-list")!.textContent).toContain("Trailing whitespace (2)");
+    expect(document.querySelector<HTMLButtonElement>("#psc-result-mass-fix-list button")!.dataset.kept).toBe("yes");
+    expect(document.querySelector<HTMLButtonElement>("#psc-result-mass-fix-list button")!.textContent).toBe(
+      "Fix all 2 in project",
+    );
   });
 });

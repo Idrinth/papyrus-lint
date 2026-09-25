@@ -55,9 +55,16 @@ function buildFindingTagsEl(finding: Diagnostic): HTMLElement | null {
 // then applies the same active filters itself when highlighting. Returns
 // null if there's nothing to show (a successfully parsed file with no
 // findings to list).
+//
+// `expandFindings` defaults to mounting every finding row, which is what
+// a small result and the item tests want. A large batch passes false so
+// the row stays a summary plus a "Show N findings" button until opened —
+// mounting every diagnostic of a base-game lint is what made the results
+// list slower than the lint itself.
 export function buildPscResultItem(
   outcome: PscParseOutcome,
   findings: Diagnostic[] = outcome.findings,
+  options?: { expandFindings?: boolean; onExpandFindings?: () => void },
 ): HTMLLIElement | null {
   const { path, ok, detail } = outcome;
 
@@ -98,50 +105,64 @@ export function buildPscResultItem(
   compileButton.addEventListener("click", () => void handleCompileClick(path, compileButton, compileOutputEl));
   item.append(compileButton);
 
-  if (findings.length > 0) {
-    const findingsList = document.createElement("ul");
-    findingsList.classList.add("psc-result__findings");
-    findingsList.replaceChildren(
-      ...findings.map((finding) => {
-        const findingItem = document.createElement("li");
-        findingItem.classList.add("psc-result__finding");
-        const level = levelOf(finding.message);
-        if (level) {
-          findingItem.classList.add(`psc-result__finding--${level}`);
-        }
-        findingItem.addEventListener("click", () => void openCodeViewer(path, outcome.findings, finding.line));
-
-        const label = document.createElement("span");
-        label.textContent = `line ${finding.line}, col ${finding.column}: ${finding.message}`;
-        findingItem.append(label);
-
-        const tagsEl = buildFindingTagsEl(finding);
-        if (tagsEl) {
-          findingItem.append(tagsEl);
-        }
-
-        if (isFixableFinding(finding)) {
-          const fixIssueButton = document.createElement("button");
-          fixIssueButton.type = "button";
-          fixIssueButton.textContent = "Fix this issue";
-          fixIssueButton.classList.add("psc-result__finding-fix-button");
-          const fixIssueErrorEl = document.createElement("span");
-          fixIssueErrorEl.classList.add("psc-result__finding-fix-error");
-          fixIssueErrorEl.hidden = true;
-          fixIssueButton.addEventListener("click", (event) => {
-            event.stopPropagation();
-            void handleFixIssueClick(path, outcome, finding, fixIssueButton, fixIssueErrorEl);
-          });
-          findingItem.append(fixIssueButton, fixIssueErrorEl);
-        }
-
-        return findingItem;
-      }),
-    );
-    item.append(findingsList);
+  if (findings.length > 0 && options?.expandFindings !== false) {
+    item.append(buildFindingsList(path, outcome, findings));
+  } else if (findings.length > 0) {
+    const toggle = document.createElement("button");
+    toggle.type = "button";
+    toggle.classList.add("psc-result__findings-toggle");
+    toggle.textContent = findings.length === 1 ? "Show 1 finding" : `Show ${findings.length} findings`;
+    toggle.addEventListener("click", () => {
+      toggle.replaceWith(buildFindingsList(path, outcome, findings));
+      options?.onExpandFindings?.();
+    });
+    item.append(toggle);
   }
 
   item.append(compileOutputEl);
 
   return item;
+}
+
+function buildFindingsList(path: string, outcome: PscParseOutcome, findings: Diagnostic[]): HTMLUListElement {
+  const findingsList = document.createElement("ul");
+  findingsList.classList.add("psc-result__findings");
+  findingsList.replaceChildren(
+    ...findings.map((finding) => {
+      const findingItem = document.createElement("li");
+      findingItem.classList.add("psc-result__finding");
+      const level = levelOf(finding.message);
+      if (level) {
+        findingItem.classList.add(`psc-result__finding--${level}`);
+      }
+      findingItem.addEventListener("click", () => void openCodeViewer(path, outcome.findings, finding.line));
+
+      const label = document.createElement("span");
+      label.textContent = `line ${finding.line}, col ${finding.column}: ${finding.message}`;
+      findingItem.append(label);
+
+      const tagsEl = buildFindingTagsEl(finding);
+      if (tagsEl) {
+        findingItem.append(tagsEl);
+      }
+
+      if (isFixableFinding(finding)) {
+        const fixIssueButton = document.createElement("button");
+        fixIssueButton.type = "button";
+        fixIssueButton.textContent = "Fix this issue";
+        fixIssueButton.classList.add("psc-result__finding-fix-button");
+        const fixIssueErrorEl = document.createElement("span");
+        fixIssueErrorEl.classList.add("psc-result__finding-fix-error");
+        fixIssueErrorEl.hidden = true;
+        fixIssueButton.addEventListener("click", (event) => {
+          event.stopPropagation();
+          void handleFixIssueClick(path, outcome, finding, fixIssueButton, fixIssueErrorEl);
+        });
+        findingItem.append(fixIssueButton, fixIssueErrorEl);
+      }
+
+      return findingItem;
+    }),
+  );
+  return findingsList;
 }

@@ -19,15 +19,35 @@ export async function formatIssuesForAi(
 }
 
 // Enables the "Export issues"/"Export for AI" buttons only while there's at
-// least one currently filtered finding to export.
-export function updateExportIssuesButtonState(outcomes: PscParseOutcome[]) {
-  const disabled = collectFilteredIssues(outcomes).length === 0;
+// least one currently filtered finding to export. The count is kept across
+// streamed files so a batch does not re-walk every finding so far just to
+// decide whether the button is enabled.
+let exportableFindings = 0;
+
+function applyExportButtons() {
+  const disabled = exportableFindings === 0;
   if (exportIssuesButtonEl) {
     exportIssuesButtonEl.disabled = disabled;
   }
   if (exportAiButtonEl) {
     exportAiButtonEl.disabled = disabled;
   }
+}
+
+export function updateExportIssuesButtonState(outcomes: PscParseOutcome[]) {
+  exportableFindings = 0;
+  for (const file of collectFilteredIssues(outcomes)) {
+    exportableFindings += file.findings.length;
+  }
+  applyExportButtons();
+}
+
+export function addExportableFindings(count: number) {
+  if (count === 0) {
+    return;
+  }
+  exportableFindings += count;
+  applyExportButtons();
 }
 
 // Downloads the currently filtered lint findings (see collectFilteredIssues)
