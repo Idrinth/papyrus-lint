@@ -1,4 +1,4 @@
-use super::{GameEdition, PResult, Parser};
+use super::{PResult, Parser};
 use crate::ast::*;
 use crate::token::{Keyword, TokenKind};
 
@@ -85,7 +85,7 @@ impl Parser {
     /// expression statement / assignment by looking ahead for the
     /// `Identifier [ ':' Identifier ]* [ '[' ']' ] Identifier` pattern,
     /// without consuming tokens. Colon segments are part of a type name
-    /// only in [`GameEdition::Fallout4`] mode.
+    /// only in Fallout 4 / Starfield mode.
     fn looks_like_var_decl(&self) -> bool {
         let mut i = self.pos;
         if !matches!(
@@ -95,7 +95,7 @@ impl Parser {
             return false;
         }
         i += 1;
-        if self.mode == GameEdition::Fallout4 {
+        if self.mode.has_fallout4_dialect() {
             while matches!(self.tokens.get(i).map(|t| &t.kind), Some(TokenKind::Colon))
                 && matches!(
                     self.tokens.get(i + 1).map(|t| &t.kind),

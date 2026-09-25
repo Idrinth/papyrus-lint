@@ -25,15 +25,36 @@ type PResult<T> = Result<T, ParseError>;
 /// original language `papyrus-parser` was built for; Fallout 4 adds a
 /// handful of new constructs (custom `Struct`s, property `Group`s, the
 /// `DebugOnly`/`BetaOnly` script and function flags, and colon-qualified names such
-/// as `DLC03:Foo` on types, `extends`, `new`, and calls) on top of it. A construct that's
-/// Fallout 4 only is rejected the same way an unrecognized token always
-/// is -- as an ordinary [`ParseError`] -- when parsed in [`Self::Skyrim`]
-/// mode.
+/// as `DLC03:Foo` on types, `extends`, `new`, and calls) on top of it.
+/// Starfield keeps that Fallout 4 dialect and adds further flags
+/// (`Private` / `Protected` / `SelfOnly` on function headers). A construct
+/// that a later edition added is rejected the same way an unrecognized
+/// token always is -- as an ordinary [`ParseError`] -- when parsed in a
+/// mode that does not include it.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum GameEdition {
     #[default]
     Skyrim,
     Fallout4,
+    /// Starfield's Papyrus: Fallout 4's dialect plus Starfield-only
+    /// header flags (`Private`, `Protected`, `SelfOnly`, `Internal`).
+    Starfield,
+}
+
+impl GameEdition {
+    /// Whether this edition includes Fallout 4's language extensions
+    /// (`Struct`/`Group`, colon-qualified names, `is`, `New <Struct>`,
+    /// `DebugOnly`/`BetaOnly`, `Const`/`Mandatory`/`Default`).
+    /// [`Self::Starfield`] is a continuation of that dialect.
+    pub fn has_fallout4_dialect(self) -> bool {
+        matches!(self, Self::Fallout4 | Self::Starfield)
+    }
+
+    /// Whether this edition includes Starfield-only constructs such as
+    /// header access flags written as identifiers.
+    pub fn has_starfield_dialect(self) -> bool {
+        matches!(self, Self::Starfield)
+    }
 }
 
 pub struct Parser {
@@ -44,7 +65,8 @@ pub struct Parser {
 
 impl Parser {
     /// Creates a parser over a non-empty token stream, accepting Skyrim's
-    /// Papyrus dialect. See [`Self::new_with_mode`] to parse Fallout 4's.
+    /// Papyrus dialect. See [`Self::new_with_mode`] to parse Fallout 4's
+    /// or Starfield's.
     ///
     /// # Panics
     ///
@@ -200,11 +222,11 @@ impl Parser {
         self.expect_qualified_name()
     }
 
-    /// An identifier, or in [`GameEdition::Fallout4`] only a
-    /// colon-qualified name (`Namespace:Name`, including further segments).
+    /// An identifier, or in Fallout 4 / Starfield a colon-qualified name
+    /// (`Namespace:Name`, including further segments).
     fn expect_qualified_name(&mut self) -> PResult<String> {
         let name = self.expect_identifier()?;
-        if self.mode == GameEdition::Fallout4 {
+        if self.mode.has_fallout4_dialect() {
             self.append_colon_segments(name)
         } else {
             Ok(name)

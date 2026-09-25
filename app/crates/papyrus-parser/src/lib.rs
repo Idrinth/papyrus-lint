@@ -56,7 +56,7 @@ impl From<ParseError> for PapyrusError {
 /// most recently seen `source` -- see [`cache`].
 ///
 /// Always parses Skyrim's Papyrus dialect. See [`parse_with_mode`] to
-/// parse Fallout 4's.
+/// parse Fallout 4's or Starfield's.
 pub fn parse(source: &str) -> Result<ast::Script, PapyrusError> {
     cache::parse(source)
 }
