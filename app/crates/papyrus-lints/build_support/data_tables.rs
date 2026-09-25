@@ -75,12 +75,20 @@ fn emit_game_tables(context: &BuildContext, spec: GameTableSpec<'_>) {
     );
     out.blank();
     out.block(
-        format!("pub fn {selector}(game: papyrus_lint_globals::Game) -> &'static [{selector_item_ty}]"),
+        format!(
+            "pub fn {selector}(game: papyrus_lint_globals::Game) -> &'static [{selector_item_ty}]"
+        ),
         |out| {
             out.block("match game", |out| {
-                out.line(format!("papyrus_lint_globals::Game::Skyrim => SKYRIM_{const_name},"));
-                out.line(format!("papyrus_lint_globals::Game::Fallout4 => FALLOUT4_{const_name},"));
-                out.line(format!("papyrus_lint_globals::Game::Starfield => STARFIELD_{const_name},"));
+                out.line(format!(
+                    "papyrus_lint_globals::Game::Skyrim => SKYRIM_{const_name},"
+                ));
+                out.line(format!(
+                    "papyrus_lint_globals::Game::Fallout4 => FALLOUT4_{const_name},"
+                ));
+                out.line(format!(
+                    "papyrus_lint_globals::Game::Starfield => STARFIELD_{const_name},"
+                ));
             });
         },
     );
