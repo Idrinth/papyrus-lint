@@ -74,6 +74,7 @@ jobs:
           load: true
           build-args: |
             PRESET=${{ matrix.preset }}
+            GAME=${{ matrix.game }}
           tags: papyrus-lint:${{ matrix.preset }}
 
       - name: Smoke test container image
