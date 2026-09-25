@@ -1,4 +1,4 @@
-# Target game. Currently supported: skyrim, fallout4
+# Target game. Currently supported: skyrim, fallout4, starfield
 game: skyrim
 # Path to PapyrusCompiler.exe, or null to auto-detect it
 compiler_path: null

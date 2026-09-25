@@ -144,7 +144,7 @@ fn save_annotates_top_level_keys_with_explanatory_comments() {
     let contents = fs::read_to_string(dir.path().join("papyrus-lint.yaml"))
         .expect("failed to read saved config file");
     assert!(contents
-        .starts_with("# Target game. Currently supported: skyrim, fallout4\ngame: skyrim\n"));
+        .starts_with("# Target game. Currently supported: skyrim, fallout4, starfield\ngame: skyrim\n"));
     assert!(contents.contains("# true, false\nsemicolon: true\n"));
     assert!(contents.contains("# tab, space\nindentation: tab\n"));
     assert!(contents.contains("# Each rule accepts true or false\nrules:\n"));
