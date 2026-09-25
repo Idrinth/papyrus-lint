@@ -140,7 +140,7 @@ impl Parser {
             return Ok(());
         }
 
-        if self.mode == GameEdition::Fallout4 && self.at_keyword(Keyword::CustomEvent) {
+        if self.mode.has_fallout4_dialect() && self.at_keyword(Keyword::CustomEvent) {
             let line = self.current().line;
             self.advance();
             let name = self.expect_identifier()?;
