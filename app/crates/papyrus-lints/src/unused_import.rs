@@ -250,6 +250,11 @@ fn collect_stmt(stmt: &Stmt, calls: &mut Vec<String>) {
                 collect_stmt(stmt, calls);
             }
         }
+        Stmt::LockGuard { body, else_body, .. } => {
+            for stmt in body.iter().chain(else_body) {
+                collect_stmt(stmt, calls);
+            }
+        }
     }
 }
 

@@ -187,6 +187,12 @@ fn walk_body(
                 // only inside its body can't be assumed to have happened
                 // by the time execution reaches the code after the loop.
             }
+            Stmt::LockGuard { body, else_body, .. } => {
+                let mut locked = unassigned.clone();
+                walk_body(body, &mut locked, diagnostics);
+                let mut alternate = unassigned.clone();
+                walk_body(else_body, &mut alternate, diagnostics);
+            }
         }
     }
 }

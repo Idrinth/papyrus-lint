@@ -88,6 +88,14 @@ fn stmt_always_returns(stmt: &Stmt) -> bool {
                     .all(|branch| body_always_returns(&branch.body))
         }
         Stmt::While { .. } | Stmt::VarDecl(_) | Stmt::Assign { .. } | Stmt::Expr { .. } => false,
+        Stmt::LockGuard {
+            kind, body, else_body, ..
+        } => match kind {
+            papyrus_parser::ast::LockKind::Lock => body_always_returns(body),
+            papyrus_parser::ast::LockKind::Try => {
+                body_always_returns(body) && body_always_returns(else_body)
+            }
+        },
     }
 }
 

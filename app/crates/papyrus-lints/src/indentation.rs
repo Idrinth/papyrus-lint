@@ -279,8 +279,11 @@ fn closes_block(keywords: &[Keyword]) -> bool {
                 | Keyword::EndIf
                 | Keyword::EndWhile
                 | Keyword::EndState
+                | Keyword::EndLockGuard
+                | Keyword::EndTryLockGuard
                 | Keyword::Else
                 | Keyword::ElseIf
+                | Keyword::ElseTryLockGuard
         )
     })
 }
@@ -288,13 +291,18 @@ fn closes_block(keywords: &[Keyword]) -> bool {
 fn opens_block(keywords: &[Keyword]) -> bool {
     if keywords
         .iter()
-        .any(|keyword| matches!(keyword, Keyword::Else | Keyword::ElseIf))
+        .any(|keyword| matches!(keyword, Keyword::Else | Keyword::ElseIf | Keyword::ElseTryLockGuard))
     {
         return true;
     }
 
     keywords.iter().any(|keyword| match keyword {
-        Keyword::If | Keyword::While | Keyword::State | Keyword::Event => true,
+        Keyword::If
+        | Keyword::While
+        | Keyword::State
+        | Keyword::Event
+        | Keyword::LockGuard
+        | Keyword::TryLockGuard => true,
         Keyword::Function => !keywords.contains(&Keyword::Native),
         Keyword::Property => {
             !keywords.contains(&Keyword::Auto) && !keywords.contains(&Keyword::AutoReadOnly)

@@ -196,6 +196,17 @@ fn check_body<E: ExternalSignatures + ?Sized>(
             Stmt::While { body, .. } => {
                 check_body(body, env, return_type, function_name, external, diagnostics);
             }
+            Stmt::LockGuard { body, else_body, .. } => {
+                check_body(body, env, return_type, function_name, external, diagnostics);
+                check_body(
+                    else_body,
+                    env,
+                    return_type,
+                    function_name,
+                    external,
+                    diagnostics,
+                );
+            }
             Stmt::VarDecl(_) | Stmt::Assign { .. } | Stmt::Expr { .. } => {}
         }
     }

@@ -113,6 +113,15 @@ fn check_body<'a>(
                 check_body(else_body, &mut applied.clone(), diagnostics);
             }
             Stmt::While { body, .. } => check_body(body, &mut applied.clone(), diagnostics),
+            Stmt::LockGuard {
+                kind, body, else_body, ..
+            } => match kind {
+                papyrus_parser::ast::LockKind::Lock => check_body(body, applied, diagnostics),
+                papyrus_parser::ast::LockKind::Try => {
+                    check_body(body, &mut applied.clone(), diagnostics);
+                    check_body(else_body, &mut applied.clone(), diagnostics);
+                }
+            },
             // A plain assignment could reassign a local variable read by an
             // already-tracked receiver/outfit expression (e.g. `outfit =
             // OtherOutfit` between two `akActor.SetOutfit(outfit)` calls),

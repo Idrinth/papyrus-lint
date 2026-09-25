@@ -319,6 +319,10 @@ fn collect_call_site_edits(
                 collect_call_site_edits_in_expr(condition, wrapped_callees, ctx, edits);
                 collect_call_site_edits(body, wrapped_callees, ctx, edits);
             }
+            Stmt::LockGuard { body, else_body, .. } => {
+                collect_call_site_edits(body, wrapped_callees, ctx, edits);
+                collect_call_site_edits(else_body, wrapped_callees, ctx, edits);
+            }
             Stmt::VarDecl(decl) => {
                 if let Some(value) = &decl.value {
                     collect_call_site_edits_in_expr(value, wrapped_callees, ctx, edits);

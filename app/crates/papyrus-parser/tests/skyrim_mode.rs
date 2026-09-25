@@ -269,3 +269,15 @@ fn rejects_starfield_access_flags() {
         );
     }
 }
+
+#[test]
+fn rejects_lock_guard_statements() {
+    assert_skyrim_rejects(
+        "ScriptName Rejected\n\nFunction Steal()\nLockGuard stealGuard\nEndLockGuard\nEndFunction\n",
+        "LockGuard is Starfield only",
+    );
+    assert_skyrim_rejects(
+        "ScriptName Rejected\n\nFunction Hit()\nTryLockGuard ShipCriticalHitGuard\nEndTryLockGuard\nEndFunction\n",
+        "TryLockGuard is Starfield only",
+    );
+}

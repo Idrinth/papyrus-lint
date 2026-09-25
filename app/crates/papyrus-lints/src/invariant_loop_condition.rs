@@ -105,6 +105,10 @@ fn walk_body(body: &[Stmt], known: &mut HashSet<String>, diagnostics: &mut Vec<D
                 check_condition(condition, known, body, *line, *col, diagnostics);
                 walk_body(body, known, diagnostics);
             }
+            Stmt::LockGuard { body, else_body, .. } => {
+                walk_body(body, known, diagnostics);
+                walk_body(else_body, known, diagnostics);
+            }
             Stmt::Assign { .. } | Stmt::Expr { .. } | Stmt::Return { .. } => {}
         }
     }
@@ -196,6 +200,9 @@ fn assigns_any(body: &[Stmt], names: &HashSet<String>) -> bool {
                 || assigns_any(else_body, names)
         }
         Stmt::While { body, .. } => assigns_any(body, names),
+        Stmt::LockGuard { body, else_body, .. } => {
+            assigns_any(body, names) || assigns_any(else_body, names)
+        }
         Stmt::VarDecl(_) | Stmt::Assign { .. } | Stmt::Expr { .. } | Stmt::Return { .. } => false,
     })
 }
