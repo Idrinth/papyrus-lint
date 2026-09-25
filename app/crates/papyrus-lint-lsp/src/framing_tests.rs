@@ -38,3 +38,24 @@ fn rejects_a_non_numeric_content_length() {
     let mut reader = Cursor::new(&b"Content-Length: no\r\n\r\n"[..]);
     assert!(read_message(&mut reader).is_err());
 }
+
+#[test]
+fn rejects_malformed_and_truncated_messages() {
+    let mut malformed = Cursor::new(&b"Content-Length 2\r\n\r\n{}"[..]);
+    assert_eq!(
+        read_message(&mut malformed).unwrap_err().kind(),
+        std::io::ErrorKind::InvalidData
+    );
+
+    let mut headers = Cursor::new(&b"Content-Length: 2\r\n"[..]);
+    assert_eq!(
+        read_message(&mut headers).unwrap_err().kind(),
+        std::io::ErrorKind::UnexpectedEof
+    );
+
+    let mut body = Cursor::new(&b"Content-Length: 3\r\n\r\n{}"[..]);
+    assert_eq!(
+        read_message(&mut body).unwrap_err().kind(),
+        std::io::ErrorKind::UnexpectedEof
+    );
+}

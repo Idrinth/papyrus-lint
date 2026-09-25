@@ -418,3 +418,96 @@ fn fix_file_rejects_an_id_bearing_message_without_response_fields() {
     assert_eq!(invalid["error"]["code"], -32600);
     assert!(responses.iter().any(|message| message["id"] == 7));
 }
+
+#[test]
+fn execute_command_rejects_unknown_commands_and_closed_documents() {
+    let (_code, responses) = exchange(&[
+        request(1, "initialize", json!({})),
+        request(
+            2,
+            "workspace/executeCommand",
+            json!({ "command": "unknown", "arguments": [] }),
+        ),
+        request(
+            3,
+            "workspace/executeCommand",
+            json!({ "command": FIX_FILE_COMMAND, "arguments": ["file:///missing.psc"] }),
+        ),
+    ]);
+    assert_eq!(responses[1]["error"]["code"], -32601);
+    assert_eq!(responses[2]["error"]["code"], -32600);
+    assert_eq!(responses[2]["error"]["message"], "document is not open");
+}
+
+#[test]
+fn fix_file_reports_a_rejected_or_errored_workspace_edit() {
+    for response in [
+        json!({ "jsonrpc": "2.0", "id": "papyrus-lint-1", "result": { "applied": false } }),
+        json!({ "jsonrpc": "2.0", "id": "papyrus-lint-1", "error": { "code": -32603, "message": "no" } }),
+    ] {
+        let uri = "file:///Quest.psc";
+        let (_code, responses) = exchange(&[
+            request(1, "initialize", json!({})),
+            json!({
+                "jsonrpc": "2.0", "method": "textDocument/didOpen",
+                "params": { "textDocument": { "uri": uri, "version": 1, "text": "Scriptname Quest \n" } }
+            }),
+            request(
+                7,
+                "workspace/executeCommand",
+                json!({ "command": FIX_FILE_COMMAND, "arguments": [uri] }),
+            ),
+            response,
+        ]);
+        let result = responses.iter().find(|message| message["id"] == 7).unwrap();
+        assert_eq!(result["error"]["code"], -32803);
+        assert_eq!(result["error"]["message"], "edit was not applied");
+    }
+}
+
+#[test]
+fn fix_file_without_a_client_response_returns_unexpected_eof() {
+    let uri = "file:///Quest.psc";
+    let mut input = Vec::new();
+    for message in [
+        request(1, "initialize", json!({})),
+        json!({
+            "jsonrpc": "2.0", "method": "textDocument/didOpen",
+            "params": { "textDocument": { "uri": uri, "version": 1, "text": "Scriptname Quest \n" } }
+        }),
+        request(
+            7,
+            "workspace/executeCommand",
+            json!({ "command": FIX_FILE_COMMAND, "arguments": [uri] }),
+        ),
+    ] {
+        write_message(&mut input, message.to_string().as_bytes()).unwrap();
+    }
+    let error = serve(Cursor::new(input), Vec::new()).unwrap_err();
+    assert_eq!(error.kind(), std::io::ErrorKind::UnexpectedEof);
+    assert!(error.to_string().contains("workspace/applyEdit"));
+}
+
+#[test]
+fn exit_while_waiting_for_an_edit_is_an_error() {
+    let uri = "file:///Quest.psc";
+    let mut input = Vec::new();
+    for message in [
+        request(1, "initialize", json!({})),
+        json!({
+            "jsonrpc": "2.0", "method": "textDocument/didOpen",
+            "params": { "textDocument": { "uri": uri, "text": "Scriptname Quest \n" } }
+        }),
+        request(
+            7,
+            "workspace/executeCommand",
+            json!({ "command": FIX_FILE_COMMAND, "arguments": [uri] }),
+        ),
+        json!({ "jsonrpc": "2.0", "method": "exit" }),
+    ] {
+        write_message(&mut input, message.to_string().as_bytes()).unwrap();
+    }
+    let error = serve(Cursor::new(input), Vec::new()).unwrap_err();
+    assert_eq!(error.kind(), std::io::ErrorKind::UnexpectedEof);
+    assert!(error.to_string().contains("client exited (1)"));
+}

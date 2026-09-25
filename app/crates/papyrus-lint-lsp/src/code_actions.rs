@@ -246,7 +246,10 @@ fn full_range(text: &str) -> Value {
 
 fn replace_line(source: &str, line: usize, replacement: &str) -> Option<String> {
     let index = line.checked_sub(1)?;
-    let mut lines: Vec<&str> = source.split('\n').collect();
+    let mut lines: Vec<&str> = source
+        .split('\n')
+        .map(|line| line.trim_end_matches('\r'))
+        .collect();
     if source.ends_with('\n') {
         lines.pop();
     }
