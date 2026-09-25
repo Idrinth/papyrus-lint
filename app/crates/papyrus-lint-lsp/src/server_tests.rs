@@ -389,6 +389,7 @@ fn read_response_discards_responses_for_unknown_request_ids() {
 
     assert_eq!(response["id"], request_id);
     assert!(server.pending_responses.is_empty());
+}
 
 #[test]
 fn fix_file_rejects_an_id_bearing_message_without_response_fields() {
