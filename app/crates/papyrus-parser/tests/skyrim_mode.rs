@@ -223,15 +223,24 @@ EndEvent
     );
 
     assert_skyrim_rejects(
-        "ScriptName Rejected\n\nFunction Hide() Private\nEndFunction\n",
-        "Private is Starfield only",
+        r#"ScriptName Rejected
+
+Function Test(ObjectReference akRef)
+    if akRef is DLC03:WorkshopNPCScript
+        return
+    endif
+EndFunction
+"#,
+        "colon-qualified `is` type names are Fallout 4 only",
     );
-    assert_skyrim_rejects(
-        "ScriptName Rejected\n\nFunction Hide() Protected\nEndFunction\n",
-        "Protected is Starfield only",
-    );
-    assert_skyrim_rejects(
-        "ScriptName Rejected\n\nFunction Hide() SelfOnly\nEndFunction\n",
-        "SelfOnly is Starfield only",
-    );
+}
+
+#[test]
+fn rejects_starfield_access_flags() {
+    for flag in ["Private", "Protected", "SelfOnly", "Internal"] {
+        assert_skyrim_rejects(
+            &format!("ScriptName Rejected\n\nFunction Hide() {flag}\nEndFunction\n"),
+            &format!("{flag} is Starfield only"),
+        );
+    }
 }
