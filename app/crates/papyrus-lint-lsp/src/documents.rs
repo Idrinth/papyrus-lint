@@ -1,9 +1,9 @@
 use std::collections::HashMap;
 use std::io::{self, Write};
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
-use papyrus_lint_config::load_config;
-use papyrus_lints::{lint, Config};
+use papyrus_lint_live::{config_from_script_path, lint_source};
+use papyrus_lints::Config;
 use serde_json::{json, Value};
 
 use crate::diagnostics::{line_at, to_lsp};
@@ -113,7 +113,7 @@ impl Documents {
         output: &mut impl Write,
     ) -> io::Result<()> {
         let config = config_for_uri(uri);
-        let diagnostics = lint(text, &config);
+        let diagnostics = lint_source(text, &config).diagnostics;
         let lsp = diagnostics
             .iter()
             .map(|diagnostic| to_lsp(diagnostic, line_at(text, diagnostic.line)))
@@ -145,27 +145,9 @@ fn publish_diagnostics(
 }
 
 pub(crate) fn config_for_uri(uri: &str) -> Config {
-    let Some(path) = file_uri_to_path(uri) else {
-        return Config::default();
-    };
-    let mut dir = path.parent();
-    while let Some(current) = dir {
-        if config_file(current).is_some() {
-            return load_config(current).unwrap_or_else(|_| Config::default());
-        }
-        dir = current.parent();
-    }
-    Config::default()
-}
-
-fn config_file(dir: &Path) -> Option<PathBuf> {
-    for name in ["papyrus-lint.yaml", "papyrus-lint.yml"] {
-        let candidate = dir.join(name);
-        if candidate.is_file() {
-            return Some(candidate);
-        }
-    }
-    None
+    file_uri_to_path(uri)
+        .map(|path| config_from_script_path(&path))
+        .unwrap_or_default()
 }
 
 pub(crate) fn file_uri_to_path(uri: &str) -> Option<PathBuf> {

@@ -233,6 +233,7 @@ jobs:
         - papyrus-lints
         - papyrus-lint-core
         - papyrus-lint-output
+        - papyrus-lint-live
         - papyrus-lint-cli
         - papyrus-lint-lsp
         - papyrus-lint-config

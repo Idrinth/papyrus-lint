@@ -197,10 +197,19 @@ dependencies = [
 ]
 
 [[package]]
-name = "papyrus-lint-lsp"
+name = "papyrus-lint-live"
 version = "0.1.0"
 dependencies = [
  "papyrus-lint-config",
+ "papyrus-lints",
+ "papyrus-parser",
+]
+
+[[package]]
+name = "papyrus-lint-lsp"
+version = "0.1.0"
+dependencies = [
+ "papyrus-lint-live",
  "papyrus-lints",
  "serde_json",
  "tempfile",

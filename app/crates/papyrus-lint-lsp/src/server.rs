@@ -233,7 +233,9 @@ impl<R: BufRead, W: Write> Server<R, W> {
             if message.get("method").is_none() && message.get("id") == Some(request_id) {
                 return Ok(message);
             }
-            if message.get("method").is_none() && message.get("id").is_some_and(|id| !id.is_null())
+            if message.get("method").is_none()
+                && (message.get("result").is_some() || message.get("error").is_some())
+                && message.get("id").is_some_and(|id| !id.is_null())
             {
                 if self
                     .active_requests
