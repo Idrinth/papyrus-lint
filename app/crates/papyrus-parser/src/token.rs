@@ -40,10 +40,10 @@ pub enum Keyword {
     EndIf,
     While,
     EndWhile,
-    /// Starfield only: `LockGuard <Name>[, <Name>...]` .. `EndLockGuard`.
+    /// Starfield only: `LockGuard <Name>[, <Name>...]` or `LockGuard(<Name>[, <Name>...])` .. `EndLockGuard`.
     LockGuard,
     EndLockGuard,
-    /// Starfield only: `TryLockGuard <Name>[, <Name>...]` .. `ElseTryLockGuard` .. `EndTryLockGuard`.
+    /// Starfield only: `TryLockGuard <Name>[, <Name>...]` or `TryLockGuard(<Name>[, <Name>...])` .. `ElseTryLockGuard` .. `EndTryLockGuard`.
     TryLockGuard,
     ElseTryLockGuard,
     EndTryLockGuard,
