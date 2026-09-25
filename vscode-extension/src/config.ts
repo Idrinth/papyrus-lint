@@ -96,11 +96,17 @@ export async function configPathForWrite(documentUri: vscode.Uri): Promise<strin
   return path.join(workspaceFolder.uri.fsPath, CONFIG_FILE_NAMES[0]);
 }
 
-/** Prepends `--config <path>` to `args` when a config is resolved for `documentUri`
- * (see `configPath` above). */
+/** Inserts `--config <path>` after the CLI subcommand in `args` when a config is
+ * resolved for `documentUri` (see `configPath` above). `--config` is a flag of
+ * `lint`/`fix`/`doctor`, not a global flag: putting it before the subcommand is a
+ * usage error on PapyrusLinterCLI 2.x (exit status 2, USAGE on stderr). */
 export async function withConfigOverride(args: string[], documentUri: vscode.Uri): Promise<string[]> {
   const override = await configPath(documentUri);
-  return override ? ['--config', override, ...args] : args;
+  if (!override) {
+    return args;
+  }
+  const [subcommand, ...rest] = args;
+  return [subcommand, '--config', override, ...rest];
 }
 
 /** Whether live, as-you-type linting (via `--blob`, see `PapyrusLinter.lintBlob`)
