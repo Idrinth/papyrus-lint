@@ -61,10 +61,36 @@ async function pickInitGame(): Promise<string | undefined> {
   return picked?.game;
 }
 
+/** The VS Code workspace folder that should own `papyrus-lint.yaml` for `uri`:
+ * the folder that contains it, or one whose own path is `uri` (a right-clicked
+ * workspace root). `getWorkspaceFolder` already treats the folder root as
+ * inside itself, so a workspace with no subfolders still resolves here instead
+ * of falling through to `uri.fsPath` (which for a file, or for a resource VS
+ * Code reports as the parent of an empty folder, would write the config
+ * outside the workspace). */
+function workspaceFolderFor(uri: vscode.Uri): vscode.WorkspaceFolder | undefined {
+  return vscode.workspace.getWorkspaceFolder(uri)
+    ?? vscode.workspace.workspaceFolders?.find((folder) => folder.uri.fsPath === uri.fsPath);
+}
+
 /** Resolves the project directory `papyrusLint.initializeConfig` should run `init` in:
- * the workspace's sole folder, a prompt when several are open, or `undefined` (after
- * showing an error) when no folder is open at all. */
-async function resolveInitDirectory(): Promise<string | undefined> {
+ * the workspace folder that contains `uri` when one is given (a right-clicked
+ * file, nested folder, or the workspace root itself), the workspace's sole
+ * folder, a prompt when several are open, or `undefined` (after showing an
+ * error) when no folder is open at all.
+ *
+ * Always the workspace folder root — never a nested explorer path, and never a
+ * path outside the workspace. A flat workspace (scripts sitting next to the
+ * folder root, no subfolders) and a deeply nested one (`Data/Scripts/Source/…`)
+ * therefore both initialize `papyrus-lint.yaml` at the same place the rest of
+ * the extension already looks for it (`configPath` / `configPathForWrite`). */
+async function resolveInitDirectory(uri?: vscode.Uri): Promise<string | undefined> {
+  if (uri) {
+    const folder = workspaceFolderFor(uri);
+    if (folder) {
+      return folder.uri.fsPath;
+    }
+  }
   const folders = vscode.workspace.workspaceFolders;
   if (!folders || folders.length === 0) {
     void vscode.window.showErrorMessage('Papyrus Lint: open a folder or workspace first.');
@@ -79,11 +105,11 @@ async function resolveInitDirectory(): Promise<string | undefined> {
   return picked?.uri.fsPath;
 }
 
-/** Runs `PapyrusLinterCLI init --game <name> [--preset <name>]` in `directory`, e.g. a
- * right-clicked explorer folder or a workspace folder resolved via
- * `resolveInitDirectory`, prompting for a preset and a target game first. */
+/** Runs `PapyrusLinterCLI init --game <name> [--preset <name>]` in the resolved
+ * workspace folder (see `resolveInitDirectory`), prompting for a preset and a
+ * target game first. */
 export async function initializeConfig(output: vscode.OutputChannel, uri?: vscode.Uri): Promise<void> {
-  const directory = uri ? uri.fsPath : await resolveInitDirectory();
+  const directory = await resolveInitDirectory(uri);
   if (!directory) {
     return;
   }
