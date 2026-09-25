@@ -311,9 +311,9 @@ describe('papyrusLint.ignoreIssueForProject', () => {
     await harness.commands.get('papyrusLint.ignoreIssueForProject')(uri(scriptPath), 'trailing-whitespace');
 
     assert.deepEqual(harness.execCalls.at(-1).args, [
-      '--config',
+      'lint', '--config',
       path.join(workspaceRoot, 'papyrus-lint.yaml'),
-      'lint', '--format', 'json',
+      '--format', 'json',
       scriptPath,
     ]);
   });

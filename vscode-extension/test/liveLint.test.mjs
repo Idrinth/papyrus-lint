@@ -17,7 +17,7 @@ describe('live linting via --blob', () => {
 
     assert.deepEqual(harness.execCalls[0], {
       executable: '/tools/PapyrusLinterCLI',
-      args: ['--config', '/project/custom.yaml', 'lint', '--format', 'json', '--blob', 'ScriptName Test   \n'],
+      args: ['lint', '--config', '/project/custom.yaml', '--format', 'json', '--blob', 'ScriptName Test   \n'],
       options: { cwd: '/project', maxBuffer: 10 * 1024 * 1024 },
     });
     assert.equal(harness.diagnostics.published[0][0], document.uri);
@@ -160,9 +160,9 @@ describe('live linting via --blob', () => {
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       assert.deepEqual(harness.execCalls[0].args, [
-        '--config',
+        'lint', '--config',
         path.join(workspaceRoot, 'papyrus-lint.yaml'),
-        'lint', '--format', 'json',
+        '--format', 'json',
         '--blob',
         'ScriptName Test\n',
       ]);
