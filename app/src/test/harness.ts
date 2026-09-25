@@ -12,17 +12,19 @@ import { aiConfiguration } from "../results-export-ai";
 
 // Default backend behavior for the project-root discovery commands (see
 // project-io.ts's projectDirForAchlist/projectDirForDirectory/
-// projectDirForPscPath), for tests that drive handleDroppedPaths without
-// caring about the exact root a particular drop resolves to: just the
-// naive fallback each of those functions itself would use if the real
-// (Rust) `scripts/source`/`source/scripts`-pair lookup found nothing. A
-// test asserting a specific resolved root (e.g. one where the achlist
-// doesn't live in the project root itself) still needs its own explicit
-// `find_project_root`/`find_psc_project_root_for_path` handler.
+// projectDirForPscPath/loadProjectInfo), for tests that drive
+// handleDroppedPaths without caring about the exact root a particular drop
+// resolves to: just the naive fallback each of those functions itself would
+// use if the real (Rust) `scripts/source`/`source/scripts`-pair lookup found
+// nothing. A test asserting a specific resolved root (e.g. one where the
+// achlist doesn't live in the project root itself) still needs its own
+// explicit `find_project_root`/`find_psc_project_root_for_path` handler.
 function defaultProjectRootHandler(command: string): ((args: unknown) => unknown) | undefined {
   switch (command) {
     case "load_lookup_script_roots":
       return () => [];
+    case "load_project_info":
+      return () => ({ detected_script_roots: [], used_configuration_file: null });
     case "find_project_root":
       return (args) => (args as { fallback: string }).fallback;
     case "find_psc_project_root_for_path":
