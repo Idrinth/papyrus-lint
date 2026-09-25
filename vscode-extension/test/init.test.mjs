@@ -114,16 +114,53 @@ describe('papyrusLint.initializeConfig', () => {
     assert.equal(harness.execCalls[0].options.cwd, '/two');
   });
 
-  it('initializes a right-clicked explorer folder directly, without prompting for one', async () => {
+  it('initializes the workspace root when a nested explorer folder is right-clicked', async () => {
+    const harness = createHarness({
+      workspaceFolders: [{ uri: uri('/project') }],
+      quickPickResult: { label: 'strict (default)', preset: '' },
+      result: { error: null, stdout: 'Created /project/papyrus-lint.yaml\n', stderr: '' },
+    });
+
+    await harness.commands.get('papyrusLint.initializeConfig')(uri('/project/Data/Scripts/Source'));
+
+    assert.equal(harness.execCalls[0].options.cwd, '/project');
+  });
+
+  it('initializes the workspace root when a file at that root is the command resource', async () => {
+    const harness = createHarness({
+      workspaceFolders: [{ uri: uri('/project') }],
+      quickPickResult: { label: 'strict (default)', preset: '' },
+      result: { error: null, stdout: 'Created /project/papyrus-lint.yaml\n', stderr: '' },
+    });
+
+    await harness.commands.get('papyrusLint.initializeConfig')(uri('/project/Example.psc'));
+
+    assert.equal(harness.execCalls[0].options.cwd, '/project');
+  });
+
+  it('does not write outside the workspace when the command resource is not inside any folder', async () => {
+    const harness = createHarness({
+      workspaceFolders: [{ uri: uri('/project') }],
+      quickPickResult: { label: 'strict (default)', preset: '' },
+      result: { error: null, stdout: 'Created /project/papyrus-lint.yaml\n', stderr: '' },
+    });
+
+    await harness.commands.get('papyrusLint.initializeConfig')(uri('/elsewhere'));
+
+    assert.equal(harness.execCalls[0].options.cwd, '/project');
+  });
+
+  it('picks a workspace folder when a resource outside every folder is used in a multi-root workspace', async () => {
     const harness = createHarness({
       workspaceFolders: [{ uri: uri('/one') }, { uri: uri('/two') }],
+      workspaceFolderPickResult: { uri: uri('/one') },
       quickPickResult: { label: 'strict (default)', preset: '' },
-      result: { error: null, stdout: 'Created /three/papyrus-lint.yaml\n', stderr: '' },
+      result: { error: null, stdout: 'Created /one/papyrus-lint.yaml\n', stderr: '' },
     });
 
     await harness.commands.get('papyrusLint.initializeConfig')(uri('/three'));
 
-    assert.equal(harness.execCalls[0].options.cwd, '/three');
+    assert.equal(harness.execCalls[0].options.cwd, '/one');
   });
 
   it('shows an error and does nothing when no folder is open or picked', async () => {
