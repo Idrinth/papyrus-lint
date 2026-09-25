@@ -221,6 +221,34 @@ fn parses_lock_guard_around_nested_statements() {
 }
 
 #[test]
+fn parses_parenthesized_lock_guard_names() {
+    let script = parse_with_mode(
+        "ScriptName GuardScript\n\n\
+         Function GuardedWork()\n\
+             LockGuard(SpaceSceneGuard)\n\
+             EndLockGuard\n\
+             TryLockGuard(TaskMasterRestoreGuard)\n\
+             EndTryLockGuard\n\
+         EndFunction\n",
+        GameEdition::Starfield,
+    )
+    .expect("parenthesized guard names should parse in Starfield mode");
+
+    let body = &script.functions[0].body;
+    let Stmt::LockGuard { kind, name, .. } = &body[0] else {
+        panic!("expected a LockGuard, got {:?}", body[0]);
+    };
+    assert_eq!(*kind, LockKind::Lock);
+    assert_eq!(name, "SpaceSceneGuard");
+
+    let Stmt::LockGuard { kind, name, .. } = &body[1] else {
+        panic!("expected a TryLockGuard, got {:?}", body[1]);
+    };
+    assert_eq!(*kind, LockKind::Try);
+    assert_eq!(name, "TaskMasterRestoreGuard");
+}
+
+#[test]
 fn parses_try_lock_guard_with_and_without_else() {
     let script = parse_with_mode(
         "ScriptName SQ_ParentScript\n\n\
