@@ -138,6 +138,10 @@ fn collect_var_decls(body: &[Stmt]) -> Vec<&VariableDecl> {
                 decls.extend(collect_var_decls(else_body));
             }
             Stmt::While { body, .. } => decls.extend(collect_var_decls(body)),
+            Stmt::LockGuard { body, else_body, .. } => {
+                decls.extend(collect_var_decls(body));
+                decls.extend(collect_var_decls(else_body));
+            }
             _ => {}
         }
     }
@@ -205,6 +209,10 @@ fn walk_stmt(stmt: &Stmt, usage: &mut HashMap<String, Usage>) {
         } => {
             walk_expr_as_read(condition, usage);
             walk_body(body, usage);
+        }
+        Stmt::LockGuard { body, else_body, .. } => {
+            walk_body(body, usage);
+            walk_body(else_body, usage);
         }
     }
 }

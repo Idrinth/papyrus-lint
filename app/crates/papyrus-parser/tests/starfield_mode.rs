@@ -4,7 +4,7 @@
 //! `; @protected`. Fallout 4 constructs that Starfield inherited are
 //! covered in `fallout4_mode.rs`; this file is the Starfield-only delta.
 
-use papyrus_parser::ast::AccessLevel;
+use papyrus_parser::ast::{AccessLevel, LockKind, Stmt};
 use papyrus_parser::parser::GameEdition;
 use papyrus_parser::{parse_with_mode, PapyrusError};
 
@@ -134,9 +134,12 @@ EndFunction
     )
     .expect("RequiresGuard should parse on Starfield declarations");
 
-    assert_eq!(script.variables[0].requires_guard, None);
+    assert_eq!(script.guards.len(), 1);
+    assert_eq!(script.guards[0].name, "CoraGuardCount");
+    assert_eq!(script.variables.len(), 1);
+    assert_eq!(script.variables[0].name, "CoraStartingBookCount");
     assert_eq!(
-        script.variables[1].requires_guard.as_deref(),
+        script.variables[0].requires_guard.as_deref(),
         Some("CoraGuardCount")
     );
     assert_eq!(
@@ -176,6 +179,96 @@ fn game_edition_helpers_describe_the_dialect_stack() {
     assert!(!GameEdition::Fallout4.has_starfield_dialect());
     assert!(GameEdition::Starfield.has_fallout4_dialect());
     assert!(GameEdition::Starfield.has_starfield_dialect());
+}
+
+#[test]
+fn parses_lock_guard_around_nested_statements() {
+    let script = parse_with_mode(
+        "ScriptName ATMScript\n\n\
+         Function StealFromATM()\n\
+             tempStealCount += 1\n\
+             LockGuard stealGuard\n\
+                 if GetState() == \"locked\"\n\
+                     Return\n\
+                 endif\n\
+             EndLockGuard\n\
+         EndFunction\n",
+        GameEdition::Starfield,
+    )
+    .expect("LockGuard should parse in Starfield mode");
+
+    let Stmt::LockGuard {
+        kind,
+        name,
+        body,
+        else_body,
+        else_line,
+        line,
+        ..
+    } = &script.functions[0].body[1]
+    else {
+        panic!(
+            "expected a LockGuard statement, got {:?}",
+            script.functions[0].body
+        );
+    };
+    assert_eq!(*kind, LockKind::Lock);
+    assert_eq!(name, "stealGuard");
+    assert_eq!(*line, 5);
+    assert!(else_body.is_empty());
+    assert!(else_line.is_none());
+    assert!(matches!(body[0], Stmt::If { .. }));
+}
+
+#[test]
+fn parses_try_lock_guard_with_and_without_else() {
+    let script = parse_with_mode(
+        "ScriptName SQ_ParentScript\n\n\
+         Function HandleCriticalHit()\n\
+             TryLockGuard ShipCriticalHitGuard\n\
+                 Debug.Trace(self)\n\
+             ElseTryLockGuard\n\
+                 Return\n\
+             endTryLockGuard\n\
+             trylockguard TaskMasterRestoreGuard\n\
+             EndTryLockGuard\n\
+         EndFunction\n",
+        GameEdition::Starfield,
+    )
+    .expect("TryLockGuard should parse in Starfield mode");
+
+    let body = &script.functions[0].body;
+    let Stmt::LockGuard {
+        kind,
+        name,
+        body: locked,
+        else_body,
+        else_line,
+        ..
+    } = &body[0]
+    else {
+        panic!("expected a TryLockGuard, got {:?}", body[0]);
+    };
+    assert_eq!(*kind, LockKind::Try);
+    assert_eq!(name, "ShipCriticalHitGuard");
+    assert!(matches!(locked[0], Stmt::Expr { .. }));
+    assert!(matches!(else_body[0], Stmt::Return { .. }));
+    assert_eq!(*else_line, Some(6));
+
+    let Stmt::LockGuard {
+        kind,
+        name,
+        body: locked,
+        else_line,
+        ..
+    } = &body[1]
+    else {
+        panic!("expected a bare TryLockGuard, got {:?}", body[1]);
+    };
+    assert_eq!(*kind, LockKind::Try);
+    assert_eq!(name, "TaskMasterRestoreGuard");
+    assert!(locked.is_empty());
+    assert!(else_line.is_none());
 }
 
 #[test]

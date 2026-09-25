@@ -206,6 +206,16 @@ pub fn walk_stmt<V: Visitor + ?Sized>(visitor: &mut V, stmt: &Stmt) {
                 visitor.visit_stmt(stmt);
             }
         }
+        Stmt::LockGuard {
+            body, else_body, ..
+        } => {
+            for stmt in body {
+                visitor.visit_stmt(stmt);
+            }
+            for stmt in else_body {
+                visitor.visit_stmt(stmt);
+            }
+        }
     }
 }
 

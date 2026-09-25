@@ -188,6 +188,12 @@ fn walk_body(
                 // false, since this language has no `break`/`continue`.
                 narrow_for_falsy(condition, checked);
             }
+            Stmt::LockGuard { body, else_body, .. } => {
+                let mut locked = checked.clone();
+                walk_body(body, object_arrays, &mut locked, diagnostics);
+                let mut alternate = checked.clone();
+                walk_body(else_body, object_arrays, &mut alternate, diagnostics);
+            }
         }
     }
 }

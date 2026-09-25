@@ -90,6 +90,10 @@ fn check_body(body: &[Stmt], diagnostics: &mut Vec<Diagnostic>) {
                 check_while(body, diagnostics);
                 check_body(body, diagnostics);
             }
+            Stmt::LockGuard { body, else_body, .. } => {
+                check_body(body, diagnostics);
+                check_body(else_body, diagnostics);
+            }
             Stmt::If {
                 branches,
                 else_body,
@@ -174,6 +178,10 @@ fn collect_setvalue_calls<'a>(body: &'a [Stmt], out: &mut Vec<ValueWrite<'a>>) {
                 collect_setvalue_calls(else_body, out);
             }
             Stmt::While { .. } => {}
+            Stmt::LockGuard { body, else_body, .. } => {
+                collect_setvalue_calls(body, out);
+                collect_setvalue_calls(else_body, out);
+            }
             Stmt::VarDecl(_) | Stmt::Assign { .. } | Stmt::Return { .. } => {}
         }
     }
@@ -229,6 +237,9 @@ fn stmt_contains_wait_call(stmt: &Stmt) -> bool {
             }) || contains_wait_call(else_body)
         }
         Stmt::While { condition, .. } => expr_contains_wait_call(condition),
+        Stmt::LockGuard { body, else_body, .. } => {
+            contains_wait_call(body) || contains_wait_call(else_body)
+        }
     }
 }
 

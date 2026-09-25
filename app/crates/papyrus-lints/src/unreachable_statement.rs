@@ -71,6 +71,10 @@ fn check_body(body: &[Stmt], store: &mut Store) {
                 check_body(else_body, store);
             }
             Stmt::While { body, .. } => check_body(body, store),
+            Stmt::LockGuard { body, else_body, .. } => {
+                check_body(body, store);
+                check_body(else_body, store);
+            }
             _ => {}
         }
     }
@@ -84,6 +88,7 @@ fn stmt_line(stmt: &Stmt) -> usize {
         Stmt::Return { line, .. } => *line,
         Stmt::If { line, .. } => *line,
         Stmt::While { line, .. } => *line,
+        Stmt::LockGuard { line, .. } => *line,
     }
 }
 

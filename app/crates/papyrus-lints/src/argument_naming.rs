@@ -352,6 +352,10 @@ fn collect_declared_locals(body: &[Stmt], names: &mut HashSet<String>) {
                 collect_declared_locals(else_body, names);
             }
             Stmt::While { body, .. } => collect_declared_locals(body, names),
+            Stmt::LockGuard { body, else_body, .. } => {
+                collect_declared_locals(body, names);
+                collect_declared_locals(else_body, names);
+            }
             _ => {}
         }
     }

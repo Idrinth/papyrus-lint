@@ -323,7 +323,8 @@ fn stmt_line(stmt: &Stmt) -> usize {
         | Stmt::Expr { line, .. }
         | Stmt::Return { line, .. }
         | Stmt::If { line, .. }
-        | Stmt::While { line, .. } => *line,
+        | Stmt::While { line, .. }
+        | Stmt::LockGuard { line, .. } => *line,
     }
 }
 

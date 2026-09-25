@@ -260,6 +260,29 @@ pub enum Stmt {
         line: usize,
         col: usize,
     },
+    /// Starfield only: `LockGuard` / `TryLockGuard` .. `EndLockGuard` /
+    /// `EndTryLockGuard`. `else_line` is set only when a `TryLockGuard`
+    /// has an `ElseTryLockGuard` clause. An absent clause and an empty
+    /// one both leave `else_body` empty.
+    LockGuard {
+        kind: LockKind,
+        name: String,
+        body: Vec<Stmt>,
+        else_body: Vec<Stmt>,
+        else_line: Option<usize>,
+        else_col: Option<usize>,
+        line: usize,
+        col: usize,
+    },
+}
+
+/// Which Starfield guard block a [`Stmt::LockGuard`] came from.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum LockKind {
+    /// `LockGuard` .. `EndLockGuard`. The body always runs once the lock is held.
+    Lock,
+    /// `TryLockGuard` .. `EndTryLockGuard`. The body runs only if the lock was acquired.
+    Try,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]

@@ -52,7 +52,8 @@ impl GameEdition {
     }
 
     /// Whether this edition includes Starfield-only constructs such as
-    /// `Guard` declarations and header access flags written as identifiers.
+    /// header access flags and `LockGuard` / `TryLockGuard` blocks as well as
+    /// `Guard` declarations.
     pub fn has_starfield_dialect(self) -> bool {
         matches!(self, Self::Starfield)
     }

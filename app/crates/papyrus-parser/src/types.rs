@@ -103,6 +103,12 @@ fn collect_locals(body: &[Stmt], scope: &mut HashMap<String, TypeName>) {
                 collect_locals(else_body, scope);
             }
             Stmt::While { body, .. } => collect_locals(body, scope),
+            Stmt::LockGuard {
+                body, else_body, ..
+            } => {
+                collect_locals(body, scope);
+                collect_locals(else_body, scope);
+            }
             Stmt::Assign { .. } | Stmt::Expr { .. } | Stmt::Return { .. } => {}
         }
     }

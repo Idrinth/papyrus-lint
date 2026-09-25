@@ -101,6 +101,12 @@ fn stmt_complexity(stmt: &Stmt) -> usize {
         Stmt::While {
             condition, body, ..
         } => 1 + expr_complexity(condition) + body_complexity(body),
+        Stmt::LockGuard {
+            kind, body, else_body, ..
+        } => {
+            let decision = matches!(kind, papyrus_parser::ast::LockKind::Try) as usize;
+            decision + body_complexity(body) + body_complexity(else_body)
+        }
     }
 }
 

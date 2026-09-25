@@ -141,6 +141,10 @@ fn collect_edits(
                 collect_edits(else_body, tokens, line_starts, source, edits);
             }
             Stmt::While { body, .. } => collect_edits(body, tokens, line_starts, source, edits),
+            Stmt::LockGuard { body, else_body, .. } => {
+                collect_edits(body, tokens, line_starts, source, edits);
+                collect_edits(else_body, tokens, line_starts, source, edits);
+            }
             Stmt::Expr { value, .. } => {
                 if let Some(edit) = build_edit(value, tokens, line_starts, source) {
                     edits.push(edit);

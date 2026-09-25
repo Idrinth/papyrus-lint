@@ -151,6 +151,10 @@ fn collect_stmt_lines(body: &[papyrus_parser::ast::Stmt], lines: &mut std::colle
                 collect_stmt_lines(else_body, lines);
             }
             Stmt::While { body, .. } => collect_stmt_lines(body, lines),
+            Stmt::LockGuard { body, else_body, .. } => {
+                collect_stmt_lines(body, lines);
+                collect_stmt_lines(else_body, lines);
+            }
             Stmt::VarDecl(_) | Stmt::Expr { .. } | Stmt::Return { .. } | Stmt::Assign { .. } => {}
         }
     }

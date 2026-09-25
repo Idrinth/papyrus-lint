@@ -259,6 +259,18 @@ fn collect_stmt_names(
                 collect_stmt_names(stmt, style, protected, renames);
             }
         }
+        Stmt::LockGuard {
+            name,
+            line,
+            body,
+            else_body,
+            ..
+        } => {
+            collect_name(name, *line, style, protected, renames);
+            for stmt in body.iter().chain(else_body) {
+                collect_stmt_names(stmt, style, protected, renames);
+            }
+        }
         Stmt::Assign { .. } | Stmt::Expr { .. } | Stmt::Return { .. } => {}
     }
 }
