@@ -55416,4 +55416,4 @@ Source/Scripts/wispActorScript.psc:176:1: [unchecked-cast] [warning] cast to 'ac
 Source/Scripts/wispActorScript.psc:177:1: [unchecked-cast] [warning] cast to 'actor' may be None; accessing '.evaluatePackage' on it without a None check first will crash the script (https://papyrus-lint.idrinth.de/rules.html#rule-unchecked-cast)
 Source/Scripts/wispCoreScript.psc:5:1: [argument-naming] [warning] Parameter 1 of 'onActivate' is named 'actronaut' but the inherited declaration on 'ObjectReference' names it 'akActionRef' (https://papyrus-lint.idrinth.de/rules.html#rule-argument-naming)
 Source/Scripts/wispCoreScript.psc:7:1: [unchecked-cast] [warning] cast to 'actor' may be None; accessing '.addItem' on it without a None check first will crash the script (https://papyrus-lint.idrinth.de/rules.html#rule-unchecked-cast)
-PapyrusLinterCLI: 55408 problem(s) found in 8571 of 14301 script(s).
+PapyrusLinterCLI: 55418 problem(s) found in 8571 of 14301 script(s).
