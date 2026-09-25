@@ -91,10 +91,10 @@ Papyrus Lint is automatically tested with
 [public coverage reports](https://papyrus-lint.idrinth.de/coverage.html)
 against a combination of real life examples and synthetic tests.
 
-Papyrus Lint supports both Skyrim Special Edition and Fallout 4, including
-each game's Papyrus dialect and game-specific runtime APIs. It is also
-regularly run against the Skyrim base game scripts and different mods whose
-authors permitted the usage explicitly.
+Papyrus Lint supports both Skyrim Special Edition, Fallout 4 and Starfield,
+including each game's Papyrus dialect and game-specific runtime APIs. It is
+also regularly run against the base game and extender scripts and different
+mods whose authors permitted the usage explicitly.
 
 ## Implemented Lints
 
@@ -142,12 +142,12 @@ preferences.
 The formatting lints/fixes (trailing whitespace, space after comma,
 semicolon, indentation, chain whitespace, exclamation mark spacing,
 operator spacing, and assignment operator spacing) never flag or change a
-line inside a
-CreationKit-generated `;BEGIN FRAGMENT CODE`/`;END FRAGMENT CODE` block,
-except the actual script code between a `;BEGIN CODE`/`;END CODE` pair
-within it. Reformatting the rest of that block (fragment headers, the
-generated function signature, `EndFunction`, or the markers themselves)
-would make CreationKit fail to recognize the fragment.
+line inside a CreationKit-generated
+`;BEGIN FRAGMENT CODE`/`;END FRAGMENT CODE` block, except the actual script
+code between a `;BEGIN CODE`/`;END CODE` pair within it. Reformatting the
+rest of that block (fragment headers, the generated function signature,
+`EndFunction`, or the markers themselves) would make CreationKit fail to
+recognize the fragment.
 
 ![Papyrus Lint Mass Fix](shared/images/papyrus-lint-massfix.png)
 
