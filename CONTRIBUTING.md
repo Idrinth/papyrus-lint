@@ -12,11 +12,12 @@ coding agents so contributors only have one project tree to keep current.
 
 ## Development setup
 
-How to install, test, and run each crate, the desktop app, and the editor
-plugins lives in [`docs/agent/development.md`](docs/agent/development.md)
-(including generating `shared/rules.json` after clone, and Tauri's
-platform prerequisites for a desktop build). Do not recopy that command
-list here.
+How to install and run the Tauri app and the editor plugins lives in
+[`docs/agent/development.md`](docs/agent/development.md) (including
+generating `shared/rules.json` after clone, and Tauri's platform
+prerequisites for a desktop build). The desktop UI's commands live in
+[`app/src/README.md`](app/src/README.md). Each crate's own test command
+lives in that crate's `README.md`. Do not recopy them here.
 
 ## Before opening a pull request
 

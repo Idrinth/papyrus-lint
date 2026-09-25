@@ -1,127 +1,45 @@
 <!-- Extracted from AGENTS.md so the always-on agent index stays small. -->
 # Current state
 
-This file is a **map**, not a second implementation. Behavior lives in
-the code and tests cited below. Do not paste feature walkthroughs back
-here; add a row or a one-line invariant instead.
+This file is a **map** of contracts that cross a crate or a UI surface.
+Crate-local behavior, and how to test that crate, live in its `README.md`
+under `app/crates/` (desktop shell: `app/src-tauri/README.md`, UI:
+`app/src/README.md`). Do not paste feature walkthroughs back here; add a
+row or a one-line invariant instead.
 
 Folder layout is in [`docs/project-structure.md`](../project-structure.md).
 Rule metadata is generated from [`shared/rules/`](../../shared/rules)
-(see `AGENTS.md`). How to run tests is in
+(see `AGENTS.md`). How to run the Tauri app and editor plugins is in
 [`development.md`](development.md).
 
-Latest published release is `v2.1.0`. Work on `the-one` after that includes
-the `papyrus-lint-lsp` stdio server (`PapyrusLinterLsp`): diagnostics on
-open documents, `textDocument/codeAction` quick fixes, and
-`papyrusLint.fixFile` applying every automatic fix via
-`workspace/applyEdit`. VS Code and Sublime still drive analysis through
-`PapyrusLinterCLI`; they do not host the LSP process yet.
+Latest published release is `v2.1.0`. VS Code and Sublime still drive
+analysis through `PapyrusLinterCLI`; they do not host the LSP process.
+The server itself is
+[`papyrus-lint-lsp`](../../app/crates/papyrus-lint-lsp/README.md).
 
 ## Invariants
 
-These are the easy-to-miss contracts. If a change would violate one,
-update the cited code *and* this list.
+If a change would violate one, update the cited code *and* this list.
+Anything that belongs to one crate, or to the desktop UI, belongs in that
+README.
 
-- `check`/`check_with` do not parse or tokenize themselves.
-  `registry::collect_diagnostics` tokenizes and parses once and passes
-  `Option<&[Token]>` / `Option<&Script>`. `repair()` re-parses after each
-  fix. Exception: standalone `check_argument_types` still parses.
-- Visitor rules (`visitor()` → `LintVisitor::Ast` or `Tokens`) walk once
-  per pass. `none` rules run through `check` only.
-- Reuse `const_eval` and `type_flow`; do not copy them into a new rule.
-- Cross-script semantics go through `ExternalSignatures`
-  (`external_signatures.rs`). Side-effect flags are computed in
-  `papyrus-lint-core`, not re-derived in a lint.
-- `conflicting-script-versions` owns its diagnostic policy in
-  `papyrus-lints`; filesystem-aware callers provide a `ProjectFile`
-  snapshot of the same-named copies, not every script in the project.
-  `script_locator` reads each digest from the standalone
-  `papyrus-collision-cache` crate (`{game}-{sha256(filename)}.iplcc` next
-  to the AST cache) when the stored mtime still matches, so the `.psc`
-  itself is not opened just to hash it. The parse phase records hashes from
-  source already in memory and flushes dirty collision files at parse-end.
-  A name that appears only once is not hashed. The desktop app reuses
-  `cached_script_index` across per-file commands while the source
-  directories' mtimes are unchanged.
-- `script-filename-mismatch` owns its diagnostic policy in `papyrus-lints`.
-  Callers pass the `.psc` file stem and the lexer tokens (`ScriptName` plus
-  its name segments). It is not dispatched from `collect_diagnostics`.
-- `lint` / `repair` / `repair_filtered*` have no resolver.
-  `unused-import` is a no-op there. Callers with a project use the
-  `*_with_external_arguments` siblings. Preview repair is resolver-less
-  on purpose. Line-count-shifting fixes (`unused-import`,
-  `property-sorting`) are rejected by per-line fix.
-- Project lint entry points load `.papyrus-lint-ignore` from the resolved
-  project root and suppress exact file/line/rule matches after collecting all
-  lint, project, and compiler diagnostics. Relative file paths start at that
-  root; repairs remain unaffected, matching in-source disable comments.
-- `--blob` is in-memory only: no project root, no `FunctionTable`, no
-  fix. Editors use it for unsaved buffers; saved files use the full CLI.
-- `doc_url` is built in `papyrus-lint-output`. Do not invent a second
-  URL scheme. AI export schemas are versioned under `schema/`; old
-  versions stay frozen.
-- `configuration/papyrus-lint.default.yaml` must match `init` output.
-  Drift is a CI failure in `papyrus-lint-config`.
-- Filesystem Tauri commands that parse, lint, repair, or compile are
-  `#[tauri::command(async)]`. Only instant in-memory commands stay sync.
-- On-disk AST cache filenames are `{game}-{path-md5}.iplatc`, namespaced
-  by target game. Entries are keyed by content MD5 + mtime +
-  `MIN_COMPATIBLE_VERSION`. Bump that floor only when the binary entry
-  layout or embedded AST changes. The files are an internal cache, not a
-  published interchange format.
-- A `.ppj`'s own `<Import>` entries (`ppj::PpjProject::imports`) feed
-  `additional_script_roots` for that run/`init` — never
-  `lookup_script_roots`. `ppj::parse_ppj` normalizes `\` to `/` before
-  resolving a path (a ppj is Windows-authored) but never decomposes an
-  already-absolute Windows/UNC path into components; the CLI's `.ppj`
-  handling lives in `run_scan.rs`/`doctor/checks.rs`/`init.rs`, not
-  `papyrus-lint-core`, which only parses the file. The GUI's own `.ppj`
-  drop mode (`parse_ppj_file` in `app/src-tauri/src/files.rs`) mirrors
-  this: its `<Import>` entries land in `currentPpjImportRoots`
-  (`project-state.ts`), folded into `effectiveScriptRoots()` the same way
-  `currentAchlistScriptRoots` is.
-- The desktop Settings tab and first-run picker, and the VS Code / Sublime
-  `init` prompts, write `game` as `skyrim` or `fallout4`. Starfield stays
-  CLI-only (`init --game starfield`) until the linter supports it.
-- Vanilla engine types without an on-disk `.psc` resolve from the bundled
-  AST cache by `ScriptName` (`FunctionTable::ensure_loaded` /
-  `script_exists`). A project or lookup-root file of the same name still
-  wins.
-- The CLI parse phase and desktop `preload_project_scripts` close over
-  type names in each parsed AST before linting
-  (`FunctionTable::parse_type_closure`). Referenced `.psc` files are
-  parsed and preloaded for analysis only — they are not lint targets.
-  Bundled names are loaded from the blob, and names that resolve nowhere
-  are cached unresolved so lint does not retry them. `SharedFunctionTable`
-  takes its write lock only for a name that closure never saw.
-- `FunctionTable`'s event index answers `has_event` from the set of event
-  names on a fully resolved `Extends` chain (own events plus ancestors,
-  including state-only events). A same-named function does not hide an
-  event. The index is not used for an incomplete chain. It is dropped when
-  a chained script's mtime changes, or when a live search directory's mtime
-  changes because a script appeared or disappeared.
-- The LSP server is a separate stdio binary. It lints the in-memory
-  document snapshot (not a re-read from disk) and applies repairs through
-  LSP edits. Do not route those paths through Tauri or the CLI process.
+- VS Code and Sublime `init` prompts write `game` as `skyrim` or
+  `fallout4`. Starfield stays CLI-only (`init --game starfield`). The
+  desktop picker is
+  [`app/src/README.md`](../../app/src/README.md).
+- A `.ppj`'s `<Import>` entries are `additional_script_roots`, never
+  `lookup_script_roots`. Parsing is the
+  [`papyrus-lint-core`](../../app/crates/papyrus-lint-core/README.md)
+  README; the GUI drop state is
+  [`app/src/README.md`](../../app/src/README.md).
 
 ## Where to read
 
 | If you are changing… | Open |
 | --- | --- |
-| Shared game/constants types | `app/crates/papyrus-lint-globals/src/` |
-| Parser / AST / lexer / in-memory memo | `app/crates/papyrus-parser/src/` (`ast.rs`, `parser.rs`, `lexer.rs`, `cache.rs`, `types.rs`) |
-| Disk AST/token cache, bundled vanilla scripts | `app/crates/papyrus-ast-cache/src/` |
-| Script-collision content-hash cache | `app/crates/papyrus-collision-cache/src/` |
-| Rule dispatch, visitors, tags, disable comments | `app/crates/papyrus-lints/src/` (`lib.rs`, generated `registry`/`tags`/`config`, `external_signatures.rs`, `const_eval.rs`) |
-| A single rule | `app/crates/papyrus-lints/src/<rule>.rs` + `shared/rules/<id>.json` |
-| Project root, achlist/ppj, script index, FunctionTable, compile/stale `.pex` | `app/crates/papyrus-lint-core/src/` |
-| `papyrus-lint.yaml`, presets, compiler/game-install detection | `app/crates/papyrus-lint-config/src/` |
-| Live / blob buffer lint | `app/crates/papyrus-lint-live/src/` |
-| CLI (`run`, `run_blob`, `fix`, `doctor`, `--tag`) | `app/crates/papyrus-lint-cli/src/` |
-| LSP stdio server | `app/crates/papyrus-lint-lsp/src/` (`server.rs`, `documents.rs`, `diagnostics.rs`, `code_actions.rs`, `commands.rs`) |
-| Text / JSON / AI report formatting | `app/crates/papyrus-lint-output/` and `schema/` |
-| Tauri commands | `app/src-tauri/src/` (`files.rs`, `lint.rs`, `repair.rs`, `export.rs`, `lint_config.rs`) |
-| Desktop UI (drop, results, live edit, watch, presets) | `app/src/` (`drop.ts`, `results-filter.ts`, `live-edit.ts`, `watch.ts`, `presets.ts`) |
+| A reusable crate | That crate's `README.md` under `app/crates/` |
+| Tauri commands | [`app/src-tauri/README.md`](../../app/src-tauri/README.md) |
+| Desktop UI | [`app/src/README.md`](../../app/src/README.md) |
 | VS Code CLI-backed lint / ignore / actions | `vscode-extension/src/` (`liveLint.ts`, `linter.ts`, `ignore.ts`, `codeActions.ts`, `suppressions.ts`) |
 | Sublime unsaved-buffer lint | `SublimeLinter-contrib-papyrus-lint/linter.py` |
 
@@ -143,6 +61,8 @@ the other column before calling the work done.
 
 ## Do not put here
 
+- Crate-local or desktop-UI invariants and their commands — that
+  directory's `README.md`.
 - Per-rule descriptions — `shared/rules/<id>.json` and `rules.html`.
 - CLI flag lists and config keys — `docs/cli.md`, `docs/configuration.md`.
 - CI, Pages, and release steps — comments in the related workflow.
