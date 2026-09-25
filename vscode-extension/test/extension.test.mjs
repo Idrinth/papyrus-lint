@@ -35,7 +35,7 @@ describe('extension activation', () => {
     await new Promise((resolve) => setImmediate(resolve));
 
     assert.equal(harness.execCalls.length, 1);
-    assert.deepEqual(harness.execCalls[0].args, ['--json', '/project/AlreadyOpen.psc']);
+    assert.deepEqual(harness.execCalls[0].args, ['lint', '--format', 'json', '/project/AlreadyOpen.psc']);
   });
 
   it('only automatically lints clean Papyrus file documents and clears them on close', async () => {
