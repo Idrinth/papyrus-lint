@@ -32,8 +32,18 @@ fn parse_and_skyrim_mode_agree_on_a_plain_script() {
     assert!(!via_parse.functions[0].is_beta_only);
     assert!(via_parse.structs.is_empty());
     assert!(via_parse.groups.is_empty());
+    assert!(via_parse.custom_events.is_empty());
     assert!(via_mode.structs.is_empty());
     assert!(via_mode.groups.is_empty());
+    assert!(via_mode.custom_events.is_empty());
+}
+
+#[test]
+fn rejects_custom_event_declarations() {
+    assert_skyrim_rejects(
+        "ScriptName Example\nCustomEvent OnReady\n",
+        "CustomEvent is a Fallout 4 and later declaration",
+    );
 }
 
 #[test]

@@ -53,6 +53,7 @@ impl Parser {
             imports: Vec::new(),
             properties: Vec::new(),
             variables: Vec::new(),
+            custom_events: Vec::new(),
             functions: Vec::new(),
             states: Vec::new(),
             structs: Vec::new(),
@@ -136,6 +137,15 @@ impl Parser {
 
         if self.at_keyword(Keyword::Event) {
             script.functions.push(self.parse_function(None, true)?);
+            return Ok(());
+        }
+
+        if self.mode == GameEdition::Fallout4 && self.at_keyword(Keyword::CustomEvent) {
+            let line = self.current().line;
+            self.advance();
+            let name = self.expect_identifier()?;
+            self.expect_terminator()?;
+            script.custom_events.push(CustomEventDecl { name, line });
             return Ok(());
         }
 

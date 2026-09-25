@@ -27,6 +27,8 @@ pub enum Keyword {
     EndFunction,
     Event,
     EndEvent,
+    /// Fallout 4 and later: declares an event that this script can send.
+    CustomEvent,
     Property,
     EndProperty,
     Auto,
@@ -83,6 +85,7 @@ impl Keyword {
             "endfunction" => EndFunction,
             "event" => Event,
             "endevent" => EndEvent,
+            "customevent" => CustomEvent,
             "property" => Property,
             "endproperty" => EndProperty,
             "auto" => Auto,

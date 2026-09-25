@@ -14,6 +14,7 @@ fn maps_every_keyword_spelling() {
         ("endfunction", EndFunction),
         ("event", Event),
         ("endevent", EndEvent),
+        ("customevent", CustomEvent),
         ("property", Property),
         ("endproperty", EndProperty),
         ("auto", Auto),
