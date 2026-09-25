@@ -27,6 +27,11 @@ LIST_ITEM_RE = re.compile(r"^-\s+(.*)$")
 INLINE_LINK_RE = re.compile(r"\[([^\]]+)\]\(([^)]+)\)")
 INLINE_CODE_RE = re.compile(r"`([^`]+)`")
 INLINE_BOLD_RE = re.compile(r"\*\*([^*]+)\*\*")
+MARKDOWN_LINK_TEXT_RE = re.compile(r"!?\[([^\]]*)\]\([^)]*\)")
+HTML_TAG_RE = re.compile(r"<[^>]+>")
+GITHUB_SLUG_PUNCTUATION_RE = re.compile(
+    r"[\u2000-\u206f\u2e00-\u2e7f\\'!\"#$%&()*+,./:;<=>?@[\]^`{|}~]"
+)
 
 
 def extract_section(lines: list[str], heading_text: str, level: int) -> list[str]:
@@ -86,6 +91,38 @@ def first_code_block(section_lines: list[str]) -> str:
     return "\n".join(section_lines[start + 1 : end])
 
 
+def github_heading_id(heading: str) -> str:
+    """Return the anchor GitHub generates for a Markdown heading.
+
+    Matches `.github/scripts/markdown_link_lint.py` so in-page fragments
+    that work on GitHub keep working on the published Pages site.
+    """
+    heading = MARKDOWN_LINK_TEXT_RE.sub(r"\1", heading)
+    heading = HTML_TAG_RE.sub("", heading)
+    heading = html.unescape(heading).strip().lower()
+    return re.sub(r"\s", "-", GITHUB_SLUG_PUNCTUATION_RE.sub("", heading))
+
+
+def unique_github_heading_id(
+    heading: str, occurrences: dict[str, int], assigned: set[str]
+) -> str:
+    """Disambiguate a GitHub heading slug the same way GitHub does.
+
+    The first heading keeps the bare slug; later collisions append `-1`,
+    `-2`, ... skipping any candidate that is already an assigned id (so a
+    later `Name` after both `Name` and `Name-1` becomes `name-2`).
+    """
+    slug = github_heading_id(heading)
+    duplicate = occurrences.get(slug, 0)
+    candidate = slug if duplicate == 0 else f"{slug}-{duplicate}"
+    while candidate in assigned:
+        duplicate += 1
+        candidate = f"{slug}-{duplicate}"
+    occurrences[slug] = duplicate + 1
+    assigned.add(candidate)
+    return candidate
+
+
 def strip_markdown_inline(text: str) -> str:
     """Reduces a small subset of inline Markdown to plain text, for use
     where HTML markup isn't allowed (an HTML attribute value)."""
@@ -127,6 +164,8 @@ def markdown_to_html(lines: list[str], link_rewrite=None) -> str:
             out.append(f"<p>{render_inline(' '.join(para), link_rewrite)}</p>")
             para.clear()
 
+    occurrences: dict[str, int] = {}
+    assigned_ids: set[str] = set()
     i = 0
     while i < len(lines):
         line = lines[i]
@@ -150,7 +189,12 @@ def markdown_to_html(lines: list[str], link_rewrite=None) -> str:
         if heading:
             flush_paragraph()
             level = len(heading.group(1))
-            out.append(f"<h{level}>{render_inline(heading.group(2), link_rewrite)}</h{level}>")
+            heading_text = heading.group(2)
+            heading_id = unique_github_heading_id(heading_text, occurrences, assigned_ids)
+            id_attr = f' id="{html.escape(heading_id, quote=True)}"' if heading_id else ""
+            out.append(
+                f"<h{level}{id_attr}>{render_inline(heading_text, link_rewrite)}</h{level}>"
+            )
             i += 1
             continue
         list_item = LIST_ITEM_RE.match(stripped)

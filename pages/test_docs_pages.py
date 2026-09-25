@@ -218,7 +218,7 @@ class DocsRenderingTest(unittest.TestCase):
 
         self.assertEqual(title, "notes.md")
         self.assertEqual(description, "Opening paragraph.")
-        self.assertIn("<h2>Overview</h2>", content)
+        self.assertIn('<h2 id="overview">Overview</h2>', content)
 
     def test_render_doc_handles_an_empty_markdown_file(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
