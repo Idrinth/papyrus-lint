@@ -15,9 +15,10 @@ a second copy.
 | --- | --- |
 | Anything, first time in this repo | This file, then [`CONTRIBUTING.md`](CONTRIBUTING.md) |
 | One crate | That crate's `README.md` (`app/crates/` or `app/src-tauri/`) |
+| Desktop UI | [`app/src/README.md`](app/src/README.md) |
 | Behavior that crosses crates, the GUI, or an editor plugin | [`docs/agent/current-state.md`](docs/agent/current-state.md) |
 | Crate / folder layout | [`docs/project-structure.md`](docs/project-structure.md) |
-| Frontend, desktop app, or editor-plugin setup | [`docs/agent/development.md`](docs/agent/development.md) |
+| Tauri app or editor-plugin setup | [`docs/agent/development.md`](docs/agent/development.md) |
 | `.github/workflows/ci.*.yml` or CI scripts | The explanatory comments in the related workflow |
 | `pages/` or the GitHub Pages workflow | The explanatory comments in `.github/workflows/pages.yml` |
 | `.github/workflows/release.yml` | The explanatory comments in that workflow |

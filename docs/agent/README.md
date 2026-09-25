@@ -7,8 +7,8 @@ contributors in [`../project-structure.md`](../project-structure.md).
 
 | File | When to read |
 | --- | --- |
-| [development.md](development.md) | Frontend, desktop app, editor plugins, or coverage — not per-crate commands |
+| [development.md](development.md) | Tauri app, editor plugins, or coverage — not the desktop UI or per-crate commands |
 | [current-state.md](current-state.md) | A change that crosses crates, the GUI, or an editor plugin |
 
-Crate-local invariants and `cargo` commands live in that crate's `README.md`,
-not in this directory.
+Crate-local notes live in that crate's `README.md`. Desktop UI notes live
+in [`../../app/src/README.md`](../../app/src/README.md).

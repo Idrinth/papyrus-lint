@@ -208,5 +208,6 @@ engine.
 | Website generation | `pages/` |
 | CI/release automation | `.github/workflows/` and `.github/scripts/` |
 
-For desktop, frontend, and editor-plugin setup, see `docs/agent/development.md`.
+For the desktop UI, see `app/src/README.md`.
+For the Tauri shell, editor plugins, and coverage, see `docs/agent/development.md`.
 For a crate's own commands, see that crate's `README.md`.

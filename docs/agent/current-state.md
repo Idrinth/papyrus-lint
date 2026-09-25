@@ -3,14 +3,14 @@
 
 This file is a **map** of contracts that cross a crate or a UI surface.
 Crate-local behavior, and how to test that crate, live in its `README.md`
-under `app/crates/` (desktop shell: `app/src-tauri/README.md`). Do not
-paste feature walkthroughs back here; add a row or a one-line invariant
-instead.
+under `app/crates/` (desktop shell: `app/src-tauri/README.md`, UI:
+`app/src/README.md`). Do not paste feature walkthroughs back here; add a
+row or a one-line invariant instead.
 
 Folder layout is in [`docs/project-structure.md`](../project-structure.md).
 Rule metadata is generated from [`shared/rules/`](../../shared/rules)
-(see `AGENTS.md`). How to run the desktop app, frontend, and editor
-plugins is in [`development.md`](development.md).
+(see `AGENTS.md`). How to run the Tauri app and editor plugins is in
+[`development.md`](development.md).
 
 Latest published release is `v2.1.0`. VS Code and Sublime still drive
 analysis through `PapyrusLinterCLI`; they do not host the LSP process.
@@ -20,19 +20,18 @@ The server itself is
 ## Invariants
 
 If a change would violate one, update the cited code *and* this list.
-Anything that belongs to one crate belongs in that crate's README.
+Anything that belongs to one crate, or to the desktop UI, belongs in that
+README.
 
-- The desktop Settings tab, the first-run picker, and the VS Code /
-  Sublime `init` prompts write `game` as `skyrim` or `fallout4`.
-  Starfield stays CLI-only (`init --game starfield`) until the linter
-  supports it.
-- The GUI `.ppj` drop mode (`parse_ppj_file` in
-  `app/src-tauri/src/files.rs`) puts `<Import>` entries in
-  `currentPpjImportRoots` (`app/src/project-state.ts`), folded into
-  `effectiveScriptRoots()` the same way `currentAchlistScriptRoots` is.
-  Never `lookup_script_roots`. Parsing rules are in the
+- VS Code and Sublime `init` prompts write `game` as `skyrim` or
+  `fallout4`. Starfield stays CLI-only (`init --game starfield`). The
+  desktop picker is
+  [`app/src/README.md`](../../app/src/README.md).
+- A `.ppj`'s `<Import>` entries are `additional_script_roots`, never
+  `lookup_script_roots`. Parsing is the
   [`papyrus-lint-core`](../../app/crates/papyrus-lint-core/README.md)
-  README.
+  README; the GUI drop state is
+  [`app/src/README.md`](../../app/src/README.md).
 
 ## Where to read
 
@@ -40,7 +39,7 @@ Anything that belongs to one crate belongs in that crate's README.
 | --- | --- |
 | A reusable crate | That crate's `README.md` under `app/crates/` |
 | Tauri commands | [`app/src-tauri/README.md`](../../app/src-tauri/README.md) |
-| Desktop UI (drop, results, live edit, watch, presets) | `app/src/` (`drop.ts`, `results-filter.ts`, `live-edit.ts`, `watch.ts`, `presets.ts`) |
+| Desktop UI | [`app/src/README.md`](../../app/src/README.md) |
 | VS Code CLI-backed lint / ignore / actions | `vscode-extension/src/` (`liveLint.ts`, `linter.ts`, `ignore.ts`, `codeActions.ts`, `suppressions.ts`) |
 | Sublime unsaved-buffer lint | `SublimeLinter-contrib-papyrus-lint/linter.py` |
 
@@ -62,7 +61,8 @@ the other column before calling the work done.
 
 ## Do not put here
 
-- Crate-local invariants or `cargo` commands — that crate's `README.md`.
+- Crate-local or desktop-UI invariants and their commands — that
+  directory's `README.md`.
 - Per-rule descriptions — `shared/rules/<id>.json` and `rules.html`.
 - CLI flag lists and config keys — `docs/cli.md`, `docs/configuration.md`.
 - CI, Pages, and release steps — comments in the related workflow.
