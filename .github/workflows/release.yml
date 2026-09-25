@@ -1,5 +1,10 @@
 name: Release
 
+# Binaries are signed in the job that builds them. VirusTotal runs against
+# those local files and must succeed before gh release upload, so unsigned
+# or unscanned assets never become GitHub release attachments. Container
+# images are still signed after push because GHCR only has a digest then.
+
 on:
   push:
     tags:
@@ -149,6 +154,7 @@ jobs:
   release:
     permissions:
       contents: write
+      id-token: write
     strategy:
       fail-fast: false
       matrix:
@@ -230,20 +236,15 @@ jobs:
         working-directory: app
         run: npm ci --ignore-scripts
 
+      # Build only. Do not pass tagName/releaseName/releaseId: tauri-action
+      # would attach bundles to the GitHub release before they are signed
+      # or virus-scanned. Stable asset names are applied in the collect step
+      # so releases/latest/download/<name> keeps working across versions.
       - uses: tauri-apps/tauri-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           projectPath: app
-          tagName: ${{ github.ref_name }}
-          releaseName: "${{ github.ref_name }}"
-          releaseBody: "Automated release for ${{ github.ref_name }}. See the commit history for details until this is regenerated."
-          releaseDraft: false
-          prerelease: false
-          # Drop [version] from the uploaded bundle names (Tauri's default
-          # naming includes it) so a releases/latest/download/<name> link
-          # keeps pointing at the right file across releases.
-          releaseAssetNamePattern: "[name]-[platform]-[arch][_setup][ext]"
 
       - name: Build CLI
         shell: bash
@@ -290,17 +291,139 @@ jobs:
         shell: bash
         run: cp configuration/papyrus-lint.default.yaml cli-dist/papyrus-lint.yaml
 
-      - name: Upload CLI, LSP, and default configuration to release
+      - name: Collect Tauri bundles under stable names
         shell: bash
+        run: |
+          mkdir -p release-dist
+          bundle="app/src-tauri/target/release/bundle"
+          case "${{ matrix.platform }}" in
+            windows-latest)
+              shopt -s nullglob
+              nsis=( "$bundle"/nsis/*.exe )
+              msi=( "$bundle"/msi/*.msi )
+              [ ${#nsis[@]} -eq 1 ] || { echo "expected one NSIS installer, found: ${nsis[*]:-none}" >&2; exit 1; }
+              [ ${#msi[@]} -eq 1 ] || { echo "expected one MSI installer, found: ${msi[*]:-none}" >&2; exit 1; }
+              cp "${nsis[0]}" release-dist/PapyrusLinter-windows-x64_setup.exe
+              cp "${msi[0]}" release-dist/PapyrusLinter-windows-x64.msi
+              ;;
+            macos-latest)
+              shopt -s nullglob
+              dmg=( "$bundle"/dmg/*.dmg )
+              apptar=( "$bundle"/macos/*.app.tar.gz )
+              [ ${#dmg[@]} -eq 1 ] || { echo "expected one DMG, found: ${dmg[*]:-none}" >&2; exit 1; }
+              [ ${#apptar[@]} -eq 1 ] || { echo "expected one .app.tar.gz, found: ${apptar[*]:-none}" >&2; exit 1; }
+              cp "${dmg[0]}" release-dist/PapyrusLinter-darwin-aarch64.dmg
+              cp "${apptar[0]}" release-dist/PapyrusLinter-darwin-aarch64.app.tar.gz
+              ;;
+            *)
+              shopt -s nullglob
+              rpm=( "$bundle"/rpm/*.rpm )
+              deb=( "$bundle"/deb/*.deb )
+              appimage=()
+              for f in "$bundle"/appimage/*.AppImage; do
+                [[ "$f" == *.tar.gz ]] && continue
+                appimage+=( "$f" )
+              done
+              [ ${#rpm[@]} -eq 1 ] || { echo "expected one RPM, found: ${rpm[*]:-none}" >&2; exit 1; }
+              [ ${#deb[@]} -eq 1 ] || { echo "expected one DEB, found: ${deb[*]:-none}" >&2; exit 1; }
+              [ ${#appimage[@]} -eq 1 ] || { echo "expected one AppImage, found: ${appimage[*]:-none}" >&2; exit 1; }
+              cp "${rpm[0]}" release-dist/PapyrusLinter-linux-x86_64.rpm
+              cp "${deb[0]}" release-dist/PapyrusLinter-linux-amd64.deb
+              cp "${appimage[0]}" release-dist/PapyrusLinter-linux-amd64.AppImage
+              ;;
+          esac
+          cp cli-dist/PapyrusLinterCLI-* release-dist/
+          cp cli-dist/PapyrusLinterLsp-* release-dist/
+          if [ -f cli-dist/papyrus-lint.yaml ]; then
+            cp cli-dist/papyrus-lint.yaml release-dist/
+          fi
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v4.1.2
+
+      - name: Sign and verify built assets
+        env:
+          CERTIFICATE_IDENTITY: https://github.com/${{ github.workflow_ref }}
+        shell: bash
+        run: |
+          mkdir -p signatures
+          missing=0
+          shopt -s nullglob
+          for asset in release-dist/*; do
+            name="$(basename "$asset")"
+            case "$name" in
+              *.sigstore.json|papyrus-lint.yaml) continue ;;
+            esac
+            bundle="signatures/${name}.sigstore.json"
+            if [ ! -f "$asset" ]; then
+              echo "::error::Expected built asset '$name' was missing before signing." >&2
+              missing=1
+              continue
+            fi
+            cosign sign-blob --yes --bundle "$bundle" "$asset"
+            cosign verify-blob \
+              --bundle "$bundle" \
+              --certificate-identity "$CERTIFICATE_IDENTITY" \
+              --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+              "$asset"
+          done
+          if [ "$missing" -ne 0 ]; then
+            exit 1
+          fi
+
+      # Scan the files this job produced before they exist as release assets.
+      # update_release is false so this cannot rewrite notes for a release
+      # that other jobs are still filling in; the job summary keeps the links.
+      - name: VirusTotal scan built assets
+        uses: cssnr/virustotal-action@v2.0.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release upload "$GITHUB_REF_NAME" cli-dist/* --clobber --repo "${{ github.repository }}"
+        with:
+          vt_api_key: ${{ secrets.VIRUSTOTAL_API_KEY }}
+          file_globs: |
+            release-dist/PapyrusLinterCLI-*
+            release-dist/PapyrusLinterLsp-*
+            release-dist/PapyrusLinter-*
+          sha256: true
+          update_release: false
+
+      - name: Ensure GitHub release exists
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Three matrix legs may race this. Treat an already-created tag
+          # release as success; retry create briefly if two collide.
+          i=0
+          until gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; do
+            if gh release create "$GITHUB_REF_NAME" \
+              --title "$GITHUB_REF_NAME" \
+              --notes "Automated release for $GITHUB_REF_NAME. See the commit history for details until this is regenerated." \
+              --repo "$GITHUB_REPOSITORY"; then
+              break
+            fi
+            i=$((i + 1))
+            if [ "$i" -ge 6 ]; then
+              echo "Could not create or find release $GITHUB_REF_NAME" >&2
+              exit 1
+            fi
+            sleep 5
+          done
+
+      - name: Upload signed assets to release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload "$GITHUB_REF_NAME" release-dist/* signatures/*.sigstore.json \
+            --clobber --repo "${{ github.repository }}"
 
   vscode-plugin:
     runs-on: ubuntu-latest
     needs: release
     permissions:
       contents: write
+      id-token: write
     steps:
       - uses: actions/checkout@v7
 
@@ -337,19 +460,50 @@ jobs:
           cp ../shared/images/logo.png logo.png
           npm ci
           npx @vscode/vsce package --out ../plugin-dist/papyrus-lint-vscode.vsix
-          npx @vscode/vsce publish -p ${{ secrets.VSCE_PAT }}
           rm LICENSE logo.png
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v4.1.2
+
+      - name: Sign and verify VS Code plugin
+        env:
+          CERTIFICATE_IDENTITY: https://github.com/${{ github.workflow_ref }}
+        run: |
+          mkdir -p signatures
+          asset="plugin-dist/papyrus-lint-vscode.vsix"
+          bundle="signatures/papyrus-lint-vscode.vsix.sigstore.json"
+          cosign sign-blob --yes --bundle "$bundle" "$asset"
+          cosign verify-blob \
+            --bundle "$bundle" \
+            --certificate-identity "$CERTIFICATE_IDENTITY" \
+            --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+            "$asset"
+
+      - name: VirusTotal scan VS Code plugin
+        uses: cssnr/virustotal-action@v2.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          vt_api_key: ${{ secrets.VIRUSTOTAL_API_KEY }}
+          file_globs: plugin-dist/papyrus-lint-vscode.vsix
+          sha256: true
+          update_release: false
+
+      - name: Publish VS Code extension
+        working-directory: vscode-extension
+        run: npx @vscode/vsce publish -p ${{ secrets.VSCE_PAT }} --packagePath ../plugin-dist/papyrus-lint-vscode.vsix
 
       - name: Upload editor plugins to release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release upload "$GITHUB_REF_NAME" plugin-dist/* --clobber --repo "${{ github.repository }}"
+        run: gh release upload "$GITHUB_REF_NAME" plugin-dist/* signatures/*.sigstore.json --clobber --repo "${{ github.repository }}"
 
   sublime-plugin:
     runs-on: ubuntu-latest
     needs: release
     permissions:
       contents: write
+      id-token: write
     steps:
       - uses: actions/checkout@v7
 
@@ -381,138 +535,37 @@ jobs:
           zip -r "plugin-dist/SublimeLinter-contrib-papyrus-lint.zip" SublimeLinter-contrib-papyrus-lint \
             -x '*.gitignore' 'SublimeLinter-contrib-papyrus-lint/tests/*'
 
-      - name: Upload editor plugin to release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release upload "$GITHUB_REF_NAME" plugin-dist/* --clobber --repo "${{ github.repository }}"
-
-  sign-release-assets:
-    name: Sign release assets
-    needs:
-      - release
-      - sublime-plugin
-      - vscode-plugin
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      id-token: write
-    steps:
       - name: Install cosign
         uses: sigstore/cosign-installer@v4.1.2
 
-      - name: Download release assets
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh release download "${{ github.ref_name }}" \
-            --repo "${{ github.repository }}" \
-            --dir release-assets
-
-      - name: Sign and verify release assets
+      - name: Sign and verify Sublime plugin
         env:
           CERTIFICATE_IDENTITY: https://github.com/${{ github.workflow_ref }}
         run: |
-          files2sign=(
-            "PapyrusLinterCLI-linux"
-            "PapyrusLinterCLI-macos"
-            "PapyrusLinterCLI-windows.exe"
-            "PapyrusLinterLsp-linux"
-            "PapyrusLinterLsp-macos"
-            "PapyrusLinterLsp-windows.exe"
-            "PapyrusLinter-windows-x64_setup.exe"
-            "PapyrusLinter-windows-x64.msi"
-            "PapyrusLinter-linux-x86_64.rpm"
-            "PapyrusLinter-linux-amd64.deb"
-            "PapyrusLinter-linux-amd64.AppImage"
-            "PapyrusLinter-darwin-aarch64.dmg"
-            "PapyrusLinter-darwin-aarch64.app.tar.gz"
-            "papyrus-lint-vscode.vsix"
-            "SublimeLinter-contrib-papyrus-lint.zip"
-          )
-          mkdir signatures
-          missing=0
-          for name in "${files2sign[@]}"; do
-            bundle="signatures/${name}.sigstore.json"
-            asset="release-assets/${name}"
-            if [ ! -f "$asset" ]; then
-              echo "::error::Expected release asset '$name' was not downloaded; a sign-release-assets dependency may be missing." >&2
-              missing=1
-            else
-              cosign sign-blob --yes --bundle "$bundle" "$asset"
-              cosign verify-blob \
-                --bundle "$bundle" \
-                --certificate-identity "$CERTIFICATE_IDENTITY" \
-                --certificate-oidc-issuer https://token.actions.githubusercontent.com \
-                "$asset"
-            fi
-          done
-          if [ "$missing" -ne 0 ]; then
-            exit 1
-          fi
+          mkdir -p signatures
+          asset="plugin-dist/SublimeLinter-contrib-papyrus-lint.zip"
+          bundle="signatures/SublimeLinter-contrib-papyrus-lint.zip.sigstore.json"
+          cosign sign-blob --yes --bundle "$bundle" "$asset"
+          cosign verify-blob \
+            --bundle "$bundle" \
+            --certificate-identity "$CERTIFICATE_IDENTITY" \
+            --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+            "$asset"
 
-      - name: Upload signatures to release
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release upload "$GITHUB_REF_NAME" "signatures/*.sigstore.json" --clobber --repo "${{ github.repository }}"
-
-  virustotal-scan:
-    name: Scan release assets with VirusTotal
-    needs:
-      - release
-      - sublime-plugin
-      - vscode-plugin
-      - release-notes
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Resolve release ID
-        id: release_id
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          RELEASE_ID=$(gh api "repos/${{ github.repository }}/releases/tags/${{ github.ref_name }}" --jq .id)
-          echo "id=$RELEASE_ID" >> "$GITHUB_OUTPUT"
-
-      - name: Download release executables and archives
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          mkdir -p scan-assets
-          gh release download "${{ github.ref_name }}" \
-            --repo "${{ github.repository }}" \
-            --dir scan-assets \
-            -p "PapyrusLinterCLI-linux" \
-            -p "PapyrusLinterCLI-macos" \
-            -p "PapyrusLinterCLI-windows.exe" \
-            -p "PapyrusLinterLsp-linux" \
-            -p "PapyrusLinterLsp-macos" \
-            -p "PapyrusLinterLsp-windows.exe" \
-            -p "PapyrusLinter-windows-x64_setup.exe" \
-            -p "PapyrusLinter-windows-x64.msi" \
-            -p "PapyrusLinter-linux-x86_64.rpm" \
-            -p "PapyrusLinter-linux-amd64.deb" \
-            -p "PapyrusLinter-linux-amd64.AppImage" \
-            -p "PapyrusLinter-darwin-aarch64.dmg" \
-            -p "PapyrusLinter-darwin-aarch64.app.tar.gz" \
-            -p "papyrus-lint-vscode.vsix" \
-            -p "SublimeLinter-contrib-papyrus-lint.zip"
-
-      # Runs after release-notes so its own release-notes-editing step (which
-      # rewrites the notes wholesale) can't clobber the results this appends;
-      # update_release: true is what gives the release notes their "quick
-      # result overview" of the scan, and summary: true mirrors it into this
-      # job's own step summary.
-      - name: VirusTotal Action
+      - name: VirusTotal scan Sublime plugin
         uses: cssnr/virustotal-action@v2.0.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           vt_api_key: ${{ secrets.VIRUSTOTAL_API_KEY }}
-          file_globs: scan-assets/*
-          release_id: ${{ steps.release_id.outputs.id }}
+          file_globs: plugin-dist/SublimeLinter-contrib-papyrus-lint.zip
           sha256: true
-          update_release: true
+          update_release: false
+
+      - name: Upload editor plugin to release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "$GITHUB_REF_NAME" plugin-dist/* signatures/*.sigstore.json --clobber --repo "${{ github.repository }}"
 
   update-pages:
     name: Update GitHub Pages with release version
