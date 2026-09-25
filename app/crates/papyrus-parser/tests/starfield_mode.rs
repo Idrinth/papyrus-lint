@@ -118,6 +118,57 @@ fn fallout4_and_skyrim_reject_starfield_access_flags() {
 }
 
 #[test]
+fn parses_requires_guard_on_variables_properties_and_functions() {
+    let script = parse_with_mode(
+        r#"ScriptName GuardedScript
+
+Guard CoraGuardCount
+int CoraStartingBookCount RequiresGuard(CoraGuardCount)
+int property CurrentStateIndex = 0 Auto Hidden Conditional RequiresGuard(SetAnimationStateGuard)
+RefCollectionAlias Property Alias_Passengers Mandatory RequiresGuard(PassengerGuard) Const Auto
+
+Function Private_SetAnimationStateIndex(int newStateIndex, bool shouldUseJumpAnims=False) RequiresGuard(SetAnimationStateGuard) Private
+EndFunction
+"#,
+        GameEdition::Starfield,
+    )
+    .expect("RequiresGuard should parse on Starfield declarations");
+
+    assert_eq!(script.variables[0].requires_guard, None);
+    assert_eq!(
+        script.variables[1].requires_guard.as_deref(),
+        Some("CoraGuardCount")
+    );
+    assert_eq!(
+        script.properties[0].requires_guard.as_deref(),
+        Some("SetAnimationStateGuard")
+    );
+    assert_eq!(
+        script.properties[1].requires_guard.as_deref(),
+        Some("PassengerGuard")
+    );
+    assert_eq!(
+        script.functions[0].requires_guard.as_deref(),
+        Some("SetAnimationStateGuard")
+    );
+    assert_eq!(script.functions[0].access_level, AccessLevel::Private);
+}
+
+#[test]
+fn non_starfield_modes_reject_requires_guard() {
+    let source = "ScriptName Rejected\nint Guarded RequiresGuard(MyGuard)\n";
+    for mode in [GameEdition::Skyrim, GameEdition::Fallout4] {
+        let error = parse_with_mode(source, mode)
+            .expect_err("RequiresGuard is a Starfield-only declaration flag");
+        assert!(matches!(error, PapyrusError::Parse(_)), "{mode:?}: {error}");
+        assert!(
+            error.to_string().contains("expected end of line"),
+            "{mode:?}: {error}"
+        );
+    }
+}
+
+#[test]
 fn game_edition_helpers_describe_the_dialect_stack() {
     assert!(!GameEdition::Skyrim.has_fallout4_dialect());
     assert!(!GameEdition::Skyrim.has_starfield_dialect());
