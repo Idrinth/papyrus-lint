@@ -1,13 +1,17 @@
 use super::*;
 
 fn check(source: &str) -> Vec<Diagnostic> {
+    check_with_config(source, crate::config::Config::default())
+}
+
+fn check_with_config(source: &str, config: crate::config::Config) -> Vec<Diagnostic> {
     let ast = papyrus_parser::parse(source).ok();
     let tokens = papyrus_parser::tokenize(source).ok();
     super::check(
         source,
         ast.as_ref(),
         tokens.as_deref(),
-        &crate::config::Config::default(),
+        &config,
         &mut crate::external_signatures::NoExternalSignatures,
     )
 }
@@ -28,6 +32,47 @@ fn flags_mismatched_literal_argument_to_local_function() {
     assert!(diagnostics[0].message.contains("Argument 1 to 'Greet'"));
     assert!(diagnostics[0].message.contains("expects String"));
     assert!(diagnostics[0].message.contains("got Int"));
+}
+
+#[test]
+fn allows_bool_like_int_literals_for_bool_parameter_by_default() {
+    let diagnostics = check(
+        "ScriptName Example\n\nFunction SetFlag(Bool flag)\nEndFunction\n\nFunction Test()\n    SetFlag(0)\n    SetFlag(1)\nEndFunction\n",
+    );
+    assert!(diagnostics.is_empty());
+}
+
+#[test]
+fn flags_bool_like_int_literals_for_bool_parameter_when_disallowed() {
+    let diagnostics = check_with_config(
+        "ScriptName Example\n\nFunction SetFlag(Bool flag)\nEndFunction\n\nFunction Test()\n    SetFlag(0)\n    SetFlag(1)\nEndFunction\n",
+        crate::config::Config {
+            bool_like_int: false,
+            ..crate::config::Config::default()
+        },
+    );
+    assert_eq!(diagnostics.len(), 2);
+    assert!(diagnostics[0].message.contains("expects Bool"));
+    assert!(diagnostics[0].message.contains("got Int"));
+}
+
+#[test]
+fn still_flags_other_int_literals_and_int_variables_for_bool_parameter() {
+    let diagnostics = check(
+        r#"
+ScriptName Example
+
+Function SetFlag(Bool flag)
+EndFunction
+
+Function Test()
+    Int value = 0
+    SetFlag(2)
+    SetFlag(value)
+EndFunction
+"#,
+    );
+    assert_eq!(diagnostics.len(), 2);
 }
 
 #[test]
