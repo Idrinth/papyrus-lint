@@ -6,27 +6,79 @@ import { loadProjectConfig, resetConfirmedProjectDirs } from "../project-setting
 import { dirnameOf } from "../path";
 import { stopWatchMode } from "../watch";
 import { type RuleTagsInfo } from "../backend-types";
-import { type LintConfig } from "../config-types";
+import { DEFAULT_LINT_CONFIG, type LintConfig } from "../config-types";
 import { ruleTagsByRule } from "../results-filter";
 import { aiConfiguration } from "../results-export-ai";
 
 // Default backend behavior for the project-root discovery commands (see
 // project-io.ts's projectDirForAchlist/projectDirForDirectory/
-// projectDirForPscPath), for tests that drive handleDroppedPaths without
-// caring about the exact root a particular drop resolves to: just the
-// naive fallback each of those functions itself would use if the real
-// (Rust) `scripts/source`/`source/scripts`-pair lookup found nothing. A
-// test asserting a specific resolved root (e.g. one where the achlist
-// doesn't live in the project root itself) still needs its own explicit
-// `find_project_root`/`find_psc_project_root_for_path` handler.
+// projectDirForPscPath/loadProjectInfo), for tests that drive
+// handleDroppedPaths without caring about the exact root a particular drop
+// resolves to: just the naive fallback each of those functions itself would
+// use if the real (Rust) `scripts/source`/`source/scripts`-pair lookup found
+// nothing. A test asserting a specific resolved root (e.g. one where the
+// achlist doesn't live in the project root itself) still needs its own
+// explicit `find_project_root`/`find_psc_project_root_for_path` handler.
 function defaultProjectRootHandler(command: string): ((args: unknown) => unknown) | undefined {
   switch (command) {
     case "load_lookup_script_roots":
       return () => [];
+    case "load_script_roots":
+      return () => [];
+    case "load_compiler_path":
+      return () => "";
+    case "load_compile_check":
+      return () => false;
+    case "load_project_info":
+      return () => ({ detected_script_roots: [], used_configuration_file: null });
+    case "save_compiler_path":
+    case "save_compile_check":
+    case "save_script_roots":
+    case "save_lookup_script_roots":
+      return () => undefined;
     case "find_project_root":
       return (args) => (args as { fallback: string }).fallback;
     case "find_psc_project_root_for_path":
       return (args) => dirnameOf(dirnameOf(dirnameOf((args as { path: string }).path)));
+    default:
+      return undefined;
+  }
+}
+
+// Default backend behavior for the startup metadata commands that
+// main.ts fires on DOMContentLoaded when isTauri() is true (see
+// loadAppVersion/loadRuleTags/refreshPresetManagementTab). Tests that
+// import the harness and therefore load main.ts hit these even when they
+// never call invokeImplFor themselves; rejecting them would just
+// console.error from the wrappers. A test that cares about the returned
+// version/tags/presets still supplies its own handlers.
+function defaultStartupHandler(command: string): ((args: unknown) => unknown) | undefined {
+  switch (command) {
+    case "get_app_version":
+      return () => "";
+    case "list_rule_tags":
+      return () => [];
+    case "list_config_presets":
+      return () => [];
+    default:
+      return undefined;
+  }
+}
+
+// Default backend behavior for config load/save and other best-effort
+// commands whose wrappers catch a failed invoke and console.error it
+// (see config-io.ts and previewRepairPscLine). Tests that assert a
+// specific persist or preview still supply their own handlers.
+function defaultBestEffortHandler(command: string): ((args: unknown) => unknown) | undefined {
+  switch (command) {
+    case "load_lint_config":
+    case "load_lint_config_from_path":
+      return () => DEFAULT_LINT_CONFIG;
+    case "save_lint_config":
+    case "save_lint_config_to_path":
+      return () => undefined;
+    case "preview_repair_psc_line":
+      return () => null;
     default:
       return undefined;
   }
@@ -277,11 +329,19 @@ export function invokeImplFor(handlers: Record<string, (args: unknown) => unknow
     if (command === "lint_project_scripts" && !handlers[command]) {
       return emulateLintProjectScripts(handlers, args);
     }
-    const handler = handlers[command] ?? defaultProjectRootHandler(command) ?? defaultExportHandler(command) ?? defaultCompletionHandler(command);
+    const handler = handlers[command] ?? defaultProjectRootHandler(command) ?? defaultExportHandler(command) ?? defaultCompletionHandler(command) ?? defaultStartupHandler(command) ?? defaultBestEffortHandler(command);
     if (!handler) {
       return Promise.reject(new Error(`unexpected command: ${command}`));
     }
-    return Promise.resolve(handler(args));
+    // Real `invoke` always returns a Promise. A test handler that throws
+    // synchronously (the "alerts on failure" cases) must reject that
+    // Promise rather than throw out of the mock, or vitest logs the
+    // throw as suite stderr even though the production catch handled it.
+    try {
+      return Promise.resolve(handler(args));
+    } catch (error) {
+      return Promise.reject(error);
+    }
   });
 }
 
@@ -320,8 +380,9 @@ export async function loadProjectConfigConfirmed(dir: string): Promise<void> {
 
 beforeEach(() => {
   invokeMock.mockReset();
-  // Installs the default project-root/export-formatting fallbacks (see
-  // defaultProjectRootHandler/defaultExportHandler above) so a test that
+  // Installs the default project-root/export-formatting/startup/best-effort
+  // fallbacks (see defaultProjectRootHandler/defaultExportHandler/
+  // defaultStartupHandler/defaultBestEffortHandler above) so a test that
   // never calls invokeImplFor itself still gets sensible behavior for
   // those commands; a test that does call invokeImplFor merges its own
   // handlers back on top of this same default chain.

@@ -156,7 +156,12 @@ jobs:
         run: npm ci --ignore-scripts
 
       - name: Test with coverage
-        run: npm run test:coverage | tee coverage-output.txt
+        # `| tee` reports tee's exit code unless pipefail is on. GitHub's
+        # default bash includes it, but keep the test status explicit so a
+        # failing vitest/npm run cannot hide behind a successful tee.
+        run: |
+          set -o pipefail
+          npm run test:coverage | tee coverage-output.txt
 
       - name: Publish coverage summary
         if: always()
@@ -197,7 +202,12 @@ jobs:
         run: npm ci --ignore-scripts
 
       - name: Test with coverage
-        run: npm run test:coverage | tee coverage-output.txt
+        # `| tee` reports tee's exit code unless pipefail is on. GitHub's
+        # default bash includes it, but keep the test status explicit so a
+        # failing vitest/npm run cannot hide behind a successful tee.
+        run: |
+          set -o pipefail
+          npm run test:coverage | tee coverage-output.txt
 
       - name: Publish coverage summary
         if: always()

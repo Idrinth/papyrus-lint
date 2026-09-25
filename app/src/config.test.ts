@@ -53,14 +53,16 @@ describe("lint config UI round trip", () => {
     expect(lintConfigFromUI().game).toBe("skyrim");
   });
 
-  it("keeps a CLI-only starfield project instead of rewriting it to Skyrim", () => {
+  it("keeps a starfield project instead of rewriting it to Skyrim", () => {
     const starfield = { ...DEFAULT_LINT_CONFIG, game: "starfield" as LintConfig["game"] };
     setCurrentLintConfig(starfield);
     applyLintConfigToUI(starfield);
 
     const gameSelect = document.querySelector<HTMLSelectElement>("#game-select")!;
     expect(gameSelect.value).toBe("starfield");
-    expect(gameSelect.selectedOptions[0]?.hasAttribute("data-unlisted-game")).toBe(true);
+    // Starfield is a listed target game, so it uses the fixture option
+    // rather than the extra option reserved for a game the picker does not offer.
+    expect(gameSelect.selectedOptions[0]?.hasAttribute("data-unlisted-game")).toBe(false);
     expect(lintConfigFromUI().game).toBe("starfield");
 
     document.querySelector<HTMLSelectElement>("#semicolon-style")!.value = "require";
