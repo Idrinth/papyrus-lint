@@ -14,9 +14,9 @@ use std::fs::File;
 use std::io::Read;
 use std::path::Path;
 
-use papyrus_lint_globals::{Game, UNSUPPORTED_GAME_MESSAGE};
+use papyrus_lint_globals::Game;
 
-pub const GAMES: &[Game] = &[Game::Skyrim, Game::Fallout4];
+pub const GAMES: &[Game] = &[Game::Skyrim, Game::Fallout4, Game::Starfield];
 
 /// Forms whose event declarations win when the same event name appears on
 /// more than one script in a single game archive. Lower index is walked
@@ -31,6 +31,7 @@ const EVENT_FORM_PRIORITY: &[&str] = &[
     "ReferenceAlias",
     "LocationAlias",
     "Quest",
+    "SpaceshipReference",
 ];
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -66,7 +67,7 @@ fn base_archive(game: Game) -> &'static str {
     match game {
         Game::Fallout4 => "fallout4-scripts.zip",
         Game::Skyrim => "skyrim-scripts.zip",
-        Game::Starfield => panic!("{UNSUPPORTED_GAME_MESSAGE}"),
+        Game::Starfield => "starfield-scripts.zip",
     }
 }
 
@@ -74,7 +75,7 @@ fn extender_archive(game: Game) -> &'static str {
     match game {
         Game::Fallout4 => "fallout4-extender-scripts.zip",
         Game::Skyrim => "skyrim-extender-scripts.zip",
-        Game::Starfield => panic!("{UNSUPPORTED_GAME_MESSAGE}"),
+        Game::Starfield => "starfield-extender-scripts.zip",
     }
 }
 

@@ -5,6 +5,7 @@ use std::path::Path;
 
 const SKYRIM: papyrus_lint_globals::Game = papyrus_lint_globals::Game::Skyrim;
 const FALLOUT4: papyrus_lint_globals::Game = papyrus_lint_globals::Game::Fallout4;
+const STARFIELD: papyrus_lint_globals::Game = papyrus_lint_globals::Game::Starfield;
 
 fn zip_path(archive_name: &str) -> std::path::PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -248,6 +249,15 @@ fn bundled_cache_covers_the_fallout4_vanilla_script_archive() {
 }
 
 #[test]
+fn bundled_cache_covers_the_starfield_vanilla_script_archive() {
+    assert!(
+        entry_count(STARFIELD) >= 700,
+        "expected the bundled cache to cover most of the Starfield archive, got {}",
+        entry_count(STARFIELD)
+    );
+}
+
+#[test]
 fn actor_psc_is_a_bundled_hit_without_a_source_file_on_disk() {
     let source = zip_script("skyrim-scripts.zip", "Actor.psc");
     let missing = Path::new("/does/not/exist/Actor.psc");
@@ -280,6 +290,23 @@ fn fallout4_actor_psc_is_a_bundled_hit_without_a_source_file_on_disk() {
         Some(papyrus_parser::tokenize(&source).unwrap())
     );
     assert!(prime(FALLOUT4, &source));
+}
+
+#[test]
+fn starfield_actor_psc_is_a_bundled_hit_without_a_source_file_on_disk() {
+    let source = zip_script("starfield-scripts.zip", "Actor.psc");
+    let missing = Path::new("/does/not/exist/Actor.psc");
+    let ast = ast_for(STARFIELD, &source).expect("Actor.psc should be in the Starfield bundle");
+    assert_eq!(ast.name, "Actor");
+    assert_eq!(
+        crate::get_for_game(STARFIELD, missing, &source),
+        Some(ast.clone())
+    );
+    assert_eq!(
+        crate::get_tokens_for_game(STARFIELD, missing, &source),
+        Some(papyrus_parser::tokenize(&source).unwrap())
+    );
+    assert!(prime(STARFIELD, &source));
 }
 
 #[test]
@@ -440,6 +467,17 @@ fn fallout4_is_a_bundled_hit_by_script_name_without_source_bytes() {
     assert_eq!(ast.name, "Actor");
     assert_eq!(crate::ast_for_script_name(FALLOUT4, "Actor"), Some(ast));
     assert!(crate::contains_script_name(FALLOUT4, "Form"));
+}
+
+#[test]
+fn starfield_is_a_bundled_hit_by_script_name_without_source_bytes() {
+    assert!(contains_name(STARFIELD, "Actor"));
+    assert!(!contains_name(STARFIELD, "DefinitelyNotAVanillaScript"));
+
+    let ast = ast_for_name(STARFIELD, "Actor").expect("Actor should be in the Starfield index");
+    assert_eq!(ast.name, "Actor");
+    assert_eq!(crate::ast_for_script_name(STARFIELD, "Actor"), Some(ast));
+    assert!(crate::contains_script_name(STARFIELD, "Form"));
 }
 
 #[test]

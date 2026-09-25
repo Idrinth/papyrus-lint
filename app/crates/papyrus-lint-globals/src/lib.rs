@@ -7,7 +7,7 @@
 
 mod game;
 
-pub use game::{Game, UNSUPPORTED_GAME_MESSAGE};
+pub use game::Game;
 
 /// The project's canonical website root, shared by documentation links and
 /// machine-readable reports.

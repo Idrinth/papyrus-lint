@@ -29,9 +29,10 @@ fn fallout4_extensions_follow_the_fo4_dialect() {
 }
 
 #[test]
-#[should_panic(expected = "Starfield is not supported yet")]
-fn starfield_is_not_supported_yet() {
-    Game::Starfield.assert_supported();
+fn every_recognized_game_is_supported() {
+    for game in Game::ALL {
+        game.assert_supported();
+    }
 }
 
 #[test]

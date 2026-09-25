@@ -25,6 +25,7 @@ struct GameTableSpec<'a> {
     selector: &'a str,
     skyrim_rows: &'a [String],
     fallout4_rows: &'a [String],
+    starfield_rows: &'a [String],
 }
 
 fn emit_game_tables(context: &BuildContext, spec: GameTableSpec<'_>) {
@@ -36,6 +37,7 @@ fn emit_game_tables(context: &BuildContext, spec: GameTableSpec<'_>) {
         selector,
         skyrim_rows,
         fallout4_rows,
+        starfield_rows,
     } = spec;
     let mut out = Renderer::new();
     out.line(generated_header(header));
@@ -65,13 +67,20 @@ fn emit_game_tables(context: &BuildContext, spec: GameTableSpec<'_>) {
         fallout4_rows,
     );
     out.blank();
+    emit_static(
+        &mut out,
+        &format!("STARFIELD_{const_name}"),
+        static_item_ty,
+        starfield_rows,
+    );
+    out.blank();
     out.block(
         format!("pub fn {selector}(game: papyrus_lint_globals::Game) -> &'static [{selector_item_ty}]"),
         |out| {
             out.block("match game", |out| {
                 out.line(format!("papyrus_lint_globals::Game::Skyrim => SKYRIM_{const_name},"));
                 out.line(format!("papyrus_lint_globals::Game::Fallout4 => FALLOUT4_{const_name},"));
-                out.line("papyrus_lint_globals::Game::Starfield => panic!(\"{}\", papyrus_lint_globals::UNSUPPORTED_GAME_MESSAGE),");
+                out.line(format!("papyrus_lint_globals::Game::Starfield => STARFIELD_{const_name},"));
             });
         },
     );
@@ -109,6 +118,10 @@ fn deprecated_functions(context: &BuildContext) {
                 .iter()
                 .map(row)
                 .collect::<Vec<_>>(),
+            starfield_rows: &policy::deprecated_functions(context, Game::Starfield)
+                .iter()
+                .map(row)
+                .collect::<Vec<_>>(),
         },
     );
 }
@@ -142,6 +155,10 @@ fn forbidden_functions(context: &BuildContext) {
                 .iter()
                 .map(row)
                 .collect::<Vec<_>>(),
+            starfield_rows: &policy::forbidden_functions(context, Game::Starfield)
+                .iter()
+                .map(row)
+                .collect::<Vec<_>>(),
         },
     );
 }
@@ -166,6 +183,10 @@ fn slow_functions(context: &BuildContext) {
                 .map(row)
                 .collect::<Vec<_>>(),
             fallout4_rows: &policy::slow_functions(context, Game::Fallout4)
+                .iter()
+                .map(row)
+                .collect::<Vec<_>>(),
+            starfield_rows: &policy::slow_functions(context, Game::Starfield)
                 .iter()
                 .map(row)
                 .collect::<Vec<_>>(),
@@ -197,6 +218,10 @@ fn native_methods(context: &BuildContext) {
                 .iter()
                 .map(row)
                 .collect::<Vec<_>>(),
+            starfield_rows: &script_catalog::native_methods(&scripts_dir, Game::Starfield)
+                .iter()
+                .map(row)
+                .collect::<Vec<_>>(),
         },
     );
 }
@@ -216,6 +241,10 @@ fn actor_values(context: &BuildContext) {
                 .map(row)
                 .collect::<Vec<_>>(),
             fallout4_rows: &policy::actor_values(context, Game::Fallout4)
+                .iter()
+                .map(row)
+                .collect::<Vec<_>>(),
+            starfield_rows: &policy::actor_values(context, Game::Starfield)
                 .iter()
                 .map(row)
                 .collect::<Vec<_>>(),
@@ -243,6 +272,10 @@ fn update_event_pairs(context: &BuildContext) {
                 .map(row)
                 .collect::<Vec<_>>(),
             fallout4_rows: &policy::update_event_pairs(context, Game::Fallout4)
+                .iter()
+                .map(row)
+                .collect::<Vec<_>>(),
+            starfield_rows: &policy::update_event_pairs(context, Game::Starfield)
                 .iter()
                 .map(row)
                 .collect::<Vec<_>>(),
@@ -281,6 +314,10 @@ fn known_events(context: &BuildContext) {
                 .map(row)
                 .collect::<Vec<_>>(),
             fallout4_rows: &script_catalog::known_events(&scripts_dir, Game::Fallout4)
+                .iter()
+                .map(row)
+                .collect::<Vec<_>>(),
+            starfield_rows: &script_catalog::known_events(&scripts_dir, Game::Starfield)
                 .iter()
                 .map(row)
                 .collect::<Vec<_>>(),
