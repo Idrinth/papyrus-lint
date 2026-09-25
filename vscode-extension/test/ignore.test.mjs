@@ -313,7 +313,7 @@ describe('papyrusLint.ignoreIssueForProject', () => {
     assert.deepEqual(harness.execCalls.at(-1).args, [
       '--config',
       path.join(workspaceRoot, 'papyrus-lint.yaml'),
-      '--json',
+      'lint', '--format', 'json',
       scriptPath,
     ]);
   });
