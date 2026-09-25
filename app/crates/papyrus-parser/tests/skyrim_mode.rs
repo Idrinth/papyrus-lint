@@ -48,6 +48,21 @@ fn rejects_custom_event_declarations() {
 }
 
 #[test]
+fn accepts_custom_event_as_an_identifier() {
+    let script = parse(
+        "ScriptName CustomEvent\n\n\
+         Int customEvent = 1\n\n\
+         Function CustomEvent()\nEndFunction\n",
+    )
+    .expect("Skyrim does not reserve CustomEvent");
+
+    assert_eq!(script.name, "CustomEvent");
+    assert_eq!(script.variables[0].name, "customEvent");
+    assert_eq!(script.functions[0].name, "CustomEvent");
+    assert!(script.custom_events.is_empty());
+}
+
+#[test]
 fn accepts_declaration_flags_as_parameter_names() {
     let source = r#"ScriptName CKKeywordParam extends Quest
 

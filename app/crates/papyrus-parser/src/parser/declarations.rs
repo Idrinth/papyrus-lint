@@ -140,7 +140,13 @@ impl Parser {
             return Ok(());
         }
 
-        if self.mode.has_fallout4_dialect() && self.at_keyword(Keyword::CustomEvent) {
+        // Not a reserved word: Skyrim still uses it as a name
+        // (`ScriptName CustomEvent`). Fallout 4 and later recognize the
+        // declaration here; Skyrim rejects that form instead of the token.
+        if self.at_identifier_ignore_ascii_case("CustomEvent") {
+            if !self.mode.has_fallout4_dialect() {
+                return Err(self.error("CustomEvent is a Fallout 4 and later declaration"));
+            }
             let line = self.current().line;
             self.advance();
             let name = self.expect_identifier()?;

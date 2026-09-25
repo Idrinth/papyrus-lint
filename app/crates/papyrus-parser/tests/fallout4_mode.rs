@@ -30,6 +30,22 @@ fn parses_custom_event_declarations_as_first_class_members() {
 }
 
 #[test]
+fn custom_event_stays_an_identifier_outside_the_declaration() {
+    let script = parse_with_mode(
+        "ScriptName CustomEvent\n\n\
+         CustomEvent OnReady\n\n\
+         Int Function CustomEvent()\n    Return 0\nEndFunction\n",
+        GameEdition::Fallout4,
+    )
+    .unwrap();
+
+    assert_eq!(script.name, "CustomEvent");
+    assert_eq!(script.custom_events.len(), 1);
+    assert_eq!(script.custom_events[0].name, "OnReady");
+    assert_eq!(script.functions[0].name, "CustomEvent");
+}
+
+#[test]
 fn parses_a_struct_declaration_with_typed_members_and_defaults() {
     let script = parse_with_mode(
         r#"ScriptName StructScript
