@@ -6,6 +6,7 @@ import { highlightPapyrusLines } from "./highlight";
 import { escapeAttr, levelOf } from "./main-severity";
 import { codeViewerViewEl } from "./code-viewer-state";
 import { nodiscardEligibleLines } from "./nodiscard";
+import { findingsPassingActiveFilters } from "./results-filter";
 export function lineSeverityOf(lineFindings: Diagnostic[] | undefined): "error" | "warning" | "info" | "flagged" | null {
   if (!lineFindings || lineFindings.length === 0) {
     return null;
@@ -76,7 +77,9 @@ function buildLineActionsHtml(lineNumber: number, lineFindings: Diagnostic[] | u
 }
 
 // Renders `source`'s syntax-highlighted, read-only table view with
-// `findings` marked on their lines. If `focusLine` is given, scrolls that
+// `findings` marked on their lines. Only findings that pass the Lint
+// results tab's active filters are marked, so the viewer matches the
+// list the user is working from. If `focusLine` is given, scrolls that
 // line into view and briefly flashes it, so a click on a specific finding
 // jumps straight to it.
 export function renderCodeViewerView(source: string, findings: Diagnostic[], focusLine?: number) {
@@ -84,7 +87,7 @@ export function renderCodeViewerView(source: string, findings: Diagnostic[], foc
     return;
   }
 
-  const findingsByLine = findingsGroupedByLine(findings);
+  const findingsByLine = findingsGroupedByLine(findingsPassingActiveFilters(findings));
   const nodiscardEligible = nodiscardEligibleLines(source);
 
   const lines = highlightPapyrusLines(source);

@@ -42,7 +42,11 @@ completes (or if it's still catching up with the latest keystroke), the
 findings from the last save are shown instead, so the editor never goes
 blank while you type. This is purely visual: nothing is written to disk,
 and the project's Lint results list is only refreshed once you actually
-save.
+save. Both the read-only viewer and the editor honor the Lint results
+tab's active filters (severity, tag, rule, auto-fixable), so only the
+findings still visible in the list are highlighted, titled, and offered
+as per-line Fix/Ignore/File disable/Config disable actions. Changing a
+filter while the viewer is open updates it in place.
 
 Every line in the code viewer that has at least one finding also gets its
 own small "Fix"/"Ignore"/"File disable"/"Config disable" buttons next to

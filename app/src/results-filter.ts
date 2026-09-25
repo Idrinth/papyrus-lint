@@ -146,10 +146,11 @@ export function matchesTagFilters(finding: Diagnostic): boolean {
 }
 
 // `findings` restricted to those passing every active severity/tag/rule
-// filter, shared by filterOutcomes (the results list) and
-// collectFilteredIssues (the "Export issues" button below) so the two
-// can never disagree about what "currently filtered" means.
-function findingsPassingActiveFilters(findings: Diagnostic[]): Diagnostic[] {
+// filter, shared by filterOutcomes (the results list),
+// collectFilteredIssues (the "Export issues" button below), and the
+// code viewer/editor (highlights, tooltips, line actions) so none of
+// them can disagree about what "currently filtered" means.
+export function findingsPassingActiveFilters(findings: Diagnostic[]): Diagnostic[] {
   return findings.filter(
     (finding) => activeSeverities.has(severityOf(finding.message)) && matchesTagFilters(finding),
   );

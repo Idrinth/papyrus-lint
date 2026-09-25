@@ -219,6 +219,33 @@ describe("handleCodeViewerIgnoreLineClick", () => {
     );
   });
 
+  it("covers only the line's findings that pass the active results-list filters", async () => {
+    invokeImplFor({
+      read_psc_file: () => "line one  \n",
+      add_disable_comment_to_psc_line: () => [],
+    });
+    await openCodeViewer("/a.psc", [
+      { line: 1, column: 1, message: "[warning] trailing whitespace", rule: "trailing-whitespace" },
+      { line: 1, column: 1, message: "[error] forbidden function used", rule: "forbidden-functions" },
+    ]);
+    const warningFilter = document.querySelector<HTMLInputElement>("#filter-warning")!;
+    warningFilter.checked = false;
+    warningFilter.dispatchEvent(new Event("change"));
+    try {
+      const button = ignoreLineButton();
+
+      await handleCodeViewerIgnoreLineClick(1, button);
+
+      expect(invokeMock).toHaveBeenCalledWith(
+        "add_disable_comment_to_psc_line",
+        expect.objectContaining({ rules: ["forbidden-functions"], line: 1 }),
+      );
+    } finally {
+      warningFilter.checked = true;
+      warningFilter.dispatchEvent(new Event("change"));
+    }
+  });
+
   it("does nothing when the code viewer has no loaded file", async () => {
     invokeMock.mockRejectedValue(new Error("permission denied"));
     await openCodeViewer("/a.psc", []);

@@ -50,9 +50,11 @@ function buildFindingTagsEl(finding: Diagnostic): HTMLElement | null {
 
 // Builds the list item for an already-filtered file. `findings` is the
 // subset filterOutcomes selected for display; `outcome` is the original
-// parse/lint result, used by file-level actions (View code, Apply fixes)
-// so those still see every finding in the file. Returns null if there's
-// nothing to show (a successfully parsed file with no findings to list).
+// parse/lint result, used by file-level Apply fixes so that still sees
+// every finding in the file. The code viewer is handed the full set too,
+// then applies the same active filters itself when highlighting. Returns
+// null if there's nothing to show (a successfully parsed file with no
+// findings to list).
 export function buildPscResultItem(
   outcome: PscParseOutcome,
   findings: Diagnostic[] = outcome.findings,

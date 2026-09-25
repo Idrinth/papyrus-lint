@@ -12,6 +12,10 @@ Framework-free TypeScript UI for the Tauri app. Reusable linting stays in
 - Lint-rule checkboxes come from generated `RULE_SETTINGS` in
   `config-types.ts`. `index.html` only keeps the empty `#lint-rules`
   fieldset.
+- The code viewer and live editor highlight, title, and act on the same
+  filtered findings the Lint results list is showing. `codeViewerState`
+  still keeps the full lint result so a filter change can re-apply
+  without re-linting.
 
 Start at `drop.ts`, `results-filter.ts`, `live-edit.ts`, `watch.ts`, and
 `presets.ts`.
