@@ -56,7 +56,7 @@
           "type": "string",
           "default": "",
           "scope": "window",
-          "description": "Optional path to a PapyrusLinterCLI or PapyrusLinter (desktop app) executable. Its SHA-256 must match this extension release's baked CLI or GUI digest, and its --version output must match the extension version. When empty, the extension downloads and uses the CLI from its matching GitHub release, including after the extension itself is updated."
+          "description": "Optional path to a PapyrusLinterCLI or PapyrusLinter (desktop app) executable. Its SHA-256 must match this extension release's baked CLI or GUI digest, and its version output must match the extension version. When empty, the extension downloads and uses the CLI from its matching GitHub release, including after the extension itself is updated."
         },
         "papyrusLint.configPath": {
           "type": "string",
