@@ -40,9 +40,10 @@ pub struct ParserFailure {
 
 /// Lints `source` as an in-memory Papyrus buffer under `config`.
 ///
-/// This is the shared body of `PapyrusLinterCLI --blob` and the LSP
-/// document snapshot: call [`papyrus_lints::lint`] and collect the first
-/// parse failure, without any project-level machinery.
+/// This is the shared body of `PapyrusLinterCLI --blob`, the LSP
+/// document snapshot, and the desktop live-edit command: call
+/// [`papyrus_lints::lint`] and collect the first parse failure, without
+/// any project-level machinery.
 pub fn lint_source(source: &str, config: &Config) -> LiveAnalysis {
     LiveAnalysis {
         diagnostics: papyrus_lints::lint(source, config),

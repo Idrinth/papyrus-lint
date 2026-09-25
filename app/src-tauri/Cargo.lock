@@ -2597,6 +2597,7 @@ dependencies = [
  "papyrus-lint-cli",
  "papyrus-lint-config",
  "papyrus-lint-core",
+ "papyrus-lint-live",
  "papyrus-lint-output",
  "papyrus-lints",
  "papyrus-parser",
@@ -2616,6 +2617,7 @@ dependencies = [
  "clap",
  "papyrus-lint-config",
  "papyrus-lint-core",
+ "papyrus-lint-live",
  "papyrus-lint-output",
  "papyrus-lints",
  "papyrus-parser",
@@ -2666,6 +2668,15 @@ name = "papyrus-lint-globals"
 version = "0.1.0"
 dependencies = [
  "serde",
+]
+
+[[package]]
+name = "papyrus-lint-live"
+version = "0.1.0"
+dependencies = [
+ "papyrus-lint-config",
+ "papyrus-lints",
+ "papyrus-parser",
 ]
 
 [[package]]

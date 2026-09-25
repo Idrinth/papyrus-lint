@@ -5,9 +5,10 @@
 //! cross-script `FunctionTable`, and no project-level lints such as
 //! `conflicting_script_versions` / `stale_compiled_output` /
 //! `script_filename_mismatch`. That is the same contract
-//! `PapyrusLinterCLI --blob` and the language server's open-document
-//! snapshot both need, so those two crates call this one instead of each
-//! reimplementing the pass.
+//! `PapyrusLinterCLI --blob`, the language server's open-document snapshot,
+//! and the desktop code viewer's live edit (`lint_papyrus_script`) all
+//! need, so those callers use this crate instead of each reimplementing
+//! the pass.
 //!
 //! Configuration is resolved separately: [`config_from_override`] is the
 //! `--config <path>` / "use this file or the engine default" path, and

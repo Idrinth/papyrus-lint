@@ -86,7 +86,7 @@ Cargo workspace**. Run Cargo commands against each crate's own `Cargo.toml`.
 | `papyrus-lint-config` | Config discovery and YAML I/O, compiler/game detection, script roots, and presets. |
 | `papyrus-lint-core` | Tauri-independent project resolution, cross-script lookup, compilation, and shared workflows. |
 | `papyrus-lint-output` | Plain-text, JSON, and AI-report models and formatting shared by GUI and CLI. |
-| `papyrus-lint-live` | In-memory source linting shared by CLI `--blob` and the language server. |
+| `papyrus-lint-live` | In-memory source linting shared by CLI `--blob`, the language server, and desktop live edit. |
 | `papyrus-lint-cli` | `PapyrusLinterCLI` argument parsing and lint/fix/init/doctor/blob orchestration. |
 | `papyrus-lint-lsp` | Stdio language server (`PapyrusLinterLsp`). Publishes diagnostics, per-issue quick fixes, and `papyrusLint.fixFile` (every automatic fix, via `workspace/applyEdit`). |
 
@@ -108,8 +108,9 @@ Important internal boundaries:
   compiled output.
 - `papyrus-lint-live` is the in-memory lint pass (`lint_source`) plus config
   resolution for a buffer (`config_from_override`, `config_from_script_path`).
-  CLI `--blob` and the LSP document snapshot both call it; report formatting
-  and LSP protocol mapping stay in those crates.
+  CLI `--blob`, the LSP document snapshot, and the desktop live-edit Tauri
+  command all call it; report formatting, protocol mapping, and the GUI
+  highlight layer stay in those crates.
 - `papyrus-lint-lsp` is a standalone stdio process. Document diagnostics and
   the code-action re-lint go through `papyrus-lint-live`; protocol framing,
   document sync, and workspace edits stay in this crate.

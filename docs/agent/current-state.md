@@ -132,7 +132,7 @@ the other column before calling the work done.
 
 | Engine piece | Also used by |
 | --- | --- |
-| `papyrus_lints::lint` / `repair` | `papyrus-lint-live` (CLI `--blob`, LSP snapshot), Tauri, editor plugins (via CLI), project-aware CLI |
+| `papyrus_lints::lint` / `repair` | `papyrus-lint-live` (CLI `--blob`, LSP snapshot, desktop live edit), editor plugins (via CLI), project-aware CLI / Tauri file lint |
 | `*_with_external_arguments` | CLI `fix` and Tauri apply-fix commands — not preview |
 | `ExternalSignatures` / `FunctionTable` | CLI threads (`SharedFunctionTable`), desktop per-project table |
 | `find_candidate_pair_root` / script locator | CLI path resolution, Tauri `find_project_root`, drop-folder scan |

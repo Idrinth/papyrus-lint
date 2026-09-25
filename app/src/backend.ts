@@ -11,13 +11,12 @@ import { currentLintConfig } from "./config-types";
 import { currentCompilerPath, currentLookupScriptRoots, currentProjectDir, effectiveScriptRoots } from "./project-state";
 // Lints `source` directly, in-process (the same `lint_papyrus_script`
 // Tauri command `app/src-tauri/src/files.rs` wraps around
-// `papyrus_lints::lint`), instead of a `.psc` path on disk. Used by the
-// code viewer's edit mode for live, as-you-type feedback on the textarea's
-// current (possibly unsaved) contents - see `scheduleLiveEditLint` in
-// live-edit.ts. Unlike `lintPscFile`, this never resolves cross-script
+// `papyrus_lint_live::lint_source`), instead of a `.psc` path on disk. Used
+// by the code viewer's edit mode for live, as-you-type feedback on the
+// textarea's current (possibly unsaved) contents - see `scheduleLiveEditLint`
+// in live-edit.ts. Unlike `lintPscFile`, this never resolves cross-script
 // lookups (there's no project root to resolve them against), the same
-// tradeoff the CLI's own `--blob` flag makes for editor extensions that
-// only have the buffer's text in memory.
+// tradeoff the CLI's `--blob` flag and the LSP snapshot make.
 export async function lintPapyrusScript(source: string): Promise<Diagnostic[]> {
   try {
     return await invoke<Diagnostic[]>("lint_papyrus_script", { source, config: currentLintConfig });
