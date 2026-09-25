@@ -39,7 +39,7 @@ class PapyrusLintFixIssueCommand(PapyrusLintCliSettings, sublime_plugin.TextComm
 
         startupinfo = windows_startupinfo()
         report = self._run_cli(
-            executable, ['--json'], file_name, startupinfo, 'read diagnostics'
+            executable, ['lint', '--format', 'json'], file_name, startupinfo, 'read diagnostics'
         )
         if report is None:
             return

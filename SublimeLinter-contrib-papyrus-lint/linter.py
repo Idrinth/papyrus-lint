@@ -32,10 +32,10 @@ class PapyrusLint(Linter):
     entirely (there's no real file to resolve one from), so a live,
     unsaved lint only reflects an explicit `config_path` override, not the
     project's own `papyrus-lint.yaml`/`.yml` — the same tradeoff the CLI's
-    `--blob` flag itself documents. It's run with `--json` so diagnostics
-    are parsed from PapyrusLinterCLI's structured report (see `JsonReport`
-    in app/crates/papyrus-lint-cli/src/lib.rs) instead of scraping its
-    plain-text output. The `config_path` setting (see `defaults` below)
+    `--blob` flag itself documents. It's run with the `lint` subcommand
+    and `--format json` so diagnostics are parsed from PapyrusLinterCLI's
+    structured report (see `JsonReport` in app/crates/papyrus-lint-cli/src/lib.rs)
+    instead of scraping its plain-text output. The `config_path` setting (see `defaults` below)
     passes `--config <path>` to the CLI, overriding its project-root
     `papyrus-lint.yaml`/`.yml` discovery, in either mode.
     """
@@ -72,7 +72,7 @@ class PapyrusLint(Linter):
                 raise PermanentError(str(err)) from err
         else:
             executable = ensure_release_cli(sublime.cache_path())
-        command = [executable, '--json']
+        command = [executable, 'lint', '--format', 'json']
         config_path = (self.settings.get('config_path') or '').strip()
         if config_path:
             command += ['--config', config_path]
@@ -83,7 +83,7 @@ class PapyrusLint(Linter):
         return command
 
     def find_errors(self, output):
-        """Parse `PapyrusLinterCLI --json`'s report instead of a regex.
+        """Parse `PapyrusLinterCLI lint --format json`'s report instead of a regex.
 
         `output` is the single JSON document PapyrusLinterCLI prints to
         stdout: a `{"files": [{"path", "diagnostics": [...]}], ...}`
