@@ -28,6 +28,7 @@ pub fn serve(input: impl BufRead, output: impl Write) -> io::Result<i32> {
         initialized: false,
         documents: Documents::default(),
         next_request: 0,
+        pending_responses: Vec::new(),
     }
     .run()
 }
@@ -39,6 +40,7 @@ struct Server<R, W> {
     initialized: bool,
     documents: Documents,
     next_request: u64,
+    pending_responses: Vec<Value>,
 }
 
 impl<R: BufRead, W: Write> Server<R, W> {
@@ -203,6 +205,13 @@ impl<R: BufRead, W: Write> Server<R, W> {
 
     fn read_response(&mut self, request_id: &Value) -> io::Result<Value> {
         loop {
+            if let Some(index) = self
+                .pending_responses
+                .iter()
+                .position(|message| message.get("id") == Some(request_id))
+            {
+                return Ok(self.pending_responses.remove(index));
+            }
             let Some(message) = self.read_message()? else {
                 return Err(io::Error::new(
                     io::ErrorKind::UnexpectedEof,
@@ -211,6 +220,11 @@ impl<R: BufRead, W: Write> Server<R, W> {
             };
             if message.get("method").is_none() && message.get("id") == Some(request_id) {
                 return Ok(message);
+            }
+            if message.get("method").is_none() && message.get("id").is_some_and(|id| !id.is_null())
+            {
+                self.pending_responses.push(message);
+                continue;
             }
             if let Some(code) = self.dispatch(message)? {
                 return Err(io::Error::new(
