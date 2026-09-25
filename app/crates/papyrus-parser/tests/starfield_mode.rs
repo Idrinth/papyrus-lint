@@ -134,9 +134,12 @@ EndFunction
     )
     .expect("RequiresGuard should parse on Starfield declarations");
 
-    assert_eq!(script.variables[0].requires_guard, None);
+    assert_eq!(script.guards.len(), 1);
+    assert_eq!(script.guards[0].name, "CoraGuardCount");
+    assert_eq!(script.variables.len(), 1);
+    assert_eq!(script.variables[0].name, "CoraStartingBookCount");
     assert_eq!(
-        script.variables[1].requires_guard.as_deref(),
+        script.variables[0].requires_guard.as_deref(),
         Some("CoraGuardCount")
     );
     assert_eq!(
