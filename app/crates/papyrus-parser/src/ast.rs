@@ -70,6 +70,9 @@ pub struct PropertyDecl {
     /// default public access level.
     #[serde(default)]
     pub access_level: AccessLevel,
+    /// Starfield guard that must be held while accessing this property.
+    #[serde(default)]
+    pub requires_guard: Option<String>,
     pub line: usize,
 }
 
@@ -79,6 +82,9 @@ pub struct VariableDecl {
     pub name: String,
     pub value: Option<Expr>,
     pub is_conditional: bool,
+    /// Starfield guard that must be held while accessing this variable.
+    #[serde(default)]
+    pub requires_guard: Option<String>,
     pub line: usize,
 }
 
@@ -158,6 +164,9 @@ pub struct FunctionDecl {
     /// default public access level.
     #[serde(default)]
     pub access_level: AccessLevel,
+    /// Starfield guard that must be held while calling this function.
+    #[serde(default)]
+    pub requires_guard: Option<String>,
     /// Deprecation metadata supplied by a build-time AST producer. Ordinary
     /// parser output leaves this empty.
     #[serde(default)]

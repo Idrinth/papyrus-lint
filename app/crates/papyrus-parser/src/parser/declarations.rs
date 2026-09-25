@@ -16,6 +16,7 @@ struct PropertyFlags {
     is_hidden: bool,
     is_conditional: bool,
     access_level: AccessLevel,
+    requires_guard: Option<String>,
 }
 
 #[derive(Default)]
@@ -25,6 +26,7 @@ struct FunctionFlags {
     is_debug_only: bool,
     is_beta_only: bool,
     access_level: AccessLevel,
+    requires_guard: Option<String>,
 }
 
 impl Parser {
@@ -205,6 +207,7 @@ impl Parser {
             is_hidden: flags.is_hidden,
             is_conditional: flags.is_conditional,
             access_level: flags.access_level,
+            requires_guard: flags.requires_guard,
             line,
         })
     }
@@ -229,6 +232,10 @@ impl Parser {
                     || self.at_identifier_ignore_ascii_case("Mandatory"))
             {
                 self.advance();
+            } else if self.mode.has_starfield_dialect()
+                && self.at_identifier_ignore_ascii_case("RequiresGuard")
+            {
+                flags.requires_guard = Some(self.parse_requires_guard()?);
             } else if matches!(self.kind(), TokenKind::CommentAnnotation(_)) {
                 flags.access_level = self.parse_access_level()?;
             } else {
@@ -359,6 +366,7 @@ impl Parser {
             value = Some(self.parse_expr()?);
         }
         let mut is_conditional = false;
+        let mut requires_guard = None;
         loop {
             if self.at_keyword(Keyword::Conditional) {
                 self.advance();
@@ -367,6 +375,10 @@ impl Parser {
                 && self.at_identifier_ignore_ascii_case("Const")
             {
                 self.advance();
+            } else if self.mode.has_starfield_dialect()
+                && self.at_identifier_ignore_ascii_case("RequiresGuard")
+            {
+                requires_guard = Some(self.parse_requires_guard()?);
             } else {
                 break;
             }
@@ -377,6 +389,7 @@ impl Parser {
             name,
             value,
             is_conditional,
+            requires_guard,
             line,
         })
     }
@@ -472,6 +485,7 @@ impl Parser {
             is_debug_only: flags.is_debug_only,
             is_beta_only: flags.is_beta_only,
             access_level: flags.access_level,
+            requires_guard: flags.requires_guard,
             deprecation: None,
             body,
             line,
@@ -496,6 +510,10 @@ impl Parser {
                 flags.is_beta_only = true;
             } else if self.mode.has_starfield_dialect() && self.at_starfield_access_flag() {
                 flags.access_level = self.parse_starfield_access_flag();
+            } else if self.mode.has_starfield_dialect()
+                && self.at_identifier_ignore_ascii_case("RequiresGuard")
+            {
+                flags.requires_guard = Some(self.parse_requires_guard()?);
             } else if matches!(self.kind(), TokenKind::CommentAnnotation(_)) {
                 flags.access_level = self.parse_access_level()?;
             } else {
@@ -504,6 +522,14 @@ impl Parser {
         }
         self.expect_terminator()?;
         Ok(flags)
+    }
+
+    fn parse_requires_guard(&mut self) -> PResult<String> {
+        self.advance();
+        self.expect(TokenKind::LParen)?;
+        let guard = self.expect_identifier()?;
+        self.expect(TokenKind::RParen)?;
+        Ok(guard)
     }
 
     fn parse_access_level(&mut self) -> PResult<AccessLevel> {
