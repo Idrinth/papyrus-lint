@@ -57,6 +57,8 @@
   `app/crates/papyrus-lint-core/`.
 - Output formatting crate only: `cargo test` from
   `app/crates/papyrus-lint-output/`.
+- Live / blob lint crate only: `cargo test` from
+  `app/crates/papyrus-lint-live/`.
 - LSP: `cargo test` from `app/crates/papyrus-lint-lsp/`, or
   `cargo run --manifest-path app/crates/papyrus-lint-lsp/Cargo.toml` for the
   `PapyrusLinterLsp` stdio binary. Document sync publishes diagnostics from
@@ -74,7 +76,7 @@
   watch` (or `npm run compile` for a one-off build) and F5 in VS Code to
   launch an Extension Development Host. Not part of the app's npm
   project — it has its own `package.json`/`tsconfig.json`/`eslint.config.js`.
-- Rust coverage for any of the nine reusable linting crates above: `cargo llvm-cov
+- Rust coverage for any of the reusable linting crates above: `cargo llvm-cov
   --manifest-path <crate>/Cargo.toml` (requires the
   [`cargo-llvm-cov`](https://github.com/taiki-e/cargo-llvm-cov) subcommand
   and the `llvm-tools-preview` rustup component).

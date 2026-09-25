@@ -82,12 +82,16 @@ pub(crate) fn parse_papyrus_script(source: &str) -> Result<papyrus_parser::ast::
     papyrus_parser::parse(source).map_err(|e| e.to_string())
 }
 
+/// Lints an in-memory buffer the same way CLI `--blob` and the LSP snapshot
+/// do: [`papyrus_lint_live::lint_source`], no project-level machinery.
+/// `config` is the desktop app's current settings (including unsaved
+/// Settings-tab toggles), not a file walk.
 #[tauri::command(async)]
 pub(crate) fn lint_papyrus_script(
     source: &str,
     config: papyrus_lints::Config,
 ) -> Vec<papyrus_lints::Diagnostic> {
-    papyrus_lints::lint(source, &config)
+    papyrus_lint_live::lint_source(source, &config).diagnostics
 }
 
 /// Reads the `.psc` file at `path` and parses it into a `Script` AST,

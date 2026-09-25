@@ -87,7 +87,8 @@ fn relevant_diagnostics(params: &Value, text: &str, config: &Config) -> Vec<Valu
     }
     let start = params["range"]["start"]["line"].as_u64().unwrap_or(0);
     let end = params["range"]["end"]["line"].as_u64().unwrap_or(start);
-    papyrus_lints::lint(text, config)
+    papyrus_lint_live::lint_source(text, config)
+        .diagnostics
         .into_iter()
         .filter(|diagnostic| {
             let line = diagnostic.line.saturating_sub(1) as u64;

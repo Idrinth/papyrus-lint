@@ -19,6 +19,7 @@ papyrus-lints = { path = "../papyrus-lints" }
 papyrus-lint-core = { path = "../papyrus-lint-core" }
 papyrus-lint-config = { path = "../papyrus-lint-config" }
 papyrus-lint-output = { path = "../papyrus-lint-output" }
+papyrus-lint-live = { path = "../papyrus-lint-live" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 # Report color/suggestions are implemented in this crate, not clap's.

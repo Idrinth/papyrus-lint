@@ -1,8 +1,8 @@
 use std::io::Write;
 use std::path::Path;
 
-use papyrus_lint_config as config;
 use papyrus_lint_core::content_hash;
+use papyrus_lint_live::{config_from_override, lint_source, ParserFailure, ParserFailureKind};
 
 use crate::output::*;
 
@@ -49,20 +49,18 @@ pub(crate) fn run_blob(
     stdout: &mut impl Write,
     stderr: &mut impl Write,
 ) -> u8 {
-    let lint_config = match config_path {
-        Some(path) => match config::load_config_from_path(path) {
-            Ok(config) => config,
-            Err(err) => {
-                let _ = writeln!(stderr, "error: failed to load lint config: {err}");
-                return 2;
-            }
-        },
-        None => papyrus_lints::Config::default(),
+    let lint_config = match config_from_override(config_path) {
+        Ok(config) => config,
+        Err(err) => {
+            let _ = writeln!(stderr, "error: failed to load lint config: {err}");
+            return 2;
+        }
     };
 
-    let mut diagnostics = papyrus_lints::lint(source, &lint_config);
-    let parser_errors = collect_parser_errors(source);
-    let parse_failed = !parser_errors.is_empty();
+    let analysis = lint_source(source, &lint_config);
+    let parse_failed = analysis.parse_failed();
+    let mut diagnostics = analysis.diagnostics;
+    let parser_errors = blob_parser_errors(analysis.parser_failure);
     let should_fail = finalize_diagnostics(
         &mut diagnostics,
         &lint_config,
@@ -226,6 +224,21 @@ fn write_blob_plain(
         "{}",
         colorize(&summary, summary_color, use_color)
     );
+}
+
+fn blob_parser_errors(failure: Option<ParserFailure>) -> Vec<JsonParserError> {
+    let Some(failure) = failure else {
+        return Vec::new();
+    };
+    vec![JsonParserError {
+        kind: match failure.kind {
+            ParserFailureKind::Lex => ParserErrorKind::Lex,
+            ParserFailureKind::Parse => ParserErrorKind::Parse,
+        },
+        line: failure.line,
+        column: failure.column,
+        message: failure.message,
+    }]
 }
 
 #[cfg(test)]
