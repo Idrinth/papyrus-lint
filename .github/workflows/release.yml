@@ -194,6 +194,7 @@ jobs:
 
             const cratesCargoPaths = [
               'app/crates/papyrus-lint-cli/Cargo.toml',
+              'app/crates/papyrus-lint-lsp/Cargo.toml',
               'app/crates/papyrus-parser/Cargo.toml',
               'app/crates/papyrus-lints/Cargo.toml',
               'app/crates/papyrus-lint-config/Cargo.toml',
@@ -220,6 +221,7 @@ jobs:
           workspaces: |
             app/src-tauri
             app/crates/papyrus-lint-cli
+            app/crates/papyrus-lint-lsp
 
       - name: Install frontend dependencies
         working-directory: app
@@ -244,7 +246,11 @@ jobs:
         shell: bash
         run: cargo build --release --manifest-path app/crates/papyrus-lint-cli/Cargo.toml
 
-      - name: Package CLI binary
+      - name: Build LSP
+        shell: bash
+        run: cargo build --release --manifest-path app/crates/papyrus-lint-lsp/Cargo.toml
+
+      - name: Package CLI and LSP binaries
         shell: bash
         run: |
           mkdir -p cli-dist hash-binaries
@@ -252,16 +258,19 @@ jobs:
             windows-latest)
               cp app/crates/papyrus-lint-cli/target/release/PapyrusLinterCLI.exe cli-dist/PapyrusLinterCLI-windows.exe
               cp app/crates/papyrus-lint-cli/target/release/PapyrusLinterCLI.exe hash-binaries/PapyrusLinterCLI-windows.exe
+              cp app/crates/papyrus-lint-lsp/target/release/PapyrusLinterLsp.exe cli-dist/PapyrusLinterLsp-windows.exe
               cp app/src-tauri/target/release/PapyrusLinter.exe hash-binaries/PapyrusLinter-windows.exe
               ;;
             macos-latest)
               cp app/crates/papyrus-lint-cli/target/release/PapyrusLinterCLI cli-dist/PapyrusLinterCLI-macos
               cp app/crates/papyrus-lint-cli/target/release/PapyrusLinterCLI hash-binaries/PapyrusLinterCLI-macos
+              cp app/crates/papyrus-lint-lsp/target/release/PapyrusLinterLsp cli-dist/PapyrusLinterLsp-macos
               cp app/src-tauri/target/release/PapyrusLinter hash-binaries/PapyrusLinter-macos
               ;;
             *)
               cp app/crates/papyrus-lint-cli/target/release/PapyrusLinterCLI cli-dist/PapyrusLinterCLI-linux
               cp app/crates/papyrus-lint-cli/target/release/PapyrusLinterCLI hash-binaries/PapyrusLinterCLI-linux
+              cp app/crates/papyrus-lint-lsp/target/release/PapyrusLinterLsp cli-dist/PapyrusLinterLsp-linux
               cp app/src-tauri/target/release/PapyrusLinter hash-binaries/PapyrusLinter-linux
               ;;
           esac
@@ -278,7 +287,7 @@ jobs:
         shell: bash
         run: cp configuration/papyrus-lint.default.yaml cli-dist/papyrus-lint.yaml
 
-      - name: Upload CLI and default configuration to release
+      - name: Upload CLI, LSP, and default configuration to release
         shell: bash
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -404,6 +413,9 @@ jobs:
             "PapyrusLinterCLI-linux"
             "PapyrusLinterCLI-macos"
             "PapyrusLinterCLI-windows.exe"
+            "PapyrusLinterLsp-linux"
+            "PapyrusLinterLsp-macos"
+            "PapyrusLinterLsp-windows.exe"
             "PapyrusLinter-windows-x64_setup.exe"
             "PapyrusLinter-windows-x64.msi"
             "PapyrusLinter-linux-x86_64.rpm"
@@ -468,6 +480,9 @@ jobs:
             -p "PapyrusLinterCLI-linux" \
             -p "PapyrusLinterCLI-macos" \
             -p "PapyrusLinterCLI-windows.exe" \
+            -p "PapyrusLinterLsp-linux" \
+            -p "PapyrusLinterLsp-macos" \
+            -p "PapyrusLinterLsp-windows.exe" \
             -p "PapyrusLinter-windows-x64_setup.exe" \
             -p "PapyrusLinter-windows-x64.msi" \
             -p "PapyrusLinter-linux-x86_64.rpm" \
