@@ -217,7 +217,8 @@ fn project_lint_events(paths: Vec<String>, context: ProjectLintContext) -> Vec<s
         Ok(())
     });
     lint_project_scripts(paths, context, Some(channel).into());
-    seen.lock().unwrap().clone()
+    let events = seen.lock().unwrap().clone();
+    events
 }
 
 #[test]
