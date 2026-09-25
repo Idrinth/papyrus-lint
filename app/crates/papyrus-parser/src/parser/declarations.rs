@@ -110,7 +110,13 @@ impl Parser {
             return Ok(());
         }
 
-        if self.mode.has_starfield_dialect() && self.at_keyword(Keyword::Guard) {
+        // Not a reserved word: Skyrim uses it as a name (`Actor guard`).
+        // Starfield recognizes the declaration here; other editions reject
+        // that form instead of the token.
+        if self.at_identifier_ignore_ascii_case("Guard") {
+            if !self.mode.has_starfield_dialect() {
+                return Err(self.error("Guard is a Starfield declaration"));
+            }
             script.guards.push(self.parse_guard()?);
             return Ok(());
         }
@@ -170,9 +176,10 @@ impl Parser {
     }
 
     /// Starfield only: `Guard <Name> [ProtectsFunctionLogic]`.
+    /// The caller has already recognized the leading `Guard` identifier.
     fn parse_guard(&mut self) -> PResult<GuardDecl> {
         let line = self.current().line;
-        self.expect_keyword(Keyword::Guard)?;
+        self.advance();
         let name = self.expect_identifier()?;
         let protects_function_logic =
             if self.at_identifier_ignore_ascii_case("ProtectsFunctionLogic") {

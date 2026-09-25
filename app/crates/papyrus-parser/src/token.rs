@@ -67,9 +67,6 @@ pub enum Keyword {
     Collapsed,
     CollapsedOnBase,
     CollapsedOnRef,
-    /// Starfield only: introduces a `Guard <Name> [ProtectsFunctionLogic]`
-    /// declaration. See [`crate::parser::GameEdition::Starfield`].
-    Guard,
 }
 
 impl Keyword {
@@ -119,7 +116,6 @@ impl Keyword {
             "collapsed" => Collapsed,
             "collapsedonbase" => CollapsedOnBase,
             "collapsedonref" => CollapsedOnRef,
-            "guard" => Guard,
             _ => return Option::None,
         })
     }

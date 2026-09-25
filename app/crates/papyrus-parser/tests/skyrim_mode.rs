@@ -256,3 +256,19 @@ fn rejects_guard_declarations() {
         "a bare Guard is Starfield only",
     );
 }
+
+#[test]
+fn accepts_guard_as_an_identifier() {
+    let script = parse(
+        "ScriptName UsesGuard\n\n\
+         Actor guard\n\n\
+         Function Warn(Actor guard)\n\
+             guard.StartCombat(guard)\n\
+         EndFunction\n",
+    )
+    .expect("Skyrim does not reserve Guard");
+
+    assert_eq!(script.variables[0].name, "guard");
+    assert_eq!(script.functions[0].params[0].name, "guard");
+    assert!(script.guards.is_empty());
+}
