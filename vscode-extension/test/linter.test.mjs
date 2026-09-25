@@ -28,7 +28,7 @@ describe('PapyrusLinter', () => {
 
     assert.deepEqual(harness.execCalls[0], {
       executable: '/tools/PapyrusLinterCLI',
-      args: ['--config', '/project/custom.yaml', '--json', '/project/Test.PSC'],
+      args: ['--config', '/project/custom.yaml', 'lint', '--format', 'json', '/project/Test.PSC'],
       options: { cwd: '/project', maxBuffer: 10 * 1024 * 1024 },
     });
     const published = harness.diagnostics.published[0][1][0];
@@ -103,7 +103,7 @@ describe('PapyrusLinter', () => {
     await harness.commands.get('papyrusLint.fixFile')(target);
 
     assert.equal(saves, 1);
-    assert.deepEqual(harness.execCalls[0].args, ['fix', '--json', '/project/Test.psc']);
+    assert.deepEqual(harness.execCalls[0].args, ['fix', '--format', 'json', '/project/Test.psc']);
     assert.deepEqual(harness.messages.information, ['Papyrus Lint: fixed Test.psc. 0 issue(s) remain.']);
   });
 
@@ -136,7 +136,7 @@ describe('PapyrusLinter', () => {
 
     assert.equal(saves, 1);
     assert.deepEqual(harness.execCalls[0].args, [
-      'fix', '--type', 'trailing-whitespace', '--line', '3', '--json', '/project/Test.psc',
+      'fix', '--type', 'trailing-whitespace', '--line', '3', '--format', 'json', '/project/Test.psc',
     ]);
     assert.deepEqual(harness.messages.information, [
       'Papyrus Lint: fixed "trailing-whitespace" on line 3 of Test.psc.',
@@ -325,7 +325,7 @@ describe('workspace-root config auto-detection', () => {
 
     await harness.commands.get('papyrusLint.lintFile')(uri(scriptPath));
 
-    assert.deepEqual(harness.execCalls[0].args, ['--config', configFile, '--json', scriptPath]);
+    assert.deepEqual(harness.execCalls[0].args, ['--config', configFile, 'lint', '--format', 'json', scriptPath]);
   });
 
   it('leaves args untouched when the document is outside every open workspace folder', async () => {
@@ -336,7 +336,7 @@ describe('workspace-root config auto-detection', () => {
 
     await harness.commands.get('papyrusLint.lintFile')(uri('/elsewhere/Test.psc'));
 
-    assert.deepEqual(harness.execCalls[0].args, ['--json', '/elsewhere/Test.psc']);
+    assert.deepEqual(harness.execCalls[0].args, ['lint', '--format', 'json', '/elsewhere/Test.psc']);
   });
 
   it('leaves args untouched when no config file exists anywhere in the workspace folder', async () => {
@@ -347,7 +347,7 @@ describe('workspace-root config auto-detection', () => {
 
     await harness.commands.get('papyrusLint.lintFile')(uri(scriptPath));
 
-    assert.deepEqual(harness.execCalls[0].args, ['--json', scriptPath]);
+    assert.deepEqual(harness.execCalls[0].args, ['lint', '--format', 'json', scriptPath]);
   });
 
   it('still prefers the explicit papyrusLint.configPath setting over an auto-detected workspace config', async () => {
@@ -362,6 +362,6 @@ describe('workspace-root config auto-detection', () => {
 
     await harness.commands.get('papyrusLint.lintFile')(uri(scriptPath));
 
-    assert.deepEqual(harness.execCalls[0].args, ['--config', '/explicit/override.yaml', '--json', scriptPath]);
+    assert.deepEqual(harness.execCalls[0].args, ['--config', '/explicit/override.yaml', 'lint', '--format', 'json', scriptPath]);
   });
 });
