@@ -179,6 +179,7 @@ impl<R: BufRead, W: Write> Server<R, W> {
             return write_result(&mut self.output, id, Value::Null);
         };
         let original = document.text.clone();
+        let version = document.version;
         self.next_request += 1;
         let request_id = json!(format!("papyrus-lint-{}", self.next_request));
         let body = serde_json::to_vec(&json!({
@@ -187,7 +188,7 @@ impl<R: BufRead, W: Write> Server<R, W> {
             "method": "workspace/applyEdit",
             "params": {
                 "label": "Papyrus Lint: fix file",
-                "edit": code_actions::replace_edit(&uri, &original, &repaired),
+                "edit": code_actions::replace_edit(&uri, version, &original, &repaired),
             }
         }))
         .expect("applyEdit json");
@@ -196,8 +197,14 @@ impl<R: BufRead, W: Write> Server<R, W> {
         if response.get("error").is_some() || response["result"]["applied"] == false {
             return write_error(&mut self.output, id, REQUEST_FAILED, "edit was not applied");
         }
-        self.documents
-            .replace_text(&uri, repaired, &mut self.output)?;
+        let unchanged = self
+            .documents
+            .get(&uri)
+            .is_some_and(|document| document.text == original);
+        if unchanged {
+            self.documents
+                .replace_text(&uri, repaired, &mut self.output)?;
+        }
         write_result(&mut self.output, id, Value::Null)
     }
 

@@ -55,7 +55,13 @@ fn offers_fix_and_ignore_for_trailing_whitespace() {
         .iter()
         .find(|action| action["title"].as_str().unwrap().starts_with("Fix"))
         .unwrap();
-    let new_text = fix["edit"]["changes"][&uri][0]["newText"].as_str().unwrap();
+    assert_eq!(
+        fix["edit"]["documentChanges"][0]["textDocument"],
+        json!({ "uri": uri, "version": 1 })
+    );
+    let new_text = fix["edit"]["documentChanges"][0]["edits"][0]["newText"]
+        .as_str()
+        .unwrap();
     assert!(new_text.starts_with("Scriptname Quest\n") || new_text == "Scriptname Quest\n");
     assert!(!new_text.contains("Quest \n"));
 }
