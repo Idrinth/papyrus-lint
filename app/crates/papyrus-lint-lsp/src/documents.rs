@@ -152,7 +152,10 @@ pub(crate) fn config_for_uri(uri: &str) -> Config {
 
 pub(crate) fn file_uri_to_path(uri: &str) -> Option<PathBuf> {
     let rest = uri.strip_prefix("file://")?;
-    let rest = rest.strip_prefix("//localhost").unwrap_or(rest);
+    let rest = rest
+        .strip_prefix("localhost")
+        .or_else(|| rest.strip_prefix("//localhost"))
+        .unwrap_or(rest);
     if !rest.starts_with('/') {
         return None;
     }
