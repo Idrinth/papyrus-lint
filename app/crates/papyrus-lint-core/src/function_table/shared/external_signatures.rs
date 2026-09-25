@@ -189,6 +189,27 @@ impl papyrus_lints::ExternalSignatures for SharedFunctionTable<'_> {
         )
     }
 
+    fn function_return_type(
+        &mut self,
+        type_name: &str,
+        function_name: &str,
+    ) -> Option<papyrus_parser::ast::TypeName> {
+        self.probe_or_load(
+            |table| {
+                table
+                    .lookup_function_cached(type_name, function_name)
+                    .map(|signature| signature.and_then(|signature| signature.return_type.clone()))
+            },
+            |table| {
+                papyrus_lints::ExternalSignatures::function_return_type(
+                    table,
+                    type_name,
+                    function_name,
+                )
+            },
+        )
+    }
+
     fn ancestry_fully_known(&mut self, type_name: &str) -> bool {
         self.probe_or_load(
             |table| table.ancestry_fully_known_cached(type_name),

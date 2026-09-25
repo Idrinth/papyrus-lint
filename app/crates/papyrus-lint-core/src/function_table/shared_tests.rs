@@ -61,6 +61,13 @@ fn shared_function_table_forwards_every_external_signature_lookup() {
         shared.is_nodiscard_function("Helpers", "RegisterFoo"),
         Some(true)
     );
+    assert_eq!(
+        shared.function_return_type("Helpers", "RegisterFoo"),
+        Some(papyrus_parser::ast::TypeName {
+            name: "Int".to_string(),
+            is_array: false,
+        })
+    );
     assert!(shared.ancestry_fully_known("Child"));
     assert!(shared.function_access("Helpers", "Run").is_some());
     assert!(shared.property_access("Properties", "Name").is_some());
@@ -112,6 +119,7 @@ fn every_external_signature_lookup_can_fill_an_uncached_script() {
         "NodiscardFunction",
         "DeprecatedFunction",
         "SideEffects",
+        "FunctionReturnType",
     ] {
         write_script(root.path(), name, &function_source.replace("{name}", name));
     }
@@ -163,6 +171,13 @@ fn every_external_signature_lookup_can_fill_an_uncached_script() {
         shared.function_has_side_effects("SideEffects", "Run"),
         Some(false)
     );
+    assert_eq!(
+        shared.function_return_type("FunctionReturnType", "RegisterFoo"),
+        Some(papyrus_parser::ast::TypeName {
+            name: "Int".to_string(),
+            is_array: false,
+        })
+    );
     assert!(shared.ancestry_fully_known("KnownAncestry"));
     assert_eq!(shared.property_types("PropertyTypes"), vec!["String"]);
 }
@@ -182,6 +197,7 @@ fn cached_negative_results_are_returned_without_a_write_lock() {
     assert_eq!(shared.is_nodiscard_function("Known", "Missing"), None);
     assert_eq!(shared.deprecated_function("Known", "Missing"), None);
     assert_eq!(shared.function_has_side_effects("Known", "Missing"), None);
+    assert_eq!(shared.function_return_type("Known", "Missing"), None);
     assert!(shared.function_access("Known", "Missing").is_none());
     assert!(shared.property_access("Known", "Missing").is_none());
 
@@ -199,6 +215,7 @@ fn cached_negative_results_are_returned_without_a_write_lock() {
     assert_eq!(shared.is_nodiscard_function("Known", "Missing"), None);
     assert_eq!(shared.deprecated_function("Known", "Missing"), None);
     assert_eq!(shared.function_has_side_effects("Known", "Missing"), None);
+    assert_eq!(shared.function_return_type("Known", "Missing"), None);
     assert!(shared.function_access("Known", "Missing").is_none());
     assert!(shared.property_access("Known", "Missing").is_none());
     assert!(shared.list_members("Known").is_empty());

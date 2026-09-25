@@ -11,11 +11,16 @@
 //! one of its ancestors.
 //!
 //! A function with no declared return type isn't checked (`Return` with a
-//! value there is a script author error of a different kind), and a
-//! `Return` whose value's type can't be determined from the script alone
-//! is skipped rather than guessed at, to keep false positives rare.
+//! value there is a script author error of a different kind). A `Return`
+//! whose value's type can't be determined from the script alone is still
+//! checked when the value is a call whose return type can be resolved
+//! locally or through [`ExternalSignatures::function_return_type`]; any
+//! other unresolved value is skipped rather than guessed at, to keep
+//! false positives rare.
 
-use papyrus_parser::ast::{Expr, FunctionDecl, IfBranch, Literal, Script, Stmt, TypeName};
+use std::collections::HashMap;
+
+use papyrus_parser::ast::{Expr, FunctionDecl, Literal, Script, Stmt, TypeName};
 use papyrus_parser::types::{infer_type, TypeEnv};
 
 use crate::argument_types;
@@ -30,6 +35,7 @@ pub const RULE: &str = "return-types";
 struct Collect {
     store: Store,
     env: Option<TypeEnv>,
+    locals: LocalReturns,
     return_type: Option<TypeName>,
     function_name: String,
 }
@@ -41,6 +47,7 @@ impl AstLint for Collect {
 
     fn visit_script(&mut self, script: &Script, _ctx: &mut VisitCtx<'_>) {
         self.env = Some(TypeEnv::for_script(script));
+        self.locals = LocalReturns::from_script(script);
     }
 
     fn visit_function(&mut self, function: &FunctionDecl, _ctx: &mut VisitCtx<'_>) {
@@ -74,15 +81,22 @@ impl AstLint for Collect {
             return;
         };
         let mut diagnostics = Vec::new();
-        check_return(
-            *line,
-            value,
-            return_type,
-            &self.function_name,
-            env,
-            ctx.external,
-            &mut diagnostics,
-        );
+        if matches!(value, Expr::Literal(Literal::None)) {
+            if !argument_types::accepts_none(return_type) {
+                diagnostics.push(mismatch(*line, &self.function_name, return_type, "None"));
+            }
+        } else if let Some(value_type) =
+            infer_returned_type(value, env, &self.locals, ctx.external)
+        {
+            if !argument_types::is_compatible(return_type, &value_type, ctx.external) {
+                diagnostics.push(mismatch(
+                    *line,
+                    &self.function_name,
+                    return_type,
+                    &argument_types::format_type(&value_type),
+                ));
+            }
+        }
         self.store.extend(diagnostics);
     }
 }
@@ -110,34 +124,58 @@ pub fn check(
 /// `external` so a value whose script extends (directly or transitively)
 /// the declared return type is accepted.
 #[allow(dead_code)] // unit tests; collect_diagnostics uses visitor()
-pub fn check_with<E: ExternalSignatures + ?Sized>(
+pub fn check_with<E: ExternalSignatures>(
     ast: Option<&Script>,
     external: &mut E,
 ) -> Vec<Diagnostic> {
-    let Some(script) = ast else {
-        return Vec::new();
-    };
+    crate::visitor::run(
+        visitor(),
+        "",
+        ast,
+        None,
+        &crate::config::Config::default(),
+        external,
+    )
+}
 
-    let mut env = TypeEnv::for_script(script);
-    let mut diagnostics = Vec::new();
+/// Return types of the functions declared in the script being linted,
+/// keyed by lowercased name. A name declared more than once (e.g.
+/// overridden in a state) with differing return types is stored as
+/// missing, since which declaration applies at a given call site can't be
+/// determined here.
+#[derive(Default)]
+struct LocalReturns {
+    by_name: HashMap<String, Option<Option<TypeName>>>,
+}
 
-    for function in all_functions(script) {
-        let Some(return_type) = function.return_type.clone() else {
-            continue;
-        };
-        env.with_function_scope(function, |scoped| {
-            check_body(
-                &function.body,
-                scoped,
-                &return_type,
-                &function.name,
-                external,
-                &mut diagnostics,
-            );
-        });
+impl LocalReturns {
+    fn from_script(script: &Script) -> Self {
+        let mut grouped: HashMap<String, Vec<Option<TypeName>>> = HashMap::new();
+        for function in all_functions(script) {
+            grouped
+                .entry(function.name.to_ascii_lowercase())
+                .or_default()
+                .push(function.return_type.clone());
+        }
+
+        let by_name = grouped
+            .into_iter()
+            .map(|(name, types)| {
+                let first = types[0].clone();
+                let consistent = types.iter().all(|return_type| return_type == &first);
+                (name, consistent.then_some(first))
+            })
+            .collect();
+
+        LocalReturns { by_name }
     }
 
-    diagnostics
+    fn lookup(&self, name: &str) -> Option<&TypeName> {
+        self.by_name
+            .get(&name.to_ascii_lowercase())?
+            .as_ref()?
+            .as_ref()
+    }
 }
 
 /// Iterates every function declared directly on a script, plus every
@@ -151,94 +189,49 @@ fn all_functions(script: &Script) -> impl Iterator<Item = &FunctionDecl> {
     )
 }
 
-fn check_body<E: ExternalSignatures + ?Sized>(
-    body: &[Stmt],
+fn infer_returned_type<E: ExternalSignatures + ?Sized>(
+    value: &Expr,
     env: &TypeEnv,
-    return_type: &TypeName,
-    function_name: &str,
+    locals: &LocalReturns,
     external: &mut E,
-    diagnostics: &mut Vec<Diagnostic>,
-) {
-    for stmt in body {
-        match stmt {
-            Stmt::Return {
-                value: Some(value),
-                line,
-            } => {
-                check_return(
-                    *line,
-                    value,
-                    return_type,
-                    function_name,
-                    env,
-                    external,
-                    diagnostics,
-                );
-            }
-            Stmt::Return { value: None, .. } => {}
-            Stmt::If {
-                branches,
-                else_body,
-                ..
-            } => {
-                for IfBranch { body, .. } in branches {
-                    check_body(body, env, return_type, function_name, external, diagnostics);
-                }
-                check_body(
-                    else_body,
-                    env,
-                    return_type,
-                    function_name,
-                    external,
-                    diagnostics,
-                );
-            }
-            Stmt::While { body, .. } => {
-                check_body(body, env, return_type, function_name, external, diagnostics);
-            }
-            Stmt::LockGuard { body, else_body, .. } => {
-                check_body(body, env, return_type, function_name, external, diagnostics);
-                check_body(
-                    else_body,
-                    env,
-                    return_type,
-                    function_name,
-                    external,
-                    diagnostics,
-                );
-            }
-            Stmt::VarDecl(_) | Stmt::Assign { .. } | Stmt::Expr { .. } => {}
-        }
+) -> Option<TypeName> {
+    if let Some(value_type) = infer_type(value, env) {
+        return Some(value_type);
+    }
+    match value {
+        Expr::Call { callee, .. } => resolve_call_return_type(callee, env, locals, external),
+        Expr::NamedArg { value, .. } => infer_returned_type(value, env, locals, external),
+        _ => None,
     }
 }
 
-fn check_return<E: ExternalSignatures + ?Sized>(
-    line: usize,
-    value: &Expr,
-    return_type: &TypeName,
-    function_name: &str,
+fn resolve_call_return_type<E: ExternalSignatures + ?Sized>(
+    callee: &Expr,
     env: &TypeEnv,
+    locals: &LocalReturns,
     external: &mut E,
-    diagnostics: &mut Vec<Diagnostic>,
-) {
-    if matches!(value, Expr::Literal(Literal::None)) {
-        if !argument_types::accepts_none(return_type) {
-            diagnostics.push(mismatch(line, function_name, return_type, "None"));
+) -> Option<TypeName> {
+    let (object_type, function_name) = match callee {
+        Expr::Identifier(name) => {
+            if let Some(return_type) = locals.lookup(name) {
+                return Some(return_type.clone());
+            }
+            (infer_type(&Expr::Self_, env)?, name.as_str())
         }
-        return;
-    }
-
-    let Some(value_type) = infer_type(value, env) else {
-        return;
+        Expr::Member { object, property } => {
+            if matches!(**object, Expr::Self_) {
+                if let Some(return_type) = locals.lookup(property) {
+                    return Some(return_type.clone());
+                }
+            }
+            (infer_type(object, env)?, property.as_str())
+        }
+        _ => return None,
     };
-    if !argument_types::is_compatible(return_type, &value_type, external) {
-        diagnostics.push(mismatch(
-            line,
-            function_name,
-            return_type,
-            &argument_types::format_type(&value_type),
-        ));
+    if object_type.is_array {
+        return None;
     }
+    external.function_return_type(&object_type.name, function_name)
 }
 
 fn mismatch(line: usize, function_name: &str, return_type: &TypeName, got: &str) -> Diagnostic {

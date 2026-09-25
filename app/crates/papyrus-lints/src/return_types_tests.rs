@@ -12,7 +12,7 @@ fn check(source: &str) -> Vec<Diagnostic> {
     )
 }
 
-fn check_with<E: ExternalSignatures + ?Sized>(source: &str, external: &mut E) -> Vec<Diagnostic> {
+fn check_with<E: ExternalSignatures>(source: &str, external: &mut E) -> Vec<Diagnostic> {
     let ast = papyrus_parser::parse(source).ok();
     super::check_with(ast.as_ref(), external)
 }
@@ -110,7 +110,90 @@ fn does_not_crash_on_unparseable_source() {
     assert!(diagnostics.is_empty());
 }
 
+#[test]
+fn flags_getitemcount_returned_from_a_bool_function() {
+    let diagnostics = check_with(
+        r#"ScriptName Example
+
+Bool Function HasEnoughGold(Actor akActor, Int amount)
+    Return akActor.GetItemCount(Gold001)
+EndFunction
+"#,
+        &mut FakeExternalWithItemCount,
+    );
+
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!(diagnostics[0].line, 4);
+    assert!(diagnostics[0].message.contains("'HasEnoughGold'"));
+    assert!(diagnostics[0].message.contains("declares return type Bool"));
+    assert!(diagnostics[0].message.contains("returns Int"));
+}
+
+#[test]
+fn allows_getitemcount_compared_against_the_required_amount() {
+    let diagnostics = check_with(
+        r#"ScriptName Example
+
+Bool Function HasEnoughGold(Actor akActor, Int amount)
+    Return akActor.GetItemCount(Gold001) >= amount
+EndFunction
+"#,
+        &mut FakeExternalWithItemCount,
+    );
+
+    assert!(diagnostics.is_empty());
+}
+
+#[test]
+fn flags_a_local_call_returned_with_the_wrong_type() {
+    let diagnostics = check(
+        r#"ScriptName Example
+
+Int Function Helper()
+    Return 1
+EndFunction
+
+Bool Function Test()
+    Return Helper()
+EndFunction
+"#,
+    );
+
+    assert_eq!(diagnostics.len(), 1);
+    assert!(diagnostics[0].message.contains("'Test'"));
+    assert!(diagnostics[0].message.contains("declares return type Bool"));
+    assert!(diagnostics[0].message.contains("returns Int"));
+}
+
+
+struct FakeExternalWithItemCount;
 struct FakeExternalWithSubtypes;
+
+impl ExternalSignatures for FakeExternalWithItemCount {
+    fn lookup(
+        &mut self,
+        _type_name: &str,
+        _function_name: &str,
+    ) -> Option<Vec<crate::external_signatures::ParamInfo>> {
+        None
+    }
+
+    fn function_return_type(
+        &mut self,
+        type_name: &str,
+        function_name: &str,
+    ) -> Option<papyrus_parser::ast::TypeName> {
+        let actor_like = type_name.eq_ignore_ascii_case("Actor")
+            || type_name.eq_ignore_ascii_case("ObjectReference");
+        if actor_like && function_name.eq_ignore_ascii_case("GetItemCount") {
+            return Some(papyrus_parser::ast::TypeName {
+                name: "Int".to_string(),
+                is_array: false,
+            });
+        }
+        None
+    }
+}
 
 impl ExternalSignatures for FakeExternalWithSubtypes {
     fn lookup(
