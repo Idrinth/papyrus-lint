@@ -819,6 +819,7 @@ jobs:
             -p 'papyrus-lint.yaml' \
             -p 'SublimeLinter-contrib-papyrus-lint.zip' \
             -p 'papyrus-lint-vscode.vsix'
+            -p '*Lsp.exe'
 
       - name: Zip default config
         run: |
@@ -834,6 +835,7 @@ jobs:
         run: |
           cd nexus-dist
           mv ./*setup.exe ../setup.exe
+          mv ./*Lsp.exe ../lsp.exe
           mv SublimeLinter-contrib-papyrus-lint.zip ../sublime.zip
           mv PapyrusLinterCLI-windows.exe ../cli.exe
 
@@ -862,7 +864,7 @@ jobs:
           category: optional
           display_name: "PapyrusLinterCLI (Windows)"
           allow_mod_manager_download: false
-          description: "Windows CLI executable, for other operating systems see github release."
+          description: "Windows CLI(Command Line Interface) executable, for other operating systems see github release."
       - name: Upload to NexusMods (config)
         uses: Nexus-Mods/upload-action@v1.0.0-beta.10
         with:
@@ -896,3 +898,14 @@ jobs:
           display_name: "Papyrus Lint SublimeLinter Plugin"
           allow_mod_manager_download: false
           description: "Requires one of the executables from main, if not provided will download one from the github release."
+      - name: Upload to NexusMods (lsp)
+        uses: Nexus-Mods/upload-action@v1.0.0-beta.10
+        with:
+          api_key: ${{ secrets.NEXUSMODS_API_KEY }}
+          file_id: "8024892"
+          filename: lsp.exe
+          version: ${{ github.ref_name }}
+          category: optional
+          display_name: "PapyrusLinterLSP (Windows)"
+          allow_mod_manager_download: false
+          description: "This is a LSP(Language Server Protocol) Server to be used with editors not better supported yet, for other operating systems see github release."
