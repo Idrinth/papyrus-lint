@@ -828,7 +828,7 @@ jobs:
             -p 'papyrus-lint.yaml' \
             -p 'SublimeLinter-contrib-papyrus-lint.zip' \
             -p 'papyrus-lint-vscode.vsix' \
-            -p '*Lsp.exe'
+            -p '*Lsp-windows.exe'
 
       - name: Zip default config
         run: |
