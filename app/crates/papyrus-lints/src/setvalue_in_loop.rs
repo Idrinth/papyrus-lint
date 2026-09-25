@@ -57,8 +57,7 @@ impl crate::visitor::AstLint for Collect {
         ctx: &mut crate::visitor::VisitCtx<'_>,
     ) {
         let mut diagnostics = Vec::new();
-        check_body(&function.body, &mut diagnostics);
-        let _ = ctx;
+        check_body(&function.body, ctx.ast, &mut diagnostics);
         self.store.extend(diagnostics);
     }
 }
@@ -83,16 +82,20 @@ pub fn check(
 
 
 
-fn check_body(body: &[Stmt], diagnostics: &mut Vec<Diagnostic>) {
+fn check_body(
+    body: &[Stmt],
+    script: Option<&papyrus_parser::ast::Script>,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
     for stmt in body {
         match stmt {
             Stmt::While { body, .. } => {
-                check_while(body, diagnostics);
-                check_body(body, diagnostics);
+                check_while(body, script, diagnostics);
+                check_body(body, script, diagnostics);
             }
             Stmt::LockGuard { body, else_body, .. } => {
-                check_body(body, diagnostics);
-                check_body(else_body, diagnostics);
+                check_body(body, script, diagnostics);
+                check_body(else_body, script, diagnostics);
             }
             Stmt::If {
                 branches,
@@ -100,9 +103,9 @@ fn check_body(body: &[Stmt], diagnostics: &mut Vec<Diagnostic>) {
                 ..
             } => {
                 for IfBranch { body, .. } in branches {
-                    check_body(body, diagnostics);
+                    check_body(body, script, diagnostics);
                 }
-                check_body(else_body, diagnostics);
+                check_body(else_body, script, diagnostics);
             }
             Stmt::VarDecl(_) | Stmt::Assign { .. } | Stmt::Expr { .. } | Stmt::Return { .. } => {}
         }
@@ -113,8 +116,12 @@ fn check_body(body: &[Stmt], diagnostics: &mut Vec<Diagnostic>) {
 /// `SetValueInt` call found in it (see [`find_setvalue_calls`]) unless
 /// `body` also calls a wait/update-registration function anywhere within it
 /// (see [`contains_wait_call`]).
-fn check_while(body: &[Stmt], diagnostics: &mut Vec<Diagnostic>) {
-    if contains_wait_call(body) {
+fn check_while(
+    body: &[Stmt],
+    script: Option<&papyrus_parser::ast::Script>,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
+    if contains_wait_call(body, script) {
         return;
     }
     for write in find_setvalue_calls(body) {
@@ -212,20 +219,23 @@ fn receiver_display(expr: &Expr) -> String {
 /// `body`'s own loop), but not its body: pacing a nested loop internally
 /// doesn't pace the outer one, which is checked independently (see
 /// [`check_body`]).
-fn contains_wait_call(body: &[Stmt]) -> bool {
-    body.iter().any(stmt_contains_wait_call)
+fn contains_wait_call(body: &[Stmt], script: Option<&papyrus_parser::ast::Script>) -> bool {
+    body.iter().any(|stmt| stmt_contains_wait_call(stmt, script))
 }
 
-fn stmt_contains_wait_call(stmt: &Stmt) -> bool {
+fn stmt_contains_wait_call(stmt: &Stmt, script: Option<&papyrus_parser::ast::Script>) -> bool {
     match stmt {
-        Stmt::VarDecl(decl) => decl.value.as_ref().is_some_and(expr_contains_wait_call),
+        Stmt::VarDecl(decl) => decl
+            .value
+            .as_ref()
+            .is_some_and(|value| expr_contains_wait_call(value, script)),
         Stmt::Assign { target, value, .. } => {
-            expr_contains_wait_call(target) || expr_contains_wait_call(value)
+            expr_contains_wait_call(target, script) || expr_contains_wait_call(value, script)
         }
-        Stmt::Expr { value, .. } => expr_contains_wait_call(value),
+        Stmt::Expr { value, .. } => expr_contains_wait_call(value, script),
         Stmt::Return {
             value: Some(value), ..
-        } => expr_contains_wait_call(value),
+        } => expr_contains_wait_call(value, script),
         Stmt::Return { value: None, .. } => false,
         Stmt::If {
             branches,
@@ -233,22 +243,24 @@ fn stmt_contains_wait_call(stmt: &Stmt) -> bool {
             ..
         } => {
             branches.iter().any(|branch| {
-                expr_contains_wait_call(&branch.condition) || contains_wait_call(&branch.body)
-            }) || contains_wait_call(else_body)
+                expr_contains_wait_call(&branch.condition, script)
+                    || contains_wait_call(&branch.body, script)
+            }) || contains_wait_call(else_body, script)
         }
-        Stmt::While { condition, .. } => expr_contains_wait_call(condition),
+        Stmt::While { condition, .. } => expr_contains_wait_call(condition, script),
         Stmt::LockGuard { body, else_body, .. } => {
-            contains_wait_call(body) || contains_wait_call(else_body)
+            contains_wait_call(body, script) || contains_wait_call(else_body, script)
         }
     }
 }
 
-fn expr_contains_wait_call(expr: &Expr) -> bool {
+fn expr_contains_wait_call(expr: &Expr, script: Option<&papyrus_parser::ast::Script>) -> bool {
     if let Expr::Call { callee, args, .. } = expr {
-        if short_wait_interval::matching_function(callee).is_some() {
+        if short_wait_interval::matching_function(callee, script).is_some() {
             return true;
         }
-        return expr_contains_wait_call(callee) || args.iter().any(expr_contains_wait_call);
+        return expr_contains_wait_call(callee, script)
+            || args.iter().any(|arg| expr_contains_wait_call(arg, script));
     }
 
     match expr {
@@ -259,16 +271,16 @@ fn expr_contains_wait_call(expr: &Expr) -> bool {
         | Expr::Call { .. }
         | Expr::NewStruct { .. } => false,
         Expr::Binary { left, right, .. } => {
-            expr_contains_wait_call(left) || expr_contains_wait_call(right)
+            expr_contains_wait_call(left, script) || expr_contains_wait_call(right, script)
         }
-        Expr::Unary { operand, .. } => expr_contains_wait_call(operand),
-        Expr::NamedArg { value, .. } => expr_contains_wait_call(value),
-        Expr::Member { object, .. } => expr_contains_wait_call(object),
+        Expr::Unary { operand, .. } => expr_contains_wait_call(operand, script),
+        Expr::NamedArg { value, .. } => expr_contains_wait_call(value, script),
+        Expr::Member { object, .. } => expr_contains_wait_call(object, script),
         Expr::Index { object, index } => {
-            expr_contains_wait_call(object) || expr_contains_wait_call(index)
+            expr_contains_wait_call(object, script) || expr_contains_wait_call(index, script)
         }
-        Expr::Cast { value, .. } | Expr::Is { value, .. } => expr_contains_wait_call(value),
-        Expr::NewArray { size, .. } => expr_contains_wait_call(size),
+        Expr::Cast { value, .. } | Expr::Is { value, .. } => expr_contains_wait_call(value, script),
+        Expr::NewArray { size, .. } => expr_contains_wait_call(size, script),
     }
 }
 
