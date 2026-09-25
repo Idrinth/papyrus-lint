@@ -607,6 +607,7 @@ jobs:
             "Sublime Text Plugin"
             "VS Code Extension"
             "Frontend"
+            "Language Server"
             "Linting"
             "CI"
             "Parsing"
