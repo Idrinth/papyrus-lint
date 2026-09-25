@@ -54,19 +54,24 @@ pub(crate) fn eval_const(expr: &Expr) -> Option<Literal> {
 /// excluded; everything else is treated as a read.
 fn is_side_effect_free(expr: &Expr) -> bool {
     match expr {
-        Expr::Literal(_)
-        | Expr::Identifier(_)
-        | Expr::Self_
-        | Expr::Parent
-        | Expr::NewStruct { .. } => !matches!(expr, Expr::NewStruct { .. }),
-        Expr::Call { .. } | Expr::NamedArg { .. } | Expr::NewArray { .. } => false,
+        Expr::Literal(_) | Expr::Identifier(_) | Expr::Self_ | Expr::Parent => true,
+        Expr::Call { .. } | Expr::NamedArg { .. } | Expr::NewArray { .. } | Expr::NewStruct { .. } => {
+            false
+        }
         Expr::Unary { operand, .. } => is_side_effect_free(operand),
         Expr::Binary { left, right, .. } => {
             is_side_effect_free(left) && is_side_effect_free(right)
         }
-        Expr::Member { object, .. } | Expr::Cast { value: object, .. } | Expr::Is { value: object, .. } => {
-            is_side_effect_free(object)
+        Expr::Member {
+            object,
+            ..
         }
+        | Expr::Cast {
+            value: object, ..
+        }
+        | Expr::Is {
+            value: object, ..
+        } => is_side_effect_free(object),
         Expr::Index { object, index } => {
             is_side_effect_free(object) && is_side_effect_free(index)
         }
