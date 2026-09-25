@@ -146,7 +146,7 @@ fn preload_project_scripts_closes_over_a_parent_that_was_not_in_the_batch() {
 }
 
 #[test]
-fn preload_project_scripts_reports_resolving_progress_including_parents_outside_the_batch() {
+fn preload_project_scripts_reports_parsing_progress_including_parents_outside_the_batch() {
     let dir = tempdir().unwrap();
     let source_dir = dir.path().join("scripts/source");
     std::fs::create_dir_all(&source_dir).unwrap();
@@ -182,10 +182,10 @@ fn preload_project_scripts_reports_resolving_progress_including_parents_outside_
     );
 
     let seen = seen.lock().unwrap();
-    let resolving: Vec<(u64, u64)> = seen
+    let parsing: Vec<(u64, u64)> = seen
         .iter()
         .filter_map(|json| serde_json::from_str::<serde_json::Value>(json).ok())
-        .filter(|progress| progress["phase"] == "Resolving")
+        .filter(|progress| progress["phase"] == "Parsing")
         .map(|progress| {
             (
                 progress["completed"].as_u64().unwrap_or(0),
@@ -194,12 +194,12 @@ fn preload_project_scripts_reports_resolving_progress_including_parents_outside_
         })
         .collect();
     assert!(
-        resolving.len() >= 2,
-        "expected the seed and its parent to report progress, got {resolving:?}"
+        parsing.len() >= 2,
+        "expected the seed and its parent to report progress, got {parsing:?}"
     );
     assert!(
-        resolving.iter().any(|(_, total)| *total >= 2),
-        "expected the reported total to grow past the single lint target, got {resolving:?}"
+        parsing.iter().any(|(_, total)| *total >= 2),
+        "expected the reported total to grow past the single lint target, got {parsing:?}"
     );
     assert!(seen.iter().any(|json| json.contains("Indexing scripts")));
 }

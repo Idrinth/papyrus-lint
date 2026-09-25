@@ -375,7 +375,7 @@ pub(crate) fn preload_project_scripts(
                 emit_preload_progress(
                     on_progress.as_ref(),
                     PreloadProgress {
-                        phase: "Resolving".to_string(),
+                        phase: "Parsing".to_string(),
                         completed: done,
                         total: total_files.load(Ordering::SeqCst),
                     },

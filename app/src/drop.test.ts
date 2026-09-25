@@ -236,7 +236,7 @@ describe("handleDroppedPaths", () => {
     expect(order).toEqual(["preload_project_scripts", "lint_psc_file"]);
   });
 
-  it("moves the progress bar through resolving while referenced scripts are preloaded", async () => {
+  it("grows one Parsing bar while referenced scripts are preloaded", async () => {
     invokeImplFor({
       parse_achlist_file: () => ["A.psc"],
       load_lint_config: () => DEFAULT_LINT_CONFIG,
@@ -247,12 +247,13 @@ describe("handleDroppedPaths", () => {
         const bar = document.querySelector<HTMLProgressElement>("#lint-progress-bar")!;
         const busy = () => document.querySelector("#lint-progress")!.classList.contains("lint-progress--busy");
 
-        expect(label()).toBe("Resolving references");
-        expect(busy()).toBe(true);
-        expect(bar.hasAttribute("value")).toBe(false);
+        expect(label()).toBe("Parsing 0 / 1 files");
+        expect(busy()).toBe(false);
+        expect(bar.value).toBe(0);
+        expect(bar.max).toBe(1);
 
-        channel.onmessage({ phase: "Resolving", completed: 1, total: 2 });
-        expect(label()).toBe("Resolving 1 / 2 files");
+        channel.onmessage({ phase: "Parsing", completed: 1, total: 2 });
+        expect(label()).toBe("Parsing 1 / 2 files");
         expect(bar.value).toBe(1);
         expect(bar.max).toBe(2);
         expect(busy()).toBe(false);

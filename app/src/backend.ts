@@ -50,11 +50,11 @@ export async function lintPscFile(path: string): Promise<Diagnostic[]> {
 // correctly (just without this head start) either way.
 //
 // `onProgress` receives the same counts the CLI's "Parsing" bar prints
-// while the type closure walks referenced scripts (`phase` is "Resolving"
-// with a growing `total`), then one indeterminate "Indexing scripts"
-// update (`total` 0) while those parses are merged into the function
-// table. The channel is optional so a caller that cannot construct one
-// (unit tests mock this module without `Channel`) still preloads.
+// while the type closure walks referenced scripts (a growing `total`),
+// then one indeterminate "Indexing scripts" update (`total` 0) while
+// those parses are merged into the function table. The channel is
+// optional so a caller that cannot construct one (unit tests mock this
+// module without `Channel`) still preloads.
 export interface PreloadProgress {
   phase: string;
   completed: number;
