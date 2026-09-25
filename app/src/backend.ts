@@ -39,15 +39,10 @@ export async function lintPscFile(path: string): Promise<Diagnostic[]> {
 }
 
 // Parses every one of `paths` up front and preloads the current project's
-// shared function table from the result (see `preload_project_scripts` in
-// `app/src-tauri/src/lint.rs`), before `parsePscFiles` (drop.ts) runs its own
-// per-file `parse_psc_file`/`lintPscFile` pair across the same batch.
-// Resolving an Extends/type reference to another script in `paths` is then
-// a cache hit from the start for every one of those per-file calls, rather
-// than a write-locked, on-demand parse the first one to need it triggers.
-// Purely a perf optimization -- a failure here is logged and otherwise
-// ignored, since the per-file calls that follow still resolve everything
-// correctly (just without this head start) either way.
+// shared function table (see `preload_project_scripts` in
+// `app/src-tauri/src/lint.rs`). The drop path does not call this: it uses
+// `lintProjectScripts`, which parses, indexes, and lints in one command.
+// Kept for a caller that only wants the table warm.
 //
 // `onProgress` receives the same counts the CLI's "Parsing" bar prints
 // while the type closure walks referenced scripts (a growing `total`),
@@ -66,18 +61,18 @@ export interface PreloadProgress {
 // stays synchronous (an `await import()` here shifts the lint loop by a
 // microtask and breaks tests that drain a fixed number of turns) and is
 // simply missing on those mocks.
-function preloadProgressChannel(onProgress?: (progress: PreloadProgress) => void) {
+function tauriChannel<T>(onMessage?: (message: T) => void) {
   try {
-    const core = tauriCore as { Channel?: new () => { onmessage: ((progress: PreloadProgress) => void) | null } };
+    const core = tauriCore as { Channel?: new () => { onmessage: ((message: T) => void) | null } };
     if (typeof core.Channel !== "function") {
       return undefined;
     }
     const channel = new core.Channel();
-    channel.onmessage = (progress) => onProgress?.(progress);
+    channel.onmessage = (message) => onMessage?.(message);
     return channel;
   } catch {
     // Vitest's mock of this module throws on any export it didn't stub,
-    // including `Channel`. Preload still runs; it just can't stream progress.
+    // including `Channel`. The command still runs; it just can't stream.
     return undefined;
   }
 }
@@ -86,7 +81,7 @@ export async function preloadProjectScripts(
   paths: string[],
   onProgress?: (progress: PreloadProgress) => void,
 ): Promise<void> {
-  const onProgressChannel = preloadProgressChannel(onProgress);
+  const onProgressChannel = tauriChannel(onProgress);
   try {
     await invoke("preload_project_scripts", {
       paths,
@@ -102,6 +97,73 @@ export async function preloadProjectScripts(
       onProgressChannel.onmessage = () => {};
     }
   }
+}
+
+// One batch for a dropped project: parse the type closure, index the shared
+// function table, and lint every path in-process (see `lint_project_scripts`
+// in `app/src-tauri/src/lint.rs`). Replaces the old preload plus a
+// per-file `parse_psc_file`/`lint_psc_file` pair, which dominated the cost
+// of a large batch such as the Skyrim base scripts. `onEvent` is the same
+// stream the command sends: parsing progress (a growing `total`), one
+// indeterminate indexing update (`total` 0), then one result and one
+// linting-progress update per finished file.
+export type ProjectLintEvent =
+  | { kind: "progress"; phase: string; completed: number; total: number }
+  | { kind: "result"; path: string; ok: boolean; detail: string; findings: Diagnostic[] };
+
+export async function lintProjectScripts(
+  paths: string[],
+  onEvent?: (event: ProjectLintEvent) => void,
+): Promise<void> {
+  // The command streams on `onEvent`. A test double that cannot construct a
+  // Tauri `Channel` instead returns the finished outcomes; apply those only
+  // when nothing was streamed, so a real run does not render each file twice.
+  let streamed = false;
+  const onEventChannel = tauriChannel<ProjectLintEvent>((event) => {
+    streamed = true;
+    onEvent?.(event);
+  });
+  try {
+    const returned = await invoke<ProjectLintEvent[] | ProjectFileOutcome[] | null>(
+      "lint_project_scripts",
+      {
+        paths,
+        context: currentProjectLintContext(),
+        ...(onEventChannel ? { onEvent: onEventChannel } : {}),
+      },
+    );
+    if (!streamed && Array.isArray(returned)) {
+      for (const outcome of returned) {
+        if (!outcome || typeof outcome !== "object" || !("path" in outcome)) {
+          continue;
+        }
+        if ("kind" in outcome && outcome.kind === "result") {
+          onEvent?.(outcome);
+          continue;
+        }
+        onEvent?.({
+          kind: "result",
+          path: outcome.path,
+          ok: outcome.ok,
+          detail: outcome.detail,
+          findings: outcome.findings,
+        });
+      }
+    }
+  } catch (error) {
+    console.error(error);
+  } finally {
+    if (onEventChannel) {
+      onEventChannel.onmessage = () => {};
+    }
+  }
+}
+
+interface ProjectFileOutcome {
+  path: string;
+  ok: boolean;
+  detail: string;
+  findings: Diagnostic[];
 }
 
 export async function repairPscFile(path: string): Promise<Diagnostic[]> {
