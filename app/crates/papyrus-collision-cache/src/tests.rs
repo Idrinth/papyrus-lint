@@ -258,6 +258,40 @@ fn flush_only_writes_groups_for_the_requested_cache_directory() {
 }
 
 #[test]
+fn flush_retries_after_the_cache_directory_becomes_writable() {
+    let parent = tempdir().unwrap();
+    let cache = parent.path().join("cache");
+    let project = tempdir().unwrap();
+    let path = write_script(project.path(), "Retry.psc", "ScriptName Retry\n");
+
+    std::fs::write(&cache, "not a directory").unwrap();
+    remember_source_in(&cache, GAME, &path, "ScriptName Retry\n");
+    flush_in(&cache);
+
+    std::fs::remove_file(&cache).unwrap();
+    flush_in(&cache);
+
+    assert!(collisions_path(&cache, GAME, "retry.psc").is_file());
+}
+
+#[test]
+fn flush_retries_after_writing_a_collision_file_fails() {
+    let cache = tempdir().unwrap();
+    let project = tempdir().unwrap();
+    let path = write_script(project.path(), "RetryWrite.psc", "ScriptName RetryWrite\n");
+    let collision_file = collisions_path(cache.path(), GAME, "retrywrite.psc");
+
+    std::fs::create_dir(&collision_file).unwrap();
+    remember_source_in(cache.path(), GAME, &path, "ScriptName RetryWrite\n");
+    flush_in(cache.path());
+
+    std::fs::remove_dir(&collision_file).unwrap();
+    flush_in(cache.path());
+
+    assert!(collision_file.is_file());
+}
+
+#[test]
 fn decode_rejects_truncated_unknown_version_and_invalid_payloads() {
     assert_eq!(decode_collisions(b"IPLC"), Err(()));
 
@@ -269,6 +303,64 @@ fn decode_rejects_truncated_unknown_version_and_invalid_payloads() {
     invalid_payload.extend_from_slice(&FORMAT_VERSION.to_le_bytes());
     invalid_payload.extend_from_slice(b"not bincode");
     assert_eq!(decode_collisions(&invalid_payload), Err(()));
+}
+
+#[test]
+fn encoded_collision_groups_round_trip() {
+    let groups = vec![ScriptCollisions {
+        scriptname: "roundtrip.psc".to_string(),
+        implementers: vec![Implementer {
+            hash: "digest".to_string(),
+            algorithm: ALGORITHM.to_string(),
+            mtime: "123".to_string(),
+            path: "/scripts/RoundTrip.psc".to_string(),
+        }],
+    }];
+
+    assert_eq!(
+        decode_collisions(&encode_collisions(&groups).unwrap()),
+        Ok(groups)
+    );
+}
+
+#[test]
+fn loading_a_document_registers_every_group_in_it() {
+    let cache = tempdir().unwrap();
+    let project = tempdir().unwrap();
+    let first = write_script(project.path(), "First.psc", "first source");
+    let second = write_script(project.path(), "Second.psc", "second source");
+    let groups = vec![
+        ScriptCollisions {
+            scriptname: "FIRST.PSC".to_string(),
+            implementers: vec![Implementer {
+                hash: "first cached hash".to_string(),
+                algorithm: ALGORITHM.to_string(),
+                mtime: file_mtime_secs(&first).unwrap().to_string(),
+                path: stored_path(&first),
+            }],
+        },
+        ScriptCollisions {
+            scriptname: "SECOND.PSC".to_string(),
+            implementers: vec![Implementer {
+                hash: "second cached hash".to_string(),
+                algorithm: ALGORITHM.to_string(),
+                mtime: file_mtime_secs(&second).unwrap().to_string(),
+                path: stored_path(&second),
+            }],
+        },
+    ];
+    std::fs::write(
+        collisions_path(cache.path(), GAME, "first.psc"),
+        encode_collisions(&groups).unwrap(),
+    )
+    .unwrap();
+
+    preload_in(cache.path(), GAME, [&first]);
+
+    assert_eq!(
+        content_hash_in(cache.path(), GAME, &second),
+        Some("second cached hash".to_string())
+    );
 }
 
 #[test]
@@ -293,4 +385,41 @@ fn helpers_normalize_names_and_fall_back_to_skyrim() {
         collisions_path(cache.path(), GAME, "mixed.psc")
     );
     assert_eq!(game_from_key("not-a-game"), Game::Skyrim);
+    assert_eq!(game_from_key("fallout4"), Game::Fallout4);
+}
+
+#[test]
+fn paths_match_equivalent_and_missing_paths() {
+    let project = tempdir().unwrap();
+    let path = write_script(project.path(), "Canonical.psc", "source");
+    let canonical = std::fs::canonicalize(&path).unwrap();
+    let equivalent = project.path().join(".").join("Canonical.psc");
+
+    assert!(paths_match(&canonical.to_string_lossy(), &equivalent));
+
+    let missing = project.path().join("Missing.psc");
+    assert!(paths_match(&missing.to_string_lossy(), &missing));
+    assert!(!paths_match(
+        &missing.to_string_lossy(),
+        &project.path().join("Other.psc")
+    ));
+}
+
+#[cfg(unix)]
+#[test]
+fn paths_without_utf8_file_names_are_ignored() {
+    use std::os::unix::ffi::OsStringExt;
+
+    let cache = tempdir().unwrap();
+    let project = tempdir().unwrap();
+    let path = project.path().join(std::ffi::OsString::from_vec(vec![
+        0xff, b'.', b'p', b's', b'c',
+    ]));
+    std::fs::write(&path, "source").unwrap();
+
+    preload_in(cache.path(), GAME, [&path]);
+    remember_source_in(cache.path(), GAME, &path, "source");
+    flush_in(cache.path());
+
+    assert!(std::fs::read_dir(cache.path()).unwrap().next().is_none());
 }
