@@ -457,7 +457,9 @@ jobs:
   virustotal-scan:
     name: Scan release assets with VirusTotal
     needs:
-      - sign-release-assets
+      - release
+      - sublime-plugin
+      - vscode-plugin
       - release-notes
     runs-on: ubuntu-latest
     permissions:
@@ -514,7 +516,9 @@ jobs:
   update-pages:
     name: Update GitHub Pages with release version
     needs:
-    - virustotal-scan
+      - release
+      - sublime-plugin
+      - vscode-plugin
     runs-on: ubuntu-latest
     permissions:
       actions: write
@@ -773,7 +777,9 @@ jobs:
   nexus-upload:
     name: Publish release to Nexus Mods
     needs: 
-      - virustotal-scan
+      - release
+      - sublime-plugin
+      - vscode-plugin
     runs-on: ubuntu-latest
     permissions:
       contents: read
