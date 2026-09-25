@@ -98,7 +98,7 @@ impl AstLint for Collect {
     fn visit_expr(&mut self, expr: &Expr, ctx: &mut VisitCtx<'_>) {
         if ctx.config.magic_numbers == MagicNumbers::Loose {
             if let Expr::Call { callee, args, .. } = expr {
-                if crate::short_wait_interval::matching_function(callee).is_some() {
+                if crate::short_wait_interval::matching_function(callee, ctx.ast).is_some() {
                     for arg in args {
                         let value = match arg {
                             Expr::NamedArg { value, .. } => value.as_ref(),

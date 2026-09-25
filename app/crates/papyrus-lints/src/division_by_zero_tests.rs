@@ -50,6 +50,17 @@ fn flags_division_by_a_constant_expression_that_folds_to_zero() {
 }
 
 #[test]
+fn flags_division_by_identical_array_length_subtraction() {
+    let diagnostics = check(
+        "ScriptName Example\n\nFunction GetAverage(Int total, Int[] values)\n    Int average = total / (values.Length - values.Length)\nEndFunction\n",
+    );
+
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!(diagnostics[0].line, 4);
+    assert_eq!(diagnostics[0].rule, RULE);
+}
+
+#[test]
 fn does_not_flag_division_by_a_nonzero_literal() {
     let diagnostics =
         check("ScriptName Example\n\nFunction Test(Int a)\n    Int b = a / 2\nEndFunction\n");
@@ -62,6 +73,15 @@ fn does_not_flag_division_by_a_runtime_value() {
     let diagnostics = check(
             "ScriptName Example\n\nFunction Test(Int a, Int b)\n    Int c = a / b\n    Int d = a / GetValue()\nEndFunction\n",
         );
+
+    assert!(diagnostics.is_empty());
+}
+
+#[test]
+fn does_not_flag_division_by_identical_calls() {
+    let diagnostics = check(
+        "ScriptName Example\n\nFunction Test(Int a)\n    Int b = a / (GetValue() - GetValue())\nEndFunction\n",
+    );
 
     assert!(diagnostics.is_empty());
 }
