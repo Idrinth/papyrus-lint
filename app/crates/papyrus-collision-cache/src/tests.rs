@@ -423,3 +423,118 @@ fn paths_without_utf8_file_names_are_ignored() {
 
     assert!(std::fs::read_dir(cache.path()).unwrap().next().is_none());
 }
+
+#[test]
+fn public_api_uses_the_configured_ast_cache_directory() {
+    let cache = tempdir().unwrap();
+    let project = tempdir().unwrap();
+    let source = "ScriptName PublicApi\n";
+    let path = write_script(project.path(), "PublicApi.psc", source);
+    let previous_cache_dir = std::env::var_os("PAPYRUS_LINT_AST_CACHE_DIR");
+    std::env::set_var("PAPYRUS_LINT_AST_CACHE_DIR", cache.path());
+
+    preload(GAME, [&path]);
+    remember_source(GAME, &path, source);
+    assert_eq!(content_hash_for(GAME, &path), Some(sha256_hex(source)));
+    flush();
+
+    match previous_cache_dir {
+        Some(value) => std::env::set_var("PAPYRUS_LINT_AST_CACHE_DIR", value),
+        None => std::env::remove_var("PAPYRUS_LINT_AST_CACHE_DIR"),
+    }
+    assert!(collisions_path(cache.path(), GAME, "publicapi.psc").is_file());
+}
+
+#[test]
+fn remember_source_ignores_a_missing_file() {
+    let cache = tempdir().unwrap();
+    let project = tempdir().unwrap();
+    let path = project.path().join("Missing.psc");
+
+    remember_source_in(cache.path(), GAME, &path, "ScriptName Missing\n");
+    flush_in(cache.path());
+
+    assert!(std::fs::read_dir(cache.path()).unwrap().next().is_none());
+}
+
+#[test]
+fn preload_does_not_reload_a_group_that_is_already_in_memory() {
+    let cache = tempdir().unwrap();
+    let project = tempdir().unwrap();
+    let path = write_script(project.path(), "LoadedOnce.psc", "source");
+    let collision_file = collisions_path(cache.path(), GAME, "loadedonce.psc");
+    let group_with_hash = |hash: &str| {
+        vec![ScriptCollisions {
+            scriptname: "loadedonce.psc".to_string(),
+            implementers: vec![Implementer {
+                hash: hash.to_string(),
+                algorithm: ALGORITHM.to_string(),
+                mtime: file_mtime_secs(&path).unwrap().to_string(),
+                path: stored_path(&path),
+            }],
+        }]
+    };
+    std::fs::write(
+        &collision_file,
+        encode_collisions(&group_with_hash("first hash")).unwrap(),
+    )
+    .unwrap();
+    preload_in(cache.path(), GAME, [&path]);
+    std::fs::write(
+        collision_file,
+        encode_collisions(&group_with_hash("replacement hash")).unwrap(),
+    )
+    .unwrap();
+
+    preload_in(cache.path(), GAME, [&path]);
+
+    assert_eq!(
+        content_hash_in(cache.path(), GAME, &path),
+        Some("first hash".to_string())
+    );
+}
+
+#[test]
+fn identical_script_names_are_cached_separately_by_game() {
+    let cache = tempdir().unwrap();
+    let project = tempdir().unwrap();
+    let path = write_script(project.path(), "Shared.psc", "source");
+
+    remember_source_in(cache.path(), Game::Skyrim, &path, "skyrim source");
+    remember_source_in(cache.path(), Game::Fallout4, &path, "fallout source");
+    flush_in(cache.path());
+
+    let skyrim_file = collisions_path(cache.path(), Game::Skyrim, "shared.psc");
+    let fallout_file = collisions_path(cache.path(), Game::Fallout4, "shared.psc");
+    assert_ne!(skyrim_file, fallout_file);
+    let skyrim = decode_collisions(&std::fs::read(skyrim_file).unwrap()).unwrap();
+    let fallout = decode_collisions(&std::fs::read(fallout_file).unwrap()).unwrap();
+    assert_eq!(skyrim[0].implementers[0].hash, sha256_hex("skyrim source"));
+    assert_eq!(
+        fallout[0].implementers[0].hash,
+        sha256_hex("fallout source")
+    );
+}
+
+#[test]
+fn flush_skips_a_dirty_key_without_a_group() {
+    let cache = tempdir().unwrap();
+    let key = group_key(cache.path(), GAME, "orphan.psc");
+    lock_store().dirty.insert(key);
+
+    flush_in(cache.path());
+
+    assert!(std::fs::read_dir(cache.path()).unwrap().next().is_none());
+}
+
+#[test]
+fn lock_store_recovers_after_a_poisoned_lock() {
+    let result = std::panic::catch_unwind(|| {
+        let _guard = lock_store();
+        panic!("poison the collision-cache store for this test");
+    });
+    assert!(result.is_err());
+
+    let guard = lock_store();
+    assert!(guard.groups.capacity() >= guard.groups.len());
+}
