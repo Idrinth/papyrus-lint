@@ -22,6 +22,7 @@
 //! fail_on_warning: false
 //! fail_on_info: false
 //! bool_like_int: true
+//! treat_form_as_bool_for_returns: false
 //! assume_auto_properties_filled: false
 //! rules:
 //!   trailing_whitespace: true   # one boolean per lint; see [`Rules`]
@@ -183,6 +184,12 @@ pub struct Config {
     /// property, or a literal other than `1`/`0`) is still flagged
     /// regardless of this setting.
     pub bool_like_int: bool,
+    /// Whether the "Return type check" lint accepts a non-array Form
+    /// value returned from a `Bool` function. Papyrus implicitly treats
+    /// `None` as false and an existing Form as true, but this common idiom
+    /// is rejected by default so return types remain strict unless a
+    /// project explicitly opts in.
+    pub treat_form_as_bool_for_returns: bool,
     /// Whether the "None used as an existing Form" lint treats a
     /// script-level `Auto`/`AutoReadOnly` property as already filled in by
     /// the time a function runs, rather than possibly still `None` (see
@@ -220,6 +227,7 @@ impl Default for Config {
             fail_on_warning: false,
             fail_on_info: false,
             bool_like_int: true,
+            treat_form_as_bool_for_returns: false,
             assume_auto_properties_filled: false,
             rules: Rules::default(),
         }

@@ -115,8 +115,9 @@ filtered findings as a single JSON document tailored for handing to an AI
 assistant alongside a question about the results, independent of the
 "Export format" selector above (this format is always JSON, with its
 contract published as a versioned JSON Schema:
-[v4](../schema/papyrus-lint-ai-export.v4.schema.json), the current format
-described below, and [v3](../schema/papyrus-lint-ai-export.v3.schema.json),
+[v5](../schema/papyrus-lint-ai-export.v5.schema.json), the current format
+described below, and [v4](../schema/papyrus-lint-ai-export.v4.schema.json),
+[v3](../schema/papyrus-lint-ai-export.v3.schema.json),
 [v2](../schema/papyrus-lint-ai-export.v2.schema.json) and
 [v1](../schema/papyrus-lint-ai-export.v1.schema.json), the frozen contracts
 older releases produced, kept around so a document from an older release

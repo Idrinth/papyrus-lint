@@ -19,6 +19,7 @@ let minWaitIntervalEl: HTMLInputElement | null;
 let failOnWarningEl: HTMLInputElement | null;
 let failOnInfoEl: HTMLInputElement | null;
 let boolLikeIntEl: HTMLInputElement | null;
+let treatFormAsBoolForReturnsEl: HTMLInputElement | null;
 let assumeAutoPropertiesFilledEl: HTMLInputElement | null;
 let ruleEls: Partial<Record<keyof LintRules, HTMLInputElement>> = {};
 
@@ -91,6 +92,9 @@ export function applyLintConfigToUI(config: LintConfig) {
   }
   if (boolLikeIntEl) {
     boolLikeIntEl.checked = config.bool_like_int;
+  }
+  if (treatFormAsBoolForReturnsEl) {
+    treatFormAsBoolForReturnsEl.checked = config.treat_form_as_bool_for_returns;
   }
   if (assumeAutoPropertiesFilledEl) {
     assumeAutoPropertiesFilledEl.checked = config.assume_auto_properties_filled;
@@ -185,6 +189,7 @@ export function lintConfigFromUI(): LintConfig {
     fail_on_warning: failOnWarningEl?.checked ?? false,
     fail_on_info: failOnInfoEl?.checked ?? false,
     bool_like_int: boolLikeIntEl?.checked ?? true,
+    treat_form_as_bool_for_returns: treatFormAsBoolForReturnsEl?.checked ?? false,
     assume_auto_properties_filled: assumeAutoPropertiesFilledEl?.checked ?? false,
     rules,
   };
@@ -232,6 +237,7 @@ export function bindConfigSettings() {
   failOnWarningEl = document.querySelector("#fail-on-warning");
   failOnInfoEl = document.querySelector("#fail-on-info");
   boolLikeIntEl = document.querySelector("#bool-like-int");
+  treatFormAsBoolForReturnsEl = document.querySelector("#treat-form-as-bool-for-returns");
   assumeAutoPropertiesFilledEl = document.querySelector("#assume-auto-properties-filled");
   ruleEls = Object.fromEntries(
     RULE_KEYS.map((key) => [key, document.querySelector<HTMLInputElement>(`#rule-${key}`)]),
@@ -257,6 +263,7 @@ export function bindConfigSettings() {
   failOnWarningEl?.addEventListener("change", handleLintConfigChanged);
   failOnInfoEl?.addEventListener("change", handleLintConfigChanged);
   boolLikeIntEl?.addEventListener("change", handleLintConfigChanged);
+  treatFormAsBoolForReturnsEl?.addEventListener("change", handleLintConfigChanged);
   assumeAutoPropertiesFilledEl?.addEventListener("change", handleLintConfigChanged);
   for (const key of RULE_KEYS) {
     ruleEls[key]?.addEventListener("change", handleLintConfigChanged);

@@ -28,6 +28,7 @@ export const LINT_CONFIG_KEYS = [
   "fail_on_warning",
   "fail_on_info",
   "bool_like_int",
+  "treat_form_as_bool_for_returns",
   "assume_auto_properties_filled",
 ];
 
@@ -56,6 +57,7 @@ const LINT_CONFIG_FIELD_TYPES = {
   fail_on_warning: "boolean",
   fail_on_info: "boolean",
   bool_like_int: "boolean",
+  treat_form_as_bool_for_returns: "boolean",
   assume_auto_properties_filled: "boolean",
 };
 
