@@ -84,3 +84,49 @@ fn disable_directives_and_config_are_honored() {
     config.rules.member_access = false;
     assert!(lint(source, &config).is_empty());
 }
+
+#[test]
+fn permits_private_members_declared_on_the_current_script() {
+    let diagnostics = lint(
+        "ScriptName Base\nFunction Test()\n Secret()\n Int value = Base.Secret\nEndFunction\n",
+        &crate::Config::default(),
+    );
+
+    assert!(diagnostics.is_empty());
+}
+
+#[test]
+fn rejects_protected_property_access_from_an_unrelated_script() {
+    let diagnostics = lint(
+        "ScriptName Other\nBase Property Target Auto\nFunction Test()\n Int value = Target.Inherited\nEndFunction\n",
+        &crate::Config::default(),
+    );
+
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!(diagnostics[0].line, 4);
+    assert!(diagnostics[0].message.contains("property 'Inherited'"));
+    assert!(diagnostics[0].message.contains("@protected"));
+}
+
+#[test]
+fn resolves_a_script_type_used_as_a_call_target() {
+    let diagnostics = lint(
+        "ScriptName Other\nFunction Test()\n Base.Secret()\nEndFunction\n",
+        &crate::Config::default(),
+    );
+
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!(diagnostics[0].line, 3);
+    assert!(diagnostics[0].message.contains("function 'Secret'"));
+}
+
+#[test]
+fn does_not_report_the_member_expression_of_a_function_call_as_a_property() {
+    let diagnostics = lint(
+        "ScriptName Other\nBase Property Target Auto\nFunction Test()\n Target.Secret()\nEndFunction\n",
+        &crate::Config::default(),
+    );
+
+    assert_eq!(diagnostics.len(), 1);
+    assert!(diagnostics[0].message.contains("function 'Secret'"));
+}
