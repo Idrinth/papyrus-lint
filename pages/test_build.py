@@ -4,8 +4,10 @@ from __future__ import annotations
 
 import json
 import runpy
+import sys
 import tempfile
 import unittest
+from builtins import __import__ as builtin_import
 from io import StringIO
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -117,6 +119,25 @@ class RepositoryBuildIntegrationTest(unittest.TestCase):
 
 
 class BuildTest(unittest.TestCase):
+    def test_script_entry_point_falls_back_to_local_imports(self) -> None:
+        output = StringIO()
+
+        def reject_package_import(name: str, *args: object, **kwargs: object) -> object:
+            if name == "pages.coverage_report":
+                raise ImportError("pages package unavailable")
+            return builtin_import(name, *args, **kwargs)
+
+        with (
+            patch("sys.argv", [str(page_builder.__file__), "--help"]),
+            patch("sys.path", [str(page_builder.PAGES_DIR), *sys.path]),
+            patch("builtins.__import__", side_effect=reject_package_import),
+            patch("sys.stdout", output),
+            self.assertRaisesRegex(SystemExit, "0"),
+        ):
+            runpy.run_path(str(page_builder.__file__), run_name="__main__")
+
+        self.assertIn("usage:", output.getvalue())
+
     def test_script_entry_point_displays_command_line_help(self) -> None:
         output = StringIO()
 
