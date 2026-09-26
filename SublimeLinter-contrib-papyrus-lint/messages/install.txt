@@ -8,10 +8,12 @@ https://github.com/Idrinth/papyrus-lint.
 Before this plugin does anything, you need:
 
 1. The base SublimeLinter package installed.
-2. A syntax package that assigns Papyrus files the `source.papyrus` scope
-   (e.g. one of the Papyrus syntax packages available via Package Control).
-3. Nothing else: the plugin downloads the `PapyrusLinterCLI` from its matching
+2. Nothing else: the plugin downloads the `PapyrusLinterCLI` from its matching
    release automatically. You may instead configure a local executable via
    this linter's "executable" setting in your SublimeLinter settings.
+
+A Papyrus syntax package is optional. The linter attaches to saved `.psc`
+files directly, and also to buffers scoped as `source.papyrus`,
+`source.papyrus.skyrim`, `source.papyrus.fallout4`, or `source.papyrusf4`.
 
 See this package's README.md for configuration details.

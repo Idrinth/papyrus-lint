@@ -4,16 +4,20 @@ This package provides an interface to
 [Papyrus Lint](https://github.com/Idrinth/papyrus-lint)'s standalone
 `PapyrusLinterCLI` binary or the desktop app's `PapyrusLinter` executable for
 [SublimeLinter](http://sublimelinter.com).
-It will be used with files that have the `source.papyrus` scope, i.e. a
-Papyrus syntax package installed in Sublime Text. Each reported
-diagnostic's message ends with a link to that rule's own documentation on
-the [project website](https://papyrus-lint.idrinth.de) when available.
+It runs on saved `.psc` files, and on buffers whose syntax package assigns one
+of the common Papyrus scopes (`source.papyrus`, `source.papyrus.skyrim`,
+`source.papyrus.fallout4`, or `source.papyrusf4`). A syntax package is still
+useful for highlighting, but it is no longer required for the linter to attach.
+Each reported diagnostic's message ends with a link to that rule's own
+documentation on the [project website](https://papyrus-lint.idrinth.de) when
+available.
 
 ## Installation
 
 1. Install [SublimeLinter](http://www.sublimelinter.com/en/stable/installation.html).
-2. Install a Papyrus syntax package, so `.psc` files get the `source.papyrus`
-   scope this linter looks for.
+2. Optionally install a Papyrus syntax package. The linter activates on `.psc`
+   files even when that package names the language something other than
+   `source.papyrus`, or when no syntax package is installed at all.
 3. Install this package, either via by cloning/copying this directory into your
    Sublime Text `Packages` directory.
 4. The plugin automatically downloads and caches the platform-specific

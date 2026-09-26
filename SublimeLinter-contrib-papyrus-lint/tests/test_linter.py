@@ -25,13 +25,18 @@ class FakeRegion:
         self.a = a
         self.b = b
 
+    def __eq__(self, other):
+        return type(self) is type(other) and (self.a, self.b) == (other.a, other.b)
+
 
 class FakeView:
-    """Stand-in for `sublime.View`, exposing just what `cmd()` reads off it."""
+    """Stand-in for `sublime.View`, exposing just what the linter reads off it."""
 
-    def __init__(self, text='', dirty=False):
+    def __init__(self, text='', dirty=False, file_name=None, scopes=()):
         self._text = text
         self._dirty = dirty
+        self._file_name = file_name
+        self._scopes = scopes
 
     def is_dirty(self):
         return self._dirty
@@ -42,6 +47,13 @@ class FakeView:
     def substr(self, region):
         return self._text[region.a:region.b]
 
+    def file_name(self):
+        return self._file_name
+
+    def score_selector(self, _point, selector):
+        wanted = {part.strip() for part in selector.split(',') if part.strip()}
+        return 1 if wanted.intersection(self._scopes) else 0
+
 
 class FakeLinter:
     def __init__(self, settings=None, view=None):
@@ -50,6 +62,15 @@ class FakeLinter:
         self.name = 'papyrus-lint'
         self.settings = settings if settings is not None else {}
         self.view = view if view is not None else FakeView()
+
+    @classmethod
+    def match_selector(cls, view, settings):
+        selector = settings.get('selector')
+        if selector is None:
+            return False
+        if selector == '*' or view.score_selector(0, selector):
+            return [FakeRegion(0, view.size())]
+        return False
 
 
 class FakePermanentError(Exception):
@@ -102,8 +123,44 @@ class PapyrusLintTests(unittest.TestCase):
 
     def test_command_and_selector_target_saved_papyrus_files(self):
         self.assertEqual(self.linter.executable, 'PapyrusLinterCLI')
-        self.assertEqual(self.linter.defaults['selector'], 'source.papyrus')
+        self.assertEqual(self.linter.defaults['selector'], self.module.PAPYRUS_SELECTOR)
+        self.assertIn('source.papyrus', self.linter.defaults['selector'])
+        self.assertIn('source.papyrus.skyrim', self.linter.defaults['selector'])
+        self.assertIn('source.papyrus.fallout4', self.linter.defaults['selector'])
+        self.assertIn('source.papyrusf4', self.linter.defaults['selector'])
         self.assertEqual(self.linter.defaults['config_path'], '')
+
+    def test_match_selector_accepts_known_papyrus_scopes(self):
+        view = FakeView(text='ScriptName Test\n', scopes=('source.papyrus.skyrim',))
+        settings = {'selector': self.module.PAPYRUS_SELECTOR}
+
+        regions = self.module.PapyrusLint.match_selector(view, settings)
+
+        self.assertEqual(regions, [FakeRegion(0, view.size())])
+
+    def test_match_selector_accepts_psc_files_without_a_papyrus_scope(self):
+        view = FakeView(
+            text='ScriptName Test\n',
+            file_name='/mods/Scripts/Source/Quest.psc',
+            scopes=('text.plain',),
+        )
+        settings = {'selector': self.module.PAPYRUS_SELECTOR}
+
+        regions = self.module.PapyrusLint.match_selector(view, settings)
+
+        self.assertEqual(regions, [FakeRegion(0, view.size())])
+
+    def test_match_selector_is_case_insensitive_for_psc_extension(self):
+        view = FakeView(file_name=r'C:\Mods\Actor.PSC', scopes=('text.plain',))
+        settings = {'selector': self.module.PAPYRUS_SELECTOR}
+
+        self.assertTrue(self.module.PapyrusLint.match_selector(view, settings))
+
+    def test_match_selector_rejects_non_psc_files_without_a_papyrus_scope(self):
+        view = FakeView(file_name='/mods/readme.md', scopes=('text.html.markdown',))
+        settings = {'selector': self.module.PAPYRUS_SELECTOR}
+
+        self.assertFalse(self.module.PapyrusLint.match_selector(view, settings))
 
     def test_cmd_inserts_config_flag_when_config_path_is_set(self):
         self.linter.settings = {
