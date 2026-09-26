@@ -73,6 +73,35 @@ fn resolve_completion_query_accepts_browser_utf16_cursor_offsets() {
 }
 
 #[test]
+fn resolve_completion_query_rejects_invalid_utf16_cursor_offsets() {
+    let source = "ScriptName Example\nActor target\ntarget.Get";
+    assert!(
+        resolve_completion_query(source.to_string(), source.encode_utf16().count() + 1).is_none()
+    );
+
+    let source = "ScriptName Example\n; 😀\nActor target\ntarget.Get";
+    let middle_of_emoji = source.find('😀').unwrap() + 1;
+    assert!(resolve_completion_query(source.to_string(), middle_of_emoji).is_none());
+}
+
+#[test]
+fn resolve_completion_query_blanks_block_and_brace_comments() {
+    let source = "ScriptName Example\n;/ Actor blocked /;\n{ Quest hidden }\nActor target\ntarget.";
+
+    assert_eq!(
+        resolve_completion_query(source.to_string(), source.len())
+            .unwrap()
+            .receiver_type,
+        "Actor"
+    );
+    for receiver in ["blocked", "hidden"] {
+        let comment = format!("{receiver}.");
+        let cursor = source.find(receiver).unwrap() + comment.len();
+        assert!(resolve_completion_query(source.to_string(), cursor).is_none());
+    }
+}
+
+#[test]
 fn list_script_members_reports_functions_and_properties_including_inherited_ones() {
     let dir = tempdir().unwrap();
     let source_dir = dir.path().join("scripts/source");

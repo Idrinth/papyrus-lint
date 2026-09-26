@@ -26,6 +26,53 @@ fn lint_psc_file_lints_source_from_disk() {
 }
 
 #[test]
+fn lint_psc_file_reports_a_source_read_error() {
+    let dir = tempdir().unwrap();
+    let missing = dir.path().join("Missing.psc");
+
+    let error = lint_psc_file(
+        missing.to_string_lossy().into_owned(),
+        ProjectLintContext {
+            root: dir.path().to_string_lossy().into_owned(),
+            ..Default::default()
+        },
+    )
+    .unwrap_err();
+
+    assert!(!error.is_empty());
+}
+
+#[test]
+fn lint_psc_file_applies_project_ignore_entries() {
+    let dir = tempdir().unwrap();
+    let path = dir.path().join("Example.psc");
+    std::fs::write(
+        &path,
+        "ScriptName Example\n\nFunction Run()\n    Game.GetPlayer()\nEndFunction\n",
+    )
+    .unwrap();
+    std::fs::write(
+        dir.path()
+            .join(papyrus_lint_core::ignore_file::IGNORE_FILE_NAME),
+        "- file: Example.psc\n  line: 4\n  rule: forbidden-functions\n",
+    )
+    .unwrap();
+
+    let diagnostics = lint_psc_file(
+        path.to_string_lossy().into_owned(),
+        ProjectLintContext {
+            root: dir.path().to_string_lossy().into_owned(),
+            ..Default::default()
+        },
+    )
+    .unwrap();
+
+    assert!(diagnostics
+        .iter()
+        .all(|diagnostic| diagnostic.rule != "forbidden-functions"));
+}
+
+#[test]
 fn preload_project_scripts_lets_lint_psc_file_resolve_a_sibling_immediately() {
     let dir = tempdir().unwrap();
     let source_dir = dir.path().join("scripts/source");
@@ -318,4 +365,72 @@ fn lint_project_scripts_reports_an_unparseable_file_without_linting_it() {
     assert!(findings
         .iter()
         .any(|finding| finding["rule"] == "forbidden-functions"));
+}
+
+#[test]
+fn lint_project_scripts_reports_missing_files() {
+    let dir = tempdir().unwrap();
+    let missing = dir.path().join("Missing.psc");
+
+    let events = project_lint_events(
+        vec![missing.to_string_lossy().into_owned()],
+        ProjectLintContext {
+            root: dir.path().to_string_lossy().into_owned(),
+            ..Default::default()
+        },
+    );
+
+    let result = events
+        .iter()
+        .find(|event| event["kind"] == "result")
+        .expect("missing script result");
+    assert_eq!(result["ok"], false);
+    assert!(result["detail"]
+        .as_str()
+        .is_some_and(|detail| !detail.is_empty()));
+    assert_eq!(result["findings"].as_array().map(Vec::len), Some(0));
+}
+
+#[test]
+fn lint_project_scripts_reports_an_invalid_ignore_file_for_every_path() {
+    let dir = tempdir().unwrap();
+    let first = dir.path().join("First.psc");
+    let second = dir.path().join("Second.psc");
+    std::fs::write(&first, "ScriptName First\n").unwrap();
+    std::fs::write(&second, "ScriptName Second\n").unwrap();
+    std::fs::write(
+        dir.path()
+            .join(papyrus_lint_core::ignore_file::IGNORE_FILE_NAME),
+        "- file: First.psc\n  line: 0\n  rule: semicolon\n",
+    )
+    .unwrap();
+
+    let events = project_lint_events(
+        vec![
+            first.to_string_lossy().into_owned(),
+            second.to_string_lossy().into_owned(),
+        ],
+        ProjectLintContext {
+            root: dir.path().to_string_lossy().into_owned(),
+            ..Default::default()
+        },
+    );
+
+    let results: Vec<_> = events
+        .iter()
+        .filter(|event| event["kind"] == "result")
+        .collect();
+    assert_eq!(results.len(), 2);
+    assert!(results.iter().all(|event| {
+        event["ok"] == false
+            && event["detail"]
+                .as_str()
+                .is_some_and(|detail| detail.contains("line numbers must be 1 or greater"))
+    }));
+    assert!(events.iter().any(|event| {
+        event["kind"] == "progress"
+            && event["phase"] == "Linting"
+            && event["completed"] == 2
+            && event["total"] == 2
+    }));
 }
