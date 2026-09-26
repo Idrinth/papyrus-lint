@@ -74,6 +74,35 @@ fn lint_config_from_path_commands_round_trip_regardless_of_project_directory() {
 }
 
 #[test]
+fn lint_config_from_path_save_preserves_project_only_settings() {
+    let dir = tempdir().unwrap();
+    let path = dir.path().join("custom-config.yml");
+    std::fs::write(
+        &path,
+        "compiler_path: /tools/compiler\ncompile_check: true\nadditional_script_roots:\n  - shared\nlookup_script_roots:\n  - base\n",
+    )
+    .unwrap();
+    let config = papyrus_lints::Config {
+        semicolon: true,
+        indentation_width: 2,
+        ..papyrus_lints::Config::default()
+    };
+
+    save_lint_config_to_path(path.to_string_lossy().into_owned(), config.clone()).unwrap();
+
+    assert_eq!(
+        load_lint_config_from_path(path.to_string_lossy().into_owned()).unwrap(),
+        config
+    );
+    let saved = std::fs::read_to_string(path).unwrap();
+    assert!(saved.contains("compiler_path: /tools/compiler"));
+    assert!(saved.contains("compile_check: true"));
+    assert!(saved.contains("- shared"));
+    assert!(saved.contains("- base"));
+    assert!(!dir.path().join("papyrus-lint.yaml").exists());
+}
+
+#[test]
 fn lint_config_from_path_commands_report_parse_and_write_errors() {
     let dir = tempdir().unwrap();
     let invalid = dir.path().join("invalid.yaml");
@@ -183,6 +212,48 @@ fn load_compiler_path_auto_detects_an_adjacent_compiler_executable() {
     assert_eq!(
         load_compiler_path(data_dir.to_string_lossy().into_owned()).unwrap(),
         Some(compiler.to_string_lossy().into_owned())
+    );
+}
+
+#[test]
+fn load_compiler_path_returns_none_without_an_override_or_detected_executable() {
+    let dir = tempdir().unwrap();
+
+    assert_eq!(
+        load_compiler_path(dir.path().to_string_lossy().into_owned()).unwrap(),
+        None
+    );
+}
+
+#[test]
+fn save_lint_config_preserves_project_only_settings() {
+    let dir = tempdir().unwrap();
+    let dir_string = dir.path().to_string_lossy().into_owned();
+    save_compiler_path(dir_string.clone(), "/tools/compiler".to_string()).unwrap();
+    save_compile_check(dir_string.clone(), true).unwrap();
+    save_script_roots(dir_string.clone(), vec!["shared".to_string()]).unwrap();
+    save_lookup_script_roots(dir_string.clone(), vec!["base".to_string()]).unwrap();
+    let config = papyrus_lints::Config {
+        semicolon: true,
+        indentation_width: 2,
+        ..papyrus_lints::Config::default()
+    };
+
+    save_lint_config(dir_string.clone(), config.clone()).unwrap();
+
+    assert_eq!(load_lint_config(dir_string.clone()).unwrap(), config);
+    assert_eq!(
+        load_compiler_path(dir_string.clone()).unwrap(),
+        Some("/tools/compiler".to_string())
+    );
+    assert!(load_compile_check(dir_string.clone()).unwrap());
+    assert_eq!(
+        load_script_roots(dir_string.clone()).unwrap(),
+        vec!["shared".to_string()]
+    );
+    assert_eq!(
+        load_lookup_script_roots(dir_string).unwrap(),
+        vec!["base".to_string()]
     );
 }
 
