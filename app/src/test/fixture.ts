@@ -92,6 +92,7 @@ export const FIXTURE_HTML = `
         <input type="checkbox" id="fail-on-warning" />
         <input type="checkbox" id="fail-on-info" />
         <input type="checkbox" id="bool-like-int" checked />
+        <input type="checkbox" id="treat-form-as-bool-for-returns" />
         <input type="checkbox" id="assume-auto-properties-filled" />
         <fieldset id="lint-rules"></fieldset>
         <button type="button" id="save-config-as-preset">Save current settings as preset&hellip;</button>

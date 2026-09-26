@@ -165,6 +165,48 @@ EndFunction
     assert!(diagnostics[0].message.contains("returns Int"));
 }
 
+#[test]
+fn form_returns_from_bool_functions_are_configurable() {
+    let source = r#"ScriptName BoolObjectCallRepro
+
+ObjectReference Function FindReference(ObjectReference akRef)
+    Return akRef
+EndFunction
+
+Bool Function HasReferenceDirect(ObjectReference akRef)
+    Return akRef
+EndFunction
+
+Bool Function HasReference(ObjectReference akRef)
+    Return FindReference(akRef)
+EndFunction
+"#;
+    let ast = papyrus_parser::parse(source).ok();
+    let tokens = papyrus_parser::tokenize(source).ok();
+
+    let strict = super::check(
+        source,
+        ast.as_ref(),
+        tokens.as_deref(),
+        &crate::config::Config::default(),
+        &mut crate::external_signatures::NoExternalSignatures,
+    );
+    assert_eq!(strict.len(), 2);
+
+    let allow_forms = crate::config::Config {
+        treat_form_as_bool_for_returns: true,
+        ..crate::config::Config::default()
+    };
+    let relaxed = super::check(
+        source,
+        ast.as_ref(),
+        tokens.as_deref(),
+        &allow_forms,
+        &mut crate::external_signatures::NoExternalSignatures,
+    );
+    assert!(relaxed.is_empty());
+}
+
 
 struct FakeExternalWithItemCount;
 struct FakeExternalWithSubtypes;
