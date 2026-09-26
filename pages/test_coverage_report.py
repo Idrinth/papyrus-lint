@@ -53,6 +53,27 @@ class CoverageReportTest(unittest.TestCase):
 
         self.assertEqual(result, "pages/build.py")
 
+    def test_normalize_source_path_prefixes_frontend_artifact_paths_with_app(self) -> None:
+        self.assertEqual(
+            coverage_report.normalize_source_path("src/main.ts", "frontend-coverage"),
+            "app/src/main.ts",
+        )
+
+    def test_normalize_source_path_replaces_vscode_compiled_output_with_source_root(self) -> None:
+        self.assertEqual(
+            coverage_report.normalize_source_path("out-test/src/extension.js", "vscode-extension-coverage"),
+            "vscode-extension/src/extension.js",
+        )
+
+    def test_normalize_source_path_rewrites_absolute_vscode_compiled_output(self) -> None:
+        self.assertEqual(
+            coverage_report.normalize_source_path(
+                "/home/runner/work/papyrus-lint/papyrus-lint/vscode-extension/out-test/src/extension.js",
+                "vscode-extension-coverage",
+            ),
+            "vscode-extension/src/extension.js",
+        )
+
     def test_parse_lcov_files_returns_none_for_a_missing_report(self) -> None:
         self.assertIsNone(coverage_report.parse_lcov_files(Path("does-not-exist.info")))
 
@@ -70,6 +91,29 @@ class CoverageReportTest(unittest.TestCase):
             self.assertEqual(
                 coverage_report.parse_lcov_files(report),
                 [("app/src/one.rs", 10, 8), ("app/src/two.rs", 4, 1)],
+            )
+
+    def test_parse_lcov_files_uses_the_coverage_artifact_to_restore_project_roots(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            frontend = root / "frontend-coverage"
+            frontend.mkdir()
+            frontend_report = frontend / "lcov.info"
+            frontend_report.write_text("SF:src/main.ts\nLF:2\nLH:1\nend_of_record\n", encoding="utf-8")
+            vscode = root / "vscode-extension-coverage"
+            vscode.mkdir()
+            vscode_report = vscode / "lcov.info"
+            vscode_report.write_text(
+                "SF:out-test/src/extension.js\nLF:3\nLH:2\nend_of_record\n", encoding="utf-8"
+            )
+
+            self.assertEqual(
+                coverage_report.parse_lcov_files(frontend_report),
+                [("app/src/main.ts", 2, 1)],
+            )
+            self.assertEqual(
+                coverage_report.parse_lcov_files(vscode_report),
+                [("vscode-extension/src/extension.js", 3, 2)],
             )
 
     def test_parse_lcov_files_ignores_a_record_without_a_source_file(self) -> None:

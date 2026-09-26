@@ -62,16 +62,30 @@ def load_coverage_summary():
     return module
 
 
-def normalize_source_path(raw_path: str) -> str:
+def normalize_source_path(raw_path: str, artifact_name: str = "") -> str:
     """Strips a CI runner's absolute checkout prefix off an lcov SF: path, so
     the coverage subpage displays paths relative to the repository root the
-    same way the rest of the site links into it. A path that's already
-    relative (as some coverage tools emit) is returned unchanged."""
+    same way the rest of the site links into it. Relative frontend and VS Code
+    extension paths are rooted using the artifact that supplied the report."""
     normalized = raw_path.strip().replace("\\", "/")
     marker_at = normalized.rfind(REPO_CHECKOUT_MARKER)
-    if marker_at == -1:
-        return normalized
-    return normalized[marker_at + len(REPO_CHECKOUT_MARKER) :]
+    if marker_at != -1:
+        normalized = normalized[marker_at + len(REPO_CHECKOUT_MARKER) :]
+
+    # JavaScript coverage tools report paths relative to their working or
+    # compiled-output directory. Restore the repository-relative roots used
+    # by the source tree before displaying them on the site.
+    if artifact_name == "frontend-coverage" and not normalized.startswith("app/"):
+        normalized = f"app/{normalized}"
+    elif artifact_name == "vscode-extension-coverage":
+        if normalized.startswith("vscode-extension/out-test/"):
+            normalized = normalized.removeprefix("vscode-extension/out-test/")
+        elif normalized.startswith("out-test/"):
+            normalized = normalized.removeprefix("out-test/")
+        elif normalized.startswith("vscode-extension/"):
+            return normalized
+        normalized = f"vscode-extension/{normalized}"
+    return normalized
 
 
 def parse_lcov_files(path: Path) -> list[tuple[str, int, int]] | None:
@@ -86,7 +100,7 @@ def parse_lcov_files(path: Path) -> list[tuple[str, int, int]] | None:
     found = hit = 0
     for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
         if line.startswith("SF:"):
-            current_file = normalize_source_path(line[3:])
+            current_file = normalize_source_path(line[3:], path.parent.name)
             found = hit = 0
         elif line.startswith("LF:"):
             found += int(line[3:])
