@@ -92,7 +92,9 @@ impl AstLint for Collect {
                 && !return_type.is_array
                 && return_type.name.eq_ignore_ascii_case("bool")
                 && !value_type.is_array
-                && !argument_types::is_primitive(&value_type.name);
+                && (value_type.name.eq_ignore_ascii_case("form")
+                    || value_type.name.eq_ignore_ascii_case("objectreference")
+                    || ctx.external.is_subtype(&value_type.name, "Form"));
             if !form_as_bool
                 && !argument_types::is_compatible(return_type, &value_type, ctx.external)
             {

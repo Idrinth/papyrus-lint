@@ -207,6 +207,41 @@ EndFunction
     assert!(relaxed.is_empty());
 }
 
+#[test]
+fn form_as_bool_does_not_accept_a_struct() {
+    let source = r#"ScriptName Example
+
+Struct Payload
+    Int Value
+EndStruct
+
+Bool Function HasPayload()
+    Return New Payload
+EndFunction
+"#;
+    let ast = papyrus_parser::parse_with_mode(
+        source,
+        papyrus_parser::parser::GameEdition::Fallout4,
+    )
+    .ok();
+    let tokens = papyrus_parser::tokenize(source).ok();
+    let config = crate::config::Config {
+        treat_form_as_bool_for_returns: true,
+        ..crate::config::Config::default()
+    };
+
+    let diagnostics = super::check(
+        source,
+        ast.as_ref(),
+        tokens.as_deref(),
+        &config,
+        &mut crate::external_signatures::NoExternalSignatures,
+    );
+
+    assert_eq!(diagnostics.len(), 1);
+    assert!(diagnostics[0].message.contains("declares return type Bool"));
+    assert!(diagnostics[0].message.contains("returns Payload"));
+}
 
 struct FakeExternalWithItemCount;
 struct FakeExternalWithSubtypes;
