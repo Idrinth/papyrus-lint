@@ -13,6 +13,15 @@ from .cli_download import ensure_release_cli, verify_configured_cli
 # in Sublime, since `level` is already surfaced as its own JSON field.
 _LEVEL_TAG = re.compile(r'^\[(?:error|warning|info)\]\s*')
 
+# SublimeLinter activates on TextMate scopes, not extensions. Papyrus syntax
+# packages do not agree on a single scope name, so the default selector lists
+# the ones used in the wild. `match_selector` additionally accepts saved
+# `*.psc` files whose syntax package used a different (or no) Papyrus scope.
+PAPYRUS_SELECTOR = (
+    'source.papyrus, source.papyrus.skyrim, '
+    'source.papyrus.fallout4, source.papyrusf4'
+)
+
 
 class PapyrusLint(Linter):
     """Runs a Papyrus Lint executable against a `.psc` file.
@@ -43,12 +52,30 @@ class PapyrusLint(Linter):
     executable = 'PapyrusLinterCLI'
 
     defaults = {
-        'selector': 'source.papyrus',
+        'selector': PAPYRUS_SELECTOR,
         # An explicit papyrus-lint config file path, passed to the CLI via
         # `--config` when set. Empty (the default) leaves the CLI to
         # discover papyrus-lint.yaml/.yml from the project root as usual.
         'config_path': '',
     }
+
+    @classmethod
+    def match_selector(cls, view, settings):
+        """Activate on known Papyrus scopes or a saved `*.psc` path.
+
+        SublimeLinter's own `match_selector` only consults `selector`.
+        Syntax packages for Papyrus use several scope names, and some
+        leave `.psc` files as Plain Text, so a matching filename is
+        accepted when the scope check does not fire. A user-overridden
+        `selector` is still honored first via `super()`.
+        """
+        regions = super().match_selector(view, settings)
+        if regions:
+            return regions
+        name = view.file_name() or ''
+        if name.lower().endswith('.psc'):
+            return [sublime.Region(0, view.size())]
+        return False
 
     def cmd(self):
         """Builds the command, inserting `--config <path>` when configured.
@@ -86,7 +113,7 @@ class PapyrusLint(Linter):
         """Parse `PapyrusLinterCLI lint --format json`'s report instead of a regex.
 
         `output` is the single JSON document PapyrusLinterCLI prints to
-        stdout: a `{"files": [{"path", "diagnostics": [...]}], ...}`
+        stdout: a `{\"files\": [{\"path\", \"diagnostics\": [...]}], ...}`
         report (see `JsonReport`/`JsonFileReport`/`JsonDiagnostic` in
         app/crates/papyrus-lint-cli/src/lib.rs). Since this linter always
         invokes PapyrusLinterCLI with a single `.psc` file argument, that
