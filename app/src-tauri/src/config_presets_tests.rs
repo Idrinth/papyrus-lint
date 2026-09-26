@@ -145,6 +145,19 @@ fn apply_config_preset_rejects_a_blank_preset_name() {
 }
 
 #[test]
+fn apply_config_preset_reports_a_missing_user_preset() {
+    let _guard = USER_PRESETS.lock().unwrap();
+    let dir = tempdir().unwrap();
+    let name = format!("missing-desktop-preset-{}", std::process::id());
+
+    let error = apply_config_preset(dir.path().to_string_lossy().into_owned(), name.clone())
+        .expect_err("a missing user preset should be rejected");
+
+    assert!(error.contains(&format!("unknown preset '{name}'")));
+    assert!(!dir.path().join("papyrus-lint.yaml").exists());
+}
+
+#[test]
 fn get_preset_lint_config_rejects_a_blank_preset_name() {
     let error =
         get_preset_lint_config(" \t ".to_string()).expect_err("blank preset should be rejected");
@@ -165,6 +178,62 @@ fn get_preset_lint_config_resolves_each_built_in_preset_case_insensitively() {
     let careful = get_preset_lint_config(" Careful ".to_string()).unwrap();
     assert!(!careful.rules.trailing_whitespace);
     assert_eq!(careful.cyclomatic_complexity_warning, 20);
+}
+
+#[test]
+fn a_saved_user_preset_can_seed_a_project_config() {
+    let _guard = USER_PRESETS.lock().unwrap();
+    let dir = tempdir().unwrap();
+    let name = format!("desktop-apply-test-{}", std::process::id());
+    let _cleanup = UserPresetCleanup(vec![name.clone()]);
+    let config = papyrus_lints::Config {
+        indentation_width: 7,
+        cyclomatic_complexity_warning: 31,
+        ..Default::default()
+    };
+
+    save_config_as_preset(config.clone(), format!("  {name}  "), false).unwrap();
+    apply_config_preset(
+        dir.path().to_string_lossy().into_owned(),
+        name.to_uppercase(),
+    )
+    .unwrap();
+
+    assert_eq!(
+        load_lint_config(dir.path().to_string_lossy().into_owned()).unwrap(),
+        config
+    );
+}
+
+#[test]
+fn rename_user_preset_requires_confirmation_before_replacing_another_preset() {
+    let _guard = USER_PRESETS.lock().unwrap();
+    let suffix = std::process::id();
+    let old_name = format!("desktop-rename-source-{suffix}");
+    let new_name = format!("desktop-rename-target-{suffix}");
+    let _cleanup = UserPresetCleanup(vec![old_name.clone(), new_name.clone()]);
+    let source_config = papyrus_lints::Config {
+        indentation_width: 3,
+        ..Default::default()
+    };
+    let target_config = papyrus_lints::Config {
+        indentation_width: 6,
+        ..Default::default()
+    };
+    save_config_as_preset(source_config.clone(), old_name.clone(), false).unwrap();
+    save_config_as_preset(target_config, new_name.clone(), false).unwrap();
+
+    let error = rename_user_preset(old_name.clone(), new_name.clone(), false)
+        .expect_err("renaming over another preset should require confirmation");
+    assert!(error.contains("already exists"));
+    assert_eq!(
+        get_preset_lint_config(old_name.clone()).unwrap(),
+        source_config
+    );
+
+    rename_user_preset(old_name.clone(), new_name.clone(), true).unwrap();
+    assert!(get_preset_lint_config(old_name).is_err());
+    assert_eq!(get_preset_lint_config(new_name).unwrap(), source_config);
 }
 
 #[test]
