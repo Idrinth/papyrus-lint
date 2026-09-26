@@ -48,6 +48,9 @@ fail_on_warning: false
 fail_on_info: false
 # true, false
 bool_like_int: true
+# true allows a Bool function to return a non-array Form value, relying on
+# Papyrus to treat None as false and an existing Form as true
+treat_form_as_bool_for_returns: false
 # true, false; true treats an Auto/AutoReadOnly property as already
 # filled in by the time a function runs instead of possibly None
 assume_auto_properties_filled: false

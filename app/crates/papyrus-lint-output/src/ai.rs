@@ -121,7 +121,7 @@ pub struct AiReport {
 /// (the CLI's `--format ai`, the desktop app's "Export for AI") so both
 /// point at the same schema version.
 pub const AI_EXPORT_SCHEMA_URL: &str =
-    "https://papyrus-lint.idrinth.de/schema/papyrus-lint-ai-export.v4.schema.json";
+    "https://papyrus-lint.idrinth.de/schema/papyrus-lint-ai-export.v5.schema.json";
 pub const TOOL_NAME: &str = "Papyrus Lint";
 /// The Papyrus dialect/engine version an AI export's findings were produced
 /// for, so an AI reading it doesn't have to guess whether a suggestion

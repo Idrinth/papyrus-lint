@@ -218,7 +218,7 @@ function fakeFormatIssuesForAiBase(args: unknown): string {
     }));
 
   return JSON.stringify({
-    $schema: "https://papyrus-lint.idrinth.de/schema/papyrus-lint-ai-export.v4.schema.json",
+    $schema: "https://papyrus-lint.idrinth.de/schema/papyrus-lint-ai-export.v5.schema.json",
     header: {
       tool: "Papyrus Lint",
       version,

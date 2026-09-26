@@ -146,6 +146,11 @@
       "type": "boolean",
       "default": true
     },
+    "treat_form_as_bool_for_returns": {
+      "description": "Whether return-types accepts a non-array Form value returned from a Bool function, relying on Papyrus's implicit None/existing Form conversion.",
+      "type": "boolean",
+      "default": false
+    },
     "assume_auto_properties_filled": {
       "description": "Whether none-form-usage treats a script-level Auto/AutoReadOnly property as already filled in by the time a function runs, instead of possibly None.",
       "type": "boolean",

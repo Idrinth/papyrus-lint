@@ -19,6 +19,7 @@ magic_numbers: loose
 fail_on_warning: false
 fail_on_info: false
 bool_like_int: true
+treat_form_as_bool_for_returns: false
 assume_auto_properties_filled: false
 `;
 
