@@ -28,10 +28,12 @@ describe("loadConfigPresets / applyConfigPreset", () => {
   });
 
   it("returns an empty array when fetching presets fails", async () => {
-    vi.spyOn(console, "error").mockImplementation(() => {});
-    invokeImplFor({});
+    const error = new Error("presets unavailable");
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+    invokeMock.mockRejectedValueOnce(error);
 
     await expect(loadConfigPresets()).resolves.toEqual([]);
+    expect(consoleError).toHaveBeenCalledWith(error);
   });
 
   it("normalizes a null backend response to an empty preset list", async () => {
@@ -49,10 +51,12 @@ describe("loadConfigPresets / applyConfigPreset", () => {
   });
 
   it("logs and swallows an error applying a preset", async () => {
-    vi.spyOn(console, "error").mockImplementation(() => {});
-    invokeImplFor({});
+    const error = new Error("write failed");
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+    invokeMock.mockRejectedValueOnce(error);
 
     await expect(applyConfigPreset("/my/project", "careful")).resolves.toBeUndefined();
+    expect(consoleError).toHaveBeenCalledWith(error);
   });
 });
 
@@ -63,6 +67,13 @@ describe("getPresetLintConfig", () => {
 
     await expect(getPresetLintConfig("careful")).resolves.toEqual(config);
     expect(invokeMock).toHaveBeenCalledWith("get_preset_lint_config", { preset: "careful" });
+  });
+
+  it("propagates backend errors", async () => {
+    const error = new Error("unknown preset");
+    invokeMock.mockRejectedValueOnce(error);
+
+    await expect(getPresetLintConfig("missing")).rejects.toBe(error);
   });
 });
 
@@ -91,6 +102,25 @@ describe("renameUserPreset / deleteUserPreset / exportUserPreset", () => {
     });
   });
 
+  it("passes a false overwrite choice through unchanged", async () => {
+    invokeImplFor({ rename_user_preset: () => undefined });
+
+    await renameUserPreset("old-name", "new-name", false);
+
+    expect(invokeMock).toHaveBeenCalledWith("rename_user_preset", {
+      oldName: "old-name",
+      newName: "new-name",
+      overwrite: false,
+    });
+  });
+
+  it("renameUserPreset propagates backend errors", async () => {
+    const error = new Error("rename failed");
+    invokeMock.mockRejectedValueOnce(error);
+
+    await expect(renameUserPreset("old-name", "new-name", false)).rejects.toBe(error);
+  });
+
   it("deleteUserPreset invokes delete_user_preset with the given name", async () => {
     invokeImplFor({ delete_user_preset: () => undefined });
 
@@ -99,10 +129,24 @@ describe("renameUserPreset / deleteUserPreset / exportUserPreset", () => {
     expect(invokeMock).toHaveBeenCalledWith("delete_user_preset", { name: "team-style" });
   });
 
+  it("deleteUserPreset propagates backend errors", async () => {
+    const error = new Error("delete failed");
+    invokeMock.mockRejectedValueOnce(error);
+
+    await expect(deleteUserPreset("team-style")).rejects.toBe(error);
+  });
+
   it("exportUserPreset invokes export_user_preset and returns its YAML", async () => {
     invokeImplFor({ export_user_preset: () => "semicolon: true\n" });
 
     await expect(exportUserPreset("team-style")).resolves.toBe("semicolon: true\n");
     expect(invokeMock).toHaveBeenCalledWith("export_user_preset", { name: "team-style" });
+  });
+
+  it("exportUserPreset propagates backend errors", async () => {
+    const error = new Error("export failed");
+    invokeMock.mockRejectedValueOnce(error);
+
+    await expect(exportUserPreset("team-style")).rejects.toBe(error);
   });
 });

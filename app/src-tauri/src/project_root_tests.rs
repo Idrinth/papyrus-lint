@@ -1,4 +1,5 @@
 use super::*;
+use std::fs;
 use tempfile::tempdir;
 
 #[test]
@@ -59,5 +60,53 @@ fn psc_project_root_command_handles_conventional_and_fallback_layouts() {
     assert_eq!(
         find_psc_project_root_for_path("Example.psc".to_string()),
         "."
+    );
+}
+
+#[test]
+fn psc_project_root_command_prefers_a_configured_ancestor_over_the_directory_pair() {
+    let dir = tempdir().unwrap();
+    let configured_root = dir.path().join("configured-project");
+    let conventional_root = configured_root.join("Data");
+    let script = conventional_root.join("Scripts/Source/Nested/Example.psc");
+
+    fs::create_dir_all(script.parent().unwrap()).unwrap();
+    fs::write(configured_root.join("papyrus-lint.yaml"), "rules: {}\n").unwrap();
+    fs::write(&script, "ScriptName Example\n").unwrap();
+
+    assert_eq!(
+        find_psc_project_root_for_path(script.to_string_lossy().into_owned()),
+        configured_root.to_string_lossy()
+    );
+}
+
+#[test]
+fn psc_project_root_command_recognizes_yml_configs_in_custom_layouts() {
+    let dir = tempdir().unwrap();
+    let configured_root = dir.path().join("configured-project");
+    let script = configured_root.join("custom/deep/layout/Example.psc");
+
+    fs::create_dir_all(script.parent().unwrap()).unwrap();
+    fs::write(configured_root.join("papyrus-lint.yml"), "rules: {}\n").unwrap();
+    fs::write(&script, "ScriptName Example\n").unwrap();
+
+    assert_eq!(
+        find_psc_project_root_for_path(script.to_string_lossy().into_owned()),
+        configured_root.to_string_lossy()
+    );
+}
+
+#[test]
+fn project_root_accepts_mixed_case_directory_pairs_and_directory_entries() {
+    let separator = std::path::MAIN_SEPARATOR;
+
+    assert_eq!(
+        find_project_root(
+            vec![format!(
+                "project{separator}SoUrCe{separator}ScRiPtS{separator}Nested"
+            )],
+            "fallback".to_string(),
+        ),
+        "project"
     );
 }

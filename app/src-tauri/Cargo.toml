@@ -37,6 +37,9 @@ papyrus-lint-live = { path = "../crates/papyrus-lint-live" }
 papyrus-lint-output = { path = "../crates/papyrus-lint-output" }
 tempfile = "3"
 
+[dev-dependencies]
+tauri = { version = "2", features = ["test"] }
+
 [profile.release]
 lto = true
 codegen-units = 1

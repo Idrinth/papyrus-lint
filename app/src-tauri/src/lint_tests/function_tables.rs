@@ -32,3 +32,38 @@ fn project_function_table_is_distinct_for_different_roots() {
 
     assert!(!std::sync::Arc::ptr_eq(&first, &second));
 }
+
+#[test]
+fn project_function_table_keys_include_game_and_search_roots() {
+    let dir = tempdir().unwrap();
+    let root = dir.path().to_string_lossy().into_owned();
+    let base = project_function_table_for_game(
+        papyrus_lints::Game::Skyrim,
+        root.clone(),
+        vec!["additional-a".to_string()],
+        vec!["lookup-a".to_string()],
+    );
+
+    for candidate in [
+        project_function_table_for_game(
+            papyrus_lints::Game::Fallout4,
+            root.clone(),
+            vec!["additional-a".to_string()],
+            vec!["lookup-a".to_string()],
+        ),
+        project_function_table_for_game(
+            papyrus_lints::Game::Skyrim,
+            root.clone(),
+            vec!["additional-b".to_string()],
+            vec!["lookup-a".to_string()],
+        ),
+        project_function_table_for_game(
+            papyrus_lints::Game::Skyrim,
+            root,
+            vec!["additional-a".to_string()],
+            vec!["lookup-b".to_string()],
+        ),
+    ] {
+        assert!(!std::sync::Arc::ptr_eq(&base, &candidate));
+    }
+}

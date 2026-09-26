@@ -18,7 +18,13 @@ use repair::*;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    tauri::Builder::default()
+    configure_builder(tauri::Builder::default())
+        .run(tauri::generate_context!())
+        .expect("error while running tauri application");
+}
+
+fn configure_builder<R: tauri::Runtime>(builder: tauri::Builder<R>) -> tauri::Builder<R> {
+    builder
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
             get_app_version,
@@ -73,6 +79,8 @@ pub fn run() {
             format_issues_as_json,
             format_issues_for_ai_base
         ])
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
 }
+
+#[cfg(test)]
+#[path = "lib_tests.rs"]
+mod tests;
