@@ -113,8 +113,8 @@ class PapyrusLint(Linter):
         """Parse `PapyrusLinterCLI lint --format json`'s report instead of a regex.
 
         `output` is the single JSON document PapyrusLinterCLI prints to
-        stdout: a `{\"files\": [{\"path\", \"diagnostics\": [...]}], ...}`
-        report (see `JsonReport`/`JsonFileReport`/`JsonDiagnostic` in
+        stdout: a files/diagnostics JSON report
+        (see `JsonReport`/`JsonFileReport`/`JsonDiagnostic` in
         app/crates/papyrus-lint-cli/src/lib.rs). Since this linter always
         invokes PapyrusLinterCLI with a single `.psc` file argument, that
         report only ever contains one file entry; every diagnostic across
