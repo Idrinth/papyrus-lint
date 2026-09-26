@@ -12,9 +12,10 @@ export type {
   TypeCasingStyle,
 } from "./config-types";
 export { currentLintConfig } from "./config-types";
-// `./config-types` is generated at build time from shared/rules/*.json
-// and configuration/papyrus-lint.default.yaml; run `npm run generate:config-types`
-// (also hooked from dev/build/test/lint) after adding a rule.
+// `./config-types` is generated at build time from shared/rules/*.json,
+// configuration/papyrus-lint.default.yaml, and configuration/lint-settings.json;
+// run `npm run generate:config-types` (also hooked from dev/build/test/lint)
+// after adding a rule or a config field.
 export {
   applyLintConfigToUI,
   bindConfigSettings,

@@ -94,12 +94,7 @@
               <output id="used-configuration-file">No project loaded</output>
             </div>
           </fieldset>
-          <label for="game-select" title="The game whose Papyrus dialect and runtime APIs this project targets. Saved as the configuration file's game key.">Target game</label>
-          <select id="game-select">
-            <option value="skyrim">Skyrim</option>
-            <option value="fallout4">Fallout 4</option>
-            <option value="starfield">Starfield</option>
-          </select>
+          <div id="lint-config-game"></div>
           <div class="compiler-path-setting">
             <label for="config-path-override">Configuration file</label>
             <input
@@ -135,83 +130,7 @@
               placeholder="One directory per line; used only as a last-resort fallback for type/function lookup, never linted"
             ></textarea>
           </div>
-          <label for="semicolon-style">Trailing semicolons</label>
-          <select id="semicolon-style">
-            <option value="forbid">Remove where possible</option>
-            <option value="require">Add to non-empty lines</option>
-          </select>
-          <div class="indentation-setting">
-            Indentation
-            <select id="indentation-style" aria-label="Indentation style">
-              <option value="tabs">Tabs</option>
-              <option value="spaces">Spaces</option>
-            </select>
-            <label for="indentation-width">Width</label>
-            <input id="indentation-width" type="number" min="1" max="16" value="4" disabled />
-          </div>
-          <label for="max-line-length">Maximum line length</label>
-          <input id="max-line-length" type="number" min="1" value="120" />
-          <label for="type-casing-style">Type name casing</label>
-          <select id="type-casing-style">
-            <option value="PascalCase">PascalCase</option>
-            <option value="camelCase">camelCase</option>
-            <option value="lowercase">lowercase</option>
-            <option value="UPPERCASE">UPPERCASE</option>
-          </select>
-          <label for="identifier-casing-style">Identifier casing</label>
-          <select id="identifier-casing-style">
-            <option value="camelCase">camelCase</option>
-            <option value="PascalCase">PascalCase</option>
-            <option value="snake_case">snake_case</option>
-            <option value="CONSTANT_CASE">CONSTANT_CASE</option>
-          </select>
-          <label for="named-arguments-style">Prefer named arguments</label>
-          <select id="named-arguments-style">
-            <option value="never">Never</option>
-            <option value="instead_of_defaults">Instead of defaults</option>
-            <option value="always">Always</option>
-          </select>
-          <label for="magic-numbers-mode">Magic numbers</label>
-          <select id="magic-numbers-mode">
-            <option value="loose">Loose (exempt Wait/RegisterFor* intervals)</option>
-            <option value="strict">Strict (check every call argument)</option>
-          </select>
-
-          <fieldset class="settings-group">
-            <legend>Cyclomatic complexity thresholds</legend>
-            <div class="settings-group__row">
-              <label for="cyclomatic-complexity-warning">Warning at</label>
-              <input id="cyclomatic-complexity-warning" type="number" min="1" value="10" />
-            </div>
-            <div class="settings-group__row">
-              <label for="cyclomatic-complexity-error">Error at</label>
-              <input id="cyclomatic-complexity-error" type="number" min="1" value="20" />
-            </div>
-          </fieldset>
-
-          <fieldset class="settings-group">
-            <legend>Short wait/update interval threshold</legend>
-            <div class="settings-group__row">
-              <label for="min-wait-interval">Minimum interval</label>
-              <input id="min-wait-interval" type="number" min="0" step="0.01" value="0.1" />
-            </div>
-          </fieldset>
-
-          <fieldset class="settings-group">
-            <legend>CLI failure levels</legend>
-            <label title="Whether the CLI treats a [warning]-level diagnostic as a reason to exit non-zero. Has no effect on the desktop app, which always lists every diagnostic regardless of severity."><input type="checkbox" id="fail-on-warning" /> Fail on warning</label>
-            <label title="Whether the CLI treats an [info]-level diagnostic as a reason to exit non-zero. Has no effect on the desktop app, which always lists every diagnostic regardless of severity."><input type="checkbox" id="fail-on-info" /> Fail on info</label>
-          </fieldset>
-
-          <fieldset class="settings-group">
-            <legend>Strict boolean check</legend>
-            <label title="Whether the "Strict boolean check" lint accepts the Int literal 1 or 0 used directly as an If/ElseIf/While condition as bool-like, instead of flagging it. Any other Int value (a variable or property that happens to hold 0/1, or a literal other than 1/0) is still flagged either way."><input type="checkbox" id="bool-like-int" checked /> Allow 1/0 as bool-like</label>
-          </fieldset>
-
-          <fieldset class="settings-group">
-            <legend>None used as an existing Form</legend>
-            <label title="Whether the "None used as an existing Form" lint treats a script-level Auto/AutoReadOnly property as already filled in by the time a function runs, instead of possibly still None. A local variable is always tracked either way."><input type="checkbox" id="assume-auto-properties-filled" /> Assume Auto properties are filled</label>
-          </fieldset>
+          <div id="lint-config-settings"></div>
 
           <fieldset id="lint-rules" class="settings-group">
             <legend>Lint rules</legend>
@@ -410,11 +329,7 @@
       </p>
       <div id="config-picker-game" class="config-picker__game" hidden>
         <label for="config-picker-game-select">Target game</label>
-        <select id="config-picker-game-select">
-          <option value="skyrim">Skyrim</option>
-          <option value="fallout4">Fallout 4</option>
-          <option value="starfield">Starfield</option>
-        </select>
+        <select id="config-picker-game-select"></select>
       </div>
       <div id="config-picker-preset-list" class="config-picker__list" hidden></div>
       <div class="config-picker__browse">

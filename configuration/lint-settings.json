@@ -1,0 +1,403 @@
+{
+  "settings": [
+    {
+      "key": "game",
+      "rust_type": "Game",
+      "rust_default": "Game::default()",
+      "yaml_default": "skyrim",
+      "ts_type": "Game",
+      "ts_alias": "Game",
+      "doc": "The game whose Papyrus dialect and runtime APIs this project targets.\nDefaults to [`Game::Skyrim`] for compatibility with configurations\ncreated before this key existed.",
+      "ui": {
+        "mount": "lint-config-game",
+        "id": "game-select",
+        "widget": "game",
+        "label": "Target game",
+        "title": "The game whose Papyrus dialect and runtime APIs this project targets. Saved as the configuration file's game key.",
+        "options": [
+          {
+            "value": "skyrim",
+            "label": "Skyrim"
+          },
+          {
+            "value": "fallout4",
+            "label": "Fallout 4"
+          },
+          {
+            "value": "starfield",
+            "label": "Starfield"
+          }
+        ],
+        "fill_selects": [
+          "config-picker-game-select"
+        ],
+        "ui_order": 0
+      }
+    },
+    {
+      "key": "semicolon",
+      "rust_type": "bool",
+      "rust_default": "false",
+      "yaml_default": "false",
+      "ts_type": "boolean",
+      "doc": "Whether lines are required to end in a semicolon (`true`) or must\nnot (`false`). See the \"Semicolon at end of line\" lint in\nREADME.md.",
+      "ui": {
+        "mount": "lint-config-settings",
+        "id": "semicolon-style",
+        "widget": "bool-select",
+        "label": "Trailing semicolons",
+        "true_value": "require",
+        "false_value": "forbid",
+        "options": [
+          {
+            "value": "forbid",
+            "label": "Remove where possible"
+          },
+          {
+            "value": "require",
+            "label": "Add to non-empty lines"
+          }
+        ],
+        "ui_order": 10
+      }
+    },
+    {
+      "key": "indentation",
+      "rust_type": "Indentation",
+      "rust_default": "Indentation::default()",
+      "yaml_default": "tab",
+      "ts_type": "\"tab\" | \"space\"",
+      "doc": "The indentation style enforced by the \"Formatting checks\"/\n\"Indentation\" lint and automatic fix in README.md.",
+      "ui": {
+        "mount": "lint-config-settings",
+        "group": "indentation",
+        "group_kind": "indentation",
+        "group_prefix": "Indentation",
+        "id": "indentation-style",
+        "widget": "mapped-select",
+        "aria_label": "Indentation style",
+        "options": [
+          {
+            "value": "tabs",
+            "label": "Tabs",
+            "config": "tab"
+          },
+          {
+            "value": "spaces",
+            "label": "Spaces",
+            "config": "space"
+          }
+        ],
+        "enables_key": "indentation_width",
+        "enables_when": "space",
+        "ui_order": 20
+      }
+    },
+    {
+      "key": "indentation_width",
+      "rust_type": "usize",
+      "rust_default": "4",
+      "yaml_default": "4",
+      "ts_type": "number",
+      "doc": "The number of spaces per indentation level, used only when\n`indentation` is [`Indentation::Space`].",
+      "ui": {
+        "mount": "lint-config-settings",
+        "group": "indentation",
+        "group_kind": "indentation",
+        "id": "indentation-width",
+        "widget": "number",
+        "label": "Width",
+        "min": 1,
+        "max": 16,
+        "clamp_min": 1,
+        "clamp_max": 16,
+        "treat_zero_as_empty": true,
+        "disabled_by_default": true,
+        "ui_order": 30
+      }
+    },
+    {
+      "key": "max_line_length",
+      "rust_type": "usize",
+      "rust_default": "120",
+      "yaml_default": "120",
+      "ts_type": "number",
+      "doc": "The maximum number of characters allowed on a line before the\n\"Line length\" lint emits a warning.",
+      "ui": {
+        "mount": "lint-config-settings",
+        "id": "max-line-length",
+        "widget": "number",
+        "label": "Maximum line length",
+        "min": 1,
+        "clamp_min": 1,
+        "treat_zero_as_empty": true,
+        "ui_order": 40
+      }
+    },
+    {
+      "key": "identifier_casing",
+      "rust_type": "IdentifierCasing",
+      "rust_default": "IdentifierCasing::default()",
+      "yaml_default": "PascalCase",
+      "ts_type": "IdentifierCasingStyle",
+      "ts_alias": "IdentifierCasingStyle",
+      "doc": "The casing style enforced by the \"Identifier casing\" lint. See\n[`IdentifierCasing`].",
+      "ui": {
+        "mount": "lint-config-settings",
+        "id": "identifier-casing-style",
+        "widget": "select",
+        "label": "Identifier casing",
+        "options": [
+          {
+            "value": "camelCase",
+            "label": "camelCase"
+          },
+          {
+            "value": "PascalCase",
+            "label": "PascalCase"
+          },
+          {
+            "value": "snake_case",
+            "label": "snake_case"
+          },
+          {
+            "value": "CONSTANT_CASE",
+            "label": "CONSTANT_CASE"
+          }
+        ],
+        "ui_order": 60
+      }
+    },
+    {
+      "key": "cyclomatic_complexity_warning",
+      "rust_type": "usize",
+      "rust_default": "10",
+      "yaml_default": "10",
+      "ts_type": "number",
+      "doc": "The cyclomatic complexity a function/event can reach before the\n\"Cyclomatic complexity\" lint flags it as a `[warning]`.",
+      "ui": {
+        "mount": "lint-config-settings",
+        "group": "cyclomatic",
+        "group_kind": "fieldset",
+        "group_legend": "Cyclomatic complexity thresholds",
+        "row": true,
+        "id": "cyclomatic-complexity-warning",
+        "widget": "number",
+        "label": "Warning at",
+        "min": 1,
+        "clamp_min": 1,
+        "treat_zero_as_empty": true,
+        "ui_order": 90
+      }
+    },
+    {
+      "key": "cyclomatic_complexity_error",
+      "rust_type": "usize",
+      "rust_default": "20",
+      "yaml_default": "20",
+      "ts_type": "number",
+      "doc": "The cyclomatic complexity a function/event can reach before the\n\"Cyclomatic complexity\" lint flags it as an `[error]`. A value below\n[`Self::cyclomatic_complexity_warning`] is treated as equal to it\ninstead (see [`crate::cyclomatic_complexity::check`]), since an\n`[error]` threshold lower than the `[warning]` one it's supposed to\nescalate would otherwise be contradictory.",
+      "ui": {
+        "mount": "lint-config-settings",
+        "group": "cyclomatic",
+        "group_kind": "fieldset",
+        "row": true,
+        "id": "cyclomatic-complexity-error",
+        "widget": "number",
+        "label": "Error at",
+        "min": 1,
+        "clamp_min": 1,
+        "clamp_min_from": "cyclomatic_complexity_warning",
+        "treat_zero_as_empty": true,
+        "ui_order": 100
+      }
+    },
+    {
+      "key": "type_casing",
+      "rust_type": "TypeCasing",
+      "rust_default": "TypeCasing::default()",
+      "yaml_default": "PascalCase",
+      "ts_type": "TypeCasingStyle",
+      "ts_alias": "TypeCasingStyle",
+      "doc": "The casing convention required of a script's declared type name\n(the identifier following `ScriptName`), checked by the \"Type name\ncasing\" lint.",
+      "ui": {
+        "mount": "lint-config-settings",
+        "id": "type-casing-style",
+        "widget": "select",
+        "label": "Type name casing",
+        "options": [
+          {
+            "value": "PascalCase",
+            "label": "PascalCase"
+          },
+          {
+            "value": "camelCase",
+            "label": "camelCase"
+          },
+          {
+            "value": "lowercase",
+            "label": "lowercase"
+          },
+          {
+            "value": "UPPERCASE",
+            "label": "UPPERCASE"
+          }
+        ],
+        "ui_order": 50
+      }
+    },
+    {
+      "key": "named_arguments",
+      "rust_type": "NamedArguments",
+      "rust_default": "NamedArguments::default()",
+      "yaml_default": "never",
+      "ts_type": "NamedArgumentsStyle",
+      "ts_alias": "NamedArgumentsStyle",
+      "doc": "How strongly the \"Prefer named arguments\" lint prefers Papyrus's\nnamed-argument call syntax (`func(argB = 1)`) over positional\narguments. See [`NamedArguments`].",
+      "ui": {
+        "mount": "lint-config-settings",
+        "id": "named-arguments-style",
+        "widget": "select",
+        "label": "Prefer named arguments",
+        "options": [
+          {
+            "value": "never",
+            "label": "Never"
+          },
+          {
+            "value": "instead_of_defaults",
+            "label": "Instead of defaults"
+          },
+          {
+            "value": "always",
+            "label": "Always"
+          }
+        ],
+        "ui_order": 70
+      }
+    },
+    {
+      "key": "min_wait_interval",
+      "rust_type": "f64",
+      "rust_default": "0.1",
+      "yaml_default": "0.1",
+      "ts_type": "number",
+      "doc": "The interval/duration argument a `Utility.Wait`, `RegisterForUpdate`,\n`RegisterForSingleUpdate`, `RegisterForUpdateGameTime`, or\n`RegisterForSingleUpdateGameTime` call can go below before the\n\"Short wait/update interval\" lint flags it as a `[warning]`.",
+      "ui": {
+        "mount": "lint-config-settings",
+        "group": "wait",
+        "group_kind": "fieldset",
+        "group_legend": "Short wait/update interval threshold",
+        "row": true,
+        "id": "min-wait-interval",
+        "widget": "number",
+        "label": "Minimum interval",
+        "min": 0,
+        "step": 0.01,
+        "clamp_min": 0,
+        "ui_order": 110
+      }
+    },
+    {
+      "key": "magic_numbers",
+      "rust_type": "MagicNumbers",
+      "rust_default": "MagicNumbers::default()",
+      "yaml_default": "loose",
+      "ts_type": "MagicNumbersMode",
+      "ts_alias": "MagicNumbersMode",
+      "doc": "Whether the \"Magic numbers\" lint also checks the interval argument\nof a `Utility.Wait`/`RegisterForUpdate`/`RegisterForSingleUpdate`/\n`RegisterForUpdateGameTime`/`RegisterForSingleUpdateGameTime` call\n(`strict`), or leaves it unflagged since a hardcoded interval there\nis common and usually self-explanatory (`loose`, the default). See\n[`MagicNumbers`].",
+      "ui": {
+        "mount": "lint-config-settings",
+        "id": "magic-numbers-mode",
+        "widget": "select",
+        "label": "Magic numbers",
+        "options": [
+          {
+            "value": "loose",
+            "label": "Loose (exempt Wait/RegisterFor* intervals)"
+          },
+          {
+            "value": "strict",
+            "label": "Strict (check every call argument)"
+          }
+        ],
+        "ui_order": 80
+      }
+    },
+    {
+      "key": "fail_on_warning",
+      "rust_type": "bool",
+      "rust_default": "false",
+      "yaml_default": "false",
+      "ts_type": "boolean",
+      "doc": "Whether the CLI (see `papyrus-lint-cli`) treats a `[warning]`-level\ndiagnostic as a reason to exit non-zero. `false` by default, so a\nproject only fails a lint run on `[error]`-level (and untagged)\ndiagnostics unless it opts in. Has no effect on the desktop app,\nwhich always shows every diagnostic regardless of severity.",
+      "ui": {
+        "mount": "lint-config-settings",
+        "group": "fail-levels",
+        "group_kind": "fieldset",
+        "group_legend": "CLI failure levels",
+        "id": "fail-on-warning",
+        "widget": "checkbox",
+        "checkbox_label": "Fail on warning",
+        "title": "Whether the CLI treats a [warning]-level diagnostic as a reason to exit non-zero. Has no effect on the desktop app, which always lists every diagnostic regardless of severity.",
+        "ui_order": 120
+      }
+    },
+    {
+      "key": "fail_on_info",
+      "rust_type": "bool",
+      "rust_default": "false",
+      "yaml_default": "false",
+      "ts_type": "boolean",
+      "doc": "Like [`Self::fail_on_warning`], but for `[info]`-level diagnostics.\n`false` by default.",
+      "ui": {
+        "mount": "lint-config-settings",
+        "group": "fail-levels",
+        "group_kind": "fieldset",
+        "id": "fail-on-info",
+        "widget": "checkbox",
+        "checkbox_label": "Fail on info",
+        "title": "Whether the CLI treats an [info]-level diagnostic as a reason to exit non-zero. Has no effect on the desktop app, which always lists every diagnostic regardless of severity.",
+        "ui_order": 130
+      }
+    },
+    {
+      "key": "bool_like_int",
+      "rust_type": "bool",
+      "rust_default": "true",
+      "yaml_default": "true",
+      "ts_type": "boolean",
+      "doc": "Whether the \"Strict boolean check\" lint accepts an `Int` literal\n`1` or `0` used directly as an `If`/`ElseIf`/`While` condition,\ntreating it as the common \"bool-like\" idiom rather than flagging\nit. `true` by default. Any other `Int` value (a variable, a\nproperty, or a literal other than `1`/`0`) is still flagged\nregardless of this setting.",
+      "ui": {
+        "mount": "lint-config-settings",
+        "group": "bool-like",
+        "group_kind": "fieldset",
+        "group_legend": "Strict boolean check",
+        "id": "bool-like-int",
+        "widget": "checkbox",
+        "checkbox_label": "Allow 1/0 as bool-like",
+        "title": "Whether the \"Strict boolean check\" lint accepts the Int literal 1 or 0 used directly as an If/ElseIf/While condition as bool-like, instead of flagging it. Any other Int value (a variable or property that happens to hold 0/1, or a literal other than 1/0) is still flagged either way.",
+        "ui_order": 140
+      }
+    },
+    {
+      "key": "assume_auto_properties_filled",
+      "rust_type": "bool",
+      "rust_default": "false",
+      "yaml_default": "false",
+      "ts_type": "boolean",
+      "doc": "Whether the \"None used as an existing Form\" lint treats a\nscript-level `Auto`/`AutoReadOnly` property as already filled in by\nthe time a function runs, rather than possibly still `None` (see\n[`crate::none_form_usage`]). `false` by default, so such a property\nis treated the same as an uninitialized local unless proven\notherwise. Many projects consider that noise, since in practice the\nCK's Property Manager (or another script's `PropertySet`) has\nalready filled every listed property in by the time any function\nruns; setting this to `true` drops that initial assumption. A\nproperty is still tracked (and flagged) once script code assigns it\n`None` directly, the same as a local variable. Has no effect on\n`unchecked_form_parameter`, which never tracks properties at all.",
+      "ui": {
+        "mount": "lint-config-settings",
+        "group": "assume-auto",
+        "group_kind": "fieldset",
+        "group_legend": "None used as an existing Form",
+        "id": "assume-auto-properties-filled",
+        "widget": "checkbox",
+        "checkbox_label": "Assume Auto properties are filled",
+        "title": "Whether the \"None used as an existing Form\" lint treats a script-level Auto/AutoReadOnly property as already filled in by the time a function runs, instead of possibly still None. A local variable is always tracked either way.",
+        "ui_order": 150
+      }
+    }
+  ]
+}

@@ -90,7 +90,8 @@ CI treats clippy warnings as errors.
    `KNOWN_RULE_IDS`/`FIXABLE_RULE_IDS` (`src/registry.rs`), `RULE_TAGS`
    (`src/tags.rs`), `Rules`/`default_rules()` (`src/config.rs`), the
    `collect_diagnostics`/`apply_repairs` dispatch, and each rule's `mod`
-   in `src/lib.rs` from the generated `shared/rules.json` at build time;
+   in `src/lib.rs` from the generated `shared/rules.json` at build time.
+   `Config`'s other fields are compiled from `configuration/lint-settings.json`.
    `pages/build.py` generates the website's searchable `rules.html`
    straight from it; and release tooling fills in `templates/nexuspage.bbcode`'s
    five lint tables from it (see the comments in `.github/workflows/release.yml`) —
@@ -135,11 +136,18 @@ Minimum touch list (see also [`CONTRIBUTING.md`](CONTRIBUTING.md)):
    `registry.rs`'s `KNOWN_RULE_IDS`/`FIXABLE_RULE_IDS`, `tags.rs`'s
    `RULE_TAGS`, `config.rs`'s `Rules`/`default_rules()`,
    `collect_diagnostics`/`apply_repairs`, and `lib.rs`'s rule `mod`s from
-   this file at build time — don't hand-edit those. The desktop Settings
-   tab's per-rule checkboxes are the same: `app/scripts/generate-config-types.mjs`
+   this file at build time — don't hand-edit those. `Config`'s other
+   fields (everything except `rules`) are generated from
+   `configuration/lint-settings.json` by the same `build.rs`. The desktop
+   Settings tab's per-rule checkboxes are the same: `app/scripts/generate-config-types.mjs`
    writes `RULE_SETTINGS` into `app/src/config-types.ts`, and
    `bindConfigSettings` renders `#lint-rules` from that. Don't add a
    checkbox to `app/index.html` (or the test fixture) for a new rule.
+   That script also writes `LINT_SETTINGS` from `configuration/lint-settings.json`;
+   `bindConfigSettings` renders those controls into `#lint-config-game` and
+   `#lint-config-settings`. Don't hand-edit `Config` or those controls —
+   add the key to `configuration/lint-settings.json` and
+   `configuration/papyrus-lint.default.yaml` (and the JSON schema) instead.
    `doc_url()` links straight to `rules.html#rule-<rule>`, derived from
    the rule id alone, so it needs no separate slug field either. A new
    `"low"` importance rule is turned off by default in the generated

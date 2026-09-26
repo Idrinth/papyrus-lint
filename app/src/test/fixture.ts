@@ -45,54 +45,13 @@ export const FIXTURE_HTML = `
         <fieldset id="settings-fieldset" class="settings-fieldset" disabled>
         <output id="detected-script-roots">No project loaded</output>
         <output id="used-configuration-file">No project loaded</output>
+        <div id="lint-config-game"></div>
         <input id="config-path-override" type="text" />
         <input id="compiler-path" type="text" />
         <input id="compile-check" type="checkbox" />
         <textarea id="script-roots"></textarea>
         <textarea id="lookup-script-roots"></textarea>
-        <select id="game-select">
-          <option value="skyrim">Skyrim</option>
-          <option value="fallout4">Fallout 4</option>
-          <option value="starfield">Starfield</option>
-        </select>
-        <select id="semicolon-style">
-          <option value="forbid">Remove where possible</option>
-          <option value="require">Add to non-empty lines</option>
-        </select>
-        <select id="indentation-style">
-          <option value="tabs">Tabs</option>
-          <option value="spaces">Spaces</option>
-        </select>
-        <input id="indentation-width" type="number" min="1" max="16" value="4" disabled />
-        <input id="max-line-length" type="number" min="1" value="120" />
-        <select id="type-casing-style">
-          <option value="PascalCase">PascalCase</option>
-          <option value="camelCase">camelCase</option>
-          <option value="lowercase">lowercase</option>
-          <option value="UPPERCASE">UPPERCASE</option>
-        </select>
-        <select id="identifier-casing-style">
-          <option value="camelCase">camelCase</option>
-          <option value="PascalCase">PascalCase</option>
-          <option value="snake_case">snake_case</option>
-          <option value="CONSTANT_CASE">CONSTANT_CASE</option>
-        </select>
-        <select id="named-arguments-style">
-          <option value="never">Never</option>
-          <option value="instead_of_defaults">Instead of defaults</option>
-          <option value="always">Always</option>
-        </select>
-        <select id="magic-numbers-mode">
-          <option value="loose">Loose</option>
-          <option value="strict">Strict</option>
-        </select>
-        <input id="cyclomatic-complexity-warning" type="number" min="1" value="10" />
-        <input id="cyclomatic-complexity-error" type="number" min="1" value="20" />
-        <input id="min-wait-interval" type="number" min="0" step="0.01" value="0.1" />
-        <input type="checkbox" id="fail-on-warning" />
-        <input type="checkbox" id="fail-on-info" />
-        <input type="checkbox" id="bool-like-int" checked />
-        <input type="checkbox" id="assume-auto-properties-filled" />
+        <div id="lint-config-settings"></div>
         <fieldset id="lint-rules"></fieldset>
         <button type="button" id="save-config-as-preset">Save current settings as preset&hellip;</button>
         <select id="reset-to-preset-select"></select>
@@ -220,11 +179,7 @@ export const FIXTURE_HTML = `
     </p>
     <div id="config-picker-game" class="config-picker__game" hidden>
       <label for="config-picker-game-select">Target game</label>
-      <select id="config-picker-game-select">
-        <option value="skyrim">Skyrim</option>
-        <option value="fallout4">Fallout 4</option>
-        <option value="starfield">Starfield</option>
-      </select>
+      <select id="config-picker-game-select"></select>
     </div>
     <div id="config-picker-preset-list" class="config-picker__list" hidden></div>
     <div class="config-picker__browse">

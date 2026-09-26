@@ -31,6 +31,8 @@
 //! [`Rules::default`], which is generated from `shared/rules.json`
 //! (`enabled_by_default`, defaulting to `true`). A ruleset set to `false`
 //! disables that lint (and its automatic fix, if it has one) entirely.
+//! The other [`Config`] fields are generated from
+//! `configuration/lint-settings.json` the same way.
 //!
 //! `assume_auto_properties_filled` (a top-level key, not a `rules` entry)
 //! is `false` by default: see [`Config::assume_auto_properties_filled`].
@@ -109,122 +111,7 @@ impl IdentifierCasing {
     }
 }
 
-/// Configuration for the lint/fix jobs, deserialized from a project's YAML
-/// config file and, in the desktop app, kept in sync with the formatting
-/// controls in the UI (loaded on startup, saved back to the file whenever
-/// they change). Fields absent from the YAML fall back to their default.
-/// File I/O for that YAML lives in `papyrus-lint-config`.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct Config {
-    /// The game whose Papyrus dialect and runtime APIs this project targets.
-    /// Defaults to [`Game::Skyrim`] for compatibility with configurations
-    /// created before this key existed.
-    pub game: Game,
-    /// Whether lines are required to end in a semicolon (`true`) or must
-    /// not (`false`). See the "Semicolon at end of line" lint in
-    /// README.md.
-    pub semicolon: bool,
-    /// The indentation style enforced by the "Formatting checks"/
-    /// "Indentation" lint and automatic fix in README.md.
-    pub indentation: Indentation,
-    /// The number of spaces per indentation level, used only when
-    /// `indentation` is [`Indentation::Space`].
-    pub indentation_width: usize,
-    /// The maximum number of characters allowed on a line before the
-    /// "Line length" lint emits a warning.
-    pub max_line_length: usize,
-    /// The casing style enforced by the "Identifier casing" lint. See
-    /// [`IdentifierCasing`].
-    pub identifier_casing: IdentifierCasing,
-    /// The cyclomatic complexity a function/event can reach before the
-    /// "Cyclomatic complexity" lint flags it as a `[warning]`.
-    pub cyclomatic_complexity_warning: usize,
-    /// The cyclomatic complexity a function/event can reach before the
-    /// "Cyclomatic complexity" lint flags it as an `[error]`. A value below
-    /// [`Self::cyclomatic_complexity_warning`] is treated as equal to it
-    /// instead (see [`crate::cyclomatic_complexity::check`]), since an
-    /// `[error]` threshold lower than the `[warning]` one it's supposed to
-    /// escalate would otherwise be contradictory.
-    pub cyclomatic_complexity_error: usize,
-    /// The casing convention required of a script's declared type name
-    /// (the identifier following `ScriptName`), checked by the "Type name
-    /// casing" lint.
-    pub type_casing: TypeCasing,
-    /// How strongly the "Prefer named arguments" lint prefers Papyrus's
-    /// named-argument call syntax (`func(argB = 1)`) over positional
-    /// arguments. See [`NamedArguments`].
-    pub named_arguments: NamedArguments,
-    /// The interval/duration argument a `Utility.Wait`, `RegisterForUpdate`,
-    /// `RegisterForSingleUpdate`, `RegisterForUpdateGameTime`, or
-    /// `RegisterForSingleUpdateGameTime` call can go below before the
-    /// "Short wait/update interval" lint flags it as a `[warning]`.
-    pub min_wait_interval: f64,
-    /// Whether the "Magic numbers" lint also checks the interval argument
-    /// of a `Utility.Wait`/`RegisterForUpdate`/`RegisterForSingleUpdate`/
-    /// `RegisterForUpdateGameTime`/`RegisterForSingleUpdateGameTime` call
-    /// (`strict`), or leaves it unflagged since a hardcoded interval there
-    /// is common and usually self-explanatory (`loose`, the default). See
-    /// [`MagicNumbers`].
-    pub magic_numbers: MagicNumbers,
-    /// Whether the CLI (see `papyrus-lint-cli`) treats a `[warning]`-level
-    /// diagnostic as a reason to exit non-zero. `false` by default, so a
-    /// project only fails a lint run on `[error]`-level (and untagged)
-    /// diagnostics unless it opts in. Has no effect on the desktop app,
-    /// which always shows every diagnostic regardless of severity.
-    pub fail_on_warning: bool,
-    /// Like [`Self::fail_on_warning`], but for `[info]`-level diagnostics.
-    /// `false` by default.
-    pub fail_on_info: bool,
-    /// Whether the "Strict boolean check" lint accepts an `Int` literal
-    /// `1` or `0` used directly as an `If`/`ElseIf`/`While` condition,
-    /// treating it as the common "bool-like" idiom rather than flagging
-    /// it. `true` by default. Any other `Int` value (a variable, a
-    /// property, or a literal other than `1`/`0`) is still flagged
-    /// regardless of this setting.
-    pub bool_like_int: bool,
-    /// Whether the "None used as an existing Form" lint treats a
-    /// script-level `Auto`/`AutoReadOnly` property as already filled in by
-    /// the time a function runs, rather than possibly still `None` (see
-    /// [`crate::none_form_usage`]). `false` by default, so such a property
-    /// is treated the same as an uninitialized local unless proven
-    /// otherwise. Many projects consider that noise, since in practice the
-    /// CK's Property Manager (or another script's `PropertySet`) has
-    /// already filled every listed property in by the time any function
-    /// runs; setting this to `true` drops that initial assumption. A
-    /// property is still tracked (and flagged) once script code assigns it
-    /// `None` directly, the same as a local variable. Has no effect on
-    /// `unchecked_form_parameter`, which never tracks properties at all.
-    pub assume_auto_properties_filled: bool,
-    /// Per-ruleset enable/disable switches. Every ruleset is enabled by
-    /// default unless `shared/rules.json` sets `enabled_by_default: false`;
-    /// see [`Rules`].
-    pub rules: Rules,
-}
-
-impl Default for Config {
-    fn default() -> Self {
-        Self {
-            game: Game::default(),
-            semicolon: false,
-            indentation: Indentation::default(),
-            indentation_width: 4,
-            max_line_length: 120,
-            identifier_casing: IdentifierCasing::default(),
-            cyclomatic_complexity_warning: 10,
-            cyclomatic_complexity_error: 20,
-            type_casing: TypeCasing::default(),
-            named_arguments: NamedArguments::default(),
-            min_wait_interval: 0.1,
-            magic_numbers: MagicNumbers::default(),
-            fail_on_warning: false,
-            fail_on_info: false,
-            bool_like_int: true,
-            assume_auto_properties_filled: false,
-            rules: Rules::default(),
-        }
-    }
-}
+include!(concat!(env!("OUT_DIR"), "/config_struct.rs"));
 
 include!(concat!(env!("OUT_DIR"), "/rules_struct.rs"));
 

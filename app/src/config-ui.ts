@@ -1,25 +1,11 @@
 import { markLintResultsStale } from "./drop";
 import { loadLintConfig, loadLintConfigFromPath, saveLintConfig, saveLintConfigToPath } from "./config-io";
-import { type Game, type IdentifierCasingStyle, type LintConfig, type LintRules, type MagicNumbersMode, type NamedArgumentsStyle, type TypeCasingStyle, DEFAULT_RULES, RULE_KEYS, RULE_SETTINGS, currentLintConfig, setCurrentLintConfig } from "./config-types";
+import { type Game, type LintConfig, type LintRules, DEFAULT_RULES, RULE_KEYS, RULE_SETTINGS, currentLintConfig, setCurrentLintConfig } from "./config-types";
 import { isSelectableGame } from "./main-types";
+import { applyLintSettingsToUI, lintSettingElements, mountLintConfigControls, readLintSettingsFromUI, syncLintSettingDependents } from "./lint-config-controls";
 import { configPathOverride } from "./project-settings-dom";
 import { currentProjectDir } from "./project-state";
-let gameEl: HTMLSelectElement | null;
-let indentationStyleEl: HTMLSelectElement | null;
-let indentationWidthEl: HTMLInputElement | null;
-let maxLineLengthEl: HTMLInputElement | null;
-let typeCasingStyleEl: HTMLSelectElement | null;
-let identifierCasingStyleEl: HTMLSelectElement | null;
-let namedArgumentsStyleEl: HTMLSelectElement | null;
-let magicNumbersModeEl: HTMLSelectElement | null;
-let semicolonStyleEl: HTMLSelectElement | null;
-let cyclomaticComplexityWarningEl: HTMLInputElement | null;
-let cyclomaticComplexityErrorEl: HTMLInputElement | null;
-let minWaitIntervalEl: HTMLInputElement | null;
-let failOnWarningEl: HTMLInputElement | null;
-let failOnInfoEl: HTMLInputElement | null;
-let boolLikeIntEl: HTMLInputElement | null;
-let assumeAutoPropertiesFilledEl: HTMLInputElement | null;
+
 let ruleEls: Partial<Record<keyof LintRules, HTMLInputElement>> = {};
 
 // Fills `#lint-rules` from RULE_SETTINGS (generated with the rest of
@@ -48,53 +34,7 @@ function mountRuleControls() {
 // Reflects `config` onto the formatting controls without firing their
 // `change` listeners (assigning `.value` does not dispatch `change`).
 export function applyLintConfigToUI(config: LintConfig) {
-  reflectGameControl(config.game);
-  if (semicolonStyleEl) {
-    semicolonStyleEl.value = config.semicolon ? "require" : "forbid";
-  }
-  if (indentationStyleEl) {
-    indentationStyleEl.value = config.indentation === "space" ? "spaces" : "tabs";
-  }
-  if (indentationWidthEl) {
-    indentationWidthEl.value = String(config.indentation_width);
-    indentationWidthEl.disabled = config.indentation !== "space";
-  }
-  if (maxLineLengthEl) {
-    maxLineLengthEl.value = String(config.max_line_length);
-  }
-  if (cyclomaticComplexityWarningEl) {
-    cyclomaticComplexityWarningEl.value = String(config.cyclomatic_complexity_warning);
-  }
-  if (cyclomaticComplexityErrorEl) {
-    cyclomaticComplexityErrorEl.value = String(config.cyclomatic_complexity_error);
-  }
-  if (minWaitIntervalEl) {
-    minWaitIntervalEl.value = String(config.min_wait_interval);
-  }
-  if (typeCasingStyleEl) {
-    typeCasingStyleEl.value = config.type_casing;
-  }
-  if (identifierCasingStyleEl) {
-    identifierCasingStyleEl.value = config.identifier_casing;
-  }
-  if (namedArgumentsStyleEl) {
-    namedArgumentsStyleEl.value = config.named_arguments;
-  }
-  if (magicNumbersModeEl) {
-    magicNumbersModeEl.value = config.magic_numbers;
-  }
-  if (failOnWarningEl) {
-    failOnWarningEl.checked = config.fail_on_warning;
-  }
-  if (failOnInfoEl) {
-    failOnInfoEl.checked = config.fail_on_info;
-  }
-  if (boolLikeIntEl) {
-    boolLikeIntEl.checked = config.bool_like_int;
-  }
-  if (assumeAutoPropertiesFilledEl) {
-    assumeAutoPropertiesFilledEl.checked = config.assume_auto_properties_filled;
-  }
+  applyLintSettingsToUI(config);
   for (const key of RULE_KEYS) {
     const el = ruleEls[key];
     if (el) {
@@ -103,47 +43,15 @@ export function applyLintConfigToUI(config: LintConfig) {
   }
 }
 
-// Reads the formatting controls' current values into a LintConfig.
-function gameFromControls(): Game {
-  const selected = gameEl?.value;
-  if (isSelectableGame(selected)) {
-    return selected;
-  }
-  // A loaded game the picker does not offer is shown as an extra option.
-  // Honor that option when it is the current selection so a later edit
-  // does not silently rewrite the key to Skyrim, and so switching back
-  // to it still round-trips.
-  const unlisted = gameEl?.selectedOptions[0]?.hasAttribute("data-unlisted-game") === true;
-  if (unlisted && selected) {
-    return selected as Game;
-  }
-  // The select isn't mounted, or it has no option for the loaded value yet.
-  return currentLintConfig.game;
-}
-
-// The Settings select lists the supported games. An unrecognized loaded
-// value is still shown and preserved until the user picks a listed game.
-function reflectGameControl(game: string) {
-  if (!gameEl) {
-    return;
-  }
-  for (const option of Array.from(gameEl.querySelectorAll("option[data-unlisted-game]"))) {
-    option.remove();
-  }
-  if (!Array.from(gameEl.options).some((option) => option.value === game)) {
-    const option = document.createElement("option");
-    option.value = game;
-    option.textContent = game === "starfield" ? "Starfield" : game;
-    option.setAttribute("data-unlisted-game", "");
-    gameEl.append(option);
-  }
-  gameEl.value = game;
+function gameSelect(): HTMLSelectElement | null {
+  return document.querySelector("#game-select");
 }
 
 // Sets the Settings tab's game control and persists it the same way a manual
 // change would. Used by the first-run picker after a preset (or a continue
 // that names a game) has been chosen for a project that had no config yet.
 export function selectGame(game: Game): Promise<void> {
+  const gameEl = gameSelect();
   if (!gameEl || !isSelectableGame(game)) {
     return Promise.resolve();
   }
@@ -152,40 +60,12 @@ export function selectGame(game: Game): Promise<void> {
 }
 
 export function lintConfigFromUI(): LintConfig {
-  const indentation = indentationStyleEl?.value === "spaces" ? "space" : "tab";
-  const cyclomaticComplexityWarning = Math.max(1, cyclomaticComplexityWarningEl?.valueAsNumber || 10);
   const rules = { ...DEFAULT_RULES };
   for (const key of RULE_KEYS) {
     rules[key] = ruleEls[key]?.checked ?? DEFAULT_RULES[key];
   }
   return {
-    game: gameFromControls(),
-    semicolon: semicolonStyleEl?.value === "require",
-    indentation,
-    indentation_width: Math.min(16, Math.max(1, indentationWidthEl?.valueAsNumber || 4)),
-    max_line_length: Math.max(1, maxLineLengthEl?.valueAsNumber || 120),
-    identifier_casing: (identifierCasingStyleEl?.value as IdentifierCasingStyle | undefined) ?? "PascalCase",
-    cyclomatic_complexity_warning: cyclomaticComplexityWarning,
-    // Never below the warning threshold: an error severity that kicks in
-    // before the warning one would make the two settings contradict each
-    // other.
-    cyclomatic_complexity_error: Math.max(
-      cyclomaticComplexityWarning,
-      cyclomaticComplexityErrorEl?.valueAsNumber || 20,
-    ),
-    type_casing: (typeCasingStyleEl?.value as TypeCasingStyle | undefined) ?? "PascalCase",
-    named_arguments: (namedArgumentsStyleEl?.value as NamedArgumentsStyle | undefined) ?? "never",
-    min_wait_interval: Math.max(
-      0,
-      minWaitIntervalEl && Number.isFinite(minWaitIntervalEl.valueAsNumber)
-        ? minWaitIntervalEl.valueAsNumber
-        : 0.1,
-    ),
-    magic_numbers: (magicNumbersModeEl?.value as MagicNumbersMode | undefined) ?? "loose",
-    fail_on_warning: failOnWarningEl?.checked ?? false,
-    fail_on_info: failOnInfoEl?.checked ?? false,
-    bool_like_int: boolLikeIntEl?.checked ?? true,
-    assume_auto_properties_filled: assumeAutoPropertiesFilledEl?.checked ?? false,
+    ...readLintSettingsFromUI(currentLintConfig.game),
     rules,
   };
 }
@@ -217,49 +97,21 @@ export async function loadAndApplyLintConfig(dir: string, overridePath: string):
 
 export function bindConfigSettings() {
   mountRuleControls();
-  gameEl = document.querySelector("#game-select");
-  semicolonStyleEl = document.querySelector("#semicolon-style");
-  indentationStyleEl = document.querySelector("#indentation-style");
-  indentationWidthEl = document.querySelector("#indentation-width");
-  maxLineLengthEl = document.querySelector("#max-line-length");
-  typeCasingStyleEl = document.querySelector("#type-casing-style");
-  identifierCasingStyleEl = document.querySelector("#identifier-casing-style");
-  namedArgumentsStyleEl = document.querySelector("#named-arguments-style");
-  magicNumbersModeEl = document.querySelector("#magic-numbers-mode");
-  cyclomaticComplexityWarningEl = document.querySelector("#cyclomatic-complexity-warning");
-  cyclomaticComplexityErrorEl = document.querySelector("#cyclomatic-complexity-error");
-  minWaitIntervalEl = document.querySelector("#min-wait-interval");
-  failOnWarningEl = document.querySelector("#fail-on-warning");
-  failOnInfoEl = document.querySelector("#fail-on-info");
-  boolLikeIntEl = document.querySelector("#bool-like-int");
-  assumeAutoPropertiesFilledEl = document.querySelector("#assume-auto-properties-filled");
+  mountLintConfigControls();
   ruleEls = Object.fromEntries(
     RULE_KEYS.map((key) => [key, document.querySelector<HTMLInputElement>(`#rule-${key}`)]),
   ) as Partial<Record<keyof LintRules, HTMLInputElement>>;
 
-  gameEl?.addEventListener("change", handleLintConfigChanged);
-  semicolonStyleEl?.addEventListener("change", handleLintConfigChanged);
-  indentationStyleEl?.addEventListener("change", () => {
-    if (indentationWidthEl) {
-      indentationWidthEl.disabled = indentationStyleEl?.value !== "spaces";
-    }
-    handleLintConfigChanged();
-  });
-  indentationWidthEl?.addEventListener("change", handleLintConfigChanged);
-  maxLineLengthEl?.addEventListener("change", handleLintConfigChanged);
-  typeCasingStyleEl?.addEventListener("change", handleLintConfigChanged);
-  identifierCasingStyleEl?.addEventListener("change", handleLintConfigChanged);
-  namedArgumentsStyleEl?.addEventListener("change", handleLintConfigChanged);
-  magicNumbersModeEl?.addEventListener("change", handleLintConfigChanged);
-  cyclomaticComplexityWarningEl?.addEventListener("change", handleLintConfigChanged);
-  cyclomaticComplexityErrorEl?.addEventListener("change", handleLintConfigChanged);
-  minWaitIntervalEl?.addEventListener("change", handleLintConfigChanged);
-  failOnWarningEl?.addEventListener("change", handleLintConfigChanged);
-  failOnInfoEl?.addEventListener("change", handleLintConfigChanged);
-  boolLikeIntEl?.addEventListener("change", handleLintConfigChanged);
-  assumeAutoPropertiesFilledEl?.addEventListener("change", handleLintConfigChanged);
+  for (const el of lintSettingElements()) {
+    el.addEventListener("change", () => {
+      syncLintSettingDependents();
+      void handleLintConfigChanged();
+    });
+  }
   for (const key of RULE_KEYS) {
-    ruleEls[key]?.addEventListener("change", handleLintConfigChanged);
+    ruleEls[key]?.addEventListener("change", () => {
+      void handleLintConfigChanged();
+    });
   }
 }
 
