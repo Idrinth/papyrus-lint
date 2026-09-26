@@ -1,5 +1,7 @@
 #[path = "ancestry_tests/cached_lookups.rs"]
 mod cached_lookups;
+#[path = "ancestry_tests/events.rs"]
+mod events;
 #[path = "ancestry_tests/functions.rs"]
 mod functions;
 #[path = "ancestry_tests/members.rs"]
