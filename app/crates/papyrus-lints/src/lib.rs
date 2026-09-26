@@ -26,6 +26,9 @@ mod state_count;
 mod state_reference;
 pub mod tags;
 mod token_walk;
+#[cfg(test)]
+#[path = "token_walk_tests.rs"]
+mod token_walk_tests;
 mod type_flow;
 mod visitor;
 
