@@ -11,5 +11,5 @@
   "fixable": true,
   "repair_order": 2,
   "description": "Flags calls to functions that have a faster equivalent available; the fix applies the supplied replacement.",
-  "definition": "Flags calls to functions listed in `shared/rules/data/skyrim/slow-functions.yaml` that have a faster equivalent available, and suggests the quicker alternative. The fix replaces the complete call with that rule's supplied replacement, preserving the original argument where the replacement uses the `value` placeholder."
+  "definition": "Flags calls in the target game's slow-function settings that have a faster equivalent available, and suggests the quicker alternative. The fix replaces the complete call with that rule's supplied replacement, preserving the original argument where the replacement uses the `value` placeholder."
 }
