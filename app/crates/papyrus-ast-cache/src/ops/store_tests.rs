@@ -595,6 +595,81 @@ fn put_content_md5_preserves_a_cached_ast() {
 }
 
 #[test]
+fn put_content_md5_updates_a_changed_hash_without_discarding_cached_fields() {
+    let h = harness("ChangedHash.psc", "ScriptName ChangedHash\n");
+    let ast = sample_ast();
+    let tokens = sample_tokens();
+    write_raw(
+        &h,
+        CacheEntry {
+            modified_unix_secs: file_modified_unix_secs(&h.source_path).unwrap(),
+            content_md5: "previous-hash".to_string(),
+            linter_version: COMPATIBLE_VERSION.to_string(),
+            ast: Some(ast.clone()),
+            tokens: Some(tokens.clone()),
+        },
+    );
+    let replacement = "replacement-hash";
+
+    put_content_md5_in_for_game(
+        h.cache_dir.path(),
+        GAME,
+        &h.source_path,
+        replacement,
+        "9.9.9",
+    );
+
+    let raw = std::fs::read(cache_file_path_for_game(
+        h.cache_dir.path(),
+        GAME,
+        &h.source_path,
+    ))
+    .unwrap();
+    let entry = crate::entry::decode_entry(&raw).unwrap();
+    assert_eq!(entry.content_md5, replacement);
+    assert_eq!(entry.linter_version, COMPATIBLE_VERSION);
+    assert_eq!(entry.ast, Some(ast));
+    assert_eq!(entry.tokens, Some(tokens));
+}
+
+#[test]
+fn put_content_md5_replaces_a_stale_entry_with_a_hash_only_entry() {
+    let h = harness("StaleHash.psc", "ScriptName StaleHash\n");
+    let current_mtime = file_modified_unix_secs(&h.source_path).unwrap();
+    write_raw(
+        &h,
+        CacheEntry {
+            modified_unix_secs: current_mtime + 1,
+            content_md5: "stale-hash".to_string(),
+            linter_version: COMPATIBLE_VERSION.to_string(),
+            ast: Some(sample_ast()),
+            tokens: Some(sample_tokens()),
+        },
+    );
+
+    put_content_md5_in_for_game(
+        h.cache_dir.path(),
+        GAME,
+        &h.source_path,
+        "fresh-hash",
+        "9.9.9",
+    );
+
+    let raw = std::fs::read(cache_file_path_for_game(
+        h.cache_dir.path(),
+        GAME,
+        &h.source_path,
+    ))
+    .unwrap();
+    let entry = crate::entry::decode_entry(&raw).unwrap();
+    assert_eq!(entry.modified_unix_secs, current_mtime);
+    assert_eq!(entry.content_md5, "fresh-hash");
+    assert_eq!(entry.linter_version, "9.9.9");
+    assert!(entry.ast.is_none());
+    assert!(entry.tokens.is_none());
+}
+
+#[test]
 fn put_content_md5_is_a_noop_when_the_source_file_does_not_exist() {
     let cache_dir = tempdir().unwrap();
     let missing = cache_dir.path().join("Missing.psc");
