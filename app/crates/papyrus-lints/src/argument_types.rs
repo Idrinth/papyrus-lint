@@ -337,9 +337,10 @@ pub(crate) fn accepts_none(param_type: &TypeName) -> bool {
 /// Whether an argument of type `arg_type` may be passed for a parameter
 /// declared as `param_type`. Exact matches (case-insensitively) are
 /// always compatible; Papyrus also allows widening an `Int` argument to a
-/// `Float` parameter, and passing an object whose script extends (directly
-/// or transitively) the parameter's type, per `external`'s knowledge of
-/// the scripts' `Extends` chains.
+/// `Float` parameter, using a `String` as a `CustomEventName` or
+/// `ScriptEventName`, and passing an object whose script extends (directly or
+/// transitively) the parameter's type, per `external`'s knowledge of the
+/// scripts' `Extends` chains.
 pub(crate) fn is_compatible<E: ExternalSignatures + ?Sized>(
     param_type: &TypeName,
     arg_type: &TypeName,
@@ -354,6 +355,13 @@ pub(crate) fn is_compatible<E: ExternalSignatures + ?Sized>(
     if !param_type.is_array
         && param_type.name.eq_ignore_ascii_case("float")
         && arg_type.name.eq_ignore_ascii_case("int")
+    {
+        return true;
+    }
+    if !param_type.is_array
+        && arg_type.name.eq_ignore_ascii_case("string")
+        && (param_type.name.eq_ignore_ascii_case("customeventname")
+            || param_type.name.eq_ignore_ascii_case("scripteventname"))
     {
         return true;
     }
