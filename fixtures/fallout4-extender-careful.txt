@@ -134,7 +134,6 @@ Scripts/Source/F4SE/ObjectReference.psc:1111:121: [line-length] [warning] Line i
 Scripts/Source/F4SE/ObjectReference.psc:1174:121: [line-length] [warning] Line is 143 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
 Scripts/Source/F4SE/ObjectReference.psc:1190:2: [strict-boolean] [warning] Condition must be a boolean value or expression, found 'ObjectReference' (https://papyrus-lint.idrinth.de/rules.html#rule-strict-boolean)
 Scripts/Source/F4SE/ScriptObject.psc:4:121: [line-length] [warning] Line is 142 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ScriptObject.psc:63:1: [unresolved-script] [warning] Type 'CustomEventName' could not be located (https://papyrus-lint.idrinth.de/rules.html#rule-unresolved-script)
 Scripts/Source/F4SE/ScriptObject.psc:77:121: [line-length] [warning] Line is 144 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
 Scripts/Source/F4SE/ScriptObject.psc:81:121: [line-length] [warning] Line is 144 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
 Scripts/Source/F4SE/ScriptObject.psc:83:121: [line-length] [warning] Line is 124 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
@@ -148,14 +147,10 @@ Scripts/Source/F4SE/ScriptObject.psc:98:121: [line-length] [warning] Line is 123
 Scripts/Source/F4SE/ScriptObject.psc:100:121: [line-length] [warning] Line is 126 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
 Scripts/Source/F4SE/ScriptObject.psc:101:121: [line-length] [warning] Line is 124 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
 Scripts/Source/F4SE/ScriptObject.psc:106:121: [line-length] [warning] Line is 156 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ScriptObject.psc:133:1: [unresolved-script] [warning] Type 'ScriptEventName' could not be located (https://papyrus-lint.idrinth.de/rules.html#rule-unresolved-script)
-Scripts/Source/F4SE/ScriptObject.psc:155:1: [unresolved-script] [warning] Type 'CustomEventName' could not be located (https://papyrus-lint.idrinth.de/rules.html#rule-unresolved-script)
 Scripts/Source/F4SE/ScriptObject.psc:179:121: [line-length] [warning] Line is 124 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ScriptObject.psc:207:1: [unresolved-script] [warning] Type 'CustomEventName' could not be located (https://papyrus-lint.idrinth.de/rules.html#rule-unresolved-script)
 Scripts/Source/F4SE/ScriptObject.psc:213:121: [line-length] [warning] Line is 154 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
 Scripts/Source/F4SE/ScriptObject.psc:214:121: [line-length] [warning] Line is 123 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
 Scripts/Source/F4SE/ScriptObject.psc:220:121: [line-length] [warning] Line is 158 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ScriptObject.psc:238:1: [unresolved-script] [warning] Type 'ScriptEventName' could not be located (https://papyrus-lint.idrinth.de/rules.html#rule-unresolved-script)
 Scripts/Source/F4SE/ScriptObject.psc:282:121: [line-length] [warning] Line is 148 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
 Scripts/Source/F4SE/UI.psc:56:121: [line-length] [warning] Line is 133 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
 Scripts/Source/F4SE/UI.psc:64:121: [line-length] [warning] Line is 126 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
@@ -166,4 +161,4 @@ Scripts/Source/F4SE/UI.psc:91:121: [line-length] [warning] Line is 215 character
 Scripts/Source/F4SE/UI.psc:97:121: [line-length] [warning] Line is 232 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
 Scripts/Source/F4SE/Utility.psc:62:121: [line-length] [warning] Line is 157 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
 Scripts/Source/F4SE/Utility.psc:76:121: [line-length] [warning] Line is 138 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-PapyrusLinterCLI: 168 problem(s) found in 8 of 29 script(s).
+PapyrusLinterCLI: 163 problem(s) found in 8 of 29 script(s).
