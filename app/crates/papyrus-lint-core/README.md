@@ -9,6 +9,13 @@ not depend on Tauri.
   compiler check, then `.papyrus-lint-ignore`. Reporting stays in the
   caller. `already_primed` skips the disk AST-cache prime. Desktop per-file
   lint sets `flush_collision_cache`; a batch flushes once itself.
+- `project_batch` is the batch runner both call: `parse_closure` (the total
+  grows as referenced `.psc` files are enqueued), `preload_closure` (seeds,
+  dependencies, and name slots), then `lint_in_parallel` (primes the
+  in-memory parser memo, then the caller's per-seed lint, which calls
+  `lint_script`). Stdout progress, fix-before-lint, and report folding stay
+  in the CLI. Tauri channels, and not linting an unparseable script, stay
+  in the desktop app.
 - A script name that appears only once is not content-hashed.
   `script_locator` reads a digest from `papyrus-collision-cache` when the
   stored mtime still matches.
