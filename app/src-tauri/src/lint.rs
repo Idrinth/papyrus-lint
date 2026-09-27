@@ -7,6 +7,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex, OnceLock, RwLock};
 
 use papyrus_lint_core::ignore_file::IgnoreFile;
+use papyrus_lint_core::project_batch::{self, ClosureOptions, ParsedMemo, SeedScript};
 use papyrus_lint_core::project_lint::{lint_script, ConflictScope, ProjectLint};
 use papyrus_lint_core::source_encoding::read_psc_source;
 use papyrus_lint_core::{ast_cache, collision_cache, compiler, function_table, script_locator};
@@ -334,17 +335,16 @@ impl<'de, R: tauri::Runtime> CommandArg<'de, R> for OptionalPreloadChannel {
 }
 
 /// Parses every one of `paths` up front and closes over the type names in
-/// those ASTs (mirroring `PapyrusLinterCLI`'s parse phase — see
-/// [`function_table::FunctionTable::parse_type_closure`]), then preloads
-/// `context`'s shared function table from the result. Referenced scripts
-/// that are not in `paths` — project files, lookup-root files, and bundled
-/// vanilla/extender scripts — are cached for analysis only and are not
-/// linted. Resolving one of them from a later per-file [`lint_psc_file`]
-/// is a cache hit rather than a write-locked on-demand parse. A path that
-/// fails to read or parse is simply left out of the seed preload (the
-/// frontend's own per-file call still reports that error); a referenced
-/// name that cannot be resolved is cached unresolved so lint does not
-/// retry it. This command never fails outright.
+/// those ASTs (see [`papyrus_lint_core::project_batch::parse_closure`]),
+/// then preloads `context`'s shared function table from the result.
+/// Referenced scripts that are not in `paths` — project files, lookup-root
+/// files, and bundled vanilla/extender scripts — are cached for analysis
+/// only and are not linted. Resolving one of them from a later per-file
+/// [`lint_psc_file`] is a cache hit rather than a write-locked on-demand
+/// parse. A path that fails to read or parse is simply left out of the seed
+/// preload (the frontend's own per-file call still reports that error); a
+/// referenced name that cannot be resolved is cached unresolved so lint
+/// does not retry it. This command never fails outright.
 ///
 /// `on_progress`, when the frontend supplies it, is notified after each
 /// on-disk parse in that closure and once more before the function table
@@ -440,12 +440,14 @@ impl<'de, R: tauri::Runtime> CommandArg<'de, R> for OptionalProjectLintChannel {
 
 /// Parses, indexes, and lints every path in `paths` in this process.
 ///
-/// This is the CLI's lint pipeline (`parse_type_closure`, then
-/// [`function_table::FunctionTable::preload`], then
-/// [`papyrus_lint_core::parallel::map_in_parallel`]) behind one Tauri
-/// command. The desktop drop path used to follow that preload with a
-/// second `parse_psc_file` and `lint_psc_file` invoke per file; those
-/// round-trips dominated large batches such as the Skyrim base scripts.
+/// This is [`papyrus_lint_core::project_batch`]: the same parse closure,
+/// preload, and parallel walk the CLI uses, behind one Tauri command. Each
+/// file is linted with [`lint_with_compile_check`] (which calls
+/// [`papyrus_lint_core::project_lint::lint_script`]). The desktop drop path
+/// used to follow that preload with a second `parse_psc_file` and
+/// `lint_psc_file` invoke per file; those round-trips dominated large
+/// batches such as the Skyrim base scripts. An unparseable script is not
+/// linted — that stays a desktop outcome, not a core one.
 ///
 /// `on_event` receives parsing progress (a growing total, same as
 /// [`preload_project_scripts`]), one indeterminate indexing update, then
@@ -512,14 +514,23 @@ pub(crate) fn lint_project_scripts(
 
     let completed = AtomicUsize::new(0);
     let total = paths.len();
-    papyrus_lint_core::parallel::map_in_parallel(
-        (0..total).collect(),
-        papyrus_lint_core::parallel::default_thread_count(),
-        |index| {
+    let threads = papyrus_lint_core::parallel::default_thread_count();
+    project_batch::lint_in_parallel(
+        &closed.seeds,
+        threads,
+        |parsed| {
+            let source = parsed.source.as_deref()?;
+            Some(ParsedMemo {
+                source,
+                ast: parsed.ast.as_ref(),
+                tokens: parsed.tokens.as_deref(),
+            })
+        },
+        |index, parsed| {
             let outcome = lint_preloaded_script(
                 &paths[index],
                 &script_paths[index],
-                &closed.seeds[index],
+                parsed,
                 &context,
                 &function_table,
                 ignores.as_ref(),
@@ -549,7 +560,8 @@ pub(crate) fn lint_project_scripts(
 
 /// Shared parse + function-table preload used by [`preload_project_scripts`]
 /// and [`lint_project_scripts`]. `on_progress` runs after each on-disk parse
-/// and once more, with `total == 0`, before the table is indexed.
+/// and once more, with `total == 0`, before the table is indexed. The parse
+/// closure and preload themselves are [`papyrus_lint_core::project_batch`].
 fn close_project_scripts(
     function_table: &Arc<RwLock<function_table::FunctionTable>>,
     script_paths: &[PathBuf],
@@ -558,26 +570,25 @@ fn close_project_scripts(
     on_progress: impl Fn(PreloadProgress) + Sync,
 ) -> function_table::ClosedScripts<ProjectScriptParse> {
     collision_cache::preload(game, script_paths);
-    let total_files = AtomicUsize::new(script_paths.len());
-    let completed = AtomicUsize::new(0);
+    let threads = papyrus_lint_core::parallel::default_thread_count();
     let closed = {
         let table = function_table
             .read()
             .unwrap_or_else(|poisoned| poisoned.into_inner());
-        table.parse_type_closure(
+        project_batch::parse_closure(
+            &table,
             script_paths,
-            function_table::TypeClosureOptions {
-                threads: papyrus_lint_core::parallel::default_thread_count(),
-                total_files: report_progress.then_some(&total_files),
+            ClosureOptions {
+                threads,
+                track_total: report_progress,
             },
             |path| parse_project_script(game, path),
             |parsed| parsed.ast.as_ref(),
-            || {
-                let done = completed.fetch_add(1, Ordering::SeqCst) + 1;
+            |file| {
                 on_progress(PreloadProgress {
                     phase: "Parsing".to_string(),
-                    completed: done,
-                    total: total_files.load(Ordering::SeqCst),
+                    completed: file.completed,
+                    total: file.total,
                 });
             },
         )
@@ -589,27 +600,15 @@ fn close_project_scripts(
         total: 0,
     });
 
-    let entries: Vec<function_table::PreloadedScript> = script_paths
-        .iter()
-        .zip(closed.seeds.iter())
-        .filter_map(|(path, parsed)| {
-            let source = parsed.source.as_deref()?;
-            let name_lower = path.file_stem()?.to_str()?.to_ascii_lowercase();
-            Some(function_table::PreloadedScript {
-                path,
-                name_lower,
-                ast: parsed.ast.as_ref(),
-                source,
-            })
-        })
-        .collect();
-
     let mut table = function_table
         .write()
         .unwrap_or_else(|poisoned| poisoned.into_inner());
-    table.preload(entries);
-    table.preload_dependencies(&closed.dependencies);
-    table.preload_name_slots(&closed.bundled, &closed.unresolved);
+    project_batch::preload_closure(&mut table, script_paths, &closed, |parsed| {
+        Some(SeedScript {
+            source: parsed.source.as_deref()?,
+            ast: parsed.ast.as_ref(),
+        })
+    });
     collision_cache::flush();
     closed
 }
@@ -646,17 +645,9 @@ fn lint_preloaded_script(
                 .unwrap_or_else(|| "failed to read script".to_string()),
         );
     };
-    // Thread-local parser memo, primed on this worker the way the CLI primes
-    // before `lint_file`, so the lint pass does not take `ast_cache`'s
-    // process-wide lock or re-parse a source this batch already parsed.
-    if let Some(ast) = parsed.ast.clone() {
-        papyrus_parser::prime_cache(source, ast);
-    }
-    if let Some(tokens) = parsed.tokens.clone() {
-        if !tokens.is_empty() {
-            papyrus_parser::prime_tokenize_cache(source, tokens);
-        }
-    }
+    // `project_batch::lint_in_parallel` already primed this worker's parser
+    // memo. `already_primed` below assumes that, so the lint does not take
+    // `ast_cache`'s lock again.
     let mut shared = function_table::SharedFunctionTable(function_table.as_ref());
     let diagnostics = lint_with_compile_check(path, source, context, &mut shared, ignores);
     let name = parsed
