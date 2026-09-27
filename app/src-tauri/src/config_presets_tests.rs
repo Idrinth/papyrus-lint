@@ -30,6 +30,23 @@ fn list_config_presets_reports_every_built_in_preset() {
 }
 
 #[test]
+fn list_config_presets_includes_saved_user_preset_metadata() {
+    let _guard = USER_PRESETS.lock().unwrap();
+    let name = format!("desktop-list-test-{}", std::process::id());
+    let _cleanup = UserPresetCleanup(vec![name.clone()]);
+
+    save_config_as_preset(papyrus_lints::Config::default(), name.clone(), false).unwrap();
+
+    let preset = list_config_presets()
+        .into_iter()
+        .find(|preset| preset.id == name)
+        .expect("saved user preset should be listed");
+    assert_eq!(preset.label, name);
+    assert!(preset.description.contains("custom preset"));
+    assert!(preset.description.contains(&format!("{name}.yaml")));
+}
+
+#[test]
 fn apply_config_preset_seeds_a_projects_config_from_the_named_preset() {
     let dir = tempdir().unwrap();
     let dir_string = dir.path().to_string_lossy().into_owned();
@@ -104,6 +121,19 @@ fn rename_user_preset_rejects_a_built_in_preset_name() {
         .expect_err("built-in preset name should be rejected");
 
     assert!(error.contains("built-in preset name"));
+}
+
+#[test]
+fn rename_user_preset_errors_for_an_unknown_source_preset() {
+    let _guard = USER_PRESETS.lock().unwrap();
+    let suffix = std::process::id();
+    let old_name = format!("missing-desktop-rename-source-{suffix}");
+    let new_name = format!("missing-desktop-rename-target-{suffix}");
+
+    let error = rename_user_preset(old_name.clone(), new_name, false)
+        .expect_err("renaming an unknown preset should fail");
+
+    assert!(error.contains(&format!("no preset named '{old_name}'")));
 }
 
 #[test]
@@ -279,4 +309,26 @@ fn user_preset_commands_cover_the_full_management_lifecycle() {
 
     delete_user_preset(renamed_name.clone()).unwrap();
     assert!(export_user_preset(renamed_name).is_err());
+}
+
+#[test]
+fn user_preset_commands_match_names_case_insensitively() {
+    let _guard = USER_PRESETS.lock().unwrap();
+    let name = format!("desktop-case-test-{}", std::process::id());
+    let renamed_name = format!("desktop-case-renamed-{}", std::process::id());
+    let _cleanup = UserPresetCleanup(vec![name.clone(), renamed_name.clone()]);
+    let config = papyrus_lints::Config {
+        indentation_width: 5,
+        ..Default::default()
+    };
+
+    save_config_as_preset(config.clone(), name.clone(), false).unwrap();
+    assert_eq!(get_preset_lint_config(name.to_uppercase()).unwrap(), config);
+
+    rename_user_preset(name.to_uppercase(), renamed_name.clone(), false).unwrap();
+    assert!(get_preset_lint_config(name).is_err());
+    assert!(export_user_preset(renamed_name.to_uppercase()).is_ok());
+
+    delete_user_preset(renamed_name.to_uppercase()).unwrap();
+    assert!(get_preset_lint_config(renamed_name).is_err());
 }
