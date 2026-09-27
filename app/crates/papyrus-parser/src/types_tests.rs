@@ -1,5 +1,6 @@
 use super::*;
-use crate::parse;
+use crate::parser::GameEdition;
+use crate::{parse, parse_with_mode};
 
 #[test]
 fn resolves_properties_and_variables_at_script_scope() {
@@ -51,6 +52,31 @@ EndFunction
     });
     assert_eq!(env.lookup("a"), None);
     assert_eq!(env.lookup("b"), None);
+}
+
+#[test]
+fn function_scope_collects_locals_from_both_lock_guard_paths() {
+    let script = parse_with_mode(
+        r#"
+ScriptName Guarded
+
+Function Test()
+    TryLockGuard WorkGuard
+        Int acquired = 1
+    ElseTryLockGuard
+        Float unavailable = 1.0
+    EndTryLockGuard
+EndFunction
+"#,
+        GameEdition::Starfield,
+    )
+    .unwrap();
+    let mut env = TypeEnv::for_script(&script);
+
+    env.with_function_scope(&script.functions[0], |scoped| {
+        assert_eq!(scoped.lookup("acquired"), Some(&scalar("Int")));
+        assert_eq!(scoped.lookup("unavailable"), Some(&scalar("Float")));
+    });
 }
 
 #[test]
