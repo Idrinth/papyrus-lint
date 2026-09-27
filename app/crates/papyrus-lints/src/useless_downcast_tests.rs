@@ -244,3 +244,88 @@ fn repair_removes_an_exact_type_cast() {
     assert!(!repaired.contains("as Int"));
     assert!(check(&repaired).is_empty());
 }
+
+#[test]
+fn exact_type_comparison_is_case_insensitive() {
+    let diagnostics = check(
+        "ScriptName Example\n\nFunction Test(Actor akActor)\n    Foo(akActor as actor)\nEndFunction\n",
+    );
+
+    assert_eq!(diagnostics.len(), 1);
+    assert!(diagnostics[0]
+        .message
+        .contains("the value is already of type 'Actor'"));
+}
+
+#[test]
+fn flags_casts_from_locals_and_literals() {
+    let diagnostics = check(
+        "ScriptName Example\n\nFunction Test()\n    String name = \"example\"\n    Foo(name as String)\n    Foo(1 as Int)\n    Foo(1.5 as Float)\n    Foo(true as Bool)\nEndFunction\n",
+    );
+
+    let lines: Vec<_> = diagnostics
+        .iter()
+        .map(|diagnostic| diagnostic.line)
+        .collect();
+    assert_eq!(lines, vec![5, 6, 7, 8]);
+}
+
+#[test]
+fn function_type_environments_do_not_leak_between_functions() {
+    let diagnostics = check(
+        "ScriptName Example\n\nFunction First(Actor value)\n    Foo(value as Actor)\nEndFunction\n\nFunction Second()\n    Foo(value as Actor)\nEndFunction\n",
+    );
+
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!(diagnostics[0].line, 4);
+}
+
+#[test]
+fn disable_directives_suppress_diagnostics() {
+    let line_disabled = crate::lint(
+        "ScriptName Example\n\nFunction Test(Actor akActor)\n    Foo(akActor as Actor) ; @disable useless-downcast\nEndFunction\n",
+        &crate::config::Config::default(),
+    );
+    let file_disabled = crate::lint(
+        "; @disable-file useless-downcast\nScriptName Example\n\nFunction Test(Actor akActor)\n    Foo(akActor as Actor)\nEndFunction\n",
+        &crate::config::Config::default(),
+    );
+
+    assert!(line_disabled.iter().all(|diagnostic| diagnostic.rule != RULE));
+    assert!(file_disabled.iter().all(|diagnostic| diagnostic.rule != RULE));
+}
+
+#[test]
+fn config_off_switch_suppresses_diagnostics() {
+    let source = "ScriptName Example\n\nFunction Test(Actor akActor)\n    Foo(akActor as Actor)\nEndFunction\n";
+    let mut config = crate::config::Config::default();
+    config.rules.useless_downcast = false;
+
+    let diagnostics = crate::lint(source, &config);
+
+    assert!(diagnostics.iter().all(|diagnostic| diagnostic.rule != RULE));
+}
+
+#[test]
+fn repair_removes_multiple_exact_type_casts_and_their_whitespace() {
+    let source = "ScriptName Example\n\nFunction Test(Int first, Int second)\n    Int sum = (first as Int) + (second\t as Int)\nEndFunction\n";
+
+    assert_eq!(
+        repair(source),
+        "ScriptName Example\n\nFunction Test(Int first, Int second)\n    Int sum = (first) + (second)\nEndFunction\n"
+    );
+}
+
+#[test]
+fn repair_preserves_a_meaningful_cast() {
+    let source = "ScriptName Example\n\nFunction Test(Int value)\n    Float converted = value as Float\nEndFunction\n";
+
+    assert_eq!(repair(source), source);
+}
+
+#[test]
+fn repair_returns_unparseable_source_unchanged() {
+    let source = "ScriptName Example\n\nFunction Test(\n    value as Int\n";
+
+    assert_eq!(repair(source), source);
+}
