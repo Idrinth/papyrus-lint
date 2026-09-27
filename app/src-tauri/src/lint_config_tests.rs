@@ -52,9 +52,10 @@ fn config_commands_round_trip_lint_and_compiler_settings() {
     )
     .unwrap();
     assert_eq!(
-        load_lookup_script_roots(dir_string).unwrap(),
+        load_lookup_script_roots(dir_string.clone()).unwrap(),
         vec!["../BaseScripts".to_string()]
     );
+    assert_eq!(load_lint_config(dir_string).unwrap(), config);
 }
 
 #[test]
@@ -216,6 +217,24 @@ fn load_compiler_path_auto_detects_an_adjacent_compiler_executable() {
 }
 
 #[test]
+fn load_compiler_path_prefers_the_configured_override_over_auto_detection() {
+    let root = tempdir().unwrap();
+    let compiler_dir = root.path().join("Papyrus Compiler");
+    std::fs::create_dir(&compiler_dir).unwrap();
+    std::fs::write(compiler_dir.join("PapyrusCompiler.exe"), b"").unwrap();
+    let data_dir = root.path().join("Data");
+    std::fs::create_dir(&data_dir).unwrap();
+    let dir_string = data_dir.to_string_lossy().into_owned();
+
+    save_compiler_path(dir_string.clone(), "/custom/compiler.exe".to_string()).unwrap();
+
+    assert_eq!(
+        load_compiler_path(dir_string).unwrap(),
+        Some("/custom/compiler.exe".to_string())
+    );
+}
+
+#[test]
 fn load_compiler_path_returns_none_without_an_override_or_detected_executable() {
     let dir = tempdir().unwrap();
 
@@ -277,5 +296,34 @@ fn project_info_ignores_configured_roots_that_do_not_exist() {
                 .to_string_lossy()
                 .into_owned()
         )
+    );
+}
+
+#[test]
+fn project_info_reports_both_conventional_layouts_before_absolute_roots() {
+    let project = tempdir().unwrap();
+    let first = project.path().join("scripts/source");
+    let second = project.path().join("source/scripts");
+    let external = tempdir().unwrap();
+    std::fs::create_dir_all(&first).unwrap();
+    std::fs::create_dir_all(&second).unwrap();
+    std::fs::write(
+        project.path().join("papyrus-lint.yaml"),
+        format!(
+            "additional_script_roots:\n  - '{}'\n",
+            external.path().to_string_lossy()
+        ),
+    )
+    .unwrap();
+
+    let info = load_project_info(project.path().to_string_lossy().into_owned()).unwrap();
+
+    assert_eq!(
+        info.detected_script_roots,
+        vec![
+            first.to_string_lossy().into_owned(),
+            second.to_string_lossy().into_owned(),
+            external.path().to_string_lossy().into_owned(),
+        ]
     );
 }
