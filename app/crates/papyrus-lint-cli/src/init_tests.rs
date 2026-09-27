@@ -598,3 +598,97 @@ fn run_init_with_a_preset_flag_writes_the_selected_presets_config() {
         .expect("failed to read generated config");
     assert!(generated.contains("cyclomatic_complexity_warning: 20\n"));
 }
+
+#[test]
+fn initialize_config_reports_when_the_target_directory_does_not_exist() {
+    let dir = tempfile::tempdir().expect("failed to create temp dir");
+    let missing = dir.path().join("missing");
+    let mut stdout = Vec::new();
+    let mut stderr = Vec::new();
+
+    let code = initialize_config(
+        &missing,
+        presets::Preset::default(),
+        papyrus_lints::Game::Skyrim,
+        &mut stdout,
+        &mut stderr,
+    );
+
+    assert_eq!(code, 2);
+    assert!(stdout.is_empty());
+    assert!(String::from_utf8(stderr)
+        .unwrap()
+        .contains("failed to initialize config"));
+    assert!(!missing.join("papyrus-lint.yaml").exists());
+}
+
+#[test]
+fn write_selected_game_reports_when_the_config_cannot_be_read() {
+    let dir = tempfile::tempdir().expect("failed to create temp dir");
+    let missing = dir.path().join("missing.yaml");
+
+    let error = write_selected_game(&missing, papyrus_lints::Game::Fallout4)
+        .expect_err("a missing config should not be writable");
+
+    assert!(!error.is_empty());
+}
+
+#[test]
+fn set_game_key_replaces_only_the_first_game_key_and_preserves_line_endings() {
+    let contents = "# generated\r\ngame: skyrim\r\ngame: starfield\r\n";
+
+    let updated = set_game_key(contents, papyrus_lints::Game::Fallout4);
+
+    assert_eq!(
+        updated,
+        "# generated\r\ngame: fallout4\r\ngame: starfield\r\n"
+    );
+}
+
+#[test]
+fn set_game_key_replaces_a_final_line_without_a_newline() {
+    assert_eq!(
+        set_game_key("rules: {}\ngame: skyrim", papyrus_lints::Game::Starfield),
+        "rules: {}\ngame: starfield"
+    );
+}
+
+#[test]
+fn set_game_key_prepends_the_key_when_it_is_missing() {
+    assert_eq!(
+        set_game_key("rules: {}\n", papyrus_lints::Game::Fallout4),
+        "game: fallout4\nrules: {}\n"
+    );
+    assert_eq!(
+        set_game_key("", papyrus_lints::Game::Skyrim),
+        "game: skyrim\n"
+    );
+}
+
+#[test]
+fn seed_from_ppj_reports_a_single_import_with_singular_grammar() {
+    let dir = tempfile::tempdir().expect("failed to create temp dir");
+    write_file(&dir.path().join("papyrus-lint.yaml"), "game: skyrim\n");
+    let ppj_path = dir.path().join("Project.ppj");
+    write_file(
+        &ppj_path,
+        "<PapyrusProject><Imports><Import>Scripts</Import></Imports></PapyrusProject>",
+    );
+    let mut stdout = Vec::new();
+    let mut stderr = Vec::new();
+
+    seed_additional_script_roots_from_ppj(dir.path(), &mut stdout, &mut stderr);
+
+    assert!(stderr.is_empty());
+    assert_eq!(
+        String::from_utf8(stdout).unwrap(),
+        format!(
+            "Seeded additional_script_roots from {} (1 entry)\n",
+            ppj_path.display()
+        )
+    );
+    assert_eq!(
+        config::load_script_roots(dir.path()).expect("roots should load"),
+        vec!["Scripts".to_string()]
+    );
+}
