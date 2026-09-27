@@ -9,6 +9,6 @@
   "severity": "warning",
   "importance": "high",
   "fixable": false,
-  "description": "Warns about event handlers whose names are not defined anywhere in the script's ancestry.",
-  "definition": "Flags an `Event` handler whose name is not declared as an event by the script it `Extends` or any of that script's ancestors. Papyrus accepts an arbitrary event name, but a misspelled or otherwise undefined handler is never invoked. The lint only reports a child script after its complete ancestry has been resolved; root scripts and unresolved external scripts are skipped rather than guessed at."
+  "description": "Warns about event handlers whose names are not defined anywhere in the script's ancestry, excluding engine-handled scripts and remote events.",
+  "definition": "Flags an `Event` handler whose name is not declared as an event by the script it `Extends` or any of that script's ancestors. Papyrus accepts an arbitrary event name, but a misspelled or otherwise undefined handler is never invoked. Scripts that define at least one native function (or are themselves `Native`) are treated as engine-handled API declarations, so their events are not flagged. Fallout 4 and Starfield remote handlers such as `Event Actor.OnDeath(...)` are also excluded because the event belongs to the type before the dot rather than the declaring script's ancestry. The lint only reports a child script after its complete ancestry has been resolved; root scripts and unresolved external scripts are skipped rather than guessed at."
 }

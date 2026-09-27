@@ -17,6 +17,7 @@ pub const RULE: &str = "undefined-event";
 struct Collect {
     store: Store,
     extends: Option<String>,
+    engine_handled: bool,
 }
 
 impl AstLint for Collect {
@@ -26,10 +27,21 @@ impl AstLint for Collect {
 
     fn visit_script(&mut self, script: &Script, _ctx: &mut VisitCtx<'_>) {
         self.extends = script.extends.clone();
+        self.engine_handled = script.is_native
+            || script.functions.iter().any(|function| function.is_native)
+            || script
+                .states
+                .iter()
+                .flat_map(|state| &state.functions)
+                .any(|function| function.is_native);
     }
 
     fn visit_function(&mut self, function: &FunctionDecl, ctx: &mut VisitCtx<'_>) {
-        if !function.is_event {
+        // A script containing native code is an engine API declaration, so
+        // its events are engine entry points rather than inherited handlers.
+        // Qualified events are FO4/Starfield remote handlers and belong to
+        // the type before the dot, not to this script's Extends chain.
+        if !function.is_event || self.engine_handled || function.name.contains('.') {
             return;
         }
 
