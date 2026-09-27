@@ -79,15 +79,21 @@ pub(crate) fn repair_psc_file(
 /// original source and what applying the fix would produce, or an empty
 /// string if nothing would change. Drives the code viewer's "Preview
 /// fixes" button, so a user can see what "Apply fixes" would do before
-/// committing to it.
+/// committing to it. Uses the same project [`FunctionTable`] as
+/// [`repair_psc_file`], so external-signature fixes (`unused-import`,
+/// `argument-naming`) match the write.
 #[tauri::command(async)]
 pub(crate) fn preview_repair_psc_file(
     path: String,
-    config: papyrus_lints::Config,
+    context: ProjectLintContext,
 ) -> Result<String, String> {
     let path = Path::new(&path);
     let source = read_psc_source(path).map_err(|err| err.to_string())?;
-    let repaired = papyrus_lints::repair(&source, &config);
+    let function_table = context.function_table();
+    let repaired = {
+        let mut shared = SharedFunctionTable(function_table.as_ref());
+        papyrus_lints::repair_with_external_arguments(&source, &context.config, &mut shared)
+    };
     Ok(papyrus_lint_core::diff::unified_diff(
         &path.display().to_string(),
         &source,
@@ -98,24 +104,34 @@ pub(crate) fn preview_repair_psc_file(
 /// Applies only the automatic fix for `rule` (a
 /// [`papyrus_lints::FIXABLE_RULE_IDS`] id) and returns what `line`
 /// (1-indexed) would look like afterward, via
-/// [`papyrus_lints::repaired_line`], without writing anything to disk.
-/// Returns `None` when there's nothing meaningful to preview: the fix
-/// doesn't change the file at all, it would shift the line count elsewhere
-/// (e.g. `property-sorting` relocating a property's declaration), or it
-/// simply doesn't touch `line`. Drives the "Export for AI" document's
-/// per-finding `repair` preview (see `formatIssuesForAi` in
-/// `app/src/main.ts`), so an AI reading the export can see each
-/// auto-fixable finding's fix without applying it first.
+/// [`papyrus_lints::repaired_line_with_external_arguments`], without writing
+/// anything to disk. Returns `None` when there's nothing meaningful to
+/// preview: the fix doesn't change the file at all, it would shift the line
+/// count elsewhere (e.g. `property-sorting` relocating a property's
+/// declaration, or `unused-import` deleting an `Import` line), or it simply
+/// doesn't touch `line`. Drives the "Export for AI" document's per-finding
+/// `repair` preview (see `formatIssuesForAi` in `app/src/main.ts`), so an AI
+/// reading the export can see each auto-fixable finding's fix without
+/// applying it first. Uses the same project [`FunctionTable`] as
+/// [`repair_psc_finding`].
 #[tauri::command(async)]
 pub(crate) fn preview_repair_psc_line(
     path: String,
-    config: papyrus_lints::Config,
+    context: ProjectLintContext,
     rule: String,
     line: usize,
 ) -> Result<Option<String>, String> {
     let path = Path::new(&path);
     let source = read_psc_source(path).map_err(|err| err.to_string())?;
-    Ok(papyrus_lints::repaired_line(&source, &config, &rule, line))
+    let function_table = context.function_table();
+    let mut shared = SharedFunctionTable(function_table.as_ref());
+    Ok(papyrus_lints::repaired_line_with_external_arguments(
+        &source,
+        &context.config,
+        &mut shared,
+        &rule,
+        line,
+    ))
 }
 
 /// Like [`repair_psc_file`], but applies only the automatic fix for `rule`

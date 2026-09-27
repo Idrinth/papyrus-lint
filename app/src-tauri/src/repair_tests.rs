@@ -79,7 +79,10 @@ fn preview_repair_psc_file_returns_a_diff_without_writing_the_file() {
 
     let diff = preview_repair_psc_file(
         path.to_string_lossy().into_owned(),
-        papyrus_lints::Config::default(),
+        ProjectLintContext {
+            root: dir.path().to_string_lossy().into_owned(),
+            ..Default::default()
+        },
     )
     .unwrap();
 
@@ -96,7 +99,10 @@ fn preview_repair_psc_file_returns_an_empty_diff_for_an_already_clean_file() {
 
     let diff = preview_repair_psc_file(
         path.to_string_lossy().into_owned(),
-        papyrus_lints::Config::default(),
+        ProjectLintContext {
+            root: dir.path().to_string_lossy().into_owned(),
+            ..Default::default()
+        },
     )
     .unwrap();
 
@@ -113,9 +119,57 @@ fn preview_repair_psc_file_reports_io_errors_instead_of_panicking() {
 
     assert!(preview_repair_psc_file(
         missing.to_string_lossy().into_owned(),
-        papyrus_lints::Config::default(),
+        ProjectLintContext::default(),
     )
     .is_err());
+}
+
+#[test]
+fn preview_repair_psc_file_shows_an_unused_import_removal_without_writing() {
+    let dir = tempdir().unwrap();
+    std::fs::create_dir_all(dir.path().join("scripts/source")).unwrap();
+    std::fs::write(
+        dir.path().join("scripts/source/Helpers.psc"),
+        "ScriptName Helpers\n\nFunction Assist() Global\nEndFunction\n",
+    )
+    .unwrap();
+    let path = dir.path().join("scripts/source/Example.psc");
+    let original = "ScriptName Example\n\nImport Helpers\n\nFunction Test()\nEndFunction\n";
+    std::fs::write(&path, original).unwrap();
+
+    let diff = preview_repair_psc_file(
+        path.to_string_lossy().into_owned(),
+        ProjectLintContext {
+            root: dir.path().to_string_lossy().into_owned(),
+            ..Default::default()
+        },
+    )
+    .unwrap();
+
+    assert_eq!(std::fs::read_to_string(&path).unwrap(), original);
+    assert!(diff.contains("-Import Helpers\n"));
+    assert!(!diff.contains("+Import Helpers\n"));
+}
+
+#[test]
+fn preview_repair_psc_file_leaves_an_unresolved_import_out_of_the_diff() {
+    let dir = tempdir().unwrap();
+    let elsewhere = tempdir().unwrap();
+    let path = dir.path().join("Example.psc");
+    let original = "ScriptName Example\n\nImport Helpers\n\nFunction Test()\nEndFunction\n";
+    std::fs::write(&path, original).unwrap();
+
+    let diff = preview_repair_psc_file(
+        path.to_string_lossy().into_owned(),
+        ProjectLintContext {
+            root: elsewhere.path().to_string_lossy().into_owned(),
+            ..Default::default()
+        },
+    )
+    .unwrap();
+
+    assert_eq!(diff, "");
+    assert_eq!(std::fs::read_to_string(&path).unwrap(), original);
 }
 
 #[test]
@@ -127,7 +181,10 @@ fn preview_repair_psc_line_returns_the_fixed_line_without_writing_the_file() {
 
     let repaired = preview_repair_psc_line(
         path.to_string_lossy().into_owned(),
-        papyrus_lints::Config::default(),
+        ProjectLintContext {
+            root: dir.path().to_string_lossy().into_owned(),
+            ..Default::default()
+        },
         "comma-spacing".to_string(),
         1,
     )
@@ -148,7 +205,10 @@ fn preview_repair_psc_line_is_none_when_nothing_would_change() {
 
     let repaired = preview_repair_psc_line(
         path.to_string_lossy().into_owned(),
-        papyrus_lints::Config::default(),
+        ProjectLintContext {
+            root: dir.path().to_string_lossy().into_owned(),
+            ..Default::default()
+        },
         "trailing-whitespace".to_string(),
         1,
     )
@@ -166,7 +226,10 @@ fn preview_repair_psc_line_is_none_for_a_different_line() {
 
     let repaired = preview_repair_psc_line(
         path.to_string_lossy().into_owned(),
-        papyrus_lints::Config::default(),
+        ProjectLintContext {
+            root: dir.path().to_string_lossy().into_owned(),
+            ..Default::default()
+        },
         "comma-spacing".to_string(),
         1,
     )
@@ -182,11 +245,71 @@ fn preview_repair_psc_line_reports_io_errors_instead_of_panicking() {
 
     assert!(preview_repair_psc_line(
         missing.to_string_lossy().into_owned(),
-        papyrus_lints::Config::default(),
+        ProjectLintContext::default(),
         "trailing-whitespace".to_string(),
         1,
     )
     .is_err());
+}
+
+#[test]
+fn preview_repair_psc_line_renames_an_overridden_parameter_from_the_project() {
+    let dir = tempdir().unwrap();
+    std::fs::create_dir_all(dir.path().join("scripts/source")).unwrap();
+    std::fs::write(
+        dir.path().join("scripts/source/ParentScript.psc"),
+        "ScriptName ParentScript\n\nFunction DoThing(ObjectReference akTarget)\nEndFunction\n",
+    )
+    .unwrap();
+    let path = dir.path().join("scripts/source/Example.psc");
+    let original =
+        "ScriptName Example Extends ParentScript\n\nFunction DoThing(ObjectReference akRef)\nEndFunction\n";
+    std::fs::write(&path, original).unwrap();
+
+    let repaired = preview_repair_psc_line(
+        path.to_string_lossy().into_owned(),
+        ProjectLintContext {
+            root: dir.path().to_string_lossy().into_owned(),
+            ..Default::default()
+        },
+        "argument-naming".to_string(),
+        3,
+    )
+    .unwrap();
+
+    assert_eq!(
+        repaired.as_deref(),
+        Some("Function DoThing(ObjectReference akTarget)")
+    );
+    assert_eq!(std::fs::read_to_string(&path).unwrap(), original);
+}
+
+#[test]
+fn preview_repair_psc_line_is_none_when_removing_an_unused_import_shifts_lines() {
+    let dir = tempdir().unwrap();
+    std::fs::create_dir_all(dir.path().join("scripts/source")).unwrap();
+    std::fs::write(
+        dir.path().join("scripts/source/Helpers.psc"),
+        "ScriptName Helpers\n\nFunction Assist() Global\nEndFunction\n",
+    )
+    .unwrap();
+    let path = dir.path().join("scripts/source/Example.psc");
+    let original = "ScriptName Example\n\nImport Helpers\n\nFunction Test()\nEndFunction\n";
+    std::fs::write(&path, original).unwrap();
+
+    let repaired = preview_repair_psc_line(
+        path.to_string_lossy().into_owned(),
+        ProjectLintContext {
+            root: dir.path().to_string_lossy().into_owned(),
+            ..Default::default()
+        },
+        "unused-import".to_string(),
+        3,
+    )
+    .unwrap();
+
+    assert_eq!(repaired, None);
+    assert_eq!(std::fs::read_to_string(&path).unwrap(), original);
 }
 
 #[test]
