@@ -181,7 +181,16 @@ describe("lint/repair command wrappers", () => {
     await expect(previewRepairPscFile("/scripts/MyScript.psc")).resolves.toEqual(diff);
     expect(invokeMock).toHaveBeenCalledWith("preview_repair_psc_file", {
       path: "/scripts/MyScript.psc",
-      config: expect.anything(),
+      context: {
+        root: expect.any(String),
+        config: expect.anything(),
+        additional_roots: expect.anything(),
+        lookup_roots: expect.anything(),
+        compiler_path: expect.any(String),
+        compile_check: expect.any(Boolean),
+        strict_achlist_scope: expect.any(Boolean),
+        known_scripts: expect.any(Array),
+      },
     });
   });
 
@@ -191,7 +200,16 @@ describe("lint/repair command wrappers", () => {
     await expect(previewRepairPscLine("/scripts/MyScript.psc", "indentation", 7)).resolves.toBe("  Return value");
     expect(invokeMock).toHaveBeenCalledWith("preview_repair_psc_line", {
       path: "/scripts/MyScript.psc",
-      config: expect.anything(),
+      context: {
+        root: expect.any(String),
+        config: expect.anything(),
+        additional_roots: expect.anything(),
+        lookup_roots: expect.anything(),
+        compiler_path: expect.any(String),
+        compile_check: expect.any(Boolean),
+        strict_achlist_scope: expect.any(Boolean),
+        known_scripts: expect.any(Array),
+      },
       rule: "indentation",
       line: 7,
     });

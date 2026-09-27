@@ -1,8 +1,9 @@
 //! Tests for the `ExternalSignatures`-aware repair entry points:
 //! [`crate::repair_with_external_arguments`],
 //! [`crate::repair_filtered_with_external_arguments`],
-//! [`crate::repair_filtered_by_tag_with_external_arguments`], and
-//! [`crate::repair_selected_with_external_arguments`].
+//! [`crate::repair_filtered_by_tag_with_external_arguments`],
+//! [`crate::repair_selected_with_external_arguments`], and
+//! [`crate::repaired_line_with_external_arguments`].
 
 use super::super::*;
 use super::support::*;
@@ -139,4 +140,42 @@ fn repair_selected_returns_none_for_a_line_count_shifting_fix() {
     );
 
     assert_eq!(repaired, None);
+}
+
+#[test]
+fn repaired_line_with_external_arguments_renames_through_the_resolver() {
+    let source = "ScriptName Example Extends ParentScript\n\nFunction DoThing(ObjectReference akRef)\nEndFunction\n";
+
+    assert_eq!(
+        repaired_line_with_external_arguments(
+            source,
+            &Config::default(),
+            &mut FakeExternalWithRenamedParentParam,
+            argument_naming::RULE,
+            3,
+        )
+        .as_deref(),
+        Some("Function DoThing(ObjectReference akTarget)")
+    );
+    assert_eq!(
+        repaired_line(source, &Config::default(), argument_naming::RULE, 3),
+        None,
+        "the resolver-less preview must stay a no-op for argument-naming"
+    );
+}
+
+#[test]
+fn repaired_line_with_external_arguments_is_none_when_an_import_line_is_removed() {
+    let source = "ScriptName Example\n\nImport Helpers\n\nFunction Test()\nEndFunction\n";
+
+    assert_eq!(
+        repaired_line_with_external_arguments(
+            source,
+            &Config::default(),
+            &mut FakeExternalWithUnusedImport,
+            unused_import::RULE,
+            3,
+        ),
+        None
+    );
 }

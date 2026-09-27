@@ -176,11 +176,12 @@ export async function repairPscFile(path: string): Promise<Diagnostic[]> {
 // never writes it to disk: returns a standard unified diff of what would
 // change (or an empty string if nothing would), the same output
 // `PapyrusLinterCLI fix --dry-run` prints. Drives the code viewer's
-// "Preview fixes" button.
+// "Preview fixes" button. Passes the same project context as repairPscFile
+// so external-signature fixes match the write.
 export async function previewRepairPscFile(path: string): Promise<string> {
   return invoke<string>("preview_repair_psc_file", {
     path,
-    config: currentLintConfig,
+    context: currentProjectLintContext(),
   });
 }
 
@@ -194,7 +195,7 @@ export async function previewRepairPscLine(path: string, rule: string, line: num
   try {
     return await invoke<string | null>("preview_repair_psc_line", {
       path,
-      config: currentLintConfig,
+      context: currentProjectLintContext(),
       rule,
       line,
     });

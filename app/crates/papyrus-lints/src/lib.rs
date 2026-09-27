@@ -402,17 +402,45 @@ pub fn restrict_to_line(original: &str, repaired: &str, target_line: usize) -> O
 /// the desktop app's "Export for AI" document, which attaches this preview
 /// to each exported finding from an auto-fixable rule so an AI reading it
 /// can see the fix without having to apply it first.
+///
+/// This resolver-less entry point never applies `unused-import` or
+/// `argument-naming`. Project callers that need those fixes use
+/// [`repaired_line_with_external_arguments`].
 pub fn repaired_line(
     source: &str,
     config: &Config,
     rule: &str,
     target_line: usize,
 ) -> Option<String> {
-    let repaired = repair_filtered(source, config, Some(rule));
+    repaired_line_with_external_arguments(
+        source,
+        config,
+        &mut NoExternalSignatures,
+        rule,
+        target_line,
+    )
+}
+
+/// Like [`repaired_line`], but also applies external-signature fixes
+/// (`unused-import`, `argument-naming`) through `external`, the same way
+/// [`repair_filtered_with_external_arguments`] does. A fix that changes the
+/// file's line count — removing an unused `Import` — still returns `None`.
+pub fn repaired_line_with_external_arguments<E: ExternalSignatures>(
+    source: &str,
+    config: &Config,
+    external: &mut E,
+    rule: &str,
+    target_line: usize,
+) -> Option<String> {
+    let repaired = repair_filtered_with_external_arguments(source, config, external, Some(rule));
+    repaired_line_from(source, &repaired, target_line)
+}
+
+fn repaired_line_from(source: &str, repaired: &str, target_line: usize) -> Option<String> {
     if repaired == source {
         return None;
     }
-    let restricted = restrict_to_line(source, &repaired, target_line)?;
+    let restricted = restrict_to_line(source, repaired, target_line)?;
     let index = target_line.checked_sub(1)?;
     let original_line = source.split('\n').nth(index)?;
     let restricted_line = restricted.split('\n').nth(index)?;
