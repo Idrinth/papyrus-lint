@@ -2,7 +2,7 @@
 // tests can import them without pulling in the UI façade (or exporting
 // them from main.ts only so tests can reach them).
 
-import { type Game } from "./config-types";
+import { SELECTABLE_GAMES, type Game } from "./config-types";
 
 // One configuration preset's identity/description — a built-in one, or a
 // user preset found under a presets directory next to the executable — as
@@ -18,7 +18,7 @@ export interface ConfigPreset {
 
 // Games the desktop picker, and the editor init prompts, can write.
 export function isSelectableGame(value: string | null | undefined): value is Game {
-  return value === "skyrim" || value === "fallout4" || value === "starfield";
+  return !!value && (SELECTABLE_GAMES as readonly string[]).includes(value);
 }
 
 // What promptForConfigSelection resolved to (see loadProjectConfig): stick

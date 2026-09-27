@@ -2,6 +2,7 @@
 
 pub mod data_tables;
 pub mod dispatch;
+pub mod lint_settings;
 pub mod metadata;
 pub mod policy;
 pub mod renderer;

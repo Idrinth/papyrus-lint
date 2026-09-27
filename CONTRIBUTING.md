@@ -129,9 +129,13 @@ for diagnostics, disable comments, configuration, and repairs as applicable,
 and update `shared/rules/<id>.json` and the configuration
 examples (`configuration/papyrus-lint.default.yaml`, `templates/nexuspage.bbcode`).
 `registry.rs`'s `KNOWN_RULE_IDS`/`FIXABLE_RULE_IDS`, `tags.rs`'s
-`RULE_TAGS`, `config.rs`'s `Rules`, the check/repair dispatch, and
-`lib.rs`'s rule `mod`s are all compiled from the generated
-`shared/rules.json` by `build.rs`, so they never need hand-editing.
+`RULE_TAGS`, `config.rs`'s `Rules` and the rest of `Config`, the
+check/repair dispatch, and `lib.rs`'s rule `mod`s are all compiled by
+`build.rs` (`Rules` and the dispatch from the generated `shared/rules.json`,
+the other `Config` fields from `configuration/lint-settings.json`), so they
+never need hand-editing. The Settings tab controls for those `Config`
+fields are rendered from the same lint-settings file; don't add them to
+`app/index.html`.
 
 ## Reporting bugs and requesting features
 
