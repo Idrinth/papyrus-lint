@@ -428,7 +428,7 @@ fn cached_or_parse(game: papyrus_lint_globals::Game, path: &Path, source: &str) 
     if let Some(cached) = crate::ast_cache::get_for_game(game, path, source) {
         return Some(cached);
     }
-    let parsed = papyrus_parser::parse(source).ok()?;
+    let parsed = super::load::parse_script_source(game, source)?;
     crate::ast_cache::put_for_game(game, path, source, &parsed);
     if let Ok(tokens) = papyrus_parser::tokenize(source) {
         crate::ast_cache::put_tokens_for_game(game, path, source, &tokens);
@@ -444,11 +444,23 @@ fn referenced_type_names(script: &Script) -> Vec<String> {
     let mut names = Vec::new();
     let mut seen = HashSet::new();
     let mut push = |name: &str| {
-        if name.is_empty() {
-            return;
-        }
-        if seen.insert(name.to_ascii_lowercase()) {
-            names.push(name.to_string());
+        // `T[]` is an array of `T`. `Outer:Inner` (and `Namespace:Script:Struct`)
+        // also names the declaring script, which has to be loaded before a
+        // struct lookup can succeed.
+        let base = name.strip_suffix("[]").unwrap_or(name);
+        let mut consider = |part: &str| {
+            if part.is_empty() {
+                return;
+            }
+            if seen.insert(part.to_ascii_lowercase()) {
+                names.push(part.to_string());
+            }
+        };
+        consider(base);
+        if let Some((owner, struct_name)) = base.rsplit_once(':') {
+            if !owner.is_empty() && !struct_name.is_empty() {
+                consider(owner);
+            }
         }
     };
 

@@ -261,5 +261,30 @@ fn script_exists_does_not_need_a_write_lock() {
     let mut shared = SharedFunctionTable(&table);
     assert!(shared.script_exists("Foo"));
     assert!(shared.type_exists("Int"));
+    assert!(shared.type_exists("Actor[]"));
     assert!(!shared.can_resolve_script("Missing"));
+}
+
+#[test]
+fn nested_struct_type_exists_is_a_read_lock_hit_after_it_is_loaded() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    write_script(
+        root.path(),
+        "Holder",
+        "ScriptName Holder\n\nStruct Payload\n    Int Count\nEndStruct\n",
+    );
+    let table = RwLock::new(
+        FunctionTable::new(root.path().to_path_buf()).with_game(papyrus_lints::Game::Fallout4),
+    );
+    let mut shared = SharedFunctionTable(&table);
+    assert!(shared.type_exists("Holder:Payload"));
+    assert!(shared.type_exists("Holder:Payload[]"));
+    assert!(!shared.type_exists("Holder:Missing"));
+
+    let _held = table
+        .read()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    let mut shared = SharedFunctionTable(&table);
+    assert!(shared.type_exists("holder:payload"));
+    assert!(!shared.type_exists("holder:missing"));
 }

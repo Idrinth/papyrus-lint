@@ -668,3 +668,32 @@ fn referenced_types_include_declarations_and_nested_expressions() {
         );
     }
 }
+
+#[test]
+fn referenced_types_load_array_elements_and_struct_owners() {
+    let script = papyrus_parser::parse_with_mode(
+        "ScriptName Example\n\
+         Holder:Payload Property Value Auto\n\
+         Function Test()\n\
+             Actor[] casted = Value as Holder:Payload[]\n\
+             Ns:Script:Inner nested\n\
+         EndFunction\n",
+        papyrus_parser::parser::GameEdition::Fallout4,
+    )
+    .expect("fixture should parse");
+
+    let names = referenced_type_names(&script);
+    for expected in [
+        "Holder",
+        "Holder:Payload",
+        "Actor",
+        "Ns:Script",
+        "Ns:Script:Inner",
+    ] {
+        assert!(
+            names.iter().any(|name| name == expected),
+            "missing {expected} in {names:?}"
+        );
+    }
+    assert!(names.iter().all(|name| !name.ends_with("[]")));
+}

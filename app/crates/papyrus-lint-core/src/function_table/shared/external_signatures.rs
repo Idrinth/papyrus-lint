@@ -82,7 +82,10 @@ impl papyrus_lints::ExternalSignatures for SharedFunctionTable<'_> {
     }
 
     fn type_exists(&mut self, type_name: &str) -> bool {
-        FunctionTable::type_exists(&self.read(), type_name)
+        self.probe_or_load(
+            |table| table.type_exists_cached(type_name),
+            |table| papyrus_lints::ExternalSignatures::type_exists(table, type_name),
+        )
     }
 
     fn has_state(&mut self, type_name: &str, state_name: &str) -> bool {

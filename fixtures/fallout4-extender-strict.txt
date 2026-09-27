@@ -306,9 +306,7 @@ Scripts/Source/F4SE/Actor.psc:1117:1: [identifier-casing] [warning] Parameter 'f
 Scripts/Source/F4SE/Actor.psc:1117:1: [unresolved-script] [warning] Type 'WornItem' could not be located (https://papyrus-lint.idrinth.de/rules.html#rule-unresolved-script)
 Scripts/Source/F4SE/Actor.psc:1121:1: [identifier-casing] [warning] Parameter 'slotIndex' does not match the configured PascalCase casing style (https://papyrus-lint.idrinth.de/rules.html#rule-identifier-casing)
 Scripts/Source/F4SE/Actor.psc:1123:1: [identifier-casing] [warning] Parameter 'slotIndex' does not match the configured PascalCase casing style (https://papyrus-lint.idrinth.de/rules.html#rule-identifier-casing)
-Scripts/Source/F4SE/Actor.psc:1123:1: [unresolved-script] [warning] Type 'InstanceData:Owner' could not be located (https://papyrus-lint.idrinth.de/rules.html#rule-unresolved-script)
 Scripts/Source/F4SE/Actor.psc:1124:1: [identifier-casing] [warning] Variable 'inst' does not match the configured PascalCase casing style (https://papyrus-lint.idrinth.de/rules.html#rule-identifier-casing)
-Scripts/Source/F4SE/Actor.psc:1124:1: [unresolved-script] [warning] Type 'InstanceData:Owner' could not be located (https://papyrus-lint.idrinth.de/rules.html#rule-unresolved-script)
 Scripts/Source/F4SE/Actor.psc:1132:1: [identifier-casing] [warning] Parameter 'bDoEquipment' does not match the configured PascalCase casing style (https://papyrus-lint.idrinth.de/rules.html#rule-identifier-casing)
 Scripts/Source/F4SE/Actor.psc:1132:1: [identifier-casing] [warning] Parameter 'flags' does not match the configured PascalCase casing style (https://papyrus-lint.idrinth.de/rules.html#rule-identifier-casing)
 Scripts/Source/F4SE/Actor.psc:1138:35: [final-newline] [warning] File does not end with a newline (https://papyrus-lint.idrinth.de/rules.html#rule-final-newline)
@@ -1991,7 +1989,6 @@ Scripts/Source/F4SE/ObjectReference.psc:1224:77: [trailing-whitespace] [warning]
 Scripts/Source/F4SE/ObjectReference.psc:1229:1: [unresolved-script] [warning] Type 'ConnectPoint' could not be located (https://papyrus-lint.idrinth.de/rules.html#rule-unresolved-script)
 Scripts/Source/F4SE/ObjectReference.psc:1240:1: [identifier-casing] [warning] Parameter 'mSwap' does not match the configured PascalCase casing style (https://papyrus-lint.idrinth.de/rules.html#rule-identifier-casing)
 Scripts/Source/F4SE/ObjectReference.psc:1240:1: [identifier-casing] [warning] Parameter 'renameMaterial' does not match the configured PascalCase casing style (https://papyrus-lint.idrinth.de/rules.html#rule-identifier-casing)
-Scripts/Source/F4SE/ObjectReference.psc:1240:1: [unresolved-script] [warning] Type 'MatSwap:RemapData' could not be located (https://papyrus-lint.idrinth.de/rules.html#rule-unresolved-script)
 Scripts/Source/F4SE/ObjectReference.psc:1250:1: [identifier-casing] [warning] Parameter 'mSwap' does not match the configured PascalCase casing style (https://papyrus-lint.idrinth.de/rules.html#rule-identifier-casing)
 Scripts/Source/F4SE/ObjectReference.psc:1254:42: [final-newline] [warning] File does not end with a newline (https://papyrus-lint.idrinth.de/rules.html#rule-final-newline)
 Scripts/Source/F4SE/Perk.psc:4:1: [identifier-casing] [warning] Parameter 'auiEntryID' does not match the configured PascalCase casing style (https://papyrus-lint.idrinth.de/rules.html#rule-identifier-casing)
@@ -2521,8 +2518,6 @@ Scripts/Source/F4SE/WaterType.psc:7:42: [final-newline] [warning] File does not 
 Scripts/Source/F4SE/Weapon.psc:4:1: [identifier-casing] [warning] Parameter 'akSource' does not match the configured PascalCase casing style (https://papyrus-lint.idrinth.de/rules.html#rule-identifier-casing)
 Scripts/Source/F4SE/Weapon.psc:4:1: [identifier-casing] [warning] Parameter 'akAmmo' does not match the configured PascalCase casing style (https://papyrus-lint.idrinth.de/rules.html#rule-identifier-casing)
 Scripts/Source/F4SE/Weapon.psc:13:1: [identifier-casing] [warning] Parameter 'mod' does not match the configured PascalCase casing style (https://papyrus-lint.idrinth.de/rules.html#rule-identifier-casing)
-Scripts/Source/F4SE/Weapon.psc:15:1: [unresolved-script] [warning] Type 'InstanceData:Owner' could not be located (https://papyrus-lint.idrinth.de/rules.html#rule-unresolved-script)
 Scripts/Source/F4SE/Weapon.psc:16:1: [identifier-casing] [warning] Variable 'inst' does not match the configured PascalCase casing style (https://papyrus-lint.idrinth.de/rules.html#rule-identifier-casing)
-Scripts/Source/F4SE/Weapon.psc:16:1: [unresolved-script] [warning] Type 'InstanceData:Owner' could not be located (https://papyrus-lint.idrinth.de/rules.html#rule-unresolved-script)
 Scripts/Source/F4SE/Weapon.psc:19:12: [final-newline] [warning] File does not end with a newline (https://papyrus-lint.idrinth.de/rules.html#rule-final-newline)
-PapyrusLinterCLI: 2527 problem(s) found in 27 of 29 script(s).
+PapyrusLinterCLI: 2522 problem(s) found in 27 of 29 script(s).
