@@ -1,6 +1,19 @@
 use super::*;
 use std::fs;
+use tauri::test::{assert_ipc_response, mock_builder, mock_context, noop_assets, INVOKE_KEY};
 use tempfile::tempdir;
+
+fn invoke_request(command: &str, body: serde_json::Value) -> tauri::webview::InvokeRequest {
+    tauri::webview::InvokeRequest {
+        cmd: command.into(),
+        callback: tauri::ipc::CallbackFn(0),
+        error: tauri::ipc::CallbackFn(1),
+        url: "tauri://localhost".parse().unwrap(),
+        body: tauri::ipc::InvokeBody::Json(body),
+        headers: Default::default(),
+        invoke_key: INVOKE_KEY.to_string(),
+    }
+}
 
 #[test]
 fn project_root_uses_the_first_entry_in_a_supported_script_tree() {
@@ -108,5 +121,42 @@ fn project_root_accepts_mixed_case_directory_pairs_and_directory_entries() {
             "fallback".to_string(),
         ),
         "project"
+    );
+}
+
+#[test]
+fn project_root_commands_accept_frontend_arguments_over_ipc() {
+    let app = crate::configure_builder(mock_builder())
+        .build(mock_context(noop_assets()))
+        .unwrap();
+    let webview = tauri::WebviewWindowBuilder::new(&app, "project-root-test", Default::default())
+        .build()
+        .unwrap();
+    let separator = std::path::MAIN_SEPARATOR;
+
+    assert_ipc_response(
+        &webview,
+        invoke_request(
+            "find_project_root",
+            serde_json::json!({
+                "entries": [format!(
+                    "project{separator}scripts{separator}source{separator}Example.psc"
+                )],
+                "fallback": "fallback"
+            }),
+        ),
+        Ok("project"),
+    );
+    assert_ipc_response(
+        &webview,
+        invoke_request(
+            "find_psc_project_root_for_path",
+            serde_json::json!({
+                "path": format!(
+                    "project{separator}custom{separator}source{separator}Example.psc"
+                )
+            }),
+        ),
+        Ok("project"),
     );
 }
