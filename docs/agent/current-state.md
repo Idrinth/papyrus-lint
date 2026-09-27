@@ -51,8 +51,9 @@ the other column before calling the work done.
 | --- | --- |
 | `papyrus_lints::lint` / `repair` | `papyrus-lint-live` (CLI `--blob`, LSP snapshot, desktop live edit), editor plugins (via CLI), project-aware CLI / Tauri file lint |
 | `project_lint::lint_script` | CLI `lint_file` and desktop `lint_with_compile_check` (project diagnostics, compile check, ignore file). Reporting stays in those callers |
-| `*_with_external_arguments` | CLI `fix`, Tauri apply-fix commands, and Tauri preview commands |
-| `ExternalSignatures` / `FunctionTable` | CLI threads (`SharedFunctionTable`), desktop per-project table. Desktop batch lint (`lint_project_scripts`) uses the same parse-closure, preload, and `map_in_parallel` lint as the CLI; `lint_psc_file` remains the one-file path |
+| `project_batch` | CLI `process_scripts` and desktop `preload_project_scripts` / `lint_project_scripts` (parse-closure, preload, parallel walk). Progress, fix, and the unparseable-file rule stay in those callers |
+| `*_with_external_arguments` | CLI `fix` and Tauri apply-fix commands, including not preview |
+| `ExternalSignatures` / `FunctionTable` | CLI threads (`SharedFunctionTable`), desktop per-project table. Batch preload goes through `project_batch`; `lint_psc_file` remains the one-file path |
 | `find_candidate_pair_root` / script locator | CLI path resolution, Tauri `find_project_root`, drop-folder scan |
 | `strict_achlist_scope` / `lookup_script_roots` | CLI + desktop + config; lookup roots are analysis-only (never linted, never on compiler `-i`) |
 | Rule tags / `doc_url` | CLI reports, GUI badges/filters, VS Code diagnostic code, Sublime message text, LSP diagnostic code |

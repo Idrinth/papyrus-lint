@@ -7,13 +7,15 @@
 //! and folds the results into the final report (see
 //! [`crate::report::fold_and_flush_report`]).
 //!
-//! Parsing does not stop at the lint targets. When a script's AST names
-//! another type, that type is resolved the same way
-//! [`papyrus_lint_core::function_table::FunctionTable::ensure_loaded`] would
-//! and, if it is a `.psc`, parsed too ([`FunctionTable::parse_type_closure`]).
-//! Those extra scripts are preloaded for analysis only — they are not
-//! linted. Bundled vanilla/extender scripts are loaded from the blob, and
-//! names that resolve nowhere are cached unresolved, so the lint phase's
+//! The parse closure, function-table preload, and parallel walk live in
+//! [`papyrus_lint_core::project_batch`]. Parsing does not stop at the lint
+//! targets. When a script's AST names another type, that type is resolved
+//! the same way [`papyrus_lint_core::function_table::FunctionTable::ensure_loaded`]
+//! would and, if it is a `.psc`, parsed too
+//! ([`FunctionTable::parse_type_closure`]). Those extra scripts are
+//! preloaded for analysis only — they are not linted. Bundled
+//! vanilla/extender scripts are loaded from the blob, and names that
+//! resolve nowhere are cached unresolved, so the lint phase's
 //! [`SharedFunctionTable`] takes its write lock only for a name the closure
 //! never saw.
 
@@ -25,9 +27,8 @@ use std::sync::RwLock;
 
 use papyrus_lint_core::ast_cache;
 use papyrus_lint_core::collision_cache;
-use papyrus_lint_core::function_table::{
-    ClosedScripts, FunctionTable, PreloadedScript, TypeClosureOptions,
-};
+use papyrus_lint_core::function_table::{ClosedScripts, FunctionTable};
+use papyrus_lint_core::project_batch::{self, ClosureOptions, ParsedMemo, SeedScript};
 use papyrus_lint_core::source_encoding::{read_psc_source_with_encoding, PscEncoding};
 
 use crate::args::LintArgs;
@@ -142,24 +143,22 @@ fn parse_scripts(
     progress: bool,
     progress_stdout: &Mutex<&mut (dyn Write + Send)>,
 ) -> ClosedScripts<Result<ParsedFile, String>> {
-    let total_scripts = AtomicUsize::new(script_paths.len());
-    let progress_completed = AtomicUsize::new(0);
-    function_table.parse_type_closure(
+    project_batch::parse_closure(
+        function_table,
         script_paths,
-        TypeClosureOptions {
+        ClosureOptions {
             threads: thread_count,
-            total_files: progress.then_some(&total_scripts),
+            track_total: progress,
         },
         |script_path| parse_script(game, script_path),
         |parsed| parsed.as_ref().ok().and_then(|parsed| parsed.ast.as_ref()),
-        || {
+        |file| {
             if progress {
-                report_file_progress(
-                    &progress_completed,
-                    &total_scripts,
-                    progress_stdout,
-                    "Parsing",
-                );
+                let mut stdout = progress_stdout
+                    .lock()
+                    .unwrap_or_else(|poisoned| poisoned.into_inner());
+                let _ = write!(stdout, "\rParsing: {}/{} files", file.completed, file.total);
+                let _ = stdout.flush();
             }
         },
     )
@@ -195,23 +194,13 @@ fn preload_function_table(
     script_paths: &[PathBuf],
     parsed: &ClosedScripts<Result<ParsedFile, String>>,
 ) {
-    let entries: Vec<PreloadedScript> = script_paths
-        .iter()
-        .zip(parsed.seeds.iter())
-        .filter_map(|(path, parsed)| {
-            let parsed = parsed.as_ref().ok()?;
-            let name_lower = path.file_stem()?.to_str()?.to_ascii_lowercase();
-            Some(PreloadedScript {
-                path,
-                name_lower,
-                ast: parsed.ast.as_ref(),
-                source: &parsed.source,
-            })
+    project_batch::preload_closure(function_table, script_paths, parsed, |parsed| {
+        let parsed = parsed.as_ref().ok()?;
+        Some(SeedScript {
+            source: &parsed.source,
+            ast: parsed.ast.as_ref(),
         })
-        .collect();
-    function_table.preload(entries);
-    function_table.preload_dependencies(&parsed.dependencies);
-    function_table.preload_name_slots(&parsed.bundled, &parsed.unresolved);
+    });
 }
 
 /// Parses every resolved script up front (see [`parse_scripts`]), preloads
@@ -295,31 +284,38 @@ fn process_scripts<'a>(
         ignores: ignores.as_ref(),
     };
 
-    let file_results: Vec<Result<FileOutcome, String>> =
-        papyrus_lint_core::parallel::map_in_parallel(
-            (0..total_scripts).collect(),
-            lint.thread_count,
-            |file_index| {
-                process_script(
-                    &lint_context,
-                    &script_paths,
-                    &parsed_files,
-                    &function_table_root,
-                    ScriptJob {
-                        file_index,
-                        short_paths: lint.short_paths,
-                        fix: lint.fix,
-                        rule_filter: lint.rule_filter,
-                        target_line: lint.target_line,
-                        dry_run: lint.dry_run,
-                        progress: lint.progress,
-                    },
-                    &progress_completed,
-                    &lint_total,
-                    &progress_stdout,
-                )
-            },
-        );
+    let file_results: Vec<Result<FileOutcome, String>> = project_batch::lint_in_parallel(
+        &parsed_files.seeds,
+        lint.thread_count,
+        |parsed| {
+            let parsed = parsed.as_ref().ok()?;
+            Some(ParsedMemo {
+                source: &parsed.source,
+                ast: parsed.ast.as_ref(),
+                tokens: parsed.tokens.as_deref(),
+            })
+        },
+        |file_index, parsed| {
+            process_script(
+                &lint_context,
+                &script_paths,
+                parsed,
+                &function_table_root,
+                ScriptJob {
+                    file_index,
+                    short_paths: lint.short_paths,
+                    fix: lint.fix,
+                    rule_filter: lint.rule_filter,
+                    target_line: lint.target_line,
+                    dry_run: lint.dry_run,
+                    progress: lint.progress,
+                },
+                &progress_completed,
+                &lint_total,
+                &progress_stdout,
+            )
+        },
+    );
 
     collision_cache::flush();
     let stdout = progress_stdout
@@ -352,7 +348,7 @@ fn share_function_table(
 fn process_script(
     lint_context: &LintContext,
     script_paths: &[PathBuf],
-    parsed_files: &ClosedScripts<Result<ParsedFile, String>>,
+    parsed: &Result<ParsedFile, String>,
     function_table_root: &Path,
     job: ScriptJob,
     progress_completed: &AtomicUsize,
@@ -360,18 +356,16 @@ fn process_script(
     progress_stdout: &Mutex<&mut (dyn Write + Send)>,
 ) -> Result<FileOutcome, String> {
     let script_path = &script_paths[job.file_index];
-    let parsed = parsed_files.seeds[job.file_index]
-        .as_ref()
-        .map_err(Clone::clone)?;
+    let parsed = parsed.as_ref().map_err(Clone::clone)?;
 
     let reported_path = display_path(script_path, function_table_root, job.short_paths);
 
-    prime_parser_cache(parsed);
     let mut prepared = prepare_source(lint_context, script_path, &reported_path, parsed, &job)?;
 
     // `already_primed` is only trustworthy when `fix` left the source
-    // exactly as parsed above; a fix that changed it falls back to
-    // `lint_file`'s own `ast_cache::ensure_primed` for the new text.
+    // exactly as [`project_batch::lint_in_parallel`] primed it; a fix that
+    // changed it falls back to `lint_file`'s own `ast_cache::ensure_primed`
+    // for the new text.
     let lint_outcome = lint_file(
         lint_context,
         script_path,
@@ -403,20 +397,6 @@ fn process_script(
         diagnostic_count: lint_outcome.diagnostic_count,
         fixed: prepared.fixed,
     })
-}
-
-fn prime_parser_cache(parsed: &ParsedFile) {
-    // Primes `papyrus_parser`'s in-memory memoization from the parse
-    // phase's own already-owned AST/tokens, so neither `fix_file`'s own
-    // internal parse (below) nor `run_lint::lint_file`'s touches
-    // `ast_cache`'s disk cache (and its process-wide lock) again for a
-    // source string already known to be current.
-    if let Some(ast) = parsed.ast.clone() {
-        papyrus_parser::prime_cache(&parsed.source, ast);
-    }
-    if let Some(tokens) = parsed.tokens.clone() {
-        papyrus_parser::prime_tokenize_cache(&parsed.source, tokens);
-    }
 }
 
 fn prepare_source(

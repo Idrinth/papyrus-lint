@@ -106,7 +106,8 @@ Important internal boundaries:
   roots, achlist settings, preset files, and YAML merging into focused modules.
 - `papyrus-lint-core/src/function_table/` owns lazy cross-script signature and
   ancestry lookup. `project_lint` is the per-file pass both the CLI and the
-  desktop shell call. Other modules cover `.achlist`/`.ppj` input, source encoding,
+  desktop shell call. `project_batch` is the shared parse-closure, preload,
+  and parallel walk around that pass. Other modules cover `.achlist`/`.ppj` input, source encoding,
   project roots, compilation, diffs, parallel work, PEX headers, and stale
   compiled output.
 - `papyrus-lint-live` is the in-memory lint pass (`lint_source`) plus config
