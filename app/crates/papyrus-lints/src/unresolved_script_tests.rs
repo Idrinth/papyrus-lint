@@ -313,6 +313,53 @@ EndFunction
 }
 
 #[test]
+fn does_not_flag_an_array_whose_element_type_resolves() {
+    let diagnostics = check_with(
+        r#"
+ScriptName Example
+
+Actor[] Property Targets Auto
+
+Actor[] Function Test(Actor[] actors)
+    Actor[] local = actors
+    ObjectReference[] casted = local as Actor[]
+    Return casted
+EndFunction
+"#,
+        &mut FakeExternal,
+    );
+
+    assert!(
+        diagnostics.is_empty(),
+        "array types should resolve through their element type, got {diagnostics:?}"
+    );
+}
+
+#[test]
+fn flags_an_unresolved_array_element_type_without_the_brackets() {
+    let diagnostics = check_with(
+        r#"
+ScriptName Example
+
+Function Test()
+    Return 1 as MissingElement[]
+EndFunction
+"#,
+        &mut FakeExternal,
+    );
+
+    assert_eq!(
+        diagnostics,
+        [Diagnostic {
+            line: 5,
+            column: 1,
+            message: "[warning] Type 'MissingElement' could not be located".to_string(),
+            rule: RULE,
+        }]
+    );
+}
+
+#[test]
 fn does_not_crash_on_unparseable_source() {
     let diagnostics = check("ScriptName Example\n\nFunction Test(\nEndFunction\n");
     assert!(diagnostics.is_empty());

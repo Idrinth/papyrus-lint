@@ -61,10 +61,7 @@ impl AstLint for Collect {
     }
 
     fn visit_type_name(&mut self, type_name: &TypeName, ctx: &mut VisitCtx<'_>) {
-        if !ctx.external.type_exists(&type_name.name) {
-            self.store
-                .push(missing_type(ctx.line, 1, &type_name.name, "Type"));
-        }
+        self.note_unresolved_type(ctx, &type_name.name);
     }
 
     fn visit_expr(&mut self, expr: &Expr, ctx: &mut VisitCtx<'_>) {
@@ -88,13 +85,19 @@ impl AstLint for Collect {
                     self.store.push(missing(*line, *col, name));
                 }
             }
-            Expr::Cast { type_name, .. } | Expr::Is { type_name, .. }
-                if !ctx.external.type_exists(type_name) =>
-            {
-                self.store
-                    .push(missing_type(ctx.line, 1, type_name, "Type"));
+            Expr::Cast { type_name, .. } | Expr::Is { type_name, .. } => {
+                self.note_unresolved_type(ctx, type_name);
             }
             _ => {}
+        }
+    }
+}
+
+impl Collect {
+    fn note_unresolved_type(&mut self, ctx: &mut VisitCtx<'_>, name: &str) {
+        let name = array_element_name(name);
+        if !ctx.external.type_exists(name) {
+            self.store.push(missing_type(ctx.line, 1, name, "Type"));
         }
     }
 }
@@ -139,6 +142,13 @@ fn missing_type(line: usize, col: usize, name: &str, kind: &str) -> Diagnostic {
         message: format!("[warning] {kind} '{name}' could not be located"),
         rule: RULE,
     }
+}
+
+/// `T[]` is an array of `T`, never a script whose name includes the brackets.
+/// Cast and `is` expressions store that spelling in one string; declarations
+/// keep the brackets on [`TypeName::is_array`] instead.
+fn array_element_name(name: &str) -> &str {
+    name.strip_suffix("[]").unwrap_or(name)
 }
 
 fn missing(line: usize, col: usize, name: &str) -> Diagnostic {

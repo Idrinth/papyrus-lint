@@ -169,6 +169,11 @@ pub(crate) struct ScriptFunctions {
     /// ordinary function does not occupy the slot, and callers do not scan
     /// signatures for [`FunctionSignature::is_event`].
     pub(crate) events: HashSet<String>,
+    /// Lowercased `Struct` names declared directly on this script. Fallout 4
+    /// and Starfield only; empty for Skyrim. Used by
+    /// [`crate::function_table::FunctionTable::type_exists`] so
+    /// `Script:Struct` resolves when `Struct` is declared on `Script`.
+    pub(crate) structs: HashSet<String>,
 }
 impl ScriptFunctions {
     pub(crate) fn from_script(script: &Script, source: &str) -> Self {
@@ -267,6 +272,11 @@ impl ScriptFunctions {
             .iter()
             .map(|v| v.name.to_ascii_lowercase())
             .collect();
+        let structs = script
+            .structs
+            .iter()
+            .map(|decl| decl.name.to_ascii_lowercase())
+            .collect();
 
         ScriptFunctions {
             extends: script.extends.clone(),
@@ -276,6 +286,7 @@ impl ScriptFunctions {
             states,
             goto_state_targets: papyrus_lints::literal_goto_state_targets(script),
             events,
+            structs,
         }
     }
 }

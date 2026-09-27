@@ -384,3 +384,102 @@ fn drives_a_named_argument_check_across_scripts_through_the_argument_type_check_
     assert!(diagnostics[0].message.contains("expects String"));
     assert!(diagnostics[0].message.contains("got Int"));
 }
+
+#[test]
+fn type_exists_accepts_arrays_and_nested_structs() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    write_script(
+        root.path(),
+        "Holder",
+        "ScriptName Holder\n\nStruct Payload\n    Int Count\nEndStruct\n",
+    );
+    write_script(
+        root.path(),
+        "Ns:Script",
+        "ScriptName Ns:Script\n\nStruct Inner\n    String Label\nEndStruct\n",
+    );
+
+    let mut table =
+        FunctionTable::new(root.path().to_path_buf()).with_game(papyrus_lints::Game::Fallout4);
+
+    let mut starfield =
+        FunctionTable::new(root.path().to_path_buf()).with_game(papyrus_lints::Game::Starfield);
+    assert!(papyrus_lints::ExternalSignatures::type_exists(
+        &mut starfield,
+        "DefaultScriptFunctions:ParentScriptFunctionParams"
+    ));
+    assert!(papyrus_lints::ExternalSignatures::type_exists(
+        &mut starfield,
+        "DefaultScriptFunctions:ParentScriptFunctionParams[]"
+    ));
+    assert!(!papyrus_lints::ExternalSignatures::type_exists(
+        &mut starfield,
+        "DefaultScriptFunctions:NotARealStruct"
+    ));
+
+    for name in [
+        "Actor[]",
+        "actor[]",
+        "Holder:Payload",
+        "holder:payload",
+        "Holder:Payload[]",
+        "Ns:Script",
+        "Ns:Script[]",
+        "Ns:Script:Inner",
+        "ns:script:inner[]",
+    ] {
+        assert!(
+            papyrus_lints::ExternalSignatures::type_exists(&mut table, name),
+            "{name} should resolve"
+        );
+    }
+    for name in [
+        "Missing[]",
+        "Holder:NotAStruct",
+        "Ns:Script:Missing",
+        "MissingScript:Whatever",
+    ] {
+        assert!(
+            !papyrus_lints::ExternalSignatures::type_exists(&mut table, name),
+            "{name} should not resolve"
+        );
+    }
+
+    let source = "\
+ScriptName Example\n\
+\n\
+Holder:Payload Property Value Auto\n\
+\n\
+Function Test(Actor[] actors)\n\
+    Holder:Payload local\n\
+    Ns:Script:Inner nested\n\
+    Actor[] casted = actors as Actor[]\n\
+    Return 1 as MissingElement[]\n\
+EndFunction\n";
+    let ast =
+        papyrus_parser::parse_with_mode(source, papyrus_parser::parser::GameEdition::Fallout4)
+            .expect("Fallout 4 fixture should parse");
+    papyrus_parser::prime_cache(source, ast);
+
+    let diagnostics = diagnostics_for("unresolved-script", source, &mut table);
+    assert!(
+        diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.message.contains("MissingElement")),
+        "got {diagnostics:?}"
+    );
+    assert!(
+        diagnostics
+            .iter()
+            .all(|diagnostic| !diagnostic.message.contains("[]")),
+        "array brackets should not be looked up as a script name, got {diagnostics:?}"
+    );
+    assert!(
+        diagnostics.iter().all(|diagnostic| {
+            !diagnostic.message.contains("Actor")
+                && !diagnostic.message.contains("Holder")
+                && !diagnostic.message.contains("Ns:Script")
+        }),
+        "resolved array and struct types should not be flagged, got {diagnostics:?}"
+    );
+}

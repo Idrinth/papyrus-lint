@@ -99,7 +99,7 @@ fn load_script_functions(game: papyrus_lint_globals::Game, path: &Path) -> Optio
     let parsed = if let Some(cached) = crate::ast_cache::get_for_game(game, path, &source) {
         cached
     } else {
-        let parsed = papyrus_parser::parse(&source).ok()?;
+        let parsed = parse_script_source(game, &source)?;
         crate::ast_cache::put_for_game(game, path, &source, &parsed);
         if let Ok(tokens) = papyrus_parser::tokenize(&source) {
             crate::ast_cache::put_tokens_for_game(game, path, &source, &tokens);
@@ -107,6 +107,24 @@ fn load_script_functions(game: papyrus_lint_globals::Game, path: &Path) -> Optio
         parsed
     };
     Some(ScriptFunctions::from_script(&parsed, &source))
+}
+
+/// Parses `source` in `game`'s dialect. Skyrim stays on the memoized
+/// [`papyrus_parser::parse`] entry point. Fallout 4 and Starfield must use
+/// their own dialect so `Struct` declarations (and colon-qualified names)
+/// survive into [`ScriptFunctions`]; the Skyrim parser rejects both.
+pub(super) fn parse_script_source(
+    game: papyrus_lint_globals::Game,
+    source: &str,
+) -> Option<papyrus_parser::ast::Script> {
+    use papyrus_lint_globals::Game;
+    use papyrus_parser::parser::GameEdition;
+
+    match game {
+        Game::Skyrim => papyrus_parser::parse(source).ok(),
+        Game::Fallout4 => papyrus_parser::parse_with_mode(source, GameEdition::Fallout4).ok(),
+        Game::Starfield => papyrus_parser::parse_with_mode(source, GameEdition::Starfield).ok(),
+    }
 }
 
 impl FunctionTable {
