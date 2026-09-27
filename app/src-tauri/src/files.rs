@@ -4,7 +4,9 @@ use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::time::UNIX_EPOCH;
 
-use papyrus_lint_core::source_encoding::read_psc_source;
+use papyrus_lint_core::source_encoding::{
+    read_psc_source, read_psc_source_with_encoding, write_psc_source, PscEncoding,
+};
 use papyrus_lint_core::{achlist, ast_cache, content_hash, ppj, script_locator};
 
 /// Parses the `.achlist` file at `path` and returns the resolved paths it lists.
@@ -165,7 +167,13 @@ pub(crate) fn get_psc_file_mtimes(paths: Vec<String>) -> HashMap<String, u64> {
 /// mode.
 #[tauri::command(async)]
 pub(crate) fn write_psc_file(path: String, contents: String) -> Result<(), String> {
-    std::fs::write(&path, contents).map_err(|err| err.to_string())
+    let path = Path::new(&path);
+    let encoding = match read_psc_source_with_encoding(path) {
+        Ok((_source, encoding)) => encoding,
+        Err(err) if err.kind() == std::io::ErrorKind::NotFound => PscEncoding::Utf8,
+        Err(err) => return Err(err.to_string()),
+    };
+    write_psc_source(path, &contents, encoding).map_err(|err| err.to_string())
 }
 
 #[cfg(test)]

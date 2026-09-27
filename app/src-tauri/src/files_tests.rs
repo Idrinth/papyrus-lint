@@ -69,6 +69,43 @@ fn write_psc_file_truncates_longer_existing_contents() {
 }
 
 #[test]
+fn write_psc_file_preserves_the_existing_windows_1252_encoding() {
+    let dir = tempdir().unwrap();
+    let path = dir.path().join("Example.psc");
+    let mut initial = b"ScriptName Example\n; caf".to_vec();
+    initial.extend_from_slice(&[0xE9, b'\n']);
+    std::fs::write(&path, initial).unwrap();
+
+    write_psc_file(
+        path.to_string_lossy().into_owned(),
+        "ScriptName Edited\n; café\n".to_string(),
+    )
+    .unwrap();
+
+    let mut expected = b"ScriptName Edited\n; caf".to_vec();
+    expected.extend_from_slice(&[0xE9, b'\n']);
+    assert_eq!(std::fs::read(path).unwrap(), expected);
+}
+
+#[test]
+fn write_psc_file_preserves_an_existing_utf8_bom() {
+    let dir = tempdir().unwrap();
+    let path = dir.path().join("Example.psc");
+    std::fs::write(&path, b"\xEF\xBB\xBFScriptName Example\n").unwrap();
+
+    write_psc_file(
+        path.to_string_lossy().into_owned(),
+        "\u{feff}ScriptName Edited\n".to_string(),
+    )
+    .unwrap();
+
+    assert_eq!(
+        std::fs::read(path).unwrap(),
+        b"\xEF\xBB\xBFScriptName Edited\n"
+    );
+}
+
+#[test]
 fn write_psc_file_creates_a_new_file() {
     let dir = tempdir().unwrap();
     let path = dir.path().join("New.psc");
