@@ -12,6 +12,22 @@ fn check(source: &str) -> Vec<Diagnostic> {
     )
 }
 
+fn check_starfield(source: &str) -> Vec<Diagnostic> {
+    let ast = papyrus_parser::parse_with_mode(
+        source,
+        papyrus_parser::parser::GameEdition::Starfield,
+    )
+    .ok();
+    let tokens = papyrus_parser::tokenize(source).ok();
+    super::check(
+        source,
+        ast.as_ref(),
+        tokens.as_deref(),
+        &crate::config::Config::default(),
+        &mut crate::external_signatures::NoExternalSignatures,
+    )
+}
+
 #[test]
 fn flags_the_same_outfit_applied_twice_in_a_row() {
     let diagnostics = check(
@@ -174,6 +190,36 @@ fn matches_receiver_and_argument_identifiers_case_insensitively() {
 }
 
 #[test]
+fn matches_chained_member_names_case_insensitively() {
+    let diagnostics = check(
+        "ScriptName Example\n\nFunction Test(Quest Owner)\n    Owner.Target.SetOutfit(Owner.Outfit)\n    OWNER.target.SetOutfit(owner.OUTFIT)\nEndFunction\n",
+    );
+
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!(diagnostics[0].line, 5);
+}
+
+#[test]
+fn reports_each_repeat_after_the_first_call() {
+    let diagnostics = check(
+        "ScriptName Example\n\nFunction Test(Actor akActor, Outfit MyOutfit)\n    akActor.SetOutfit(MyOutfit)\n    akActor.SetOutfit(MyOutfit)\n    akActor.SetOutfit(MyOutfit)\nEndFunction\n",
+    );
+
+    assert_eq!(diagnostics.len(), 2);
+    assert_eq!(diagnostics[0].line, 5);
+    assert_eq!(diagnostics[1].line, 6);
+}
+
+#[test]
+fn ignores_setoutfit_calls_without_an_outfit_argument() {
+    let diagnostics = check(
+        "ScriptName Example\n\nFunction Test(Actor akActor)\n    akActor.SetOutfit()\n    akActor.SetOutfit()\nEndFunction\n",
+    );
+
+    assert!(diagnostics.is_empty());
+}
+
+#[test]
 fn does_not_flag_after_the_outfit_variable_is_reassigned() {
     let diagnostics = check(
             "ScriptName Example\n\nFunction Test(Actor akActor, Outfit OutfitA, Outfit OutfitB)\n    Outfit outfit = OutfitA\n    akActor.SetOutfit(outfit)\n    outfit = OutfitB\n    akActor.SetOutfit(outfit)\nEndFunction\n",
@@ -198,6 +244,53 @@ fn stops_scanning_after_a_return() {
         );
 
     assert!(diagnostics.is_empty());
+}
+
+#[test]
+fn does_not_carry_a_loop_change_past_the_loop() {
+    let diagnostics = check(
+        "ScriptName Example\n\nFunction Test(Actor akActor, Outfit OutfitA, Outfit OutfitB, Bool bReady)\n    akActor.SetOutfit(OutfitA)\n    While bReady\n        akActor.SetOutfit(OutfitB)\n    EndWhile\n    akActor.SetOutfit(OutfitA)\nEndFunction\n",
+    );
+
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!(diagnostics[0].line, 8);
+}
+
+#[test]
+fn carries_changes_out_of_an_unconditional_lock_guard() {
+    let diagnostics = check_starfield(
+        "ScriptName Example\n\nGuard OutfitGuard\n\nFunction Test(Actor akActor, Outfit OutfitA, Outfit OutfitB)\n    akActor.SetOutfit(OutfitA)\n    LockGuard OutfitGuard\n        akActor.SetOutfit(OutfitB)\n    EndLockGuard\n    akActor.SetOutfit(OutfitB)\nEndFunction\n",
+    );
+
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!(diagnostics[0].line, 10);
+}
+
+#[test]
+fn checks_try_lock_branches_without_carrying_their_changes_forward() {
+    let diagnostics = check_starfield(
+        "ScriptName Example\n\nGuard OutfitGuard\n\nFunction Test(Actor akActor, Outfit MyOutfit)\n    akActor.SetOutfit(MyOutfit)\n    TryLockGuard OutfitGuard\n        akActor.SetOutfit(MyOutfit)\n    ElseTryLockGuard\n        akActor.SetOutfit(MyOutfit)\n    EndTryLockGuard\n    akActor.SetOutfit(MyOutfit)\nEndFunction\n",
+    );
+
+    assert_eq!(diagnostics.len(), 3);
+    assert_eq!(diagnostics[0].line, 8);
+    assert_eq!(diagnostics[1].line, 10);
+    assert_eq!(diagnostics[2].line, 12);
+}
+
+#[test]
+fn disable_directives_suppress_diagnostics() {
+    let line_disabled = crate::lint(
+        "ScriptName Example\n\nFunction Test(Actor akActor, Outfit MyOutfit)\n    akActor.SetOutfit(MyOutfit)\n    akActor.SetOutfit(MyOutfit) ; @disable repeated-setoutfit\nEndFunction\n",
+        &crate::config::Config::default(),
+    );
+    let file_disabled = crate::lint(
+        "; @disable-file repeated-setoutfit\nScriptName Example\n\nFunction Test(Actor akActor, Outfit MyOutfit)\n    akActor.SetOutfit(MyOutfit)\n    akActor.SetOutfit(MyOutfit)\nEndFunction\n",
+        &crate::config::Config::default(),
+    );
+
+    assert!(line_disabled.iter().all(|diagnostic| diagnostic.rule != RULE));
+    assert!(file_disabled.iter().all(|diagnostic| diagnostic.rule != RULE));
 }
 
 #[test]
