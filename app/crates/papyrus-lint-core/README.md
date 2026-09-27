@@ -33,6 +33,11 @@ not depend on Tauri.
 - Vanilla engine types with no on-disk `.psc` resolve from the bundled AST
   cache by `ScriptName` (`FunctionTable::ensure_loaded` /
   `script_exists`). A project or lookup-root file of the same name wins.
+- `type_exists` treats `T[]` as an array of `T` (not a script named `T[]`)
+  and `Script:Struct` / `Namespace:Script:Struct` as a struct declared on
+  that script. A namespaced script that itself exists still wins over the
+  struct reading. The declaring script is parsed in the table's game
+  dialect so Fallout 4 / Starfield `Struct` blocks are visible.
 - `FunctionTable::parse_type_closure` runs before linting. Referenced
   `.psc` files are preloaded for analysis only, not as lint targets.
   Bundled names come from the blob. Names that resolve nowhere stay cached

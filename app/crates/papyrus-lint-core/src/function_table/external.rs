@@ -2,19 +2,86 @@
 
 use papyrus_lints::ParamInfo;
 
-use super::FunctionTable;
+use super::{CacheProbe, FunctionTable};
 
 impl FunctionTable {
-    /// Whether `type_name` is a Papyrus primitive, a bundled vanilla/SKSE
-    /// script, or a script this table can locate. Read-only: never fills
-    /// the parse cache.
+    /// Whether `type_name` is a Papyrus primitive, an array of one
+    /// (`T[]`, never a script named `T[]`), a bundled vanilla/SKSE script,
+    /// or a script this table can locate. Read-only: never fills the parse
+    /// cache. Nested `Script:Struct` types are not answered here; see
+    /// [`papyrus_lints::ExternalSignatures::type_exists`], which loads the
+    /// declaring script when the name is not itself a script.
     pub fn type_exists(&self, type_name: &str) -> bool {
-        let name_lower = type_name.to_ascii_lowercase();
-        matches!(
-            name_lower.as_str(),
-            "int" | "float" | "bool" | "string" | "var"
-        ) || self.script_exists(type_name)
+        let base = array_element_name(type_name);
+        is_primitive(base) || self.script_exists(base)
     }
+
+    /// [`Self::type_exists`], plus a nested struct (`Script:Struct` or
+    /// `Namespace:Script:Struct`, including an array of one) declared on a
+    /// script this table can load. A namespaced script that itself exists
+    /// is already accepted by [`Self::type_exists`] and is not treated as a
+    /// struct. `Miss` means the declaring script still has to be loaded.
+    pub(in crate::function_table) fn type_exists_cached(
+        &self,
+        type_name: &str,
+    ) -> CacheProbe<bool> {
+        if self.type_exists(type_name) {
+            return CacheProbe::Hit(true);
+        }
+        let Some((owner, struct_name)) = struct_reference(type_name) else {
+            return CacheProbe::Hit(false);
+        };
+        if !self.script_exists(owner) {
+            return CacheProbe::Hit(false);
+        }
+        match self.get_cached(&owner.to_ascii_lowercase()) {
+            None => CacheProbe::Miss,
+            Some(None) => CacheProbe::Hit(false),
+            Some(Some(script)) => {
+                CacheProbe::Hit(script.structs.contains(&struct_name.to_ascii_lowercase()))
+            }
+        }
+    }
+
+    /// Whether `type_name` names a struct declared on another script.
+    /// Loads that script when it exists and is not cached yet.
+    pub(super) fn declared_struct_exists(&mut self, type_name: &str) -> bool {
+        let Some((owner, struct_name)) = struct_reference(type_name) else {
+            return false;
+        };
+        if !self.script_exists(owner) {
+            return false;
+        }
+        let owner_key = owner.to_ascii_lowercase();
+        self.ensure_loaded(&owner_key);
+        self.scripts
+            .get(&owner_key)
+            .and_then(Option::as_ref)
+            .is_some_and(|script| script.structs.contains(&struct_name.to_ascii_lowercase()))
+    }
+}
+
+/// `T[]` is an array of `T`. Papyrus has no `T[][]`.
+pub(in crate::function_table) fn array_element_name(type_name: &str) -> &str {
+    type_name.strip_suffix("[]").unwrap_or(type_name)
+}
+
+fn is_primitive(type_name: &str) -> bool {
+    matches!(
+        type_name.to_ascii_lowercase().as_str(),
+        "int" | "float" | "bool" | "string" | "var"
+    )
+}
+
+/// Last `:` segment is the struct; everything before it is the declaring
+/// script (`Holder:Payload`, `Namespace:Script:Payload`).
+pub(in crate::function_table) fn struct_reference(type_name: &str) -> Option<(&str, &str)> {
+    let base = array_element_name(type_name);
+    let (owner, struct_name) = base.rsplit_once(':')?;
+    if owner.is_empty() || struct_name.is_empty() {
+        return None;
+    }
+    Some((owner, struct_name))
 }
 
 /// Lets the "Argument type check" lint (`papyrus_lints::argument_types`)
@@ -63,7 +130,7 @@ impl papyrus_lints::ExternalSignatures for FunctionTable {
     }
 
     fn type_exists(&mut self, type_name: &str) -> bool {
-        FunctionTable::type_exists(self, type_name)
+        FunctionTable::type_exists(self, type_name) || self.declared_struct_exists(type_name)
     }
 
     fn has_state(&mut self, type_name: &str, state_name: &str) -> bool {
