@@ -30,6 +30,7 @@ pub mod parallel;
 pub mod pex_header;
 pub mod ppj;
 pub mod presets;
+pub mod project_lint;
 pub mod project_root;
 mod script_functions;
 pub mod script_locator;

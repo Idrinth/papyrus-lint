@@ -1,4 +1,7 @@
 use super::super::*;
+
+use papyrus_lint_core::stale_pex;
+use papyrus_lints::script_filename_mismatch;
 use tempfile::tempdir;
 
 #[test]
