@@ -54,7 +54,7 @@ the other column before calling the work done.
 | `*_with_external_arguments` | CLI `fix` and Tauri apply-fix commands — not preview |
 | `ExternalSignatures` / `FunctionTable` | CLI threads (`SharedFunctionTable`), desktop per-project table. Desktop batch lint (`lint_project_scripts`) uses the same parse-closure, preload, and `map_in_parallel` lint as the CLI; `lint_psc_file` remains the one-file path |
 | `find_candidate_pair_root` / script locator | CLI path resolution, Tauri `find_project_root`, drop-folder scan |
-| `strict_achlist_scope` / `lookup_script_roots` | CLI + config; lookup roots are analysis-only (never linted, never on compiler `-i`) |
+| `strict_achlist_scope` / `lookup_script_roots` | CLI + desktop + config; lookup roots are analysis-only (never linted, never on compiler `-i`) |
 | Rule tags / `doc_url` | CLI reports, GUI badges/filters, VS Code diagnostic code, Sublime message text, LSP diagnostic code |
 | Presets / executable-adjacent base config | `init --preset`, GUI picker / Presets tab |
 | Automatic-fix edit application | Tauri apply-fix, CLI `fix`, VS Code / Sublime CLI wrappers, LSP code actions and `papyrusLint.fixFile` |

@@ -9,6 +9,9 @@ export let currentCompilerPath = "";
 // kept in sync with the Settings tab's checkbox (see
 // handleCompileCheckChanged).
 export let currentCompileCheck = false;
+// Whether a multi-file scan may resolve only scripts explicitly listed by
+// the dropped input, matching PapyrusLinterCLI's strict achlist scope.
+export let currentStrictAchlistScope = false;
 // Extra directories (besides scripts/source and source/scripts under the
 // project root) to search for .psc files when resolving cross-script
 // lookups, kept in sync with the Settings tab's textarea (see
@@ -29,6 +32,9 @@ export let currentAchlistScriptRoots: string[] = [];
 // the project's additional_script_roots equivalent. Runtime-only, like
 // currentAchlistScriptRoots above.
 export let currentPpjImportRoots: string[] = [];
+// The scripts explicitly listed by the current drop. In strict scope these
+// are registered by name instead of exposing their parent directories.
+export let currentProjectScripts: string[] = [];
 
 export function setCurrentProjectDir(dir: string | null) {
   currentProjectDir = dir;
@@ -42,6 +48,14 @@ export function setCurrentCompileCheck(enabled: boolean) {
   currentCompileCheck = enabled;
 }
 
+export function setCurrentStrictAchlistScope(enabled: boolean) {
+  currentStrictAchlistScope = enabled;
+}
+
+export function setCurrentProjectScripts(paths: string[]) {
+  currentProjectScripts = paths;
+}
+
 export function setCurrentScriptRoots(roots: string[]) {
   currentScriptRoots = roots;
 }
@@ -52,7 +66,11 @@ export function setCurrentLookupScriptRoots(roots: string[]) {
 
 export function effectiveScriptRoots(): string[] {
   return [
-    ...new Set([...currentScriptRoots, ...currentAchlistScriptRoots, ...currentPpjImportRoots]),
+    ...new Set([
+      ...currentScriptRoots,
+      ...(currentStrictAchlistScope ? [] : currentAchlistScriptRoots),
+      ...currentPpjImportRoots,
+    ]),
   ];
 }
 

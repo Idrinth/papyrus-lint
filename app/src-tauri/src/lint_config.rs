@@ -79,6 +79,19 @@ pub(crate) fn load_compile_check(dir: String) -> Result<bool, String> {
     config::load_compile_check(&PathBuf::from(dir))
 }
 
+/// Reads strict achlist scoping from the effective project configuration.
+/// An explicit configuration path has the same precedence as CLI `--config`.
+#[tauri::command(async)]
+pub(crate) fn load_strict_achlist_scope(
+    dir: String,
+    config_path: Option<String>,
+) -> Result<bool, String> {
+    config_path.map_or_else(
+        || config::load_strict_achlist_scope(&PathBuf::from(dir)),
+        |path| config::load_strict_achlist_scope_from_path(&PathBuf::from(path)),
+    )
+}
+
 /// Persists whether `dir`'s project runs PapyrusCompiler.exe as part of
 /// linting a dropped `.psc`.
 #[tauri::command(async)]

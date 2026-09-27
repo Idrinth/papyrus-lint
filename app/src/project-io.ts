@@ -111,6 +111,21 @@ export async function loadCompileCheck(dir: string): Promise<boolean> {
   }
 }
 
+// Returns whether cross-script resolution is restricted to the scripts
+// explicitly listed by the current input. An explicit config path has the
+// same precedence as the CLI's --config option.
+export async function loadStrictAchlistScope(dir: string, configPath: string): Promise<boolean> {
+  try {
+    return (await invoke<boolean>("load_strict_achlist_scope", {
+      dir,
+      configPath: configPath || null,
+    })) ?? false;
+  } catch (error) {
+    console.error(error);
+    return false;
+  }
+}
+
 // Persists whether `dir`'s project runs PapyrusCompiler.exe against a
 // dropped .psc as part of linting it.
 export async function saveCompileCheck(dir: string, enabled: boolean): Promise<void> {

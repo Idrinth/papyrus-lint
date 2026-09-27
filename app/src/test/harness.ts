@@ -79,6 +79,8 @@ function defaultBestEffortHandler(command: string): ((args: unknown) => unknown)
       return () => undefined;
     case "preview_repair_psc_line":
       return () => null;
+    case "load_strict_achlist_scope":
+      return () => false;
     default:
       return undefined;
   }

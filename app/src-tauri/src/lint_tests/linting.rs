@@ -346,6 +346,27 @@ fn lint_project_scripts_resolves_a_sibling_and_reports_its_findings() {
 }
 
 #[test]
+fn strict_scope_function_table_resolves_only_listed_scripts() {
+    let root = tempdir().unwrap();
+    let external = tempdir().unwrap();
+    let listed = external.path().join("Listed.psc");
+    let unlisted = external.path().join("Unlisted.psc");
+    std::fs::write(&listed, "ScriptName Listed\n").unwrap();
+    std::fs::write(&unlisted, "ScriptName Unlisted\n").unwrap();
+    let context = ProjectLintContext {
+        root: root.path().to_string_lossy().into_owned(),
+        strict_achlist_scope: true,
+        known_scripts: vec![listed.to_string_lossy().into_owned()],
+        ..Default::default()
+    };
+
+    let table = context.function_table();
+    let table = table.read().unwrap();
+    assert!(table.script_exists("Listed"));
+    assert!(!table.script_exists("Unlisted"));
+}
+
+#[test]
 fn lint_project_scripts_applies_project_ignore_entries() {
     let dir = tempdir().unwrap();
     let path = dir.path().join("Example.psc");

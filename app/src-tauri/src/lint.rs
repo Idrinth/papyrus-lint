@@ -26,6 +26,7 @@ struct SharedTableKey {
     root: PathBuf,
     additional_roots: Vec<String>,
     lookup_roots: Vec<String>,
+    known_scripts: Option<Vec<PathBuf>>,
 }
 
 fn shared_tables(
@@ -55,11 +56,22 @@ pub(crate) fn project_function_table_for_game(
     additional_roots: Vec<String>,
     lookup_roots: Vec<String>,
 ) -> Arc<RwLock<function_table::FunctionTable>> {
+    project_function_table_for_game_and_scripts(game, root, additional_roots, lookup_roots, None)
+}
+
+fn project_function_table_for_game_and_scripts(
+    game: papyrus_lints::Game,
+    root: String,
+    additional_roots: Vec<String>,
+    lookup_roots: Vec<String>,
+    known_scripts: Option<Vec<PathBuf>>,
+) -> Arc<RwLock<function_table::FunctionTable>> {
     let key = SharedTableKey {
         game,
         root: PathBuf::from(&root),
         additional_roots: additional_roots.clone(),
         lookup_roots: lookup_roots.clone(),
+        known_scripts: known_scripts.clone(),
     };
     let mut cache = shared_tables()
         .lock()
@@ -67,22 +79,24 @@ pub(crate) fn project_function_table_for_game(
     cache
         .entry(key)
         .or_insert_with(|| {
-            Arc::new(RwLock::new(
-                function_table::FunctionTable::new_with_additional_roots(
-                    PathBuf::from(root),
-                    additional_roots,
-                )
-                .with_game(game)
-                .with_lookup_roots(lookup_roots),
-            ))
+            let mut table = function_table::FunctionTable::new_with_additional_roots(
+                PathBuf::from(root),
+                additional_roots,
+            )
+            .with_game(game)
+            .with_lookup_roots(lookup_roots);
+            if let Some(paths) = known_scripts {
+                table = table.with_known_scripts(&paths);
+            }
+            Arc::new(RwLock::new(table))
         })
         .clone()
 }
 
 /// Project-level inputs shared by [`lint_psc_file`] and the mutating repair
 /// commands: the project root, lint configuration, extra script roots,
-/// analysis-only lookup roots, compiler path, and whether to merge
-/// PapyrusCompiler.exe errors into the result. Grouped so adding a
+/// analysis-only lookup roots, strict-scope inputs, compiler path, and whether
+/// to merge PapyrusCompiler.exe errors into the result. Grouped so adding a
 /// project-level option only changes this type (and the frontend helper that
 /// builds it) rather than every command contract independently.
 #[derive(Debug, Clone, Default, Deserialize, Serialize)]
@@ -108,15 +122,24 @@ pub(crate) struct ProjectLintContext {
     /// controls whether PapyrusCompiler.exe's own errors are merged in too
     /// — see [`lint_with_compile_check`].
     pub(crate) compile_check: bool,
+    /// Restricts project resolution and conflict detection to scripts
+    /// explicitly listed in [`Self::known_scripts`].
+    pub(crate) strict_achlist_scope: bool,
+    /// Scripts listed by the current achlist, PPJ, directory, or direct file.
+    pub(crate) known_scripts: Vec<String>,
 }
 
 impl ProjectLintContext {
     pub(crate) fn function_table(&self) -> Arc<RwLock<function_table::FunctionTable>> {
-        project_function_table_for_game(
+        let known_scripts = self
+            .strict_achlist_scope
+            .then(|| self.known_scripts.iter().map(PathBuf::from).collect());
+        project_function_table_for_game_and_scripts(
             self.config.game,
             self.root.clone(),
             self.additional_roots.clone(),
             self.lookup_roots.clone(),
+            known_scripts,
         )
     }
 }
@@ -160,9 +183,9 @@ pub(crate) fn compile_psc_file(
 ///
 /// The desktop app primes the AST cache itself (or, for a batch, the parser
 /// memo) before this call, so the shared pass does not touch the disk cache
-/// again. A same-named conflict is looked up in the cached script index —
-/// not the CLI's strict-achlist candidate list — and the collision cache is
-/// flushed before returning, matching the previous per-file command.
+/// again. A same-named conflict is looked up in either the strict list of
+/// known scripts or the cached directory index, matching the CLI's selected
+/// scope, and the collision cache is flushed before returning.
 pub(crate) fn lint_with_compile_check<E: papyrus_lints::ExternalSignatures>(
     path: &Path,
     source: &str,
@@ -170,15 +193,36 @@ pub(crate) fn lint_with_compile_check<E: papyrus_lints::ExternalSignatures>(
     function_table: &mut E,
     ignores: Option<&IgnoreFile>,
 ) -> Vec<papyrus_lints::Diagnostic> {
-    let cached_index = context.config.rules.conflicting_script_versions.then(|| {
-        script_locator::cached_script_index(Path::new(&context.root), &context.additional_roots)
+    let cached_index = (!context.strict_achlist_scope
+        && context.config.rules.conflicting_script_versions)
+        .then(|| {
+            script_locator::cached_script_index(Path::new(&context.root), &context.additional_roots)
+        });
+    let strict_candidates = context.strict_achlist_scope.then(|| {
+        let file_name = path.file_name().and_then(|name| name.to_str());
+        context
+            .known_scripts
+            .iter()
+            .map(PathBuf::from)
+            .filter(|candidate| {
+                candidate
+                    .file_name()
+                    .and_then(|name| name.to_str())
+                    .zip(file_name)
+                    .is_some_and(|(candidate, current)| candidate.eq_ignore_ascii_case(current))
+            })
+            .collect::<Vec<_>>()
     });
-    let conflicts = match cached_index.as_ref() {
-        Some(index) => ConflictScope::Index {
+    let conflicts = match (strict_candidates.as_ref(), cached_index.as_ref()) {
+        (Some(candidates), _) => ConflictScope::Known {
+            candidates,
+            short_paths: false,
+        },
+        (None, Some(index)) => ConflictScope::Index {
             index: index.as_ref(),
             short_paths: false,
         },
-        None => ConflictScope::Index {
+        (None, None) => ConflictScope::Index {
             index: empty_script_index(),
             short_paths: false,
         },
@@ -209,7 +253,7 @@ fn empty_script_index() -> &'static script_locator::ScriptIndex {
 /// Reads the `.psc` file at `path` and runs every lint rule against it,
 /// honoring the semicolon style `context.config` selects. See
 /// [`ProjectLintContext`] for `root`/`additional_roots`/`lookup_roots`/
-/// `compiler_path`/`compile_check`.
+/// `strict_achlist_scope`/`known_scripts`/`compiler_path`/`compile_check`.
 #[tauri::command(async)]
 pub(crate) fn lint_psc_file(
     path: String,

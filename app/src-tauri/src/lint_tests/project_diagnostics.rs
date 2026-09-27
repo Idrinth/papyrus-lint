@@ -280,3 +280,38 @@ fn lint_psc_file_reports_conflicting_script_versions_in_an_additional_root() {
         .iter()
         .any(|diagnostic| { diagnostic.rule == script_locator::CONFLICTING_SCRIPT_VERSIONS_RULE }));
 }
+
+#[test]
+fn strict_scope_only_reports_conflicts_among_listed_scripts() {
+    let first = tempdir().unwrap();
+    let second = tempdir().unwrap();
+    let first_path = first.path().join("Example.psc");
+    let second_path = second.path().join("Example.psc");
+    std::fs::write(&first_path, "ScriptName Example\n").unwrap();
+    std::fs::write(&second_path, "ScriptName Example\n; another version\n").unwrap();
+
+    let context = ProjectLintContext {
+        root: first.path().to_string_lossy().into_owned(),
+        strict_achlist_scope: true,
+        known_scripts: vec![first_path.to_string_lossy().into_owned()],
+        ..Default::default()
+    };
+    let diagnostics = lint_psc_file(first_path.to_string_lossy().into_owned(), context).unwrap();
+    assert!(diagnostics
+        .iter()
+        .all(|diagnostic| diagnostic.rule != script_locator::CONFLICTING_SCRIPT_VERSIONS_RULE));
+
+    let context = ProjectLintContext {
+        root: first.path().to_string_lossy().into_owned(),
+        strict_achlist_scope: true,
+        known_scripts: vec![
+            first_path.to_string_lossy().into_owned(),
+            second_path.to_string_lossy().into_owned(),
+        ],
+        ..Default::default()
+    };
+    let diagnostics = lint_psc_file(first_path.to_string_lossy().into_owned(), context).unwrap();
+    assert!(diagnostics
+        .iter()
+        .any(|diagnostic| diagnostic.rule == script_locator::CONFLICTING_SCRIPT_VERSIONS_RULE));
+}
