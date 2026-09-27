@@ -6,12 +6,10 @@ use std::str::FromStr;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex, OnceLock, RwLock};
 
+use papyrus_lint_core::ignore_file::IgnoreFile;
+use papyrus_lint_core::project_lint::{lint_script, ConflictScope, ProjectLint};
 use papyrus_lint_core::source_encoding::read_psc_source;
-use papyrus_lint_core::{
-    ast_cache, collision_cache, compile_diagnostics, compiler, function_table, script_locator,
-    stale_pex,
-};
-use papyrus_lints::script_filename_mismatch;
+use papyrus_lint_core::{ast_cache, collision_cache, compiler, function_table, script_locator};
 use serde::{Deserialize, Serialize};
 use tauri::ipc::{Channel, CommandArg, CommandItem, InvokeError, JavaScriptChannelId};
 
@@ -156,103 +154,56 @@ pub(crate) fn compile_psc_file(
     )
 }
 
-/// Computes `path`'s project diagnostics — if `rules.conflicting_script_versions`
-/// is enabled, same-named byte-different scripts elsewhere among `function_table`'s
-/// search roots (see [`script_locator::conflicting_script_versions`]); if
-/// `rules.stale_compiled_output` is enabled, `path`'s conventionally located
-/// compiled `.pex` being older than it (see [`stale_pex::check`]); if
-/// `rules.script_filename_mismatch` is enabled, `path`'s file stem against
-/// `source`'s declared `ScriptName` (see [`script_filename_mismatch::check`],
-/// which reads that name from the lexer tokens)
-/// — then runs every lint rule against `source` (via `function_table`, for
-/// cross-script lookups) with those project diagnostics merged in via
-/// [`papyrus_lints::lint_with_external_arguments_and_extra_diagnostics`],
-/// rather than appended to that call's own result afterward, so a
-/// `@disable`/`@disable-file` directive naming one of them is honored and
-/// counted as used by the `unused-disable` lint rather than incorrectly
-/// flagged as unused. Then, if `compile_check` is set and `compiler_path`
-/// isn't blank, also runs PapyrusCompiler.exe against the script at `path`
-/// (into a throwaway temporary directory — see [`compiler::check_psc_file`])
-/// and appends any errors it reports (see
-/// [`compile_diagnostics::parse_compile_errors`]) to the result, so a
-/// syntax mistake the compiler itself rejects but the lint engine's own,
-/// more forgiving parser doesn't still shows up as a diagnostic. A
-/// compiler that can't be run at all (a missing/misconfigured
-/// `compiler_path`) is silently left out rather than failing the whole
-/// lint — the engine's own diagnostics are still worth reporting either
-/// way.
+/// Lints `source` for `path` the same way `PapyrusLinterCLI` does: project
+/// diagnostics, the engine lint, an optional compiler check, then
+/// `ignores`. See [`papyrus_lint_core::project_lint::lint_script`].
+///
+/// The desktop app primes the AST cache itself (or, for a batch, the parser
+/// memo) before this call, so the shared pass does not touch the disk cache
+/// again. A same-named conflict is looked up in the cached script index —
+/// not the CLI's strict-achlist candidate list — and the collision cache is
+/// flushed before returning, matching the previous per-file command.
 pub(crate) fn lint_with_compile_check<E: papyrus_lints::ExternalSignatures>(
     path: &Path,
     source: &str,
     context: &ProjectLintContext,
     function_table: &mut E,
+    ignores: Option<&IgnoreFile>,
 ) -> Vec<papyrus_lints::Diagnostic> {
-    // Computed up front and merged in via
-    // `lint_with_external_arguments_and_extra_diagnostics` below, rather than
-    // appended to that call's own result afterward, so a `@disable`/
-    // `@disable-file` directive naming one of these path-dependent
-    // diagnostics is honored *and* counted as used by the `unused-disable`
-    // lint instead of being incorrectly flagged as unused (see
-    // `papyrus_lints::lint_with_external_arguments_and_extra_diagnostics`'s
-    // own docs).
-    let mut project_diagnostics = Vec::new();
-    if context.config.rules.conflicting_script_versions {
-        let root = Path::new(&context.root);
-        let index = script_locator::cached_script_index(root, &context.additional_roots);
-        collision_cache::remember_source(context.config.game, path, source);
-        project_diagnostics.extend(script_locator::conflicting_script_versions_in_index(
-            path,
-            &index,
-            root,
-            false,
-            context.config.game,
-        ));
-        collision_cache::flush();
-    }
-    if context.config.rules.stale_compiled_output {
-        project_diagnostics.extend(stale_pex::check(path));
-    }
-    if context.config.rules.script_filename_mismatch {
-        if let Some(stem) = path.file_stem().and_then(|stem| stem.to_str()) {
-            if let Ok(tokens) = papyrus_parser::tokenize(source) {
-                project_diagnostics.extend(script_filename_mismatch::check(stem, &tokens));
-            }
-        }
-    }
-    let mut diagnostics = papyrus_lints::lint_with_external_arguments_and_extra_diagnostics(
+    let cached_index = context.config.rules.conflicting_script_versions.then(|| {
+        script_locator::cached_script_index(Path::new(&context.root), &context.additional_roots)
+    });
+    let conflicts = match cached_index.as_ref() {
+        Some(index) => ConflictScope::Index {
+            index: index.as_ref(),
+            short_paths: false,
+        },
+        None => ConflictScope::Index {
+            index: empty_script_index(),
+            short_paths: false,
+        },
+    };
+    lint_script(
+        path,
         source,
-        &context.config,
         function_table,
-        project_diagnostics,
-    );
-
-    let compiler_path = context.compiler_path.trim();
-    if context.compile_check && !compiler_path.is_empty() {
-        if let Ok(outcome) = compiler::check_psc_file(
-            context.config.game,
-            Path::new(compiler_path),
-            path,
-            &context.additional_roots,
-        ) {
-            if !outcome.success {
-                diagnostics.extend(compile_diagnostics::parse_compile_errors(&outcome));
-            }
-        }
-    }
-
-    diagnostics
+        &ProjectLint {
+            config: &context.config,
+            project_root: Path::new(&context.root),
+            additional_roots: &context.additional_roots,
+            conflicts,
+            compile_check: context.compile_check,
+            compiler_path: &context.compiler_path,
+            ignores,
+            already_primed: true,
+            flush_collision_cache: true,
+        },
+    )
 }
 
-pub(crate) fn apply_project_ignores(
-    path: &Path,
-    project_root: &Path,
-    diagnostics: &mut Vec<papyrus_lints::Diagnostic>,
-) -> Result<(), String> {
-    if let Some(ignores) = papyrus_lint_core::ignore_file::IgnoreFile::load_optional(project_root)?
-    {
-        ignores.retain_diagnostics(path, diagnostics);
-    }
-    Ok(())
+fn empty_script_index() -> &'static script_locator::ScriptIndex {
+    static EMPTY: OnceLock<script_locator::ScriptIndex> = OnceLock::new();
+    EMPTY.get_or_init(script_locator::ScriptIndex::new)
 }
 
 /// Reads the `.psc` file at `path` and runs every lint rule against it,
@@ -267,10 +218,20 @@ pub(crate) fn lint_psc_file(
     let path = Path::new(&path);
     let source = read_psc_source(path).map_err(|err| err.to_string())?;
     ast_cache::ensure_primed_for_game(context.config.game, path, &source);
+    // Loaded before the pass so a valid file is filtered inside it, but a
+    // bad file still fails only after that pass — same as applying the
+    // ignore list once the diagnostics already existed.
+    let ignores = IgnoreFile::load_optional(Path::new(&context.root));
     let function_table = context.function_table();
     let mut shared = function_table::SharedFunctionTable(function_table.as_ref());
-    let mut diagnostics = lint_with_compile_check(path, &source, &context, &mut shared);
-    apply_project_ignores(path, Path::new(&context.root), &mut diagnostics)?;
+    let diagnostics = lint_with_compile_check(
+        path,
+        &source,
+        &context,
+        &mut shared,
+        ignores.as_ref().ok().and_then(Option::as_ref),
+    );
+    ignores?;
     Ok(diagnostics)
 }
 
@@ -653,10 +614,7 @@ fn lint_preloaded_script(
         }
     }
     let mut shared = function_table::SharedFunctionTable(function_table.as_ref());
-    let mut diagnostics = lint_with_compile_check(path, source, context, &mut shared);
-    if let Some(ignores) = ignores {
-        ignores.retain_diagnostics(path, &mut diagnostics);
-    }
+    let diagnostics = lint_with_compile_check(path, source, context, &mut shared, ignores);
     let name = parsed
         .ast
         .as_ref()

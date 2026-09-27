@@ -1,4 +1,6 @@
 use super::super::*;
+
+use papyrus_lint_core::compile_diagnostics;
 use tempfile::tempdir;
 
 #[test]

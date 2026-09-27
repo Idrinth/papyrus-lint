@@ -4,6 +4,11 @@ Project resolution shared by the desktop app and the CLI: achlist / `.ppj`,
 script index, `FunctionTable`, compile, and stale `.pex`. This crate does
 not depend on Tauri.
 
+- `project_lint::lint_script` is the per-file project pass shared by the CLI
+  and the desktop app: project diagnostics, the engine lint, an optional
+  compiler check, then `.papyrus-lint-ignore`. Reporting stays in the
+  caller. `already_primed` skips the disk AST-cache prime. Desktop per-file
+  lint sets `flush_collision_cache`; a batch flushes once itself.
 - A script name that appears only once is not content-hashed.
   `script_locator` reads a digest from `papyrus-collision-cache` when the
   stored mtime still matches.

@@ -96,6 +96,60 @@ fn flags_float_argument_for_int_parameter() {
 }
 
 #[test]
+fn allows_strings_for_custom_and_script_event_name_parameters() {
+    let diagnostics = check(
+        r#"
+ScriptName Example
+
+Function RegisterForCustomEvent(Example sender, CustomEventName eventName)
+EndFunction
+
+Function RegisterForRemoteEvent(Form target, ScriptEventName eventName)
+EndFunction
+
+Function SendCustomEvent(CustomEventName eventName)
+EndFunction
+
+Function Test(Form akTarget)
+    String eventName = "MyVariableEvent"
+    RegisterForCustomEvent(self, "MyEvent")
+    RegisterForRemoteEvent(akTarget, "OnDeath")
+    SendCustomEvent("MyEvent")
+    SendCustomEvent(eventName)
+EndFunction
+"#,
+    );
+
+    assert!(diagnostics.is_empty());
+}
+
+#[test]
+fn still_flags_unrelated_types_for_event_name_parameters() {
+    let diagnostics = check(
+        r#"
+ScriptName Example
+
+Function RegisterForCustomEvent(Example sender, CustomEventName eventName)
+EndFunction
+
+Function RegisterForRemoteEvent(Form target, ScriptEventName eventName)
+EndFunction
+
+Function Test(Form akTarget)
+    RegisterForCustomEvent(self, 1)
+    RegisterForRemoteEvent(akTarget, true)
+EndFunction
+"#,
+    );
+
+    assert_eq!(diagnostics.len(), 2);
+    assert!(diagnostics[0].message.contains("expects CustomEventName"));
+    assert!(diagnostics[0].message.contains("got Int"));
+    assert!(diagnostics[1].message.contains("expects ScriptEventName"));
+    assert!(diagnostics[1].message.contains("got Bool"));
+}
+
+#[test]
 fn checks_variables_properties_and_casts_by_declared_type() {
     let diagnostics = check(
         r#"
@@ -474,6 +528,16 @@ fn compatibility_covers_arrays_primitives_and_object_subtypes() {
     assert!(is_compatible(
         &scalar("Form"),
         &scalar("Armor"),
+        &mut external
+    ));
+    assert!(is_compatible(
+        &scalar("CustomEventName"),
+        &scalar("String"),
+        &mut external
+    ));
+    assert!(is_compatible(
+        &scalar("ScriptEventName"),
+        &scalar("String"),
         &mut external
     ));
     assert!(!is_compatible(
