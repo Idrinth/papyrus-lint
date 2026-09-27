@@ -484,6 +484,43 @@ EndFunction\n";
     );
 }
 
+#[test]
+fn namespaced_scripts_are_not_flagged_as_unresolved() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    write_script(
+        root.path(),
+        "Holder",
+        "ScriptName Holder\n\nStruct Payload\n    Int Count\nEndStruct\n",
+    );
+
+    let mut table = fallout_table(root.path());
+    let source = "\
+ScriptName Example\n\
+\n\
+gamejam:GJDialogueScript Property Speaker Auto\n\
+Holder:Payload Property Value Auto\n\
+Holder:Missing Property Broken Auto\n\
+\n\
+Function Test()\n\
+    gamejam:GJDialogueScript.Run()\n\
+EndFunction\n";
+
+    let diagnostics = unresolved_in(source, &mut table);
+    assert!(
+        diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.message.contains("Holder:Missing")),
+        "missing struct on a known script should still be flagged, got {diagnostics:?}"
+    );
+    assert!(
+        diagnostics.iter().all(|diagnostic| {
+            !diagnostic.message.contains("gamejam:GJDialogueScript")
+                && !diagnostic.message.contains("Holder:Payload")
+        }),
+        "namespaced scripts and resolved structs should not be flagged, got {diagnostics:?}"
+    );
+}
+
 fn fallout_table(root: &std::path::Path) -> FunctionTable {
     FunctionTable::new(root.to_path_buf()).with_game(papyrus_lints::Game::Fallout4)
 }
