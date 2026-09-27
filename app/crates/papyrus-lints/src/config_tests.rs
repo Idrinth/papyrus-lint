@@ -91,6 +91,7 @@ fn defaults_match_documented_default() {
     assert!(!config.fail_on_warning);
     assert!(!config.fail_on_info);
     assert!(config.bool_like_int);
+    assert!(!config.treat_form_as_bool_for_returns);
     assert!(!config.assume_auto_properties_filled);
 }
 
@@ -299,6 +300,31 @@ fn parses_bool_like_int() {
 fn bool_like_int_round_trips_through_yaml() {
     let config = Config {
         bool_like_int: false,
+        ..Config::default()
+    };
+    let yaml = to_yaml(&config).unwrap();
+    assert_eq!(parse(&yaml).unwrap(), config);
+}
+
+#[test]
+fn parses_treat_form_as_bool_for_returns() {
+    assert!(!parse("").unwrap().treat_form_as_bool_for_returns);
+    assert!(
+        !parse("treat_form_as_bool_for_returns: false\n")
+            .unwrap()
+            .treat_form_as_bool_for_returns
+    );
+    assert!(
+        parse("treat_form_as_bool_for_returns: true\n")
+            .unwrap()
+            .treat_form_as_bool_for_returns
+    );
+}
+
+#[test]
+fn treat_form_as_bool_for_returns_round_trips_through_yaml() {
+    let config = Config {
+        treat_form_as_bool_for_returns: true,
         ..Config::default()
     };
     let yaml = to_yaml(&config).unwrap();

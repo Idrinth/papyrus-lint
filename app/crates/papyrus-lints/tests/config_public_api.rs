@@ -90,6 +90,23 @@ fn assume_auto_properties_filled_setting_changes_none_form_usage_results() {
 }
 
 #[test]
+fn treat_form_as_bool_for_returns_changes_return_type_results() {
+    let source =
+        "ScriptName Example\n\nBool Function HasForm(Form value)\n    Return value\nEndFunction\n";
+    let default_diagnostics = lint(source, &Config::default());
+    let relaxed: Config = serde_norway::from_str("treat_form_as_bool_for_returns: true\n")
+        .expect("treat_form_as_bool_for_returns should deserialize");
+    let relaxed_diagnostics = lint(source, &relaxed);
+
+    assert!(default_diagnostics
+        .iter()
+        .any(|diagnostic| diagnostic.rule == "return-types"));
+    assert!(relaxed_diagnostics
+        .iter()
+        .all(|diagnostic| diagnostic.rule != "return-types"));
+}
+
+#[test]
 fn config_round_trip_preserves_user_visible_settings_and_rule_switches() {
     let config: Config = serde_norway::from_str(
         "semicolon: true\nindentation: space\nindentation_width: 8\nidentifier_casing: CONSTANT_CASE\nfail_on_warning: true\nrules:\n  comma_spacing: false\n  magic_numbers: true\n",

@@ -239,6 +239,7 @@ describe("wired DOM interactions", () => {
       "#fail-on-warning",
       "#fail-on-info",
       "#bool-like-int",
+      "#treat-form-as-bool-for-returns",
       "#assume-auto-properties-filled",
       "#rule-trailing_whitespace",
       "#rule-property_sorting",

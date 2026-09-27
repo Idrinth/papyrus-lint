@@ -88,7 +88,16 @@ impl AstLint for Collect {
         } else if let Some(value_type) =
             infer_returned_type(value, env, &self.locals, ctx.external)
         {
-            if !argument_types::is_compatible(return_type, &value_type, ctx.external) {
+            let form_as_bool = ctx.config.treat_form_as_bool_for_returns
+                && !return_type.is_array
+                && return_type.name.eq_ignore_ascii_case("bool")
+                && !value_type.is_array
+                && (value_type.name.eq_ignore_ascii_case("form")
+                    || value_type.name.eq_ignore_ascii_case("objectreference")
+                    || ctx.external.is_subtype(&value_type.name, "Form"));
+            if !form_as_bool
+                && !argument_types::is_compatible(return_type, &value_type, ctx.external)
+            {
                 diagnostics.push(mismatch(
                     *line,
                     &self.function_name,
