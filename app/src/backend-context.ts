@@ -5,6 +5,8 @@ import {
   currentCompilerPath,
   currentLookupScriptRoots,
   currentProjectDir,
+  currentProjectScripts,
+  currentStrictAchlistScope,
   effectiveScriptRoots,
 } from "./project-state";
 
@@ -18,5 +20,7 @@ export function currentProjectLintContext(): ProjectLintContext {
     lookup_roots: currentLookupScriptRoots,
     compiler_path: currentCompilerPath,
     compile_check: currentCompileCheck,
+    strict_achlist_scope: currentStrictAchlistScope,
+    known_scripts: currentProjectScripts,
   };
 }

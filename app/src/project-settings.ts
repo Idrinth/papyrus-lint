@@ -5,9 +5,9 @@ import { markLintResultsStale } from "./drop";
 import { type ConfigSelectionResult } from "./main-types";
 import { applyConfigPreset } from "./presets-api";
 import { promptForConfigSelection } from "./presets-picker";
-import { loadCompileCheck, loadCompilerPath, loadLookupScriptRoots, loadProjectInfo, loadScriptRoots, saveCompileCheck, saveCompilerPath, saveLookupScriptRoots, saveScriptRoots } from "./project-io";
+import { loadCompileCheck, loadCompilerPath, loadLookupScriptRoots, loadProjectInfo, loadScriptRoots, loadStrictAchlistScope, saveCompileCheck, saveCompilerPath, saveLookupScriptRoots, saveScriptRoots } from "./project-io";
 import { bindProjectSettingsDom, compileCheckEl, compilerPathEl, configPathOverride, configPathOverrideEl, detectedScriptRootsEl, lookupScriptRootsEl, scriptRootsEl, settingsFieldsetEl, settingsLockedNoticeEl, usedConfigurationFileEl } from "./project-settings-dom";
-import { currentProjectDir, setCurrentCompileCheck, setCurrentCompilerPath, setCurrentLookupScriptRoots, setCurrentProjectDir, setCurrentScriptRoots } from "./project-state";
+import { currentProjectDir, setCurrentCompileCheck, setCurrentCompilerPath, setCurrentLookupScriptRoots, setCurrentProjectDir, setCurrentScriptRoots, setCurrentStrictAchlistScope } from "./project-state";
 
 export function applyProjectInfoToUI(info: ProjectInfo) {
   if (detectedScriptRootsEl) {
@@ -131,6 +131,7 @@ export async function useProjectDir(dir: string) {
   const projectInfo = override ? null : await loadProjectInfo(dir);
 
   await loadAndApplyLintConfig(dir, override);
+  setCurrentStrictAchlistScope(await loadStrictAchlistScope(dir, override));
   const compilerPath = await loadCompilerPath(dir);
   setCurrentCompilerPath(compilerPath);
   if (compilerPathEl) {

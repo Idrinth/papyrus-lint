@@ -46,6 +46,7 @@ fn configure_builder<R: tauri::Runtime>(builder: tauri::Builder<R>) -> tauri::Bu
             load_compiler_path,
             save_compiler_path,
             load_compile_check,
+            load_strict_achlist_scope,
             save_compile_check,
             load_script_roots,
             load_lookup_script_roots,

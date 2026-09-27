@@ -142,6 +142,8 @@ describe("lint/repair command wrappers", () => {
         lookup_roots: ["C:/Skyrim/Data/Scripts/Source"],
         compiler_path: "C:\\Tools\\PapyrusCompiler.exe",
         compile_check: true,
+        strict_achlist_scope: false,
+        known_scripts: [],
       },
     });
   });
@@ -166,6 +168,8 @@ describe("lint/repair command wrappers", () => {
         lookup_roots: expect.anything(),
         compiler_path: expect.any(String),
         compile_check: expect.any(Boolean),
+        strict_achlist_scope: expect.any(Boolean),
+        known_scripts: expect.any(Array),
       },
     });
   });
@@ -216,6 +220,8 @@ describe("lint/repair command wrappers", () => {
         lookup_roots: expect.anything(),
         compiler_path: expect.any(String),
         compile_check: expect.any(Boolean),
+        strict_achlist_scope: expect.any(Boolean),
+        known_scripts: expect.any(Array),
       },
       rule: "comma-spacing",
       line: 3,
@@ -236,6 +242,8 @@ describe("lint/repair command wrappers", () => {
         lookup_roots: expect.anything(),
         compiler_path: expect.any(String),
         compile_check: expect.any(Boolean),
+        strict_achlist_scope: expect.any(Boolean),
+        known_scripts: expect.any(Array),
       },
       rule: "trailing-whitespace",
     });
@@ -257,6 +265,8 @@ describe("lint/repair command wrappers", () => {
         lookup_roots: expect.anything(),
         compiler_path: expect.any(String),
         compile_check: expect.any(Boolean),
+        strict_achlist_scope: expect.any(Boolean),
+        known_scripts: expect.any(Array),
       },
       rules: ["comma-spacing", "trailing-whitespace"],
       line: 3,
@@ -279,6 +289,8 @@ describe("lint/repair command wrappers", () => {
         lookup_roots: expect.anything(),
         compiler_path: expect.any(String),
         compile_check: expect.any(Boolean),
+        strict_achlist_scope: expect.any(Boolean),
+        known_scripts: expect.any(Array),
       },
       rules: ["comma-spacing", "trailing-whitespace"],
       line: 3,

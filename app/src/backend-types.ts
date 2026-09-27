@@ -95,4 +95,6 @@ export interface ProjectLintContext {
   lookup_roots: string[];
   compiler_path: string;
   compile_check: boolean;
+  strict_achlist_scope: boolean;
+  known_scripts: string[];
 }

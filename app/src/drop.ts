@@ -18,7 +18,7 @@ import {
   projectDirForPpj,
   projectDirForPscPath,
 } from "./project-io";
-import { setAchlistScriptRoots, setPpjImportRoots } from "./project-state";
+import { setAchlistScriptRoots, setCurrentProjectScripts, setPpjImportRoots } from "./project-state";
 import { appendStreamedPscResult, renderPscResults } from "./results-list-render";
 export let currentPscOutcomes: PscParseOutcome[] = [];
 
@@ -150,6 +150,7 @@ export async function handleDroppedPaths(paths: string[]) {
       setAchlistScriptRoots(scriptRootsForAchlist(entries));
       setPpjImportRoots([]);
       const pscEntries = entries.filter(isPscPath);
+      setCurrentProjectScripts(pscEntries);
       await runParseThenLint(pscEntries, generation);
     } catch (error) {
       finishListing();
@@ -188,6 +189,7 @@ export async function handleDroppedPaths(paths: string[]) {
       }
       setAchlistScriptRoots(scriptRootsForAchlist(scripts));
       setPpjImportRoots(imports);
+      setCurrentProjectScripts(scripts);
       await runParseThenLint(scripts, generation);
     } catch (error) {
       finishListing();
@@ -215,6 +217,7 @@ export async function handleDroppedPaths(paths: string[]) {
     await loadProjectConfig(projectDir);
     setAchlistScriptRoots([]);
     setPpjImportRoots([]);
+    setCurrentProjectScripts([pscPath]);
     await runParseThenLint([pscPath], generation);
     return;
   }
@@ -238,6 +241,7 @@ export async function handleDroppedPaths(paths: string[]) {
       await loadProjectConfig(projectDir);
       setAchlistScriptRoots(scriptRootsForAchlist(entries));
       setPpjImportRoots([]);
+      setCurrentProjectScripts(entries);
       await runParseThenLint(entries, generation);
       return;
     } catch {
