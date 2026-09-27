@@ -364,3 +364,169 @@ fn does_not_crash_on_unparseable_source() {
     let diagnostics = check("ScriptName Example\n\nFunction Test(\nEndFunction\n");
     assert!(diagnostics.is_empty());
 }
+
+fn check_fallout4(source: &str, external: &mut impl ExternalSignatures) -> Vec<Diagnostic> {
+    let ast =
+        papyrus_parser::parse_with_mode(source, papyrus_parser::parser::GameEdition::Fallout4)
+            .expect("Fallout 4 fixture should parse");
+    super::check(
+        source,
+        Some(&ast),
+        None,
+        &crate::config::Config::default(),
+        external,
+    )
+}
+
+#[test]
+fn does_not_flag_a_struct_declared_on_the_same_script() {
+    let diagnostics = check_fallout4(
+        r#"
+ScriptName CompanionActorScript
+
+EventData Property LastEvent Auto
+EventData[] Property History Auto
+
+EventData Function Test(eventdata data)
+    EventData local
+    Return data as EventData
+EndFunction
+
+Struct EventData
+    Int Count
+EndStruct
+"#,
+        &mut FakeExternal,
+    );
+
+    assert!(
+        diagnostics.is_empty(),
+        "a struct declared on this script is not a missing script, got {diagnostics:?}"
+    );
+}
+
+#[test]
+fn still_flags_a_missing_type_when_the_script_declares_other_structs() {
+    let diagnostics = check_fallout4(
+        r#"
+ScriptName CompanionActorScript
+
+EventData Property LastEvent Auto
+MissingType Property Broken Auto
+
+Struct EventData
+    Int Count
+EndStruct
+"#,
+        &mut FakeExternal,
+    );
+
+    assert_eq!(
+        diagnostics,
+        [Diagnostic {
+            line: 5,
+            column: 1,
+            message: "[warning] Type 'MissingType' could not be located".to_string(),
+            rule: RULE,
+        }]
+    );
+}
+
+/// `owner:struct` pairs this resolver treats as declared.
+struct StructScope {
+    /// Direct `Struct` declarations, `Script:Struct`.
+    direct: &'static [(&'static str, &'static str)],
+    /// `Extends` ancestry, including the named script, `Script:Struct`.
+    ancestry: &'static [(&'static str, &'static str)],
+}
+
+impl ExternalSignatures for StructScope {
+    fn lookup(
+        &mut self,
+        _type_name: &str,
+        _function_name: &str,
+    ) -> Option<Vec<crate::external_signatures::ParamInfo>> {
+        None
+    }
+
+    fn script_exists(&mut self, _type_name: &str) -> bool {
+        false
+    }
+
+    fn type_exists(&mut self, type_name: &str) -> bool {
+        if matches!(
+            type_name.to_ascii_lowercase().as_str(),
+            "int" | "bool" | "string"
+        ) {
+            return true;
+        }
+        let known_script = |owner: &str| owner.eq_ignore_ascii_case(type_name);
+        self.direct.iter().any(|(owner, _)| known_script(owner))
+            || self.ancestry.iter().any(|(owner, _)| known_script(owner))
+    }
+
+    fn declares_struct(&mut self, type_name: &str, struct_name: &str) -> bool {
+        self.direct.iter().any(|(owner, name)| {
+            owner.eq_ignore_ascii_case(type_name) && name.eq_ignore_ascii_case(struct_name)
+        })
+    }
+
+    fn declares_struct_in_ancestry(&mut self, type_name: &str, struct_name: &str) -> bool {
+        self.ancestry.iter().any(|(owner, name)| {
+            owner.eq_ignore_ascii_case(type_name) && name.eq_ignore_ascii_case(struct_name)
+        })
+    }
+}
+
+#[test]
+fn does_not_flag_a_struct_inherited_or_imported() {
+    let diagnostics = check_fallout4(
+        r#"
+ScriptName Example Extends WorkshopScript
+Import FollowersScript
+
+DailyUpdateData Property Update Auto
+AffinityEventData Property Affinity Auto
+MissingType Property Broken Auto
+
+Function Test()
+    MissingScript.Run()
+EndFunction
+"#,
+        &mut StructScope {
+            direct: &[("FollowersScript", "AffinityEventData")],
+            ancestry: &[("WorkshopScript", "DailyUpdateData")],
+        },
+    );
+
+    assert_eq!(diagnostics.len(), 2, "got {diagnostics:?}");
+    assert!(diagnostics
+        .iter()
+        .any(|diagnostic| diagnostic.message.contains("MissingType")));
+    assert!(diagnostics
+        .iter()
+        .any(|diagnostic| diagnostic.message.contains("MissingScript")));
+    assert!(diagnostics.iter().all(|diagnostic| {
+        !diagnostic.message.contains("DailyUpdateData")
+            && !diagnostic.message.contains("AffinityEventData")
+    }));
+}
+
+#[test]
+fn does_not_treat_an_imported_parent_struct_as_in_scope() {
+    let diagnostics = check_fallout4(
+        r#"
+ScriptName Example
+Import Other
+
+DailyUpdateData Property Update Auto
+"#,
+        &mut StructScope {
+            direct: &[],
+            ancestry: &[("Base", "DailyUpdateData")],
+        },
+    );
+
+    assert_eq!(diagnostics.len(), 1);
+    assert!(diagnostics[0].message.contains("DailyUpdateData"));
+}

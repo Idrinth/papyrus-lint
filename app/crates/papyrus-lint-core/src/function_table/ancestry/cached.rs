@@ -131,6 +131,18 @@ impl FunctionTable {
         })
     }
 
+    /// [`FunctionTable::declares_struct_in_ancestry`] from scripts already
+    /// cached. [`CacheProbe::Miss`] means some ancestor still needs
+    /// [`FunctionTable::ensure_loaded`].
+    pub(in crate::function_table) fn declares_struct_in_ancestry_cached(
+        &self,
+        type_name: &str,
+        struct_name: &str,
+    ) -> CacheProbe<bool> {
+        let struct_key = struct_name.to_ascii_lowercase();
+        self.has_member_cached(type_name, |script| script.structs.contains(&struct_key))
+    }
+
     pub(in crate::function_table) fn has_state_cached(
         &self,
         type_name: &str,

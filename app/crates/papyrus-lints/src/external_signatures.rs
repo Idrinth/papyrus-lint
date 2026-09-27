@@ -103,6 +103,31 @@ pub trait ExternalSignatures {
         true
     }
 
+    /// Whether `type_name`'s own script declares a `Struct` named
+    /// `struct_name`. Ancestors are not included — an `Import` of
+    /// `type_name` brings in only that script's own structs, the same way
+    /// the Papyrus compiler does. Both names are matched
+    /// case-insensitively.
+    ///
+    /// The default is `false`. A caller that cannot see other scripts
+    /// (see [`NoExternalSignatures`]) must not invent a struct; the script
+    /// being linted is checked from its own AST instead.
+    fn declares_struct(&mut self, _type_name: &str, _struct_name: &str) -> bool {
+        false
+    }
+
+    /// Whether `type_name`, or an ancestor it `Extends`, declares a
+    /// `Struct` named `struct_name`. Used for an unqualified struct name
+    /// inherited through `Extends`. Does not follow `Import`s.
+    ///
+    /// The default checks only `type_name` itself via [`Self::declares_struct`].
+    /// A resolver that can walk `Extends` (the project `FunctionTable`)
+    /// overrides this to include ancestors. Both names are matched
+    /// case-insensitively.
+    fn declares_struct_in_ancestry(&mut self, type_name: &str, struct_name: &str) -> bool {
+        self.declares_struct(type_name, struct_name)
+    }
+
     /// Whether `type_name`'s script, or an ancestor it `Extends` (directly
     /// or transitively), declares a `State` block named `state_name`. Both
     /// names are matched case-insensitively. Used by the "GoToState state
