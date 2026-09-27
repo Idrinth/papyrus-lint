@@ -1,5 +1,7 @@
 """Tests for static site pages."""
 
+import builtins
+import runpy
 import tempfile
 import unittest
 from pathlib import Path
@@ -9,6 +11,24 @@ from pages import site_chrome, static_pages
 
 
 class ImprintPageTest(unittest.TestCase):
+    def test_module_supports_direct_build_script_import(self) -> None:
+        original_import = builtins.__import__
+
+        def import_without_pages_package(name: str, *args: object, **kwargs: object) -> object:
+            if name == "pages.site_chrome":
+                raise ImportError("pages package is unavailable")
+            return original_import(name, *args, **kwargs)
+
+        with (
+            patch("builtins.__import__", side_effect=import_without_pages_package),
+            patch.dict("sys.modules", {"site_chrome": site_chrome}),
+        ):
+            module = runpy.run_path(str(Path(static_pages.__file__)))
+
+        self.assertIs(module["render_shared_components"], site_chrome.render_shared_components)
+        self.assertIs(module["finalize_page"], site_chrome.finalize_page)
+        self.assertEqual(module["PAGES_DIR"], Path(static_pages.__file__).resolve().parent)
+
     def test_build_imprint_page_runs_the_rendering_pipeline_with_default_version(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
