@@ -60,8 +60,6 @@ Scripts/Source/F4SE/Actor.psc:1109:1: [indentation] [warning] Line should be ind
 Scripts/Source/F4SE/Actor.psc:1110:1: [indentation] [warning] Line should be indented with 0 tabs (https://papyrus-lint.idrinth.de/rules.html#rule-indentation)
 Scripts/Source/F4SE/Actor.psc:1110:42: [trailing-whitespace] [warning] Line contains trailing whitespace (https://papyrus-lint.idrinth.de/rules.html#rule-trailing-whitespace)
 Scripts/Source/F4SE/Actor.psc:1117:1: [unresolved-script] [warning] Type 'WornItem' could not be located (https://papyrus-lint.idrinth.de/rules.html#rule-unresolved-script)
-Scripts/Source/F4SE/Actor.psc:1123:1: [unresolved-script] [warning] Type 'InstanceData:Owner' could not be located (https://papyrus-lint.idrinth.de/rules.html#rule-unresolved-script)
-Scripts/Source/F4SE/Actor.psc:1124:1: [unresolved-script] [warning] Type 'InstanceData:Owner' could not be located (https://papyrus-lint.idrinth.de/rules.html#rule-unresolved-script)
 Scripts/Source/F4SE/ActorBase.psc:69:1: [indentation] [warning] Line should be indented with 0 tabs (https://papyrus-lint.idrinth.de/rules.html#rule-indentation)
 Scripts/Source/F4SE/ActorBase.psc:70:1: [indentation] [warning] Line should be indented with 0 tabs (https://papyrus-lint.idrinth.de/rules.html#rule-indentation)
 Scripts/Source/F4SE/ActorBase.psc:71:1: [indentation] [warning] Line should be indented with 0 tabs (https://papyrus-lint.idrinth.de/rules.html#rule-indentation)
@@ -592,7 +590,6 @@ Scripts/Source/F4SE/ObjectReference.psc:1220:1: [indentation] [warning] Line sho
 Scripts/Source/F4SE/ObjectReference.psc:1221:1: [indentation] [warning] Line should be indented with 0 tabs (https://papyrus-lint.idrinth.de/rules.html#rule-indentation)
 Scripts/Source/F4SE/ObjectReference.psc:1224:77: [trailing-whitespace] [warning] Line contains trailing whitespace (https://papyrus-lint.idrinth.de/rules.html#rule-trailing-whitespace)
 Scripts/Source/F4SE/ObjectReference.psc:1229:1: [unresolved-script] [warning] Type 'ConnectPoint' could not be located (https://papyrus-lint.idrinth.de/rules.html#rule-unresolved-script)
-Scripts/Source/F4SE/ObjectReference.psc:1240:1: [unresolved-script] [warning] Type 'MatSwap:RemapData' could not be located (https://papyrus-lint.idrinth.de/rules.html#rule-unresolved-script)
 Scripts/Source/F4SE/ScriptObject.psc:4:121: [line-length] [warning] Line is 142 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
 Scripts/Source/F4SE/ScriptObject.psc:63:1: [unresolved-script] [warning] Type 'CustomEventName' could not be located (https://papyrus-lint.idrinth.de/rules.html#rule-unresolved-script)
 Scripts/Source/F4SE/ScriptObject.psc:77:121: [line-length] [warning] Line is 144 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
@@ -883,6 +880,4 @@ Scripts/Source/F4SE/Utility.psc:62:121: [line-length] [warning] Line is 157 char
 Scripts/Source/F4SE/Utility.psc:67:79: [trailing-whitespace] [warning] Line contains trailing whitespace (https://papyrus-lint.idrinth.de/rules.html#rule-trailing-whitespace)
 Scripts/Source/F4SE/Utility.psc:76:121: [line-length] [warning] Line is 138 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
 Scripts/Source/F4SE/Utility.psc:89:69: [trailing-whitespace] [warning] Line contains trailing whitespace (https://papyrus-lint.idrinth.de/rules.html#rule-trailing-whitespace)
-Scripts/Source/F4SE/Weapon.psc:15:1: [unresolved-script] [warning] Type 'InstanceData:Owner' could not be located (https://papyrus-lint.idrinth.de/rules.html#rule-unresolved-script)
-Scripts/Source/F4SE/Weapon.psc:16:1: [unresolved-script] [warning] Type 'InstanceData:Owner' could not be located (https://papyrus-lint.idrinth.de/rules.html#rule-unresolved-script)
-PapyrusLinterCLI: 887 problem(s) found in 18 of 29 script(s).
+PapyrusLinterCLI: 882 problem(s) found in 17 of 29 script(s).

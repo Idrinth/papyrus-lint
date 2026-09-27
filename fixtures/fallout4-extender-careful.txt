@@ -31,8 +31,6 @@ Scripts/Source/F4SE/Actor.psc:971:121: [line-length] [warning] Line is 152 chara
 Scripts/Source/F4SE/Actor.psc:1062:121: [line-length] [warning] Line is 142 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
 Scripts/Source/F4SE/Actor.psc:1078:121: [line-length] [warning] Line is 143 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
 Scripts/Source/F4SE/Actor.psc:1117:1: [unresolved-script] [warning] Type 'WornItem' could not be located (https://papyrus-lint.idrinth.de/rules.html#rule-unresolved-script)
-Scripts/Source/F4SE/Actor.psc:1123:1: [unresolved-script] [warning] Type 'InstanceData:Owner' could not be located (https://papyrus-lint.idrinth.de/rules.html#rule-unresolved-script)
-Scripts/Source/F4SE/Actor.psc:1124:1: [unresolved-script] [warning] Type 'InstanceData:Owner' could not be located (https://papyrus-lint.idrinth.de/rules.html#rule-unresolved-script)
 Scripts/Source/F4SE/ActorBase.psc:76:1: [unresolved-script] [warning] Type 'BodyWeight' could not be located (https://papyrus-lint.idrinth.de/rules.html#rule-unresolved-script)
 Scripts/Source/F4SE/ActorBase.psc:79:1: [unresolved-script] [warning] Type 'BodyWeight' could not be located (https://papyrus-lint.idrinth.de/rules.html#rule-unresolved-script)
 Scripts/Source/F4SE/ConstructibleObject.psc:9:1: [unresolved-script] [warning] Type 'ConstructibleComponent' could not be located (https://papyrus-lint.idrinth.de/rules.html#rule-unresolved-script)
@@ -206,7 +204,6 @@ Scripts/Source/F4SE/ObjectReference.psc:1111:121: [line-length] [warning] Line i
 Scripts/Source/F4SE/ObjectReference.psc:1174:121: [line-length] [warning] Line is 143 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
 Scripts/Source/F4SE/ObjectReference.psc:1190:2: [strict-boolean] [warning] Condition must be a boolean value or expression, found 'ObjectReference' (https://papyrus-lint.idrinth.de/rules.html#rule-strict-boolean)
 Scripts/Source/F4SE/ObjectReference.psc:1229:1: [unresolved-script] [warning] Type 'ConnectPoint' could not be located (https://papyrus-lint.idrinth.de/rules.html#rule-unresolved-script)
-Scripts/Source/F4SE/ObjectReference.psc:1240:1: [unresolved-script] [warning] Type 'MatSwap:RemapData' could not be located (https://papyrus-lint.idrinth.de/rules.html#rule-unresolved-script)
 Scripts/Source/F4SE/ScriptObject.psc:4:121: [line-length] [warning] Line is 142 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
 Scripts/Source/F4SE/ScriptObject.psc:63:1: [unresolved-script] [warning] Type 'CustomEventName' could not be located (https://papyrus-lint.idrinth.de/rules.html#rule-unresolved-script)
 Scripts/Source/F4SE/ScriptObject.psc:77:121: [line-length] [warning] Line is 144 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
@@ -242,6 +239,4 @@ Scripts/Source/F4SE/UI.psc:91:121: [line-length] [warning] Line is 215 character
 Scripts/Source/F4SE/UI.psc:97:121: [line-length] [warning] Line is 232 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
 Scripts/Source/F4SE/Utility.psc:62:121: [line-length] [warning] Line is 157 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
 Scripts/Source/F4SE/Utility.psc:76:121: [line-length] [warning] Line is 138 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/Weapon.psc:15:1: [unresolved-script] [warning] Type 'InstanceData:Owner' could not be located (https://papyrus-lint.idrinth.de/rules.html#rule-unresolved-script)
-Scripts/Source/F4SE/Weapon.psc:16:1: [unresolved-script] [warning] Type 'InstanceData:Owner' could not be located (https://papyrus-lint.idrinth.de/rules.html#rule-unresolved-script)
-PapyrusLinterCLI: 246 problem(s) found in 15 of 29 script(s).
+PapyrusLinterCLI: 241 problem(s) found in 14 of 29 script(s).
