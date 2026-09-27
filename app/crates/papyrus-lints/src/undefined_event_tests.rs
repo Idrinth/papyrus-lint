@@ -70,6 +70,41 @@ fn checks_events_inside_states() {
     assert_eq!(diagnostics[0].line, 4);
 }
 
+#[test]
+fn accepts_events_declared_by_engine_handled_scripts() {
+    let source = "ScriptName Actor Extends Form\n\nFunction GetLevel() Native\n\nEvent OnDeath(Actor akKiller)\nEndEvent\n";
+    assert!(check(source, Some(false)).is_empty());
+
+    let state_native = "ScriptName EngineType Extends Form\n\nEvent OnEngineEvent()\nEndEvent\n\nState Busy\n    Function EngineCall() Native\nEndState\n";
+    assert!(check(state_native, Some(false)).is_empty());
+}
+
+#[test]
+fn accepts_events_declared_by_native_scripts() {
+    let source = "ScriptName ScriptObject Native\n\nEvent OnInit()\nEndEvent\n";
+    assert!(check(source, None).is_empty());
+}
+
+#[test]
+fn accepts_remote_event_handlers() {
+    let source = "ScriptName Listener Extends Quest\n\nEvent Actor.OnDeath(Actor akSender, Actor akKiller)\nEndEvent\n";
+    let ast = papyrus_parser::parse_with_mode(
+        source,
+        papyrus_parser::parser::GameEdition::Fallout4,
+    )
+    .expect("remote event should parse");
+    let diagnostics = super::check(
+        source,
+        Some(&ast),
+        None,
+        &crate::Config::default(),
+        &mut Events {
+            answer: Some(false),
+        },
+    );
+    assert!(diagnostics.is_empty());
+}
+
 fn lint_rule(source: &str, enabled: bool) -> Vec<Diagnostic> {
     let mut config = crate::Config::default();
     config.rules.undefined_event = enabled;
