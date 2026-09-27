@@ -1,5 +1,6 @@
 import { memberDocumentation } from "./autocomplete-members";
-import type { IdentifierAt, Member } from "./autocomplete-types";
+import type { Member } from "./backend-types";
+import type { IdentifierAt } from "./papyrus-source";
 import { declaredTypes, IDENTIFIER, stripComments } from "./papyrus-source";
 
 function lastPhysicalLine(lines: string[], start: number): number {
