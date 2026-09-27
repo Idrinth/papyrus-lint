@@ -2515,4 +2515,4 @@ Scripts/Source/F4SE/Weapon.psc:4:1: [identifier-casing] [warning] Parameter 'akA
 Scripts/Source/F4SE/Weapon.psc:13:1: [identifier-casing] [warning] Parameter 'mod' does not match the configured PascalCase casing style (https://papyrus-lint.idrinth.de/rules.html#rule-identifier-casing)
 Scripts/Source/F4SE/Weapon.psc:16:1: [identifier-casing] [warning] Variable 'inst' does not match the configured PascalCase casing style (https://papyrus-lint.idrinth.de/rules.html#rule-identifier-casing)
 Scripts/Source/F4SE/Weapon.psc:19:12: [final-newline] [warning] File does not end with a newline (https://papyrus-lint.idrinth.de/rules.html#rule-final-newline)
-PapyrusLinterCLI: 2522 problem(s) found in 27 of 29 script(s).
+PapyrusLinterCLI: 2517 problem(s) found in 27 of 29 script(s).

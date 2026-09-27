@@ -46809,4 +46809,4 @@ Scripts/Source/sq_playerhousescript.psc:25:47: [unresolved-script] [warning] Scr
 Scripts/Source/xxDefaultRefAmbushTrigger.psc:23:1: [unchecked-cast] [warning] 'myChildren' holds an unchecked cast result and may be None here; accessing '.Length' on it will crash the script (https://papyrus-lint.idrinth.de/rules.html#rule-unchecked-cast)
 Scripts/Source/xxDefaultRefAmbushTrigger.psc:32:26: [forbidden-functions] [error] Game.GetPlayer: A call to this function leads to significant performance drops and is likely easier handled with an `Actor Property PlayerRef Auto` addition without any drawbacks (https://papyrus-lint.idrinth.de/rules.html#rule-forbidden-functions)
 Scripts/Source/xxDefaultRefAmbushTrigger.psc:41:1: [unchecked-cast] [warning] 'myChildren' holds an unchecked cast result and may be None here; accessing '.Length' on it will crash the script (https://papyrus-lint.idrinth.de/rules.html#rule-unchecked-cast)
-PapyrusLinterCLI: 46816 problem(s) found in 3491 of 5033 script(s).
+PapyrusLinterCLI: 46811 problem(s) found in 3491 of 5033 script(s).
