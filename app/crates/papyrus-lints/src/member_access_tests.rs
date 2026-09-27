@@ -77,12 +77,18 @@ fn rejects_protected_access_from_an_unrelated_script() {
 
 #[test]
 fn disable_directives_and_config_are_honored() {
-    let source = "ScriptName Other\nBase Property Target Auto\nFunction Test()\n Target.Secret() ; @disable member-access\nEndFunction\n";
-    assert!(lint(source, &crate::Config::default()).is_empty());
+    let line_disabled = "ScriptName Other\nBase Property Target Auto\nFunction Test()\n Target.Secret() ; @disable member-access\n Target.Secret()\nEndFunction\n";
+    let diagnostics = lint(line_disabled, &crate::Config::default());
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!(diagnostics[0].line, 5);
+
+    let file_disabled = "ScriptName Other\n; @disable-file member-access\nBase Property Target Auto\nFunction Test()\n Target.Secret()\nEndFunction\n";
+    assert!(lint(file_disabled, &crate::Config::default()).is_empty());
 
     let mut config = crate::Config::default();
     config.rules.member_access = false;
-    assert!(lint(source, &config).is_empty());
+    let enabled_source = "ScriptName Other\nBase Property Target Auto\nFunction Test()\n Target.Secret()\nEndFunction\n";
+    assert!(lint(enabled_source, &config).is_empty());
 }
 
 #[test]
@@ -129,4 +135,57 @@ fn does_not_report_the_member_expression_of_a_function_call_as_a_property() {
 
     assert_eq!(diagnostics.len(), 1);
     assert!(diagnostics[0].message.contains("function 'Secret'"));
+}
+
+#[test]
+fn resolves_function_parameters_and_local_variables_as_call_targets() {
+    let diagnostics = lint(
+        "ScriptName Other\nFunction Test(Base Parameter)\n Base LocalTarget = Parameter\n Parameter.Secret()\n LocalTarget.Secret()\nEndFunction\n",
+        &crate::Config::default(),
+    );
+
+    assert_eq!(diagnostics.len(), 2);
+    assert_eq!(diagnostics[0].line, 4);
+    assert_eq!(diagnostics[1].line, 5);
+    assert!(diagnostics
+        .iter()
+        .all(|diagnostic| diagnostic.message.contains("function 'Secret'")));
+}
+
+#[test]
+fn reports_static_property_access_on_the_containing_statement() {
+    let diagnostics = lint(
+        "ScriptName Other\nFunction Test()\n Int value\n value = Base.Secret\n Return Base.Secret\nEndFunction\n",
+        &crate::Config::default(),
+    );
+
+    assert_eq!(diagnostics.len(), 2);
+    assert_eq!(diagnostics[0].line, 4);
+    assert_eq!(diagnostics[1].line, 5);
+    assert!(diagnostics
+        .iter()
+        .all(|diagnostic| diagnostic.message.contains("property 'Secret'")));
+}
+
+#[test]
+fn ignores_members_without_external_access_metadata() {
+    let diagnostics = lint(
+        "ScriptName Other\nUnknown Property Target Auto\nFunction Test()\n Target.Secret()\n Int value = Target.Secret\nEndFunction\n",
+        &crate::Config::default(),
+    );
+
+    assert!(diagnostics.is_empty());
+}
+
+#[test]
+fn check_without_an_ast_returns_no_diagnostics() {
+    let diagnostics = check(
+        "ScriptName Other\nBase.Secret()\n",
+        None,
+        None,
+        &crate::Config::default(),
+        &mut FakeExternal,
+    );
+
+    assert!(diagnostics.is_empty());
 }
