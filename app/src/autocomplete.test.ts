@@ -1,18 +1,13 @@
 import { describe, expect, it } from "vitest";
+import { type Member } from "./backend-types";
+import { completionInsertText, completionLabel, filterMembers, memberDocumentation } from "./autocomplete-members";
 import {
-  type Member,
-  completionInsertText,
-  completionLabel,
   declarationDocumentationOnLine,
-  declaredTypes,
   documentationByName,
   documentationForIdentifier,
-  filterMembers,
-  identifierAt,
-  memberDocumentation,
   overlayLocalDocumentation,
-  stripComments,
-} from "./autocomplete";
+} from "./member-documentation";
+import { declaredTypes, identifierAt, stripComments } from "./papyrus-source";
 
 const SCRIPT = `ScriptName Example Extends Quest
 

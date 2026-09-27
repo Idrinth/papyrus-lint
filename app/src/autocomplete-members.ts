@@ -1,4 +1,4 @@
-import type { Member } from "./autocomplete-types";
+import type { Member } from "./backend-types";
 
 // Members whose name starts with `prefix` (case-insensitively), sorted
 // alphabetically.

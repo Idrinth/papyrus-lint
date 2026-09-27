@@ -1,5 +1,11 @@
-import type { IdentifierAt } from "./autocomplete-types";
 import { KEYWORDS } from "./highlight";
+
+export interface IdentifierAt {
+  name: string;
+  start: number;
+  end: number;
+  receiver: string | null;
+}
 
 // Strips Papyrus comments (block `;/ ... /;`, brace `{ ... }`, and line
 // `; ...`), replacing their text with spaces (keeping newlines) so a

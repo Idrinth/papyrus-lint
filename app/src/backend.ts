@@ -4,9 +4,8 @@
 // each individual command is dispatched.
 import { invoke } from "@tauri-apps/api/core";
 import * as tauriCore from "@tauri-apps/api/core";
-import type { Member } from "./autocomplete-types";
 import { currentProjectLintContext } from "./backend-context";
-import { type CompileOutcome, type Diagnostic, type RuleTagsInfo } from "./backend-types";
+import { type CompileOutcome, type Diagnostic, type Member, type RuleTagsInfo } from "./backend-types";
 import { currentLintConfig } from "./config-types";
 import { currentCompilerPath, currentLookupScriptRoots, currentProjectDir, effectiveScriptRoots } from "./project-state";
 // Lints `source` directly, in-process (the same `lint_papyrus_script`

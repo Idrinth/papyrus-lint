@@ -1,4 +1,4 @@
-import type { IdentifierAt } from "./autocomplete-types";
+import type { IdentifierAt } from "./papyrus-source";
 import { declarationDocumentationOnLine, documentationForIdentifier } from "./member-documentation";
 import { declaredTypes, identifierAt } from "./papyrus-source";
 import { codeViewerAutocompleteEl, codeViewerEditTextareaEl } from "./code-viewer-state";

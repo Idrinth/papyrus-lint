@@ -1,5 +1,5 @@
 import { completionInsertText, completionLabel, filterMembers, memberDocumentation } from "./autocomplete-members";
-import type { Member } from "./autocomplete-types";
+import type { Member } from "./backend-types";
 import { overlayLocalDocumentation } from "./member-documentation";
 import { resolveCompletionQuery, type CompletionQuery } from "./backend";
 import { codeViewerAutocompleteEl, codeViewerEditTextareaEl, codeViewerMode } from "./code-viewer-state";
