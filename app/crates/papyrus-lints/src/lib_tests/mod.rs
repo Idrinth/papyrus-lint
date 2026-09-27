@@ -9,6 +9,7 @@ mod support;
 mod diagnostic;
 mod disable;
 mod lint;
+mod public_helpers;
 mod repair;
 mod repair_external;
 mod restrict_to_line;
