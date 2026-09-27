@@ -6,8 +6,12 @@ describe("shouldAllowNativeContextMenu", () => {
     expect(shouldAllowNativeContextMenu(document.createElement("div"))).toBe(false);
   });
 
-  it("is false when the target is missing", () => {
-    expect(shouldAllowNativeContextMenu(null)).toBe(false);
+  it.each([
+    ["a missing target", null],
+    ["a non-Node event target", new EventTarget()],
+    ["a detached text node", document.createTextNode("detached")],
+  ])("is false for %s", (_description, target) => {
+    expect(shouldAllowNativeContextMenu(target)).toBe(false);
   });
 
   it("is true for an input", () => {
@@ -18,11 +22,14 @@ describe("shouldAllowNativeContextMenu", () => {
     expect(shouldAllowNativeContextMenu(document.createElement("textarea"))).toBe(true);
   });
 
-  it("is true for a contenteditable host", () => {
-    const host = document.createElement("div");
-    host.setAttribute("contenteditable", "true");
-    expect(shouldAllowNativeContextMenu(host)).toBe(true);
-  });
+  it.each(["", "true", "plaintext-only"])(
+    "is true for a contenteditable=%j host",
+    (contenteditable) => {
+      const host = document.createElement("div");
+      host.setAttribute("contenteditable", contenteditable);
+      expect(shouldAllowNativeContextMenu(host)).toBe(true);
+    },
+  );
 
   it("is true for a text node inside a contenteditable host", () => {
     const host = document.createElement("div");
@@ -53,12 +60,26 @@ describe("bindContextMenu", () => {
     expect(event.defaultPrevented).toBe(true);
   });
 
-  it("leaves contextmenu alone on a textarea", () => {
+  it.each(["input", "textarea"])("leaves contextmenu alone on an %s", (tagName) => {
     bindContextMenu();
-    const textarea = document.createElement("textarea");
-    document.body.append(textarea);
+    const field = document.createElement(tagName);
+    document.body.append(field);
     const event = new MouseEvent("contextmenu", { bubbles: true, cancelable: true });
-    textarea.dispatchEvent(event);
+    field.dispatchEvent(event);
+    expect(event.defaultPrevented).toBe(false);
+  });
+
+  it("leaves contextmenu alone on a descendant of a contenteditable host", () => {
+    bindContextMenu();
+    const host = document.createElement("div");
+    host.setAttribute("contenteditable", "true");
+    const child = document.createElement("span");
+    host.append(child);
+    document.body.append(host);
+
+    const event = new MouseEvent("contextmenu", { bubbles: true, cancelable: true });
+    child.dispatchEvent(event);
+
     expect(event.defaultPrevented).toBe(false);
   });
 });
