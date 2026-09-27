@@ -73,6 +73,30 @@ fn lint_psc_file_applies_project_ignore_entries() {
 }
 
 #[test]
+fn lint_psc_file_reports_an_invalid_project_ignore_file() {
+    let dir = tempdir().unwrap();
+    let path = dir.path().join("Example.psc");
+    std::fs::write(&path, "ScriptName Example\n").unwrap();
+    std::fs::write(
+        dir.path()
+            .join(papyrus_lint_core::ignore_file::IGNORE_FILE_NAME),
+        "- file: Example.psc\n  line: 0\n  rule: semicolon\n",
+    )
+    .unwrap();
+
+    let error = lint_psc_file(
+        path.to_string_lossy().into_owned(),
+        ProjectLintContext {
+            root: dir.path().to_string_lossy().into_owned(),
+            ..Default::default()
+        },
+    )
+    .unwrap_err();
+
+    assert!(error.contains("line numbers must be 1 or greater"));
+}
+
+#[test]
 fn preload_project_scripts_lets_lint_psc_file_resolve_a_sibling_immediately() {
     let dir = tempdir().unwrap();
     let source_dir = dir.path().join("scripts/source");
@@ -322,6 +346,42 @@ fn lint_project_scripts_resolves_a_sibling_and_reports_its_findings() {
 }
 
 #[test]
+fn lint_project_scripts_applies_project_ignore_entries() {
+    let dir = tempdir().unwrap();
+    let path = dir.path().join("Example.psc");
+    std::fs::write(
+        &path,
+        "ScriptName Example\n\nFunction Run()\n    Game.GetPlayer()\nEndFunction\n",
+    )
+    .unwrap();
+    std::fs::write(
+        dir.path()
+            .join(papyrus_lint_core::ignore_file::IGNORE_FILE_NAME),
+        "- file: Example.psc\n  line: 4\n  rule: forbidden-functions\n",
+    )
+    .unwrap();
+
+    let events = project_lint_events(
+        vec![path.to_string_lossy().into_owned()],
+        ProjectLintContext {
+            root: dir.path().to_string_lossy().into_owned(),
+            ..Default::default()
+        },
+    );
+
+    let result = events
+        .iter()
+        .find(|event| event["kind"] == "result")
+        .expect("script result");
+    assert_eq!(result["ok"], true);
+    assert!(result["findings"]
+        .as_array()
+        .expect("findings")
+        .iter()
+        .all(|finding| finding["rule"] != "forbidden-functions"));
+}
+
+#[test]
 fn lint_project_scripts_reports_an_unparseable_file_without_linting_it() {
     let dir = tempdir().unwrap();
     let broken_path = dir.path().join("Broken.psc");
@@ -433,4 +493,69 @@ fn lint_project_scripts_reports_an_invalid_ignore_file_for_every_path() {
             && event["completed"] == 2
             && event["total"] == 2
     }));
+}
+
+#[test]
+fn lint_preloaded_script_uses_fallback_parse_error_details() {
+    let dir = tempdir().unwrap();
+    let path = dir.path().join("Broken.psc");
+    let function_table = project_function_table(
+        dir.path().to_string_lossy().into_owned(),
+        Vec::new(),
+        Vec::new(),
+    );
+    let outcome = lint_preloaded_script(
+        "display/Broken.psc",
+        &path,
+        &ProjectScriptParse {
+            source: Some("not papyrus".to_string()),
+            ast: None,
+            tokens: None,
+            error: None,
+        },
+        &ProjectLintContext {
+            root: dir.path().to_string_lossy().into_owned(),
+            ..Default::default()
+        },
+        &function_table,
+        None,
+    );
+
+    assert!(!outcome.ok);
+    assert_eq!(outcome.path, "display/Broken.psc");
+    assert_eq!(outcome.detail, "failed to parse script");
+    assert!(outcome.findings.is_empty());
+}
+
+#[test]
+fn lint_preloaded_script_uses_fallback_read_error_details() {
+    let dir = tempdir().unwrap();
+    let path = dir.path().join("Missing.psc");
+    let function_table = project_function_table(
+        dir.path().to_string_lossy().into_owned(),
+        Vec::new(),
+        Vec::new(),
+    );
+    let ast = papyrus_parser::parse("ScriptName Missing\n").unwrap();
+    let outcome = lint_preloaded_script(
+        "display/Missing.psc",
+        &path,
+        &ProjectScriptParse {
+            source: None,
+            ast: Some(ast),
+            tokens: None,
+            error: None,
+        },
+        &ProjectLintContext {
+            root: dir.path().to_string_lossy().into_owned(),
+            ..Default::default()
+        },
+        &function_table,
+        None,
+    );
+
+    assert!(!outcome.ok);
+    assert_eq!(outcome.path, "display/Missing.psc");
+    assert_eq!(outcome.detail, "failed to read script");
+    assert!(outcome.findings.is_empty());
 }
