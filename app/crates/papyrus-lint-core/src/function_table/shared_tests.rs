@@ -288,3 +288,29 @@ fn nested_struct_type_exists_is_a_read_lock_hit_after_it_is_loaded() {
     assert!(shared.type_exists("holder:payload"));
     assert!(!shared.type_exists("holder:missing"));
 }
+
+#[test]
+fn unqualified_struct_lookup_is_a_read_lock_hit_after_it_is_loaded() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    write_script(
+        root.path(),
+        "Base",
+        "ScriptName Base\n\nStruct DailyUpdateData\n    Int Day\nEndStruct\n",
+    );
+    write_script(root.path(), "Child", "ScriptName Child Extends Base\n");
+    let table = RwLock::new(
+        FunctionTable::new(root.path().to_path_buf()).with_game(papyrus_lints::Game::Fallout4),
+    );
+    let mut shared = SharedFunctionTable(&table);
+    assert!(shared.declares_struct("Base", "DailyUpdateData"));
+    assert!(shared.declares_struct_in_ancestry("Child", "DailyUpdateData"));
+    assert!(!shared.declares_struct("Child", "DailyUpdateData"));
+
+    let _held = table
+        .read()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    let mut shared = SharedFunctionTable(&table);
+    assert!(shared.declares_struct("base", "dailyupdatedata"));
+    assert!(shared.declares_struct_in_ancestry("child", "DailyUpdateData"));
+    assert!(!shared.declares_struct_in_ancestry("child", "Missing"));
+}

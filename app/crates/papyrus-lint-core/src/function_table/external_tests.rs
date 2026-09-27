@@ -519,3 +519,161 @@ EndFunction\n";
     assert!(diagnostics[0].message.contains("MissingUserScript"));
     assert!(diagnostics[0].message.contains("could not be located"));
 }
+
+fn fallout_table(root: &std::path::Path) -> FunctionTable {
+    FunctionTable::new(root.to_path_buf()).with_game(papyrus_lints::Game::Fallout4)
+}
+
+fn unresolved_in(source: &str, table: &mut FunctionTable) -> Vec<papyrus_lints::Diagnostic> {
+    let ast =
+        papyrus_parser::parse_with_mode(source, papyrus_parser::parser::GameEdition::Fallout4)
+            .expect("Fallout 4 fixture should parse");
+    papyrus_parser::prime_cache(source, ast);
+    diagnostics_for("unresolved-script", source, table)
+}
+
+#[test]
+fn unqualified_struct_on_the_script_being_linted_is_not_a_missing_script() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    let mut table = fallout_table(root.path());
+    let source = "\
+ScriptName CompanionActorScript\n\
+\n\
+EventData Property LastEvent Auto\n\
+\n\
+Function Test(EventData data)\n\
+    EventData local\n\
+    EventData[] values\n\
+    Return data as EventData\n\
+EndFunction\n\
+\n\
+Struct EventData\n\
+    Int Count\n\
+EndStruct\n";
+
+    let diagnostics = unresolved_in(source, &mut table);
+    assert!(
+        diagnostics.is_empty(),
+        "same-script struct should resolve, got {diagnostics:?}"
+    );
+    assert!(!papyrus_lints::ExternalSignatures::type_exists(
+        &mut table,
+        "EventData"
+    ));
+}
+
+#[test]
+fn unqualified_struct_resolves_through_extends_but_not_an_imports_parent() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    write_script(
+        root.path(),
+        "Base",
+        "ScriptName Base\n\nStruct DailyUpdateData\n    Int Day\nEndStruct\n",
+    );
+    write_script(
+        root.path(),
+        "Mid",
+        "ScriptName Mid Extends Base\n\nStruct ModuleDatum\n    Int Count\nEndStruct\n",
+    );
+    write_script(
+        root.path(),
+        "Holder",
+        "ScriptName Holder\n\nStruct WornItem\n    Int FormId\nEndStruct\n",
+    );
+    write_script(
+        root.path(),
+        "Other",
+        "ScriptName Other Extends Base\n\nStruct CrowdEventData\n    Int Id\nEndStruct\n",
+    );
+    write_script(
+        root.path(),
+        "A",
+        "ScriptName A Extends B\n\nStruct LoopData\n    Int N\nEndStruct\n",
+    );
+    write_script(root.path(), "B", "ScriptName B Extends A\n");
+
+    let mut table = fallout_table(root.path());
+    assert!(papyrus_lints::ExternalSignatures::declares_struct(
+        &mut table, "Holder", "WornItem"
+    ));
+    assert!(!papyrus_lints::ExternalSignatures::declares_struct(
+        &mut table,
+        "Mid",
+        "DailyUpdateData"
+    ));
+    assert!(
+        papyrus_lints::ExternalSignatures::declares_struct_in_ancestry(
+            &mut table,
+            "Mid",
+            "DailyUpdateData"
+        )
+    );
+    assert!(
+        papyrus_lints::ExternalSignatures::declares_struct_in_ancestry(&mut table, "B", "LoopData")
+    );
+    assert!(
+        !papyrus_lints::ExternalSignatures::declares_struct_in_ancestry(
+            &mut table,
+            "B",
+            "NotAStruct"
+        )
+    );
+
+    let child = "\
+ScriptName Example Extends Mid\n\
+Import Holder\n\
+\n\
+DailyUpdateData Property FromGrandparent Auto\n\
+ModuleDatum Property FromParent Auto\n\
+WornItem Property FromImport Auto\n\
+MissingType Property Broken Auto\n\
+\n\
+Function Test()\n\
+    MissingScript.Run()\n\
+EndFunction\n";
+    let diagnostics = unresolved_in(child, &mut table);
+    let messages: Vec<_> = diagnostics
+        .iter()
+        .map(|diagnostic| diagnostic.message.as_str())
+        .collect();
+    assert!(
+        messages
+            .iter()
+            .any(|message| message.contains("MissingType")),
+        "got {messages:?}"
+    );
+    assert!(
+        messages
+            .iter()
+            .any(|message| message.contains("MissingScript")),
+        "got {messages:?}"
+    );
+    assert!(
+        messages.iter().all(|message| {
+            !message.contains("DailyUpdateData")
+                && !message.contains("ModuleDatum")
+                && !message.contains("WornItem")
+        }),
+        "in-scope structs should be silent, got {messages:?}"
+    );
+
+    let imported_parent = "\
+ScriptName Importer\n\
+Import Other\n\
+\n\
+CrowdEventData Property Direct Auto\n\
+DailyUpdateData Property ViaImportParent Auto\n";
+    let diagnostics = unresolved_in(imported_parent, &mut table);
+    assert!(
+        diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.message.contains("DailyUpdateData")),
+        "an import does not expose the imported script's parent structs, got {diagnostics:?}"
+    );
+    assert!(
+        diagnostics
+            .iter()
+            .all(|diagnostic| !diagnostic.message.contains("CrowdEventData")),
+        "a struct declared on the imported script is in scope, got {diagnostics:?}"
+    );
+}

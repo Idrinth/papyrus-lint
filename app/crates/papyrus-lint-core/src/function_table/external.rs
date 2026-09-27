@@ -60,6 +60,67 @@ impl FunctionTable {
             .and_then(Option::as_ref)
             .is_some_and(|script| script.structs.contains(&struct_name.to_ascii_lowercase()))
     }
+
+    /// Whether `type_name`'s own script declares `struct_name`. Does not
+    /// walk `Extends`. Loads the script when it exists and is not cached.
+    pub(in crate::function_table) fn declares_struct(
+        &mut self,
+        type_name: &str,
+        struct_name: &str,
+    ) -> bool {
+        let key = type_name.to_ascii_lowercase();
+        self.ensure_loaded(&key);
+        self.scripts
+            .get(&key)
+            .and_then(Option::as_ref)
+            .is_some_and(|script| script.structs.contains(&struct_name.to_ascii_lowercase()))
+    }
+
+    /// Whether `type_name` or an ancestor it `Extends` declares
+    /// `struct_name`. Loads scripts along the chain. A circular `Extends`
+    /// stops the walk.
+    pub(in crate::function_table) fn declares_struct_in_ancestry(
+        &mut self,
+        type_name: &str,
+        struct_name: &str,
+    ) -> bool {
+        let struct_key = struct_name.to_ascii_lowercase();
+        let mut visited = Vec::new();
+        let mut current = Some(type_name.to_ascii_lowercase());
+        while let Some(name) = current {
+            if visited.contains(&name) {
+                break;
+            }
+            self.ensure_loaded(&name);
+            let Some(script) = self.scripts.get(&name).and_then(Option::as_ref) else {
+                break;
+            };
+            if script.structs.contains(&struct_key) {
+                return true;
+            }
+            current = script
+                .extends
+                .as_ref()
+                .map(|parent| parent.to_ascii_lowercase());
+            visited.push(name);
+        }
+        false
+    }
+
+    /// [`Self::declares_struct`] answered only from a script already cached.
+    pub(in crate::function_table) fn declares_struct_cached(
+        &self,
+        type_name: &str,
+        struct_name: &str,
+    ) -> CacheProbe<bool> {
+        match self.get_cached(&type_name.to_ascii_lowercase()) {
+            None => CacheProbe::Miss,
+            Some(None) => CacheProbe::Hit(false),
+            Some(Some(script)) => {
+                CacheProbe::Hit(script.structs.contains(&struct_name.to_ascii_lowercase()))
+            }
+        }
+    }
 }
 
 /// `T[]` is an array of `T`. Papyrus has no `T[][]`.
@@ -135,6 +196,14 @@ impl papyrus_lints::ExternalSignatures for FunctionTable {
 
     fn type_exists(&mut self, type_name: &str) -> bool {
         FunctionTable::type_exists(self, type_name) || self.declared_struct_exists(type_name)
+    }
+
+    fn declares_struct(&mut self, type_name: &str, struct_name: &str) -> bool {
+        FunctionTable::declares_struct(self, type_name, struct_name)
+    }
+
+    fn declares_struct_in_ancestry(&mut self, type_name: &str, struct_name: &str) -> bool {
+        FunctionTable::declares_struct_in_ancestry(self, type_name, struct_name)
     }
 
     fn has_state(&mut self, type_name: &str, state_name: &str) -> bool {

@@ -25,6 +25,8 @@ fn no_external_signatures_uses_conservative_existence_defaults() {
 
     assert!(external.script_exists("UnknownScript"));
     assert!(external.type_exists("UnknownType"));
+    assert!(!external.declares_struct("Holder", "Payload"));
+    assert!(!external.declares_struct_in_ancestry("Child", "Payload"));
     assert!(external.has_state("UnknownScript", "UnknownState"));
     assert!(!external.can_resolve_script("UnknownScript"));
     assert!(!external.ancestry_fully_known("UnknownScript"));
@@ -61,4 +63,25 @@ fn parameter_info_serializes_its_public_contract() {
             }
         })
     );
+}
+
+struct DirectStructOnly;
+
+impl ExternalSignatures for DirectStructOnly {
+    fn lookup(&mut self, _type_name: &str, _function_name: &str) -> Option<Vec<ParamInfo>> {
+        None
+    }
+
+    fn declares_struct(&mut self, type_name: &str, struct_name: &str) -> bool {
+        type_name.eq_ignore_ascii_case("Holder") && struct_name.eq_ignore_ascii_case("Payload")
+    }
+}
+
+#[test]
+fn ancestry_default_checks_only_the_named_script() {
+    let mut external = DirectStructOnly;
+
+    assert!(external.declares_struct("Holder", "Payload"));
+    assert!(external.declares_struct_in_ancestry("holder", "payload"));
+    assert!(!external.declares_struct_in_ancestry("Child", "Payload"));
 }

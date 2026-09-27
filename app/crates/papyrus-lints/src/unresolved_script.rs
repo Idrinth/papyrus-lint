@@ -17,6 +17,11 @@
 //! implementing [`ExternalSignatures::script_exists`] and
 //! [`ExternalSignatures::type_exists`] and calling
 //! [`check_with`] instead of [`check`].
+//!
+//! A bare name that is a `Struct` on the script being linted, on an
+//! ancestor it `Extends`, or declared directly on a script it `Import`s is
+//! a type, not a missing script. Qualified `Script:Struct` names stay on
+//! [`ExternalSignatures::type_exists`].
 
 use papyrus_parser::ast::{Expr, FunctionDecl, Script, TypeName};
 use papyrus_parser::types::TypeEnv;
@@ -32,6 +37,10 @@ pub const RULE: &str = "unresolved-script";
 struct Collect {
     store: Store,
     env: Option<TypeEnv>,
+    /// Lowercased `Struct` names declared on the script being linted.
+    local_structs: Vec<String>,
+    parent: Option<String>,
+    imports: Vec<String>,
 }
 
 impl AstLint for Collect {
@@ -41,9 +50,21 @@ impl AstLint for Collect {
 
     fn visit_script(&mut self, script: &Script, ctx: &mut VisitCtx<'_>) {
         self.env = Some(TypeEnv::for_script(script));
+        self.local_structs = script
+            .structs
+            .iter()
+            .map(|struct_decl| struct_decl.name.to_ascii_lowercase())
+            .collect();
+        self.parent = script.extends.clone();
+        self.imports = script
+            .imports
+            .iter()
+            .map(|import| import.name.clone())
+            .collect();
         if let Some(parent) = &script.extends {
             if !ctx.external.type_exists(parent) {
-                self.store.push(missing_type(script.line, 1, parent, "Parent script"));
+                self.store
+                    .push(missing_type(script.line, 1, parent, "Parent script"));
             }
         }
     }
@@ -67,10 +88,7 @@ impl AstLint for Collect {
     fn visit_expr(&mut self, expr: &Expr, ctx: &mut VisitCtx<'_>) {
         match expr {
             Expr::Call {
-                callee,
-                line,
-                col,
-                ..
+                callee, line, col, ..
             } => {
                 let Expr::Member { object, .. } = &**callee else {
                     return;
@@ -96,9 +114,41 @@ impl AstLint for Collect {
 impl Collect {
     fn note_unresolved_type(&mut self, ctx: &mut VisitCtx<'_>, name: &str) {
         let name = array_element_name(name);
-        if !ctx.external.type_exists(name) {
-            self.store.push(missing_type(ctx.line, 1, name, "Type"));
+        if self.is_local_struct(name) || ctx.external.type_exists(name) {
+            return;
         }
+        // `type_exists` covers primitives, scripts, arrays, and qualified
+        // `Script:Struct` names. A bare name it rejects is still a struct
+        // when an `Extends` ancestor declares it, or an `Import` declares
+        // that struct itself (not a struct on the import's parent).
+        if self.inherited_or_imported_struct(ctx, name) {
+            return;
+        }
+        self.store.push(missing_type(ctx.line, 1, name, "Type"));
+    }
+
+    fn is_local_struct(&self, name: &str) -> bool {
+        if name.contains(':') {
+            return false;
+        }
+        let key = name.to_ascii_lowercase();
+        self.local_structs
+            .iter()
+            .any(|struct_name| struct_name == &key)
+    }
+
+    fn inherited_or_imported_struct(&self, ctx: &mut VisitCtx<'_>, name: &str) -> bool {
+        if name.contains(':') {
+            return false;
+        }
+        if let Some(parent) = &self.parent {
+            if ctx.external.declares_struct_in_ancestry(parent, name) {
+                return true;
+            }
+        }
+        self.imports
+            .iter()
+            .any(|import| ctx.external.declares_struct(import, name))
     }
 }
 
@@ -124,7 +174,10 @@ pub fn check(
 /// Like [`check`], but resolves each call's target script through
 /// `external`, flagging one that can't be located.
 #[allow(dead_code)] // unit tests; collect_diagnostics uses visitor()
-pub fn check_with<E: ExternalSignatures>(ast: Option<&Script>, external: &mut E) -> Vec<Diagnostic> {
+pub fn check_with<E: ExternalSignatures>(
+    ast: Option<&Script>,
+    external: &mut E,
+) -> Vec<Diagnostic> {
     crate::visitor::run(
         visitor(),
         "",

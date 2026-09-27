@@ -40,6 +40,10 @@ not depend on Tauri.
   script that itself exists still wins over the struct reading. The declaring
   script is parsed in the table's game dialect so Fallout 4 / Starfield
   `Struct` blocks are visible.
+  Unqualified struct names are not global: `declares_struct` is that
+  script's own structs (what `Import` exposes) and
+  `declares_struct_in_ancestry` walks `Extends`. `unresolved-script`
+  applies those to the script being linted.
 - `FunctionTable::parse_type_closure` runs before linting. Referenced
   `.psc` files are preloaded for analysis only, not as lint targets.
   Bundled names come from the blob. Names that resolve nowhere stay cached
