@@ -234,4 +234,4 @@ Scripts/Source/F4SE/UI.psc:91:121: [line-length] [warning] Line is 215 character
 Scripts/Source/F4SE/UI.psc:97:121: [line-length] [warning] Line is 232 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
 Scripts/Source/F4SE/Utility.psc:62:121: [line-length] [warning] Line is 157 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
 Scripts/Source/F4SE/Utility.psc:76:121: [line-length] [warning] Line is 138 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-PapyrusLinterCLI: 241 problem(s) found in 14 of 29 script(s).
+PapyrusLinterCLI: 236 problem(s) found in 14 of 29 script(s).

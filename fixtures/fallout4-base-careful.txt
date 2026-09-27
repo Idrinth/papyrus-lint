@@ -63758,4 +63758,4 @@ Scripts/Source/DLC06/DLC06/WorkshopSurgeryInfoScript.psc:14:1: [unchecked-cast] 
 Scripts/Source/DLC06/DLC06/WorkshopSurgeryInfoScript.psc:14:60: [forbidden-functions] [warning] ObjectReference.GetLinkedRef: Calling GetLinkedRef without a keyword filter walks every linked reference on the base object; pass the specific keyword you need or cache the result instead of calling it repeatedly (https://papyrus-lint.idrinth.de/rules.html#rule-forbidden-functions)
 Scripts/Source/DLC06/DLC06/WorkshopSurgeryInfoScript.psc:14:121: [line-length] [warning] Line is 141 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
 Scripts/Source/DLC06/DLC06/WorkshopSurgeryInfoScript.psc:15:2: [strict-boolean] [warning] Condition must be a boolean value or expression, found 'DLC06:WorkshopSurgeryChairScript' (https://papyrus-lint.idrinth.de/rules.html#rule-strict-boolean)
-PapyrusLinterCLI: 63765 problem(s) found in 7152 of 10250 script(s).
+PapyrusLinterCLI: 63760 problem(s) found in 7152 of 10250 script(s).

@@ -875,4 +875,4 @@ Scripts/Source/F4SE/Utility.psc:62:121: [line-length] [warning] Line is 157 char
 Scripts/Source/F4SE/Utility.psc:67:79: [trailing-whitespace] [warning] Line contains trailing whitespace (https://papyrus-lint.idrinth.de/rules.html#rule-trailing-whitespace)
 Scripts/Source/F4SE/Utility.psc:76:121: [line-length] [warning] Line is 138 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
 Scripts/Source/F4SE/Utility.psc:89:69: [trailing-whitespace] [warning] Line contains trailing whitespace (https://papyrus-lint.idrinth.de/rules.html#rule-trailing-whitespace)
-PapyrusLinterCLI: 882 problem(s) found in 17 of 29 script(s).
+PapyrusLinterCLI: 877 problem(s) found in 17 of 29 script(s).
