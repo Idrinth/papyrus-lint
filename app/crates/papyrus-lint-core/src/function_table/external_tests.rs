@@ -521,6 +521,42 @@ EndFunction\n";
     );
 }
 
+#[test]
+fn type_exists_accepts_event_name_typedefs_without_a_script() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    let mut table = FunctionTable::new(root.path().to_path_buf());
+
+    for name in [
+        "CustomEventName",
+        "customeventname",
+        "ScriptEventName",
+        "SCRIPTEVENTNAME",
+        "CustomEventName[]",
+        "scripteventname[]",
+    ] {
+        assert!(
+            papyrus_lints::ExternalSignatures::type_exists(&mut table, name),
+            "{name} should resolve"
+        );
+    }
+
+    let source = "\
+ScriptName Example\n\
+\n\
+Function F(CustomEventName n)\n\
+EndFunction\n\
+\n\
+Function G(ScriptEventName n)\n\
+EndFunction\n\
+\n\
+Function H(MissingUserScript n)\n\
+EndFunction\n";
+    let diagnostics = diagnostics_for("unresolved-script", source, &mut table);
+    assert_eq!(diagnostics.len(), 1, "got {diagnostics:?}");
+    assert!(diagnostics[0].message.contains("MissingUserScript"));
+    assert!(diagnostics[0].message.contains("could not be located"));
+}
+
 fn fallout_table(root: &std::path::Path) -> FunctionTable {
     FunctionTable::new(root.to_path_buf()).with_game(papyrus_lints::Game::Fallout4)
 }

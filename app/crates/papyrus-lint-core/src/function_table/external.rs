@@ -5,7 +5,8 @@ use papyrus_lints::ParamInfo;
 use super::{CacheProbe, FunctionTable};
 
 impl FunctionTable {
-    /// Whether `type_name` is a Papyrus primitive, an array of one
+    /// Whether `type_name` is a Papyrus primitive, the compiler typedefs
+    /// `CustomEventName` and `ScriptEventName`, an array of one of those
     /// (`T[]`, never a script named `T[]`), a bundled vanilla/SKSE script,
     /// or a script this table can locate. Read-only: never fills the parse
     /// cache. Nested `Script:Struct` types are not answered here; see
@@ -13,7 +14,7 @@ impl FunctionTable {
     /// declaring script when the name is not itself a script.
     pub fn type_exists(&self, type_name: &str) -> bool {
         let base = array_element_name(type_name);
-        is_primitive(base) || self.script_exists(base)
+        is_builtin_scalar(base) || self.script_exists(base)
     }
 
     /// [`Self::type_exists`], plus a nested struct (`Script:Struct` or
@@ -127,10 +128,13 @@ pub(in crate::function_table) fn array_element_name(type_name: &str) -> &str {
     type_name.strip_suffix("[]").unwrap_or(type_name)
 }
 
-fn is_primitive(type_name: &str) -> bool {
+/// Types the compiler accepts with no `.psc` file: the scalars
+/// (`Int`, `Float`, `Bool`, `String`, `Var`) and the event-name typedefs
+/// `CustomEventName` / `ScriptEventName` used on `ScriptObject`.
+fn is_builtin_scalar(type_name: &str) -> bool {
     matches!(
         type_name.to_ascii_lowercase().as_str(),
-        "int" | "float" | "bool" | "string" | "var"
+        "int" | "float" | "bool" | "string" | "var" | "customeventname" | "scripteventname"
     )
 }
 

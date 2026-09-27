@@ -40358,7 +40358,6 @@ Scripts/Source/Base/SandbagDestructionScript.psc:26:121: [line-length] [warning]
 Scripts/Source/Base/SandbagDestructionScript.psc:30:2: [strict-boolean] [warning] Condition must be a boolean value or expression, found 'ObjectReference' (https://papyrus-lint.idrinth.de/rules.html#rule-strict-boolean)
 Scripts/Source/Base/SandbagDestructionScript.psc:31:1: [unchecked-cast] [warning] cast to 'actor' may be None; accessing '.getRace' on it without a None check first will crash the script (https://papyrus-lint.idrinth.de/rules.html#rule-unchecked-cast)
 Scripts/Source/Base/ScriptObject.psc:4:121: [line-length] [warning] Line is 142 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/Base/ScriptObject.psc:63:1: [unresolved-script] [warning] Type 'CustomEventName' could not be located (https://papyrus-lint.idrinth.de/rules.html#rule-unresolved-script)
 Scripts/Source/Base/ScriptObject.psc:77:121: [line-length] [warning] Line is 144 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
 Scripts/Source/Base/ScriptObject.psc:81:121: [line-length] [warning] Line is 144 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
 Scripts/Source/Base/ScriptObject.psc:83:121: [line-length] [warning] Line is 124 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
@@ -40372,14 +40371,10 @@ Scripts/Source/Base/ScriptObject.psc:98:121: [line-length] [warning] Line is 123
 Scripts/Source/Base/ScriptObject.psc:100:121: [line-length] [warning] Line is 126 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
 Scripts/Source/Base/ScriptObject.psc:101:121: [line-length] [warning] Line is 124 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
 Scripts/Source/Base/ScriptObject.psc:106:121: [line-length] [warning] Line is 156 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/Base/ScriptObject.psc:133:1: [unresolved-script] [warning] Type 'ScriptEventName' could not be located (https://papyrus-lint.idrinth.de/rules.html#rule-unresolved-script)
-Scripts/Source/Base/ScriptObject.psc:155:1: [unresolved-script] [warning] Type 'CustomEventName' could not be located (https://papyrus-lint.idrinth.de/rules.html#rule-unresolved-script)
 Scripts/Source/Base/ScriptObject.psc:179:121: [line-length] [warning] Line is 124 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/Base/ScriptObject.psc:207:1: [unresolved-script] [warning] Type 'CustomEventName' could not be located (https://papyrus-lint.idrinth.de/rules.html#rule-unresolved-script)
 Scripts/Source/Base/ScriptObject.psc:213:121: [line-length] [warning] Line is 154 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
 Scripts/Source/Base/ScriptObject.psc:214:121: [line-length] [warning] Line is 123 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
 Scripts/Source/Base/ScriptObject.psc:220:121: [line-length] [warning] Line is 158 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/Base/ScriptObject.psc:238:1: [unresolved-script] [warning] Type 'ScriptEventName' could not be located (https://papyrus-lint.idrinth.de/rules.html#rule-unresolved-script)
 Scripts/Source/Base/ScriptObject.psc:282:121: [line-length] [warning] Line is 148 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
 Scripts/Source/Base/SentinelSiteDoorBlockAfterActivate.psc:5:13: [forbidden-functions] [warning] Utility.Wait: Waiting inside a script that is called often can lead to significant numbers of waiting executions. If your code is likely to be called often it might be worthwhile to look at StartTimer/OnTimer for example (https://papyrus-lint.idrinth.de/rules.html#rule-forbidden-functions)
 Scripts/Source/Base/SentinelSiteDoorBlockAfterActivate.psc:6:5: [forbidden-functions] [warning] ObjectReference.GetLinkedRef: Calling GetLinkedRef without a keyword filter walks every linked reference on the base object; pass the specific keyword you need or cache the result instead of calling it repeatedly (https://papyrus-lint.idrinth.de/rules.html#rule-forbidden-functions)
@@ -63313,4 +63308,4 @@ Scripts/Source/DLC06/DLC06/WorkshopSurgeryInfoScript.psc:14:1: [unchecked-cast] 
 Scripts/Source/DLC06/DLC06/WorkshopSurgeryInfoScript.psc:14:60: [forbidden-functions] [warning] ObjectReference.GetLinkedRef: Calling GetLinkedRef without a keyword filter walks every linked reference on the base object; pass the specific keyword you need or cache the result instead of calling it repeatedly (https://papyrus-lint.idrinth.de/rules.html#rule-forbidden-functions)
 Scripts/Source/DLC06/DLC06/WorkshopSurgeryInfoScript.psc:14:121: [line-length] [warning] Line is 141 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
 Scripts/Source/DLC06/DLC06/WorkshopSurgeryInfoScript.psc:15:2: [strict-boolean] [warning] Condition must be a boolean value or expression, found 'DLC06:WorkshopSurgeryChairScript' (https://papyrus-lint.idrinth.de/rules.html#rule-strict-boolean)
-PapyrusLinterCLI: 63315 problem(s) found in 7149 of 10250 script(s).
+PapyrusLinterCLI: 63310 problem(s) found in 7149 of 10250 script(s).
