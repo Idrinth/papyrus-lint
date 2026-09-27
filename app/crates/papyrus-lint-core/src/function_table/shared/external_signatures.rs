@@ -88,6 +88,28 @@ impl papyrus_lints::ExternalSignatures for SharedFunctionTable<'_> {
         )
     }
 
+    fn declares_struct(&mut self, type_name: &str, struct_name: &str) -> bool {
+        self.probe_or_load(
+            |table| table.declares_struct_cached(type_name, struct_name),
+            |table| {
+                papyrus_lints::ExternalSignatures::declares_struct(table, type_name, struct_name)
+            },
+        )
+    }
+
+    fn declares_struct_in_ancestry(&mut self, type_name: &str, struct_name: &str) -> bool {
+        self.probe_or_load(
+            |table| table.declares_struct_in_ancestry_cached(type_name, struct_name),
+            |table| {
+                papyrus_lints::ExternalSignatures::declares_struct_in_ancestry(
+                    table,
+                    type_name,
+                    struct_name,
+                )
+            },
+        )
+    }
+
     fn has_state(&mut self, type_name: &str, state_name: &str) -> bool {
         self.probe_or_load(
             |table| table.has_state_cached(type_name, state_name),
