@@ -7,9 +7,10 @@ use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::sync::RwLock;
 
+use papyrus_lint_core::content_hash;
 use papyrus_lint_core::function_table::{FunctionTable, SharedFunctionTable};
 use papyrus_lint_core::ignore_file::IgnoreFile;
-use papyrus_lint_core::{ast_cache, collision_cache, compile_diagnostics, compiler, content_hash};
+use papyrus_lint_core::project_lint::{lint_script, ConflictScope, ProjectLint};
 
 use crate::output::*;
 
@@ -75,45 +76,23 @@ pub(crate) fn lint_file(
     file_diff: Option<String>,
     already_primed: bool,
 ) -> LintFileOutcome {
-    if !already_primed {
-        ast_cache::ensure_primed_for_game(ctx.lint_config.game, script_path, source);
-    }
-    // Computed up front and merged in via
-    // `lint_with_external_arguments_and_extra_diagnostics` below, rather
-    // than appended to that call's own result afterward, so a
-    // `@disable`/`@disable-file` directive naming one of these
-    // path-dependent diagnostics is honored *and* counted as used by the
-    // `unused-disable` lint instead of being incorrectly flagged as unused
-    // (see `papyrus_lints::lint_with_external_arguments_and_extra_diagnostics`'s
-    // own docs).
-    let project_diagnostics = collect_project_diagnostics(ctx, script_path, source);
-    let mut diagnostics = {
-        let mut shared = SharedFunctionTable(ctx.function_table);
-        papyrus_lints::lint_with_external_arguments_and_extra_diagnostics(
-            source,
-            ctx.lint_config,
-            &mut shared,
-            project_diagnostics,
-        )
-    };
-    // Mirrors the desktop app's `lint_with_compile_check`: a
-    // `compiler_path` that can't be run at all (missing/misconfigured) is
-    // silently left out rather than failing the whole lint run.
-    if ctx.compile_check && !ctx.compiler_path.is_empty() {
-        if let Ok(outcome) = compiler::check_psc_file(
-            ctx.lint_config.game,
-            Path::new(ctx.compiler_path),
-            script_path,
-            ctx.function_table_additional_roots,
-        ) {
-            if !outcome.success {
-                diagnostics.extend(compile_diagnostics::parse_compile_errors(&outcome));
-            }
-        }
-    }
-    if let Some(ignores) = ctx.ignores {
-        ignores.retain_diagnostics(script_path, &mut diagnostics);
-    }
+    let mut shared = SharedFunctionTable(ctx.function_table);
+    let mut diagnostics = lint_script(
+        script_path,
+        source,
+        &mut shared,
+        &ProjectLint {
+            config: ctx.lint_config,
+            project_root: ctx.project_root,
+            additional_roots: ctx.function_table_additional_roots,
+            conflicts: conflict_scope(ctx, script_path),
+            compile_check: ctx.compile_check,
+            compiler_path: ctx.compiler_path,
+            ignores: ctx.ignores,
+            already_primed,
+            flush_collision_cache: false,
+        },
+    );
     let parser_errors = collect_parser_errors(source);
     let parse_failed = !parser_errors.is_empty();
     let should_fail = finalize_diagnostics(
@@ -147,55 +126,24 @@ pub(crate) fn lint_file(
     }
 }
 
-fn collect_project_diagnostics(
-    ctx: &LintContext,
-    script_path: &Path,
-    source: &str,
-) -> Vec<papyrus_lints::Diagnostic> {
-    let mut project_diagnostics = Vec::new();
-    if ctx.lint_config.rules.conflicting_script_versions {
-        // The index is already grouped by file name. Hashing every project
-        // script here made a full run quadratic; only same-named copies can
-        // conflict.
-        collision_cache::remember_source(ctx.lint_config.game, script_path, source);
-        let conflicts = if ctx.strict_achlist_scope {
-            let candidates = script_path
-                .file_name()
-                .and_then(|name| name.to_str())
-                .and_then(|name| ctx.scripts_by_name.get(&name.to_ascii_lowercase()))
-                .map(Vec::as_slice)
-                .unwrap_or(&[]);
-            papyrus_lint_core::script_locator::conflicting_script_versions_among(
-                script_path,
-                candidates,
-                ctx.project_root,
-                ctx.short_paths,
-                ctx.lint_config.game,
-            )
-        } else {
-            papyrus_lint_core::script_locator::conflicting_script_versions_in_index(
-                script_path,
-                ctx.script_index,
-                ctx.project_root,
-                ctx.short_paths,
-                ctx.lint_config.game,
-            )
-        };
-        project_diagnostics.extend(conflicts);
-    }
-    if ctx.lint_config.rules.stale_compiled_output {
-        project_diagnostics.extend(papyrus_lint_core::stale_pex::check(script_path));
-    }
-    if ctx.lint_config.rules.script_filename_mismatch {
-        if let Some(stem) = script_path.file_stem().and_then(|stem| stem.to_str()) {
-            if let Ok(tokens) = papyrus_parser::tokenize(source) {
-                project_diagnostics.extend(papyrus_lints::script_filename_mismatch::check(
-                    stem, &tokens,
-                ));
-            }
+fn conflict_scope<'a>(ctx: &'a LintContext<'_>, script_path: &Path) -> ConflictScope<'a> {
+    if ctx.strict_achlist_scope {
+        let candidates = script_path
+            .file_name()
+            .and_then(|name| name.to_str())
+            .and_then(|name| ctx.scripts_by_name.get(&name.to_ascii_lowercase()))
+            .map(Vec::as_slice)
+            .unwrap_or(&[]);
+        ConflictScope::Known {
+            candidates,
+            short_paths: ctx.short_paths,
+        }
+    } else {
+        ConflictScope::Index {
+            index: ctx.script_index,
+            short_paths: ctx.short_paths,
         }
     }
-    project_diagnostics
 }
 
 fn build_file_reports(

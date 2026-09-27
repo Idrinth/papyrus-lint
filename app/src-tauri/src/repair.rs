@@ -5,11 +5,12 @@ use std::sync::RwLock;
 
 use papyrus_lint_core::ast_cache;
 use papyrus_lint_core::function_table::{FunctionTable, SharedFunctionTable};
+use papyrus_lint_core::ignore_file::IgnoreFile;
 use papyrus_lint_core::source_encoding::{
     read_psc_source, read_psc_source_with_encoding, write_psc_source, PscEncoding,
 };
 
-use crate::lint::{apply_project_ignores, lint_with_compile_check, ProjectLintContext};
+use crate::lint::{lint_with_compile_check, ProjectLintContext};
 
 /// Writes `updated` back to `path` when it differs from `original`
 /// (preserving `encoding`), primes the AST cache, and re-lints the file
@@ -27,9 +28,16 @@ fn write_prime_and_relint(
         write_psc_source(path, updated, encoding).map_err(|err| err.to_string())?;
     }
     ast_cache::ensure_primed_for_game(context.config.game, path, updated);
+    let ignores = IgnoreFile::load_optional(Path::new(&context.root));
     let mut shared = SharedFunctionTable(function_table);
-    let mut diagnostics = lint_with_compile_check(path, updated, context, &mut shared);
-    apply_project_ignores(path, Path::new(&context.root), &mut diagnostics)?;
+    let diagnostics = lint_with_compile_check(
+        path,
+        updated,
+        context,
+        &mut shared,
+        ignores.as_ref().ok().and_then(Option::as_ref),
+    );
+    ignores?;
     Ok(diagnostics)
 }
 
