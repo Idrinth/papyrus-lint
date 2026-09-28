@@ -1,0 +1,14 @@
+{
+  "id": "identical-if-bodies",
+  "name": "Identical If/ElseIf bodies",
+  "category": "Bugprone",
+  "visitor": "ast",
+  "tags": [
+    "maintainability"
+  ],
+  "severity": "info",
+  "importance": "low",
+  "fixable": false,
+  "description": "Flags consecutive If/ElseIf branches whose bodies are the same, often a copy-paste oversight.",
+  "definition": "Flags, as an `[info]`, an `ElseIf` (or the first `ElseIf` after an `If`) whose body is structurally identical to the immediately preceding branch's body in the same `If` statement (e.g. `If a` / `Debug.Trace(\"x\")` followed by `ElseIf b` / `Debug.Trace(\"x\")`). Only consecutive branches are compared; a later branch that matches a non-adjacent earlier one is left alone, and an `Else` body is never compared this way. Empty bodies are left to `empty-body` rather than double-flagged here. Bodies are matched structurally while ignoring source locations, so two copy-pasted blocks on different lines still count as the same. This is a soft hint that a condition or body change may have been forgotten, not a hard correctness error — so it stays off in the `standard` and `careful` presets (low importance, not `kept_in_standard`)."
+}
