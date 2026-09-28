@@ -55,6 +55,41 @@ fn project_root_returns_the_fallback_when_no_entry_matches() {
 }
 
 #[test]
+fn project_root_requires_adjacent_supported_directory_names() {
+    let separator = std::path::MAIN_SEPARATOR;
+
+    assert_eq!(
+        find_project_root(
+            vec![
+                format!(
+                    "project{separator}scripts{separator}generated{separator}source{separator}Example.psc"
+                ),
+                format!(
+                    "project{separator}source-files{separator}scripts{separator}Example.psc"
+                ),
+            ],
+            "fallback".to_string(),
+        ),
+        "fallback"
+    );
+}
+
+#[test]
+fn project_root_recognizes_the_source_scripts_directory_order_for_files() {
+    let separator = std::path::MAIN_SEPARATOR;
+
+    assert_eq!(
+        find_project_root(
+            vec![format!(
+                "project{separator}source{separator}scripts{separator}nested{separator}Example.psc"
+            )],
+            "fallback".to_string(),
+        ),
+        "project"
+    );
+}
+
+#[test]
 fn psc_project_root_command_handles_conventional_and_fallback_layouts() {
     let separator = std::path::MAIN_SEPARATOR;
 
@@ -110,6 +145,23 @@ fn psc_project_root_command_recognizes_yml_configs_in_custom_layouts() {
 }
 
 #[test]
+fn psc_project_root_command_uses_the_nearest_configured_ancestor() {
+    let dir = tempdir().unwrap();
+    let outer_root = dir.path().join("workspace");
+    let project_root = outer_root.join("project");
+    let script = project_root.join("custom/deep/layout/Example.psc");
+
+    fs::create_dir_all(script.parent().unwrap()).unwrap();
+    fs::write(outer_root.join("papyrus-lint.yaml"), "rules: {}\n").unwrap();
+    fs::write(project_root.join("papyrus-lint.yml"), "rules: {}\n").unwrap();
+
+    assert_eq!(
+        find_psc_project_root_for_path(script.to_string_lossy().into_owned()),
+        project_root.to_string_lossy()
+    );
+}
+
+#[test]
 fn project_root_accepts_mixed_case_directory_pairs_and_directory_entries() {
     let separator = std::path::MAIN_SEPARATOR;
 
@@ -146,6 +198,17 @@ fn project_root_commands_accept_frontend_arguments_over_ipc() {
             }),
         ),
         Ok("project"),
+    );
+    assert_ipc_response(
+        &webview,
+        invoke_request(
+            "find_project_root",
+            serde_json::json!({
+                "entries": [],
+                "fallback": "selected/project"
+            }),
+        ),
+        Ok("selected/project"),
     );
     assert_ipc_response(
         &webview,
