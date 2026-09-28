@@ -21,3 +21,27 @@ fn generated_rules_have_one_field_per_known_id() {
         "Rules fields and shared/rules.json must stay 1:1"
     );
 }
+
+#[test]
+fn rule_applies_to_game_treats_empty_allow_list_as_all_games() {
+    assert!(super::rule_applies_to_game(crate::Game::Skyrim, &[]));
+    assert!(super::rule_applies_to_game(crate::Game::Fallout4, &[]));
+    assert!(super::rule_applies_to_game(crate::Game::Starfield, &[]));
+}
+
+#[test]
+fn rule_applies_to_game_respects_allow_list() {
+    let skyrim_only = [crate::Game::Skyrim];
+    assert!(super::rule_applies_to_game(
+        crate::Game::Skyrim,
+        &skyrim_only
+    ));
+    assert!(!super::rule_applies_to_game(
+        crate::Game::Fallout4,
+        &skyrim_only
+    ));
+    assert!(!super::rule_applies_to_game(
+        crate::Game::Starfield,
+        &skyrim_only
+    ));
+}
