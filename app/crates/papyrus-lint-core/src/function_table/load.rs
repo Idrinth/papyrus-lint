@@ -14,7 +14,7 @@ use crate::source_encoding::read_psc_source;
 /// known-scripts map) or from analysis-only [`FunctionTable::with_lookup_roots`]
 /// directories.
 #[derive(Clone, Copy, PartialEq, Eq)]
-pub(super) enum ScriptOrigin {
+pub(in crate::function_table) enum ScriptOrigin {
     Project,
     Lookup,
 }
@@ -166,8 +166,21 @@ impl FunctionTable {
         if let Some(path) = primary {
             return Some((path, ScriptOrigin::Project));
         }
-        self.resolve_lookup_script_path(name_lower)
-            .map(|path| (path, ScriptOrigin::Lookup))
+        if let Some(path) = self.resolve_lookup_script_path(name_lower) {
+            return Some((path, ScriptOrigin::Lookup));
+        }
+        // Same-folder and same-namespace peers are not unqualified index
+        // keys (#1522). They resolve only for the script being linted.
+        if self.known_scripts.is_none() {
+            let indexed = (self.script_index.is_some() || self.lookup_index.is_some())
+                .then_some(&self.leaf_paths);
+            if let Some(hit) =
+                super::peer::resolve_peer_path(name_lower, indexed, self.script_index.is_none())
+            {
+                return Some((hit.path, hit.origin));
+            }
+        }
+        None
     }
 
     fn resolve_lookup_script_path(&self, name_lower: &str) -> Option<PathBuf> {
