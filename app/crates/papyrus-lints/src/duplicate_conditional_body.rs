@@ -1,12 +1,11 @@
-//! Flags adjacent `If` / `ElseIf` branches whose bodies are the same,
+//! Flags adjacent `If` / `ElseIf` / `Else` branches whose bodies are the same,
 //! since that is usually a forgotten edit (the condition was copied, the
 //! body was left unchanged) rather than something intentional.
 //!
 //! Only neighboring arms of the same chain are compared — `If` vs the
-//! first `ElseIf`, or one `ElseIf` vs the next. A later arm that repeats
-//! an earlier body with a different body in between is left alone. Empty
-//! bodies are left to `empty-body`. An `Else` that repeats the last arm
-//! is not flagged: that is often a deliberate fallback.
+//! first `ElseIf`, one `ElseIf` vs the next, or the last `If`/`ElseIf`
+//! vs `Else`. A later arm that repeats an earlier body with a different
+//! body in between is left alone. Empty bodies are left to `empty-body`.
 //!
 //! Bodies are compared structurally (statement and expression shape,
 //! identifiers case-insensitively) so line numbers, columns, and
@@ -31,7 +30,14 @@ impl AstLint for Collect {
     }
 
     fn visit_stmt(&mut self, stmt: &Stmt, _ctx: &mut VisitCtx<'_>) {
-        let Stmt::If { branches, .. } = stmt else {
+        let Stmt::If {
+            branches,
+            else_body,
+            else_line,
+            else_col,
+            ..
+        } = stmt
+        else {
             return;
         };
         for window in branches.windows(2) {
@@ -47,6 +53,23 @@ impl AstLint for Collect {
                     "[info] Adjacent If/ElseIf branch body is identical to the previous \
                      branch; this often means a condition was copied and the body was \
                      left unchanged",
+                    RULE,
+                );
+            }
+        }
+        let Some(previous) = branches.last() else {
+            return;
+        };
+        if else_body.is_empty() || previous.body.is_empty() {
+            return;
+        }
+        if let (Some(line), Some(column)) = (else_line, else_col) {
+            if bodies_equal(&previous.body, else_body) {
+                self.store.emit(
+                    *line,
+                    *column,
+                    "[info] Else body is identical to the previous If/ElseIf branch; \
+                     this often means the branch was copied and left unchanged",
                     RULE,
                 );
             }

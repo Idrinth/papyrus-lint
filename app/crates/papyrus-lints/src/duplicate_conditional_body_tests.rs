@@ -56,9 +56,30 @@ fn ignores_non_adjacent_matching_bodies() {
 }
 
 #[test]
-fn ignores_an_else_that_repeats_the_last_arm() {
+fn flags_an_else_that_repeats_the_last_arm() {
     let diagnostics = check(
         "ScriptName Example\n\nFunction Test(Int a)\n    If a == 1\n        DoThing(x)\n    ElseIf a == 2\n        DoOther(x)\n    Else\n        DoOther(x)\n    EndIf\nEndFunction\n",
+    );
+
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!(diagnostics[0].line, 8);
+    assert!(diagnostics[0].message.contains("Else body"));
+}
+
+#[test]
+fn flags_an_else_that_repeats_the_if_when_there_is_no_elseif() {
+    let diagnostics = check(
+        "ScriptName Example\n\nFunction Test(Bool flag)\n    If flag\n        DoThing(x)\n    Else\n        DoThing(x)\n    EndIf\nEndFunction\n",
+    );
+
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!(diagnostics[0].line, 6);
+}
+
+#[test]
+fn does_not_flag_an_else_with_a_different_body() {
+    let diagnostics = check(
+        "ScriptName Example\n\nFunction Test(Int a)\n    If a == 1\n        DoThing(x)\n    Else\n        DoOther(x)\n    EndIf\nEndFunction\n",
     );
 
     assert!(diagnostics.is_empty());
