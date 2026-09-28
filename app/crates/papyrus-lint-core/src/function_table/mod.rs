@@ -29,9 +29,12 @@ mod closure;
 mod external;
 mod known;
 mod load;
+mod peer;
 mod shared;
 
 use known::known_script_keys;
+
+pub(crate) use peer::enter_peer_scope;
 
 pub use closure::{ClosedScripts, ParsedDependency, TypeClosureOptions};
 pub use shared::SharedFunctionTable;
@@ -93,6 +96,9 @@ pub struct FunctionTable {
     /// Snapshot of analysis-only lookup directories (see
     /// [`Self::with_lookup_roots`]), built the same way as `script_index`.
     lookup_index: Option<Arc<ScriptIndex>>,
+    /// File stem → paths, for peer lookup only. Not an index key: conflict
+    /// checks still use the qualified path in [`ScriptIndex`].
+    leaf_paths: HashMap<String, Vec<peer::LeafHit>>,
     scripts: HashMap<String, Option<ScriptFunctions>>,
     /// mtime of the file each `scripts` entry was loaded from,
     /// or `None` when that name was cached as unresolved. Compared on the
@@ -145,6 +151,7 @@ impl FunctionTable {
             known_scripts: None,
             script_index: None,
             lookup_index: None,
+            leaf_paths: HashMap::new(),
             scripts: HashMap::new(),
             script_mtimes: HashMap::new(),
             descendant_goto_targets: None,
@@ -166,6 +173,7 @@ impl FunctionTable {
             known_scripts: None,
             script_index: None,
             lookup_index: None,
+            leaf_paths: HashMap::new(),
             scripts: HashMap::new(),
             script_mtimes: HashMap::new(),
             descendant_goto_targets: None,
@@ -195,6 +203,7 @@ impl FunctionTable {
             self.lookup_index = Some(cached_lookup_index(&self.root, &lookup_roots));
         }
         self.lookup_roots = lookup_roots;
+        self.rebuild_leaf_paths();
         self
     }
 
@@ -261,7 +270,19 @@ impl FunctionTable {
     /// name lookup while preserving their first-match-wins resolution order.
     pub fn with_script_index(mut self, index: Arc<ScriptIndex>) -> Self {
         self.script_index = Some(index);
+        self.rebuild_leaf_paths();
         self
+    }
+
+    fn rebuild_leaf_paths(&mut self) {
+        let mut leaves = HashMap::new();
+        if let Some(index) = &self.script_index {
+            peer::push_index_leaves(index, load::ScriptOrigin::Project, &mut leaves);
+        }
+        if let Some(index) = &self.lookup_index {
+            peer::push_index_leaves(index, load::ScriptOrigin::Lookup, &mut leaves);
+        }
+        self.leaf_paths = leaves;
     }
 
     /// Merges `entries` -- typically every script a run is about to lint,

@@ -93,6 +93,8 @@ pub fn lint_script<E: ExternalSignatures>(
         }
     }
 
+    let _peer_scope = crate::function_table::enter_peer_scope(path, source);
+
     let mut diagnostics = papyrus_lints::lint_with_external_arguments_and_extra_diagnostics(
         source,
         lint.config,
