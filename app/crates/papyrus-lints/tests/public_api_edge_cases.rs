@@ -1,8 +1,8 @@
 //! Edge-case coverage for the crate's black-box lint and repair API.
 
 use papyrus_lints::{
-    add_disable_comment, add_disable_file_comment, lint, repair, repair_filtered, repaired_line,
-    restrict_to_line,
+    add_disable_comment, add_disable_file_comment, add_nodiscard_comment, lint, repair,
+    repair_filtered, repaired_line, restrict_to_line,
     tags::{tags_for, Importance, RULE_TAGS},
     Config, ExternalSignatures, ParamInfo, KNOWN_RULE_IDS,
 };
@@ -169,6 +169,26 @@ fn public_disable_comment_is_a_noop_without_a_valid_target_and_rules() {
         add_disable_comment(source, 3, &rules(&["comma-spacing"])),
         source
     );
+}
+
+#[test]
+fn public_nodiscard_comment_marks_a_function_header() {
+    let source = "ScriptName Example\n\nInt Function Value()\n    Return 1\nEndFunction\n";
+
+    assert_eq!(
+        add_nodiscard_comment(source, 3),
+        "ScriptName Example\n\nInt Function Value() ; @nodiscard\n    Return 1\nEndFunction\n"
+    );
+}
+
+#[test]
+fn public_nodiscard_comment_preserves_invalid_targets_and_existing_markers() {
+    let source =
+        "ScriptName Example\n\n; @nodiscard\nInt Function Value()\n    Return 1\nEndFunction\n";
+
+    assert_eq!(add_nodiscard_comment(source, 0), source);
+    assert_eq!(add_nodiscard_comment(source, 4), source);
+    assert_eq!(add_nodiscard_comment(source, 99), source);
 }
 
 #[test]
