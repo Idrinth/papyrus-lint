@@ -36,7 +36,11 @@ not depend on Tauri.
   `A/B/C.psc` under a script root, an import, or a lookup root. Lookup is
   case-insensitive. A namespaced script that exists is not a
   `Script:Struct`. Skyrim names stay a single segment and match only a
-  file sitting directly in a search root. `script_locator`, `FunctionTable`,
+  file sitting directly in a search root. While a script is being linted,
+  an unqualified name may still resolve to a peer in that script's own
+  directory, or to the only file of that stem under its namespace folder.
+  Those paths are not unqualified index keys and are not
+  `conflicting-script-versions` matches. `script_locator`, `FunctionTable`,
   and `.ppj` `<Script>` entries share this mapping.
 - Vanilla engine types with no on-disk `.psc` resolve from the bundled AST
   cache by `ScriptName` (`FunctionTable::ensure_loaded` /

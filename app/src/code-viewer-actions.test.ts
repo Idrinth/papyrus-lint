@@ -21,6 +21,7 @@ import {
   handleCodeViewerFileDisableLineClick,
   handleCodeViewerConfigDisableLineClick,
   handleCodeViewerNodiscardLineClick,
+  handleCodeViewerLineActionClick,
 } from "./code-viewer-actions";
 import { openCodeViewer } from "./code-viewer-dialog";
 
@@ -501,6 +502,18 @@ describe("handleCodeViewerNodiscardLineClick", () => {
 });
 
 describe("handleCodeViewerLineActionClick (delegated click handling)", () => {
+  it("ignores non-element event targets and malformed line numbers", async () => {
+    invokeMock.mockReset();
+
+    await handleCodeViewerLineActionClick({ target: null } as unknown as MouseEvent);
+    const button = document.createElement("button");
+    button.dataset.lineAction = "ignore";
+    button.dataset.line = "not-a-line";
+    await handleCodeViewerLineActionClick({ target: button } as unknown as MouseEvent);
+
+    expect(invokeMock).not.toHaveBeenCalled();
+  });
+
   it("routes a click on the per-line Fix button to handleCodeViewerFixLineClick", async () => {
     invokeImplFor({
       read_psc_file: () => "line one  \n",
@@ -556,6 +569,22 @@ describe("handleCodeViewerLineActionClick (delegated click handling)", () => {
     await Promise.resolve();
 
     expect(invokeMock).toHaveBeenCalledWith("lint_psc_file", expect.objectContaining({ path: "/a.psc" }));
+  });
+
+  it("routes a click on the per-line Nodiscard button to handleCodeViewerNodiscardLineClick", async () => {
+    invokeImplFor({
+      read_psc_file: () => "Int Function GetValue()\n",
+      add_nodiscard_comment_to_psc_line: () => [],
+    });
+    await openCodeViewer("/a.psc", []);
+
+    document.querySelector<HTMLButtonElement>('#code-viewer-line-1 [data-line-action="nodiscard"]')!.click();
+    await vi.waitFor(() => {
+      expect(invokeMock).toHaveBeenCalledWith(
+        "add_nodiscard_comment_to_psc_line",
+        expect.objectContaining({ path: "/a.psc", line: 1 }),
+      );
+    });
   });
 
   it("ignores a click that doesn't land on an action button", async () => {
