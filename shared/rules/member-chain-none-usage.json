@@ -1,0 +1,15 @@
+{
+  "id": "member-chain-none-usage",
+  "name": "Chained member access may dereference None",
+  "category": "Bugprone",
+  "visitor": "ast",
+  "tags": [
+    "correctness"
+  ],
+  "severity": "warning",
+  "importance": "medium",
+  "enabled_by_default": false,
+  "fixable": false,
+  "description": "Flags a member/method access whose receiver is itself a member or call (e.g. a.GetLinkTo(...).Kill()), which none-form-usage skips. Opt-in: intermediate results are not proven None, so this is noisier than none-form-usage.",
+  "definition": "Flags, as a `[warning]`, a member/method access (`a.GetLinkTo(...).Kill()`, `akRef.LinkedRef.Disable()`) whose receiver is itself a `Call`, `Member`, or `Cast` expression rather than a bare identifier — the gap left by \"None used as an existing Form\", which only flags when the receiver is a plain local/property name still known to be `None`. Chained access is a common runtime crash site because an intermediate call or property can return `None` even when the root is fine. Only chains rooted at a local variable, function parameter, script-level property/variable, `Self`, or `Parent` are considered; a static script qualifier such as `Game.GetPlayer().AddItem(...)` is left unflagged, since that shape is ubiquitous and the root is not an in-script binding. Array indexing (`act[2].Kill()`) is left to \"Array element used without a None check\". A bare `a.GetName()` is left to \"None used as an existing Form\" so the two rules do not duplicate. Disabled by default (off in careful, standard, and strict) because intermediate `None` is not proven — a project opts in via `rules.member_chain_none_usage`."
+}
