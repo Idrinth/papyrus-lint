@@ -110,6 +110,21 @@ fn lint_config_from_path_commands_report_parse_and_write_errors() {
     std::fs::write(&invalid, "semicolon: [").unwrap();
 
     assert!(load_lint_config_from_path(invalid.to_string_lossy().into_owned()).is_err());
+    assert!(load_strict_achlist_scope(
+        dir.path().to_string_lossy().into_owned(),
+        Some(invalid.to_string_lossy().into_owned()),
+    )
+    .is_err());
+    assert!(load_strict_achlist_scope(
+        dir.path().to_string_lossy().into_owned(),
+        Some(
+            dir.path()
+                .join("missing.yaml")
+                .to_string_lossy()
+                .into_owned()
+        ),
+    )
+    .is_err());
     assert!(save_lint_config_to_path(
         dir.path()
             .join("missing/config.yaml")
@@ -187,6 +202,7 @@ fn config_commands_report_invalid_yaml_and_unwritable_directories() {
     assert!(load_compiler_path(dir_string.clone()).is_err());
     assert!(save_compiler_path(dir_string.clone(), "compiler".to_string()).is_err());
     assert!(load_compile_check(dir_string.clone()).is_err());
+    assert!(load_strict_achlist_scope(dir_string.clone(), None).is_err());
     assert!(save_compile_check(dir_string.clone(), true).is_err());
     assert!(load_script_roots(dir_string.clone()).is_err());
     assert!(save_script_roots(dir_string.clone(), vec!["../SharedScripts".to_string()]).is_err());
@@ -198,6 +214,40 @@ fn config_commands_report_invalid_yaml_and_unwritable_directories() {
 
     let missing_dir = dir.path().join("missing").to_string_lossy().into_owned();
     assert!(save_lint_config(missing_dir, Default::default()).is_err());
+}
+
+#[test]
+fn strict_achlist_scope_loads_from_the_project_configuration() {
+    let dir = tempdir().unwrap();
+    let dir_string = dir.path().to_string_lossy().into_owned();
+
+    assert!(!load_strict_achlist_scope(dir_string.clone(), None).unwrap());
+
+    std::fs::write(
+        dir.path().join("papyrus-lint.yaml"),
+        "strict_achlist_scope: true\n",
+    )
+    .unwrap();
+
+    assert!(load_strict_achlist_scope(dir_string, None).unwrap());
+}
+
+#[test]
+fn strict_achlist_scope_prefers_an_explicit_configuration_path() {
+    let dir = tempdir().unwrap();
+    std::fs::write(
+        dir.path().join("papyrus-lint.yaml"),
+        "strict_achlist_scope: false\n",
+    )
+    .unwrap();
+    let explicit = dir.path().join("custom-config.yaml");
+    std::fs::write(&explicit, "strict_achlist_scope: true\n").unwrap();
+
+    assert!(load_strict_achlist_scope(
+        dir.path().to_string_lossy().into_owned(),
+        Some(explicit.to_string_lossy().into_owned()),
+    )
+    .unwrap());
 }
 
 #[test]
