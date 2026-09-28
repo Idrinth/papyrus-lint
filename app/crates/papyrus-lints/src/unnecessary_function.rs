@@ -1,24 +1,29 @@
-//! Flags a `Function` whose body consists of exactly one statement, since
-//! it adds an indirection without doing enough on its own to justify a
-//! separate declaration — a caller could just as well inline that one
-//! statement instead.
+//! Flags a `Function` whose body is empty or consists of exactly one
+//! statement. An empty body does nothing, and a single statement adds an
+//! indirection without doing enough on its own to justify a separate
+//! declaration — a caller could just as well inline that one statement
+//! instead. `empty-body` covers empty `While`/`If`/`Else` bodies, not
+//! functions, so a zero-statement function is reported here.
 //!
 //! Only `Function`s are checked. `Event`s are always left alone: they're
 //! declared by the engine rather than the script's own author, so a
-//! single-statement handler may well be forwarding to shared logic used by
-//! other events too, which is a reasonable reason for it to exist on its
-//! own. A `Function` named `Fragment_<digits>` (e.g. `Fragment_0`) is left
-//! alone for the same reason: CreationKit generates that name and calls it
-//! directly, so it isn't a wrapper the script's own author could inline
-//! away. A parameterless `Function` returning one of Papyrus's primitive
-//! scalar types (`Int`, `Float`, `Bool`, `String`) is left alone too: that
-//! shape is how a script exposes a named constant to the outside world
-//! (e.g. `Int Function GetFooThreshold() Global` `Return 5`
-//! `EndFunction`) without baking the value into every instance as a
-//! `Property`/`Variable`, which is a deliberate design rather than an
-//! indirection worth inlining away. This works from the parsed AST, so a
-//! script that doesn't parse cleanly is left unchecked rather than guessed
-//! at.
+//! single-statement (or empty) handler may well be forwarding to shared
+//! logic used by other events too, which is a reasonable reason for it to
+//! exist on its own. A `Native` function is left alone too: it has no
+//! Papyrus body because the engine (or a native plugin) supplies the
+//! implementation. A `Function` named `Fragment_<digits>` (e.g.
+//! `Fragment_0`) is left alone for the same reason: CreationKit generates
+//! that name and calls it directly, so it isn't a wrapper the script's
+//! own author could inline away. A parameterless `Function` returning one
+//! of Papyrus's primitive scalar types (`Int`, `Float`, `Bool`, `String`)
+//! whose body is exactly one statement is left alone too: that shape is
+//! how a script exposes a named constant to the outside world (e.g. `Int
+//! Function GetFooThreshold() Global` `Return 5` `EndFunction`) without
+//! baking the value into every instance as a `Property`/`Variable`, which
+//! is a deliberate design rather than an indirection worth inlining away.
+//! The same signature with an empty body is still flagged, because it
+//! doesn't return a constant. This works from the parsed AST, so a script
+//! that doesn't parse cleanly is left unchecked rather than guessed at.
 //!
 //! [`repair`] handles the specific, common shape of a single-statement
 //! function that's nothing but a "pure forwarding" wrapper around another
@@ -34,9 +39,9 @@ use std::collections::HashMap;
 use papyrus_parser::ast::{Expr, FunctionDecl, IfBranch, Param, Script, Stmt, TypeName};
 use papyrus_parser::token::{Token, TokenKind};
 
+use crate::token_walk::{line_starts, matching_close_paren};
 use crate::visitor::{AstLint, LintVisitor, Store, VisitCtx};
 use crate::Diagnostic;
-use crate::token_walk::{line_starts, matching_close_paren};
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "unnecessary-function";
@@ -52,22 +57,34 @@ impl AstLint for Collect {
     }
 
     fn visit_function(&mut self, function: &FunctionDecl, _ctx: &mut VisitCtx<'_>) {
-        if function.is_event || function.body.len() != 1 || is_fragment_function(&function.name) {
+        if function.is_event || function.is_native || is_fragment_function(&function.name) {
             return;
         }
-        if function.params.is_empty() && returns_simple_type(&function.return_type) {
+        // A parameterless primitive-returning function is a named constant
+        // only when its body is that one statement. An empty body isn't.
+        if function.body.len() == 1
+            && function.params.is_empty()
+            && returns_simple_type(&function.return_type)
+        {
             return;
         }
-        self.store.emit(
-            function.line,
-            1,
+        if function.body.len() > 1 {
+            return;
+        }
+        let message = if function.body.is_empty() {
+            format!(
+                "[info] Function '{}' has an empty body; consider removing it instead of \
+                 keeping it as a separate function",
+                function.name
+            )
+        } else {
             format!(
                 "[info] Function '{}' contains only a single statement; consider inlining it \
                  at its call site(s) instead of keeping it as a separate function",
                 function.name
-            ),
-            RULE,
-        );
+            )
+        };
+        self.store.emit(function.line, 1, message, RULE);
     }
 }
 
@@ -75,7 +92,8 @@ pub fn visitor() -> LintVisitor {
     LintVisitor::Ast(Box::new(Collect::default()))
 }
 
-/// Checks `source` for `Function`s whose body is exactly one statement long.
+/// Checks `source` for `Function`s whose body is empty or exactly one
+/// statement long.
 #[allow(dead_code)] // unit tests; collect_diagnostics uses visitor()
 pub fn check(
     source: &str,
@@ -319,7 +337,9 @@ fn collect_call_site_edits(
                 collect_call_site_edits_in_expr(condition, wrapped_callees, ctx, edits);
                 collect_call_site_edits(body, wrapped_callees, ctx, edits);
             }
-            Stmt::LockGuard { body, else_body, .. } => {
+            Stmt::LockGuard {
+                body, else_body, ..
+            } => {
                 collect_call_site_edits(body, wrapped_callees, ctx, edits);
                 collect_call_site_edits(else_body, wrapped_callees, ctx, edits);
             }
