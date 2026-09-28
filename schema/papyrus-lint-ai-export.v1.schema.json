@@ -160,6 +160,7 @@
         "static_condition",
         "division_by_zero",
         "empty_body",
+        "identical_if_bodies",
         "unused_local_variable",
         "variable_used_before_assignment",
         "none_form_usage",
@@ -268,6 +269,9 @@
           "type": "boolean"
         },
         "empty_body": {
+          "type": "boolean"
+        },
+        "identical_if_bodies": {
           "type": "boolean"
         },
         "unused_local_variable": {
