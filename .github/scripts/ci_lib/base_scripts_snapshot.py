@@ -17,7 +17,7 @@ SKYRIM_EXTENDER_SCRIPTS_ZIP = Path("shared/scripts/skyrim-extender-scripts.zip")
 FALLOUT4_EXTENDER_SCRIPTS_ZIP = Path("shared/scripts/fallout4-extender-scripts.zip")
 STARFIELD_EXTENDER_SCRIPTS_ZIP = Path("shared/scripts/starfield-extender-scripts.zip")
 FIXTURE_DIR = Path("fixtures")
-PRESET_CONFIG = Path("configuration/presets")
+PRESET_CONFIG = Path("shared/configuration/presets")
 
 
 class SnapshotError(RuntimeError):
