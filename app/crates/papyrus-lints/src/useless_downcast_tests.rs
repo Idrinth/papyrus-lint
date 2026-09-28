@@ -281,6 +281,28 @@ fn flags_casts_from_locals_and_literals() {
 }
 
 #[test]
+fn flags_casts_of_self_and_parent_to_their_declared_types() {
+    let diagnostics = check(
+        "ScriptName Example Extends ParentScript\n\nFunction Test()\n    Foo(Self as Example)\n    Foo(Parent as ParentScript)\nEndFunction\n",
+    );
+
+    let lines: Vec<_> = diagnostics
+        .iter()
+        .map(|diagnostic| diagnostic.line)
+        .collect();
+    assert_eq!(lines, vec![4, 5]);
+}
+
+#[test]
+fn does_not_flag_none_even_when_cast_to_an_object_type() {
+    let diagnostics = check(
+        "ScriptName Example\n\nFunction Test()\n    Foo(None as Actor)\nEndFunction\n",
+    );
+
+    assert!(diagnostics.is_empty());
+}
+
+#[test]
 fn function_type_environments_do_not_leak_between_functions() {
     let diagnostics = check(
         "ScriptName Example\n\nFunction First(Actor value)\n    Foo(value as Actor)\nEndFunction\n\nFunction Second()\n    Foo(value as Actor)\nEndFunction\n",
@@ -331,6 +353,20 @@ fn repair_preserves_a_meaningful_cast() {
     let source = "ScriptName Example\n\nFunction Test(Int value)\n    Float converted = value as Float\nEndFunction\n";
 
     assert_eq!(repair(source), source);
+}
+
+#[test]
+fn token_helpers_handle_cast_span_token_kinds() {
+    use papyrus_parser::token::{Token, TokenKind};
+
+    let identifier = Token::new(TokenKind::Identifier("Actor".to_string()), 2, 4);
+    let bracket = Token::new(TokenKind::RBracket, 1, 1);
+    let other = Token::new(TokenKind::Eof, 1, 1);
+
+    assert_eq!(token_offset(&[0, 10], &identifier), 13);
+    assert_eq!(token_text(&identifier), "Actor");
+    assert_eq!(token_text(&bracket), "]");
+    assert_eq!(token_text(&other), "");
 }
 
 #[test]
