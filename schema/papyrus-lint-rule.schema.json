@@ -65,6 +65,16 @@
     "repair_order": {
       "type": "integer",
       "minimum": 1
+    },
+    "games": {
+      "description": "If set, this rule only runs when the project's `game` config value is one of these. Omit the field so the rule applies to every game (backward compatible).",
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": ["skyrim", "fallout4", "starfield"]
+      }
     }
   },
   "dependentSchemas": {

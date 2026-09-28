@@ -1,0 +1,18 @@
+{
+  "id": "register-for-update-in-on-update",
+  "name": "Periodic RegisterForUpdate inside OnUpdate",
+  "category": "Bugprone",
+  "visitor": "ast",
+  "tags": [
+    "correctness",
+    "performance"
+  ],
+  "severity": "warning",
+  "importance": "high",
+  "fixable": false,
+  "games": [
+    "skyrim"
+  ],
+  "description": "Flags RegisterForUpdate / RegisterForUpdateGameTime called inside OnUpdate / OnUpdateGameTime, which stacks another repeating timer every tick; use RegisterForSingleUpdate (or the GameTime variant) instead.",
+  "definition": "Flags, as a `[warning]`, a call to the repeating `RegisterForUpdate` or `RegisterForUpdateGameTime` from inside an `Event OnUpdate` or `Event OnUpdateGameTime` body (in any `State`), since each firing then schedules another repeating registration on top of the ones already active and the script's timer count grows without bound. Skyrim's one-shot `RegisterForSingleUpdate` / `RegisterForSingleUpdateGameTime` exist specifically for the common \"do work, then schedule the next tick\" pattern and do not stack that way. Matches by function name alone (case-insensitively), unqualified or through any receiver, the same way \"Short wait/update interval\" does; does not flag the `RegisterForSingle*` forms. Scoped to Skyrim via the rule's `games` field — Fallout 4 replaced this API with `StartTimer` / `OnTimer`."
+}

@@ -139,7 +139,10 @@ fn rules_dispatch(context: &BuildContext, rules: &[RuleMetadata]) {
     {
         let key = metadata::config_key(&rule.id);
         let module = metadata::module_name(&rule.id);
-        out.line(format_args!("    if rules.{key} {{"));
+        out.line(format_args!(
+            "    if {} {{",
+            rule_enabled_condition(rule, &key)
+        ));
         match rule.visitor.as_str() {
             "none" => {
                 out.line("        session.add_direct(|source, ast, tokens, config, external| {");
@@ -180,7 +183,10 @@ fn rules_dispatch(context: &BuildContext, rules: &[RuleMetadata]) {
         for line in [
             "    source = apply_rule(".to_string(),
             "        source,".to_string(),
-            format!("        rules.{key} && applies({module}::RULE),"),
+            format!(
+                "        {} && applies({module}::RULE),",
+                rule_enabled_condition(rule, &key)
+            ),
             "        |source| {".to_string(),
             "            let tokens = papyrus_parser::tokenize(source).ok();".to_string(),
             "            let ast = papyrus_parser::parse(source).ok();".to_string(),
@@ -196,4 +202,25 @@ fn rules_dispatch(context: &BuildContext, rules: &[RuleMetadata]) {
     out.line("    source");
     out.line("}");
     context.write("rules_dispatch.rs", "dispatch", &out.finish());
+}
+
+fn games_slice(games: &[String]) -> String {
+    if games.is_empty() {
+        return "&[]".to_string();
+    }
+    let variants: Vec<String> = games
+        .iter()
+        .map(|game| match game.as_str() {
+            "skyrim" => "crate::Game::Skyrim".to_string(),
+            "fallout4" => "crate::Game::Fallout4".to_string(),
+            "starfield" => "crate::Game::Starfield".to_string(),
+            other => panic!("shared/rules.json: unknown game `{other}`"),
+        })
+        .collect();
+    format!("&[{}]", variants.join(", "))
+}
+
+fn rule_enabled_condition(rule: &RuleMetadata, key: &str) -> String {
+    let games = games_slice(&rule.games);
+    format!("rules.{key} && rule_applies_to_game(config.game, {games})")
 }
