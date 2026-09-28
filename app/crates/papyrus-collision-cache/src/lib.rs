@@ -220,6 +220,10 @@ pub fn preload_with_progress(
     preload_in_with_progress(&dir, game, paths, on_progress);
 }
 
+/// Test helper: preload into an explicit cache directory without a progress
+/// callback. `pub(crate)` would be dead code on the library target, because
+/// production code goes through [`preload_with_progress`].
+#[cfg(test)]
 pub(crate) fn preload_in(
     dir: &Path,
     game: Game,
