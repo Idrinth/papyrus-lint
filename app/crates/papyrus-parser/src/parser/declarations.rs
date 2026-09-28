@@ -87,15 +87,13 @@ impl Parser {
             } else if self.at_keyword(Keyword::Native) {
                 self.advance();
                 flags.is_native = true;
-            } else if self.mode.has_fallout4_dialect()
-                && (self.at_keyword(Keyword::DebugOnly)
-                    || self.at_keyword(Keyword::BetaOnly)
-                    || self.at_identifier_ignore_ascii_case("Const")
-                    || self.at_identifier_ignore_ascii_case("Default"))
-            {
-                self.advance();
-            } else if self.mode.has_starfield_dialect()
-                && self.at_identifier_ignore_ascii_case("Mandatory")
+            } else if (self.mode.has_fallout4_dialect()
+                    && (self.at_keyword(Keyword::DebugOnly)
+                        || self.at_keyword(Keyword::BetaOnly)
+                        || self.at_identifier_ignore_ascii_case("Const")
+                        || self.at_identifier_ignore_ascii_case("Default")))
+                || (self.mode.has_starfield_dialect()
+                    && self.at_identifier_ignore_ascii_case("Mandatory"))
             {
                 self.advance();
             } else {
