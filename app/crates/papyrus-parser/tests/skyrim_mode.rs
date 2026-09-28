@@ -316,5 +316,5 @@ fn parses_mandatory_flag() {
         "ScriptName FrontDoorToLodgeScript Hidden Mandatory\n",
         GameEdition::Fallout4,
     )
-    .expect_err("Mandatory should not parse as a Skyrim script flag");
+    .expect_err("expected end of line, found Identifier(\"Mandatory\")");
 }

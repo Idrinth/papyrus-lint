@@ -584,5 +584,5 @@ fn parses_mandatory_flag() {
         "ScriptName FrontDoorToLodgeScript Hidden Mandatory\n",
         GameEdition::Fallout4,
     )
-    .expect("Mandatory should not parse as a Fallout 4 script flag");
+    .expect_err("expected end of line, found Identifier(\"Mandatory\")");
 }
