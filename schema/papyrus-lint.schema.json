@@ -291,6 +291,11 @@
           "type": "boolean",
           "default": true
         },
+        "duplicate_conditional_body": {
+          "description": "Whether the duplicate-conditional-body lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
         "unused_local_variable": {
           "description": "Whether the unused-local-variable lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
           "type": "boolean",
@@ -609,6 +614,7 @@
         "unreachable_elseif": true,
         "division_by_zero": true,
         "empty_body": true,
+        "duplicate_conditional_body": true,
         "unused_local_variable": true,
         "variable_used_before_assignment": true,
         "none_form_usage": true,
