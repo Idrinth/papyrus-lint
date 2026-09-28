@@ -117,11 +117,13 @@ fn load_scan_settings(
     // letting an achlist's entries resolve each other across arbitrary,
     // non-conventional source directories:
     //
-    // - Off (the default): every listed entry's parent directory is added
-    //   as a generic additional root, exactly as before this option
-    //   existed. This is what an achlist-based project may already depend
-    //   on — e.g. an unlisted sibling script in the same directory as a
-    //   listed one still resolving — so normal usage sees no change at all.
+    // - Off (the default): each listed entry contributes a search root so
+    //   siblings can resolve. Nested files under a conventional
+    //   `scripts/source` / `source/scripts` tree (any casing) contribute
+    //   that tree, not their immediate parent — otherwise `User/Foo.psc`
+    //   would also be indexed as unqualified `foo.psc`. Flat custom
+    //   folders still contribute their parent, exactly as before this
+    //   option existed.
     // - On: each listed script is instead registered directly by name (see
     //   `FunctionTable::with_known_scripts`), without treating its
     //   directory as a root. This never makes an unlisted file that happens
@@ -350,12 +352,13 @@ fn add_script_parent_roots(
     additional_script_roots: &mut Vec<String>,
 ) {
     for script_path in script_paths {
-        let Some(parent) = script_path.parent() else {
-            continue;
-        };
-        let root = parent
+        let search_root = papyrus_lint_core::script_search_root::inferred_script_search_root(
+            script_path,
+            project_root,
+        );
+        let root = search_root
             .strip_prefix(project_root)
-            .unwrap_or(parent)
+            .unwrap_or(search_root.as_path())
             .to_string_lossy()
             .into_owned();
         if !additional_script_roots.contains(&root) {
