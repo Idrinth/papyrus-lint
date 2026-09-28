@@ -2,7 +2,11 @@ use std::fs;
 use std::sync::Arc;
 
 use super::super::FunctionTable;
-use super::enter_peer_scope;
+use super::{
+    deepest_namespace_dir, enter_peer_scope, index_package, namespace_root, parent_eq_paths,
+    push_index_leaves, resolve_peer_path, LeafHit,
+};
+use crate::function_table::load::ScriptOrigin;
 use crate::script_locator::{
     build_script_index, conflicting_script_versions_in_index, CONFLICTING_SCRIPT_VERSIONS_RULE,
 };
@@ -187,4 +191,123 @@ fn known_scripts_mode_does_not_resolve_an_unlisted_peer() {
     let _scope = enter_peer_scope(&drink, source);
     assert!(table.script_exists("HC_DrinkWaterEffectScript"));
     assert!(!table.script_exists("HC_ManagerScript"));
+}
+
+#[test]
+fn nested_peer_scopes_restore_the_previous_directory() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    let outer_dir = root.path().join("Outer");
+    let inner_dir = root.path().join("Inner");
+    let outer_peer = write(&outer_dir, "Peer.psc", "ScriptName Peer\n");
+    let inner_peer = write(&inner_dir, "Peer.psc", "ScriptName Peer\n");
+    let mut leaves = std::collections::HashMap::new();
+    leaves.insert(
+        "peer".to_owned(),
+        vec![
+            LeafHit {
+                path: outer_peer.clone(),
+                origin: ScriptOrigin::Project,
+            },
+            LeafHit {
+                path: inner_peer.clone(),
+                origin: ScriptOrigin::Lookup,
+            },
+        ],
+    );
+
+    assert!(resolve_peer_path("peer", Some(&leaves), false).is_none());
+    let outer = enter_peer_scope(&outer_dir.join("Referrer.psc"), "ScriptName Referrer\n");
+    assert_eq!(
+        resolve_peer_path("peer.psc", Some(&leaves), false)
+            .expect("outer peer should resolve")
+            .path,
+        outer_peer
+    );
+    {
+        let _inner = enter_peer_scope(&inner_dir.join("Referrer.psc"), "ScriptName Referrer\n");
+        let hit =
+            resolve_peer_path("peer", Some(&leaves), false).expect("inner peer should resolve");
+        assert_eq!(hit.path, inner_peer);
+        assert!(matches!(hit.origin, ScriptOrigin::Lookup));
+    }
+    assert_eq!(
+        resolve_peer_path("peer", Some(&leaves), false)
+            .expect("outer scope should be restored")
+            .path,
+        outer_peer
+    );
+    drop(outer);
+    assert!(resolve_peer_path("peer", Some(&leaves), false).is_none());
+}
+
+#[test]
+fn peer_lookup_rejects_empty_and_qualified_names() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    let referrer = root.path().join("Referrer.psc");
+    let _scope = enter_peer_scope(&referrer, "ScriptName Referrer\n");
+
+    for name in ["", ".psc", "User:Peer", "User/Peer", "User\\Peer"] {
+        assert!(
+            resolve_peer_path(name, None, true).is_none(),
+            "{name:?} must not be treated as an unqualified peer"
+        );
+    }
+}
+
+#[test]
+fn push_index_leaves_deduplicates_paths_and_preserves_the_first_origin() {
+    let path = std::path::PathBuf::from("Scripts/Source/User/Foo.psc");
+    let mut index = crate::script_locator::ScriptIndex::new();
+    index.insert("user/foo.psc".to_owned(), vec![path.clone()]);
+    index.insert("alias/foo.psc".to_owned(), vec![path.clone()]);
+    let mut leaves = std::collections::HashMap::new();
+
+    push_index_leaves(&index, ScriptOrigin::Project, &mut leaves);
+    push_index_leaves(&index, ScriptOrigin::Lookup, &mut leaves);
+
+    let hits = leaves.get("foo").expect("foo leaf should be indexed");
+    assert_eq!(hits.len(), 1);
+    assert_eq!(hits[0].path, path);
+    assert!(matches!(hits[0].origin, ScriptOrigin::Project));
+}
+
+#[test]
+fn namespace_helpers_handle_comments_case_and_the_deepest_match() {
+    assert_eq!(
+        namespace_root("\n ; header\nSCRIPTNAME CreationClub:Fragments:Example extends Quest\n"),
+        "creationclub"
+    );
+    assert_eq!(namespace_root("ScriptName Unqualified\n"), "");
+    assert_eq!(namespace_root("; comment only\n"), "");
+    assert_eq!(namespace_root("Function BeforeDeclaration()\n"), "");
+
+    let path = std::path::Path::new("/CreationClub/Other/creationclub/Fragments");
+    assert_eq!(
+        deepest_namespace_dir(path, "CREATIONCLUB"),
+        Some(std::path::PathBuf::from("/CreationClub/Other/creationclub"))
+    );
+    assert!(deepest_namespace_dir(path, "").is_none());
+    assert!(parent_eq_paths(
+        std::path::Path::new("Scripts/Source/User"),
+        std::path::Path::new("scripts/source/user")
+    ));
+    assert!(!parent_eq_paths(
+        std::path::Path::new("Scripts/Source/User"),
+        std::path::Path::new("Scripts/User")
+    ));
+}
+
+#[test]
+fn package_index_accepts_psc_case_insensitively_and_marks_duplicates_ambiguous() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    let package = root.path().join("Package");
+    let unique = write(&package.join("One"), "Unique.PSC", "ScriptName Unique\n");
+    write(&package.join("One"), "Shared.psc", "ScriptName SharedOne\n");
+    write(&package.join("Two"), "SHARED.PSC", "ScriptName SharedTwo\n");
+    write(&package, "NotPapyrus.txt", "ignored\n");
+
+    let leaves = index_package(&package);
+    assert_eq!(leaves.get("unique"), Some(&Some(unique)));
+    assert_eq!(leaves.get("shared"), Some(&None));
+    assert!(!leaves.contains_key("notpapyrus"));
 }
