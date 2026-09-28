@@ -517,7 +517,11 @@ class RepositoryDocsConfigurationTest(unittest.TestCase):
                 self.assertTrue(description.strip())
                 self.assertTrue(content.strip())
                 self.assertIn("View raw source on GitHub", content)
-                self.assertIn(f"/{doc.get('repo_dir', 'docs')}/{doc['filename']}", content)
+                if source_url := doc.get("source_url"):
+                    # Generated artifacts link to their source of truth, not the gitignored file.
+                    self.assertIn(source_url, content)
+                else:
+                    self.assertIn(f"/{doc.get('repo_dir', 'docs')}/{doc['filename']}", content)
 
 
 if __name__ == "__main__":

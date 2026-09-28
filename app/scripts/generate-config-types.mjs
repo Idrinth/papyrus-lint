@@ -4,6 +4,7 @@
 // Mirrors papyrus-lints/build.rs writing Rules / default_rules() and Config
 // into $OUT_DIR.
 
+import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -354,10 +355,22 @@ export function writeConfigTypes(options) {
   return rules.length;
 }
 
+function ensureDefaultYaml(repoRoot) {
+  const script = path.join(repoRoot, ".github", "scripts", "generate_default_config.py");
+  const result = spawnSync("python3", [script, "--repo-root", repoRoot], { stdio: "inherit" });
+  if (result.error) {
+    throw new Error(`could not run ${script}: ${result.error.message}`);
+  }
+  if (result.status !== 0) {
+    throw new Error(`failed to generate shared/configuration/papyrus-lint.default.yaml (exit ${result.status})`);
+  }
+}
+
 const isMain = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 if (isMain) {
   const appDir = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
   const repoRoot = path.resolve(appDir, "..");
+  ensureDefaultYaml(repoRoot);
   const count = writeConfigTypes({
     rulesDir: path.join(repoRoot, "shared", "rules"),
     defaultYamlPath: path.join(repoRoot, "shared", "configuration", "papyrus-lint.default.yaml"),
