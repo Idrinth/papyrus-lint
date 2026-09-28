@@ -95,8 +95,8 @@ fn peek_declared_script_name(source: &str) -> Option<String> {
 
 #[cfg(test)]
 mod tests {
-    use super::peek_declared_script_name;
     use super::super::FunctionTable;
+    use super::peek_declared_script_name;
     use std::fs;
 
     #[test]
