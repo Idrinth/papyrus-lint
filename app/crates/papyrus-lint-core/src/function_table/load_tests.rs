@@ -490,3 +490,134 @@ fn cached_lookup_index_is_reused_for_the_same_directories() {
     assert!(std::sync::Arc::ptr_eq(&first, &second));
     assert!(first.contains_key("actor.psc"));
 }
+
+fn write_namespaced(
+    root: &std::path::Path,
+    namespace: &str,
+    stem: &str,
+    source: &str,
+) -> std::path::PathBuf {
+    let dir = root.join("scripts/source").join(namespace);
+    fs::create_dir_all(&dir).expect("failed to create namespace dir");
+    let path = dir.join(format!("{stem}.psc"));
+    fs::write(&path, source).expect("failed to write namespaced script");
+    path
+}
+
+fn fallout_table(root: &std::path::Path) -> FunctionTable {
+    FunctionTable::new(root.to_path_buf()).with_game(papyrus_lints::Game::Fallout4)
+}
+
+#[test]
+fn directory_lookup_loads_a_qualified_script_without_collapsing_stems() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    write_namespaced(
+        root.path(),
+        "User",
+        "Foo",
+        "ScriptName User:Foo\n\nFunction FromUser()\nEndFunction\n",
+    );
+    write_namespaced(
+        root.path(),
+        "Other",
+        "Foo",
+        "ScriptName Other:Foo\n\nFunction FromOther()\nEndFunction\n",
+    );
+
+    let mut table = fallout_table(root.path());
+    assert!(table.script_exists("User:Foo"));
+    assert!(table.script_exists("Other:Foo"));
+    assert!(
+        !table.script_exists("Foo"),
+        "a nested script is not a bare stem"
+    );
+    assert!(table.lookup_function("User:Foo", "FromUser").is_some());
+    assert!(table.lookup_function("Other:Foo", "FromOther").is_some());
+    assert!(table.lookup_function("User:Foo", "FromOther").is_none());
+    assert!(table.lookup_function("Foo", "FromUser").is_none());
+    assert!(table.script_exists("Actor"));
+    assert!(table.lookup_function("Actor", "GetActorValue").is_some());
+}
+
+#[test]
+fn namespaced_extends_and_import_answer_ancestry_struct_and_event_queries() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    write_namespaced(
+        root.path(),
+        "User",
+        "Base",
+        "ScriptName User:Base\n\n\
+         Struct Payload\n    Int Count\nEndStruct\n\n\
+         Event OnQuest()\nEndEvent\n\n\
+         Function FromParent()\nEndFunction\n",
+    );
+    write_namespaced(
+        root.path(),
+        "User",
+        "Lib",
+        "ScriptName User:Lib\n\nStruct ImportedBits\n    Int N\nEndStruct\n",
+    );
+    write_namespaced(
+        root.path(),
+        "User",
+        "Child",
+        "ScriptName User:Child Extends User:Base\nImport User:Lib\n",
+    );
+
+    let mut table = fallout_table(root.path());
+    assert!(table.is_subtype("User:Child", "User:Base"));
+    assert!(table.declares_struct_in_ancestry("User:Child", "Payload"));
+    assert_eq!(table.has_event("User:Child", "OnQuest"), Some(true));
+    assert!(table.lookup_function("User:Child", "FromParent").is_some());
+    assert!(table.declares_struct("User:Lib", "ImportedBits"));
+    assert!(!table.declares_struct("User:Child", "ImportedBits"));
+}
+
+#[test]
+fn project_qualified_script_wins_over_the_same_name_in_a_lookup_root() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    write_namespaced(
+        root.path(),
+        "User",
+        "Foo",
+        "ScriptName User:Foo\n\nFunction FromProject()\nEndFunction\n",
+    );
+    let vanilla = tempfile::tempdir().expect("failed to create temp dir");
+    let vanilla_dir = vanilla.path().join("User");
+    fs::create_dir_all(&vanilla_dir).expect("failed to create lookup namespace");
+    fs::write(
+        vanilla_dir.join("Foo.psc"),
+        "ScriptName User:Foo\n\nFunction FromVanilla()\nEndFunction\n",
+    )
+    .expect("failed to write lookup script");
+
+    let mut table = fallout_table(root.path())
+        .with_lookup_roots(vec![vanilla.path().to_string_lossy().into_owned()]);
+    assert!(table.lookup_function("User:Foo", "FromProject").is_some());
+    assert!(table.lookup_function("User:Foo", "FromVanilla").is_none());
+}
+
+#[test]
+fn unqualified_actor_still_resolves_from_a_flat_project_file() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    let source = root.path().join("scripts/source");
+    fs::create_dir_all(&source).expect("failed to create source dir");
+    fs::write(
+        source.join("Actor.psc"),
+        "ScriptName Actor\n\nFunction FromFlatFile()\nEndFunction\n",
+    )
+    .expect("failed to write flat Actor");
+    write_namespaced(
+        root.path(),
+        "User",
+        "Actor",
+        "ScriptName User:Actor\n\nFunction FromNamespace()\nEndFunction\n",
+    );
+
+    let mut table = fallout_table(root.path());
+    assert!(table.lookup_function("Actor", "FromFlatFile").is_some());
+    assert!(table.lookup_function("Actor", "FromNamespace").is_none());
+    assert!(table
+        .lookup_function("User:Actor", "FromNamespace")
+        .is_some());
+}

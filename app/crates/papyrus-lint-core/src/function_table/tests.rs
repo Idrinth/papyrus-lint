@@ -158,3 +158,57 @@ fn preload_keeps_the_first_entry_for_a_duplicate_name() {
         CacheProbe::Hit(None)
     ));
 }
+
+#[test]
+fn preload_caches_a_nested_script_under_its_qualified_name() {
+    let dir = tempfile::tempdir().expect("failed to create temp dir");
+    let user = dir.path().join("scripts/source/User");
+    let other = dir.path().join("scripts/source/Other");
+    fs::create_dir_all(&user).expect("failed to create User dir");
+    fs::create_dir_all(&other).expect("failed to create Other dir");
+    let user_path = user.join("Foo.psc");
+    let other_path = other.join("Foo.psc");
+    let user_source = "ScriptName User:Foo\n\nFunction FromUser()\nEndFunction\n";
+    let other_source = "ScriptName Other:Foo\n\nFunction FromOther()\nEndFunction\n";
+    fs::write(&user_path, user_source).expect("failed to write User:Foo");
+    fs::write(&other_path, other_source).expect("failed to write Other:Foo");
+    let user_ast =
+        papyrus_parser::parse_with_mode(user_source, papyrus_parser::parser::GameEdition::Fallout4)
+            .expect("User:Foo should parse");
+    let other_ast = papyrus_parser::parse_with_mode(
+        other_source,
+        papyrus_parser::parser::GameEdition::Fallout4,
+    )
+    .expect("Other:Foo should parse");
+
+    let mut table =
+        FunctionTable::new(dir.path().to_path_buf()).with_game(papyrus_lints::Game::Fallout4);
+    table.preload(vec![
+        PreloadedScript {
+            path: &user_path,
+            name_lower: "foo".to_string(),
+            ast: Some(&user_ast),
+            source: user_source,
+        },
+        PreloadedScript {
+            path: &other_path,
+            name_lower: "foo".to_string(),
+            ast: Some(&other_ast),
+            source: other_source,
+        },
+    ]);
+
+    assert!(matches!(
+        table.lookup_function_cached("user:foo", "fromuser"),
+        CacheProbe::Hit(Some(_))
+    ));
+    assert!(matches!(
+        table.lookup_function_cached("other:foo", "fromother"),
+        CacheProbe::Hit(Some(_))
+    ));
+    assert!(matches!(
+        table.lookup_function_cached("user:foo", "fromother"),
+        CacheProbe::Hit(None)
+    ));
+    assert!(table.get_cached("foo").is_none());
+}

@@ -229,6 +229,34 @@ impl FunctionTable {
         self
     }
 
+    /// Keys under which a preload of `path` is stored. Includes `explicit`
+    /// (the name the caller already resolved) plus the file stem, the
+    /// path-derived `folder:stem`, and the declared `ScriptName`, but only
+    /// when this table would load `path` for that key. A nested
+    /// `Scripts/Source/User/Foo.psc` is therefore cached as `user:foo`. It
+    /// is not cached as a bare `foo` unless a flat file of that stem is
+    /// what resolution returns — and only for the path that wins.
+    pub(super) fn cache_keys_resolving_to(&self, path: &Path, explicit: &str) -> Vec<String> {
+        let mut keys = Vec::new();
+        let mut consider = |raw: &str| {
+            let key = raw.to_ascii_lowercase();
+            if key.is_empty() || keys.contains(&key) {
+                return;
+            }
+            let resolves_here = self
+                .resolve_script_path_kind(&key)
+                .is_some_and(|(resolved, _)| resolved.as_path() == path);
+            if resolves_here {
+                keys.push(key);
+            }
+        };
+        consider(explicit);
+        for key in known_script_keys(&self.root, &self.additional_roots, path) {
+            consider(&key);
+        }
+        keys
+    }
+
     /// Reuses a snapshot of the table's normal search directories for O(1)
     /// name lookup while preserving their first-match-wins resolution order.
     pub fn with_script_index(mut self, index: Arc<ScriptIndex>) -> Self {
@@ -250,37 +278,48 @@ impl FunctionTable {
     /// name two entries both claim keeps the first (matching directory
     /// search's own first-match-wins order).
     ///
+    /// The caller's `name_lower` is not the only slot. The same parsed
+    /// script is also stored under every other key that resolves to that
+    /// path — file stem when it wins, path-derived `folder:stem`
+    /// (`user:foo`), and declared `ScriptName` — so `Extends User:Foo` and
+    /// `script_exists("User:Foo")` hit the cache instead of the stem alone.
+    /// A key that resolves to a different file is left untouched.
+    ///
     /// Once this returns, [`SharedFunctionTable`]'s exclusive write lock is
     /// only ever needed afterward for a name never passed here and never
     /// reached by [`Self::parse_type_closure`] — typically a typo, a dynamic
     /// name, or a type introduced when `--fix` rewrote a file.
     pub fn preload(&mut self, entries: Vec<PreloadedScript<'_>>) {
         for entry in entries {
-            if self.scripts.contains_key(&entry.name_lower) {
+            let keys = self.cache_keys_resolving_to(entry.path, &entry.name_lower);
+            if keys.is_empty() {
                 continue;
             }
-            let Some((resolved_path, origin)) = self.resolve_script_path_kind(&entry.name_lower)
-            else {
-                continue;
-            };
-            if resolved_path.as_path() != entry.path {
-                continue;
-            }
-            let mtime = load::file_mtime(&resolved_path);
+            let mtime = load::file_mtime(entry.path);
             let functions = entry
                 .ast
                 .map(|ast| ScriptFunctions::from_script(ast, entry.source));
-            // Lookup-root scripts used to reach this cache only through
-            // `ensure_loaded`. Preload is now the path that fills them, so a
-            // later table in this process still skips the re-read.
-            if origin == load::ScriptOrigin::Lookup {
-                if let Some(mtime) = mtime {
-                    load::store_lookup_script(resolved_path, mtime, functions.clone());
+            let mut stored_lookup = false;
+            for key in keys {
+                if self.scripts.contains_key(&key) {
+                    continue;
                 }
+                let Some((resolved_path, origin)) = self.resolve_script_path_kind(&key) else {
+                    continue;
+                };
+                if resolved_path.as_path() != entry.path {
+                    continue;
+                }
+                if origin == load::ScriptOrigin::Lookup && !stored_lookup {
+                    if let Some(mtime) = mtime {
+                        load::store_lookup_script(resolved_path, mtime, functions.clone());
+                    }
+                    stored_lookup = true;
+                }
+                self.invalidate_descendant_index_if_project_script(&key);
+                self.scripts.insert(key.clone(), functions.clone());
+                self.script_mtimes.insert(key, mtime);
             }
-            self.invalidate_descendant_index_if_project_script(&entry.name_lower);
-            self.scripts.insert(entry.name_lower.clone(), functions);
-            self.script_mtimes.insert(entry.name_lower, mtime);
         }
     }
 
@@ -307,8 +346,10 @@ pub struct PreloadedScript<'a> {
     /// [`FunctionTable`]'s own resolution of `name_lower` before its parsed
     /// data is trusted (see [`FunctionTable::preload`]).
     pub path: &'a Path,
-    /// This script's lowercased file stem, the same key [`FunctionTable`]
-    /// resolves an `Extends`/type reference to it by.
+    /// Lowercased name the caller resolved this path under. [`FunctionTable::preload`]
+    /// also stores the script under every other key that resolves to `path`
+    /// (file stem when it wins, path-derived `folder:stem`, declared
+    /// `ScriptName`), so `User:Foo` and a flat `Foo` stay distinct slots.
     pub name_lower: String,
     /// This script's parsed AST, or `None` if it failed to parse (still
     /// worth preloading as a cached-unresolved entry, matching what

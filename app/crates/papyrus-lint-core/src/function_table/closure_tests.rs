@@ -697,3 +697,81 @@ fn referenced_types_load_array_elements_and_struct_owners() {
     }
     assert!(names.iter().all(|name| !name.ends_with("[]")));
 }
+
+#[test]
+fn closure_preloads_a_namespaced_parent_and_import_under_qualified_keys() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    let user = root.path().join("scripts/source/User");
+    std::fs::create_dir_all(&user).expect("failed to create User dir");
+    let base = user.join("Base.psc");
+    let lib = user.join("Lib.psc");
+    let child = user.join("Child.psc");
+    std::fs::write(
+        &base,
+        "ScriptName User:Base\n\n\
+         Struct Payload\n    Int Count\nEndStruct\n\n\
+         Event OnQuest()\nEndEvent\n\n\
+         Function FromParent()\nEndFunction\n",
+    )
+    .expect("failed to write parent");
+    std::fs::write(
+        &lib,
+        "ScriptName User:Lib\n\nStruct ImportedBits\n    Int N\nEndStruct\n",
+    )
+    .expect("failed to write import");
+    std::fs::write(
+        &child,
+        "ScriptName User:Child Extends User:Base\nImport User:Lib\n",
+    )
+    .expect("failed to write child");
+
+    let mut table =
+        FunctionTable::new(root.path().to_path_buf()).with_game(papyrus_lints::Game::Fallout4);
+    let parsed = parse_fallout(&child);
+    let closed = table.parse_type_closure(
+        std::slice::from_ref(&child),
+        TypeClosureOptions {
+            threads: 1,
+            total_files: None,
+        },
+        parse_fallout,
+        |parsed| parsed.ast.as_ref(),
+        || {},
+    );
+    let names: Vec<_> = closed
+        .dependencies
+        .iter()
+        .map(|dependency| dependency.name_lower.as_str())
+        .collect();
+    assert!(
+        names.contains(&"user:base"),
+        "parent should load as user:base, got {names:?}"
+    );
+    assert!(
+        names.contains(&"user:lib"),
+        "import should load as user:lib, got {names:?}"
+    );
+    assert!(
+        !names.contains(&"user:child"),
+        "the seed is not also a dependency"
+    );
+
+    preload_closed(&mut table, &[(child, parsed)], &closed);
+    assert!(matches!(table.get_cached("user:child"), Some(Some(_))));
+    assert!(table.get_cached("child").is_none());
+    assert!(matches!(table.get_cached("user:base"), Some(Some(_))));
+    assert!(matches!(table.get_cached("user:lib"), Some(Some(_))));
+    assert!(table.is_subtype("User:Child", "User:Base"));
+    assert!(table.declares_struct_in_ancestry("User:Child", "Payload"));
+    assert_eq!(table.has_event("User:Child", "OnQuest"), Some(true));
+    assert!(table.lookup_function("User:Child", "FromParent").is_some());
+    assert!(table.declares_struct("User:Lib", "ImportedBits"));
+}
+
+fn parse_fallout(path: &std::path::Path) -> SeedParse {
+    let source = std::fs::read_to_string(path).unwrap_or_default();
+    let ast =
+        papyrus_parser::parse_with_mode(&source, papyrus_parser::parser::GameEdition::Fallout4)
+            .ok();
+    SeedParse { source, ast }
+}
