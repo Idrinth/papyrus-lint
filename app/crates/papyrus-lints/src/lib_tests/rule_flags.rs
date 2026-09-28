@@ -253,6 +253,12 @@ fn each_rule_flag_gates_only_its_own_lint() {
                 config_with(|c| c.rules.empty_body = false),
             ),
             (
+                "ScriptName Example\n\nFunction Test(Int a)\n    If a == 1\n        DoThing(x)\n    ElseIf a == 2\n        DoThing(x)\n    EndIf\nEndFunction\n",
+                duplicate_conditional_body::RULE,
+                Config::default(),
+                config_with(|c| c.rules.duplicate_conditional_body = false),
+            ),
+            (
                 "ScriptName Example\n\nFunction Test()\n    Utility.Wait(0.01)\nEndFunction\n",
                 short_wait_interval::RULE,
                 Config::default(),

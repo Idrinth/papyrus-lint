@@ -86,6 +86,7 @@ rules:
   unreachable_elseif: true
   division_by_zero: true
   empty_body: true
+  duplicate_conditional_body: true
   unused_local_variable: true
   variable_used_before_assignment: true
   none_form_usage: true
