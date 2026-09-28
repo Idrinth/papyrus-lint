@@ -22,6 +22,8 @@ compile_check: false
 strict_achlist_scope: false
 # true, false
 semicolon: false
+# true, false
+bool_like_int: true
 # tab, space
 indentation: tab
 # Non-negative integer; used only when indentation is space
