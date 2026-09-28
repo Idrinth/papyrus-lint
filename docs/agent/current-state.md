@@ -31,6 +31,10 @@ README.
   [`papyrus-lint-core`](../../app/crates/papyrus-lint-core/README.md)
   README; the GUI drop state is
   [`app/src/README.md`](../../app/src/README.md).
+- Fallout 4 / Starfield `A:B:C` is `A/B/C.psc` under a script root, import,
+  or lookup root (case-insensitive; a located namespaced script is not a
+  `Script:Struct`; Skyrim names stay one segment) —
+  [`papyrus-lint-core`](../../app/crates/papyrus-lint-core/README.md).
 
 ## Where to read
 
