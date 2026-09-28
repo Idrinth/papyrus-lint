@@ -435,6 +435,7 @@
         "checkbox_label": "Treat 0 and 1 as equivalent to false and true.",
         "title": "Whether the strict boolean check accepts 0 and 1 as valid boolean replacements.",
         "ui_order": 155
+      }
     }
   ]
 }
