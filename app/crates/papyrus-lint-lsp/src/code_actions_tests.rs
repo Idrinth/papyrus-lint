@@ -110,6 +110,24 @@ fn provided_diagnostics_are_filtered_and_compiler_errors_cannot_be_ignored() {
 }
 
 #[test]
+fn provided_diagnostics_without_rule_codes_are_skipped() {
+    let (_dir, documents, uri) = open_script("Scriptname Quest\n");
+    let actions = provide(
+        &documents,
+        &json!({
+            "textDocument": { "uri": uri },
+            "range": { "start": { "line": 0 }, "end": { "line": 0 } },
+            "context": { "diagnostics": [{
+                "source": "papyrus-lint",
+                "range": { "start": { "line": 0 } }
+            }] }
+        }),
+    );
+
+    assert_eq!(actions, json!([]));
+}
+
+#[test]
 fn quickfix_subkinds_are_accepted_but_missing_documents_are_empty() {
     let documents = Documents::default();
     let actions = provide(
@@ -160,6 +178,41 @@ fn project_ignore_updates_an_existing_config() {
 }
 
 #[test]
+fn project_ignore_creates_a_config_when_none_exists() {
+    let (_dir, documents, uri) = open_script("Scriptname Quest \n");
+    let actions = provide(
+        &documents,
+        &json!({
+            "textDocument": { "uri": uri },
+            "range": { "start": { "line": 0 }, "end": { "line": 0 } },
+            "context": { "diagnostics": [{
+                "source": "papyrus-lint",
+                "code": "trailing-whitespace",
+                "range": { "start": { "line": 0 } }
+            }] }
+        }),
+    );
+    let changes = actions
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|action| action["title"].as_str().unwrap().contains("project"))
+        .unwrap()["edit"]["documentChanges"]
+        .as_array()
+        .unwrap();
+
+    assert_eq!(changes[0]["kind"], "create");
+    assert!(changes[0]["uri"]
+        .as_str()
+        .unwrap()
+        .ends_with("papyrus-lint.yaml"));
+    assert_eq!(
+        changes[1]["edits"][0]["newText"],
+        "rules:\n  trailing_whitespace: false\n"
+    );
+}
+
+#[test]
 fn yaml_updates_preserve_layout_and_avoid_duplicate_disables() {
     assert_eq!(
         disable_rule_in_yaml("anything: true", "x"),
@@ -175,6 +228,10 @@ fn yaml_updates_preserve_layout_and_avoid_duplicate_disables() {
         disabled
     );
     assert_eq!(disable_rule_in_yaml("rules:\n", ""), "rules:\n");
+    assert_eq!(
+        disable_rule_in_yaml("rules:# lint switches\n\n# note\nnext: true\n", "x"),
+        "rules:# lint switches\n\n# note\n  x: false\nnext: true\n"
+    );
 }
 
 #[test]

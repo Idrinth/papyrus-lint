@@ -148,6 +148,9 @@ fn unopened_and_malformed_document_notifications_are_ignored() {
     let mut output = Vec::new();
     documents.did_open(&json!({}), &mut output).unwrap();
     documents
+        .did_change(&json!({ "contentChanges": [] }), &mut output)
+        .unwrap();
+    documents
         .did_change(
             &json!({ "textDocument": { "uri": "file:///missing.psc" } }),
             &mut output,
@@ -159,6 +162,7 @@ fn unopened_and_malformed_document_notifications_are_ignored() {
             &mut output,
         )
         .unwrap();
+    documents.did_save(&json!({}), &mut output).unwrap();
     documents.did_close(&json!({}), &mut output).unwrap();
     documents
         .replace_text("file:///missing.psc", "text".to_string(), &mut output)
