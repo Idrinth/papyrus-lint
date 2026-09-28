@@ -203,16 +203,40 @@ fn cached_hash(store: &mut Store, dir: &Path, game: Game, path: &Path) -> Option
 
 /// Loads collision files for every distinct file name in `paths`.
 pub fn preload(game: Game, paths: impl IntoIterator<Item = impl AsRef<Path>>) {
+    preload_with_progress(game, paths, |_, _| {});
+}
+
+/// Same as [`preload`], reporting `completed`/`total` distinct script names
+/// as each collision file is opened. `total == 0` means the cache directory
+/// is unavailable, so there is nothing to load.
+pub fn preload_with_progress(
+    game: Game,
+    paths: impl IntoIterator<Item = impl AsRef<Path>>,
+    on_progress: impl FnMut(usize, usize),
+) {
     let Some(dir) = ast_cache::cache_dir() else {
         return;
     };
-    preload_in(&dir, game, paths);
+    preload_in_with_progress(&dir, game, paths, on_progress);
 }
 
+/// Test helper: preload into an explicit cache directory without a progress
+/// callback. `pub(crate)` would be dead code on the library target, because
+/// production code goes through [`preload_with_progress`].
+#[cfg(test)]
 pub(crate) fn preload_in(
     dir: &Path,
     game: Game,
     paths: impl IntoIterator<Item = impl AsRef<Path>>,
+) {
+    preload_in_with_progress(dir, game, paths, |_, _| {});
+}
+
+fn preload_in_with_progress(
+    dir: &Path,
+    game: Game,
+    paths: impl IntoIterator<Item = impl AsRef<Path>>,
+    mut on_progress: impl FnMut(usize, usize),
 ) {
     game.assert_supported();
     let mut names = HashSet::new();
@@ -221,9 +245,18 @@ pub(crate) fn preload_in(
             names.insert(name.to_ascii_lowercase());
         }
     }
+    let total = names.len();
+    on_progress(0, total);
     let mut store = lock_store();
-    for name in names {
+    for (index, name) in names.into_iter().enumerate() {
         load_group(&mut store, dir, game, &name);
+        let completed = index + 1;
+        // Opening thousands of tiny cache files is the silent stretch the
+        // desktop bar used to sit through at "Parsing 0 / N". Report often
+        // enough to move the bar without a channel event per name.
+        if completed == total || completed % 25 == 0 {
+            on_progress(completed, total);
+        }
     }
 }
 

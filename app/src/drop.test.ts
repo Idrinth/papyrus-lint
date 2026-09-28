@@ -252,10 +252,11 @@ describe("handleDroppedPaths", () => {
         const bar = document.querySelector<HTMLProgressElement>("#lint-progress-bar")!;
         const busy = () => document.querySelector("#lint-progress")!.classList.contains("lint-progress--busy");
 
-        expect(label()).toBe("Parsing 0 / 1 files");
-        expect(busy()).toBe(false);
-        expect(bar.value).toBe(0);
-        expect(bar.max).toBe(1);
+        // The batch command has not reported a counted phase yet, so the bar
+        // stays on the indeterminate preparing label instead of "Parsing 0 / N".
+        expect(label()).toBe("Preparing 1 file");
+        expect(busy()).toBe(true);
+        expect(bar.hasAttribute("value")).toBe(false);
 
         channel.onmessage({ kind: "progress", phase: "Parsing", completed: 1, total: 2 });
         expect(label()).toBe("Parsing 1 / 2 files");
