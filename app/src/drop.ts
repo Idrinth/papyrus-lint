@@ -10,7 +10,7 @@ import { currentLintConfig } from "./config-types";
 import { clearError, setDropZoneLoading, showError, showResult } from "./main";
 import { switchTab } from "./main-tabs";
 import { isAchlistPath, isPpjPath, isPscPath, scriptRootsForAchlist } from "./path";
-import { scheduleHideLintProgress, showLintActivity, showLintProgress, updateLintProgress } from "./progress";
+import { scheduleHideLintProgress, showLintActivity, updateLintProgress } from "./progress";
 import { loadProjectConfig } from "./project-settings";
 import {
   projectDirForAchlist,
@@ -101,10 +101,12 @@ function applyProjectLintEvent(event: ProjectLintEvent) {
 }
 
 async function runParseThenLint(paths: string[], generation: number) {
-  // One in-process batch: parse the type closure (the bar starts at the
-  // lint-target count and grows as referenced scripts are enqueued), index
-  // the function table, then lint. Results stream in completion order.
-  showLintProgress(paths.length, "Parsing");
+  // Don't start on a determinate "Parsing 0 / N" bar. The command still has
+  // to ship the path list across IPC, build the function table, and preload
+  // the collision cache before the first parse callback fires — on a 5k-file
+  // drop that gap looks like a hung bar. An indeterminate phase names the
+  // wait; the first `total > 0` event from the command turns it into a bar.
+  showLintActivity(preparingFilesLabel(paths.length));
   await lintProjectScripts(
     paths,
     paths.length === 0
@@ -119,6 +121,13 @@ async function runParseThenLint(paths: string[], generation: number) {
   if (generation === currentParseGeneration) {
     scheduleHideLintProgress();
   }
+}
+
+function preparingFilesLabel(count: number): string {
+  if (count === 1) {
+    return "Preparing 1 file";
+  }
+  return `Preparing ${count} files`;
 }
 
 export async function handleDroppedPaths(paths: string[]) {
@@ -146,6 +155,7 @@ export async function handleDroppedPaths(paths: string[]) {
       switchTab("lint");
       renderPscResults(currentPscOutcomes);
 
+      showLintActivity("Loading project settings");
       await loadProjectConfig(projectDir);
       setAchlistScriptRoots(scriptRootsForAchlist(entries));
       setPpjImportRoots([]);
@@ -183,6 +193,7 @@ export async function handleDroppedPaths(paths: string[]) {
       switchTab("lint");
       renderPscResults(currentPscOutcomes);
 
+      showLintActivity("Loading project settings");
       await loadProjectConfig(projectDir);
       if (listingGeneration !== currentListingGeneration) {
         return;
@@ -214,6 +225,7 @@ export async function handleDroppedPaths(paths: string[]) {
     switchTab("lint");
     renderPscResults(currentPscOutcomes);
 
+    showLintActivity("Loading project settings");
     await loadProjectConfig(projectDir);
     setAchlistScriptRoots([]);
     setPpjImportRoots([]);
@@ -225,6 +237,7 @@ export async function handleDroppedPaths(paths: string[]) {
   if (paths.length === 1) {
     const dirPath = paths[0];
     try {
+      showLintActivity("Listing scripts");
       const entries = await invoke<string[]>("list_psc_files_recursively", {
         path: dirPath,
       });
@@ -238,6 +251,7 @@ export async function handleDroppedPaths(paths: string[]) {
       switchTab("lint");
       renderPscResults(currentPscOutcomes);
 
+      showLintActivity("Loading project settings");
       await loadProjectConfig(projectDir);
       setAchlistScriptRoots(scriptRootsForAchlist(entries));
       setPpjImportRoots([]);
