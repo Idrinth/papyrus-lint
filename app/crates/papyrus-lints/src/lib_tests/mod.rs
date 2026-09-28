@@ -10,6 +10,7 @@ mod diagnostic;
 mod disable;
 mod lint;
 mod public_helpers;
+mod register_for_update_in_on_update_flag;
 mod repair;
 mod repair_external;
 mod restrict_to_line;
