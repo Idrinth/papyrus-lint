@@ -540,6 +540,26 @@ fn directory_lookup_loads_a_qualified_script_without_collapsing_stems() {
 }
 
 #[test]
+fn project_qualified_script_overrides_the_bundled_script() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    let name = "CreationClub:CCAdoptDogAliasScript";
+    write_namespaced(
+        root.path(),
+        "CreationClub",
+        "CCAdoptDogAliasScript",
+        "ScriptName CreationClub:CCAdoptDogAliasScript\n\nFunction FromProject()\nEndFunction\n",
+    );
+
+    let mut table = fallout_table(root.path());
+    assert!(crate::ast_cache::contains_script_name(
+        papyrus_lints::Game::Fallout4,
+        name
+    ));
+    assert!(table.script_exists(name));
+    assert!(table.lookup_function(name, "FromProject").is_some());
+}
+
+#[test]
 fn namespaced_extends_and_import_answer_ancestry_struct_and_event_queries() {
     let root = tempfile::tempdir().expect("failed to create temp dir");
     write_namespaced(
