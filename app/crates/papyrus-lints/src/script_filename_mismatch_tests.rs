@@ -107,6 +107,36 @@ fn reports_the_scriptname_identifiers_own_position() {
 }
 
 #[test]
+fn accepts_a_namespaced_script_under_a_layout_folder_outside_its_namespace() {
+    assert!(check_path(
+        "Base/Fragments/Quests/QF_Test.psc",
+        "ScriptName Fragments:Quests:QF_Test\n"
+    )
+    .is_none());
+    assert!(check_path(
+        "Base/CreationClub/CCAdoptDogAliasScript.psc",
+        "ScriptName CreationClub:CCAdoptDogAliasScript\n"
+    )
+    .is_none());
+    assert!(check_path("DLC01/Foo.psc", "ScriptName DLC01:Foo\n").is_none());
+    assert!(check_path("Base/DLC01/Foo.psc", "ScriptName DLC01:Foo\n").is_none());
+}
+
+#[test]
+fn still_flags_a_wrong_namespace_after_a_layout_folder() {
+    let diagnostic = check_path("Base/Other/MyScript.psc", "ScriptName User:MyScript\n")
+        .expect("wrong namespace should be flagged");
+
+    assert!(diagnostic.message.contains("'User:MyScript'"));
+    assert!(diagnostic.message.contains("Base/Other/MyScript.psc"));
+}
+
+#[test]
+fn still_flags_an_extra_folder_inside_the_namespace() {
+    assert!(check_path("User/Wrong/MyScript.psc", "ScriptName User:MyScript\n").is_some());
+}
+
+#[test]
 fn does_not_honor_a_disable_comment_itself_since_the_caller_filters_it_in() {
     // Callers merge this into
     // `lint_with_external_arguments_and_extra_diagnostics`, which filters
