@@ -25,6 +25,7 @@ fn rule(id: &str) -> RuleMetadata {
         visitor: "ast".to_string(),
         repair_order: None,
         enabled_by_default: true,
+        games: Vec::new(),
     }
 }
 
@@ -61,6 +62,32 @@ fn rejects_invalid_tags_and_importance() {
         .unwrap_err()
         .to_string()
         .contains("unknown visitor"));
+}
+
+#[test]
+fn accepts_known_games_allow_list() {
+    let mut scoped = rule("skyrim-only");
+    scoped.games = vec!["skyrim".to_string()];
+    assert_eq!(validate(&[scoped]), Ok(()));
+    let mut multi = rule("two-games");
+    multi.games = vec!["skyrim".to_string(), "fallout4".to_string()];
+    assert_eq!(validate(&[multi]), Ok(()));
+}
+
+#[test]
+fn rejects_unknown_or_duplicate_games() {
+    let mut unknown = rule("unknown-game");
+    unknown.games = vec!["oblivion".to_string()];
+    assert!(validate(&[unknown])
+        .unwrap_err()
+        .to_string()
+        .contains("unknown game"));
+    let mut duplicate = rule("dup-game");
+    duplicate.games = vec!["skyrim".to_string(), "skyrim".to_string()];
+    assert!(validate(&[duplicate])
+        .unwrap_err()
+        .to_string()
+        .contains("duplicate game"));
 }
 
 #[test]
