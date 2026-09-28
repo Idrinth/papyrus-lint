@@ -780,6 +780,7 @@ Scripts/Source/F4SE/HeadPart.psc:12:1: [identifier-casing] [warning] Property 'T
 Scripts/Source/F4SE/HeadPart.psc:12:14: [unused-property] [warning] Property 'Type_HeadRear' is declared but never used (https://papyrus-lint.idrinth.de/rules.html#rule-unused-property)
 Scripts/Source/F4SE/HeadPart.psc:21:1: [identifier-casing] [warning] Parameter 'p' does not match the configured PascalCase casing style (https://papyrus-lint.idrinth.de/rules.html#rule-identifier-casing)
 Scripts/Source/F4SE/HeadPart.psc:28:1: [identifier-casing] [warning] Parameter 'vRaces' does not match the configured PascalCase casing style (https://papyrus-lint.idrinth.de/rules.html#rule-identifier-casing)
+Scripts/Source/F4SE/HeadPart.psc:29:1: [final-newline] [warning] File ends with extra blank lines (https://papyrus-lint.idrinth.de/rules.html#rule-final-newline)
 Scripts/Source/F4SE/Input.psc:4:1: [semicolon] [warning] Line should not end with a semicolon (https://papyrus-lint.idrinth.de/rules.html#rule-semicolon)
 Scripts/Source/F4SE/Input.psc:11:1: [semicolon] [warning] Line should not end with a semicolon (https://papyrus-lint.idrinth.de/rules.html#rule-semicolon)
 Scripts/Source/F4SE/Input.psc:17:1: [identifier-casing] [warning] Parameter 'control' does not match the configured PascalCase casing style (https://papyrus-lint.idrinth.de/rules.html#rule-identifier-casing)
@@ -2442,4 +2443,4 @@ Scripts/Source/F4SE/Weapon.psc:4:1: [identifier-casing] [warning] Parameter 'akA
 Scripts/Source/F4SE/Weapon.psc:13:1: [identifier-casing] [warning] Parameter 'mod' does not match the configured PascalCase casing style (https://papyrus-lint.idrinth.de/rules.html#rule-identifier-casing)
 Scripts/Source/F4SE/Weapon.psc:16:1: [identifier-casing] [warning] Variable 'inst' does not match the configured PascalCase casing style (https://papyrus-lint.idrinth.de/rules.html#rule-identifier-casing)
 Scripts/Source/F4SE/Weapon.psc:19:12: [final-newline] [warning] File does not end with a newline (https://papyrus-lint.idrinth.de/rules.html#rule-final-newline)
-PapyrusLinterCLI: 2444 problem(s) found in 27 of 29 script(s).
+PapyrusLinterCLI: 2445 problem(s) found in 27 of 29 script(s).
