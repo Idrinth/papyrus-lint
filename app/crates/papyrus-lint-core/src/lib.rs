@@ -35,5 +35,6 @@ pub mod project_lint;
 pub mod project_root;
 mod script_functions;
 pub mod script_locator;
+pub mod script_search_root;
 pub mod source_encoding;
 pub mod stale_pex;
