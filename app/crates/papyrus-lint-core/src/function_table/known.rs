@@ -96,6 +96,8 @@ fn peek_declared_script_name(source: &str) -> Option<String> {
 #[cfg(test)]
 mod tests {
     use super::peek_declared_script_name;
+    use super::super::FunctionTable;
+    use std::fs;
 
     #[test]
     fn peek_reads_a_namespaced_script_name() {
@@ -103,5 +105,63 @@ mod tests {
             peek_declared_script_name("; header\nScriptName User:Foo Extends Quest\n"),
             Some("user:foo".to_string())
         );
+    }
+
+    #[test]
+    fn with_known_scripts_registers_qualified_names_without_collapsing_stems() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        let user_dir = root.path().join("scripts/source/User");
+        let other_dir = root.path().join("scripts/source/Other");
+        fs::create_dir_all(&user_dir).expect("failed to create User namespace dir");
+        fs::create_dir_all(&other_dir).expect("failed to create Other namespace dir");
+        let user_foo = user_dir.join("Foo.psc");
+        let other_foo = other_dir.join("Foo.psc");
+        fs::write(
+            &user_foo,
+            "ScriptName User:Foo\n\nFunction FromUser()\nEndFunction\n",
+        )
+        .expect("failed to write User:Foo");
+        fs::write(
+            &other_foo,
+            "ScriptName Other:Foo\n\nFunction FromOther()\nEndFunction\n",
+        )
+        .expect("failed to write Other:Foo");
+
+        let mut table = FunctionTable::new(root.path().to_path_buf())
+            .with_game(papyrus_lints::Game::Fallout4)
+            .with_known_scripts(&[user_foo, other_foo]);
+
+        assert!(table.script_exists("User:Foo"));
+        assert!(table.script_exists("Other:Foo"));
+        assert!(table.script_exists("Foo"));
+        assert!(table.lookup_function("User:Foo", "FromUser").is_some());
+        assert!(table.lookup_function("Other:Foo", "FromOther").is_some());
+        assert!(table.lookup_function("User:Foo", "FromOther").is_none());
+        assert!(table.lookup_function("Foo", "FromUser").is_some());
+    }
+
+    #[test]
+    fn with_known_scripts_loads_a_namespaced_parent_for_extends() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        let user_dir = root.path().join("scripts/source/User");
+        fs::create_dir_all(&user_dir).expect("failed to create User namespace dir");
+        let parent = user_dir.join("Base.psc");
+        let child = user_dir.join("Child.psc");
+        fs::write(
+            &parent,
+            "ScriptName User:Base\n\nFunction FromParent()\nEndFunction\n",
+        )
+        .expect("failed to write namespaced parent");
+        fs::write(&child, "ScriptName User:Child Extends User:Base\n")
+            .expect("failed to write namespaced child");
+
+        let mut table = FunctionTable::new(root.path().to_path_buf())
+            .with_game(papyrus_lints::Game::Fallout4)
+            .with_known_scripts(&[parent, child]);
+
+        let signature = table
+            .lookup_function("User:Child", "FromParent")
+            .expect("namespaced Extends should load the qualified parent");
+        assert_eq!(signature.name, "FromParent");
     }
 }
