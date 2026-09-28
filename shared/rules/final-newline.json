@@ -10,6 +10,6 @@
   "importance": "low",
   "fixable": true,
   "repair_order": 18,
-  "description": "Requires non-empty files to end with a newline.",
-  "definition": "Requires, as a `[warning]`, every non-empty file to end with a newline. This rule is enabled only by the strict preset. Automatically fixable: the fix appends a newline that matches the file's existing line endings (`\\n` or `\\r\\n`)."
+  "description": "Requires non-empty files to end with exactly one newline.",
+  "definition": "Requires, as a `[warning]`, every non-empty file to end with exactly one newline. Extra blank lines after the last content line are also flagged. This rule is enabled only by the strict preset. Automatically fixable: the fix appends a newline that matches the file's existing line endings (`\\n` or `\\r\\n`) and collapses extra trailing newlines to one."
 }
