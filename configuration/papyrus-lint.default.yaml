@@ -144,6 +144,7 @@ rules:
   missing_doc_comment: false
   invalid_random_range: true
   float_equality: false
+  register_for_update_in_on_update: true
   missing_update_handler: false
   unused_import: true
   event_signature_mismatch: false
