@@ -21,10 +21,13 @@ pub const RULE: &str = "script-filename-mismatch";
 /// Checks `tokens` for a `ScriptName` that differs from `relative_path`
 /// (case-insensitively).
 ///
-/// A qualified Fallout 4-style name (`User:MyScript`) must match the complete
-/// path below its script search root (`User/MyScript.psc`). An unqualified
-/// name keeps the Skyrim behavior and is compared only with the file stem.
-/// No `ScriptName`, an invalid declaration, or a path without a UTF-8 stem
+/// A qualified Fallout 4-style name (`User:MyScript`) must match the path
+/// below its script search root (`User/MyScript.psc`). Leading folders that
+/// are not part of that namespace (FO4 `Base/`, a DLC package folder the
+/// ScriptName does not start with) are ignored so the comparison uses the
+/// package root the ScriptName is written against. An unqualified name
+/// keeps the Skyrim behavior and is compared only with the file stem. No
+/// `ScriptName`, an invalid declaration, or a path without a UTF-8 stem
 /// yields nothing.
 ///
 /// This does not apply `; @disable` / `; @disable-file`. Callers merge the
@@ -56,23 +59,7 @@ pub fn check(relative_path: &Path, tokens: &[Token]) -> Option<Diagnostic> {
         let matches = if segments.len() == 1 {
             first_segment.eq_ignore_ascii_case(file_stem)
         } else {
-            let mut actual: Vec<_> = relative_path
-                .parent()
-                .into_iter()
-                .flat_map(Path::components)
-                .filter_map(|component| {
-                    let std::path::Component::Normal(part) = component else {
-                        return None;
-                    };
-                    part.to_str()
-                })
-                .collect();
-            actual.push(file_stem);
-            segments.len() == actual.len()
-                && segments
-                    .iter()
-                    .zip(actual)
-                    .all(|(expected, actual)| expected.eq_ignore_ascii_case(actual))
+            path_matches_namespace(relative_path, file_stem, &segments)
         };
         if matches {
             return None;
@@ -88,6 +75,44 @@ pub fn check(relative_path: &Path, tokens: &[Token]) -> Option<Diagnostic> {
         });
     }
     None
+}
+
+/// Whether `relative_path` ends with the ScriptName namespace folders.
+///
+/// Extra leading directories that do not appear in `segments` are layout
+/// roots (`Base/`, a DLC pack folder the name does not include), not
+/// namespace members. Folders after the first namespace segment still have
+/// to match exactly.
+fn path_matches_namespace(relative_path: &Path, file_stem: &str, segments: &[&str]) -> bool {
+    let mut actual: Vec<_> = relative_path
+        .parent()
+        .into_iter()
+        .flat_map(Path::components)
+        .filter_map(|component| {
+            let std::path::Component::Normal(part) = component else {
+                return None;
+            };
+            part.to_str()
+        })
+        .collect();
+    actual.push(file_stem);
+    while actual.len() > segments.len() {
+        let Some(leading) = actual.first() else {
+            break;
+        };
+        if segments
+            .iter()
+            .any(|segment| segment.eq_ignore_ascii_case(leading))
+        {
+            break;
+        }
+        actual.remove(0);
+    }
+    segments.len() == actual.len()
+        && segments
+            .iter()
+            .zip(actual)
+            .all(|(expected, actual)| expected.eq_ignore_ascii_case(actual))
 }
 
 #[cfg(test)]

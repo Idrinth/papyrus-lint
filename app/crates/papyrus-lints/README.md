@@ -21,7 +21,9 @@ One rule is `src/<rule>.rs` plus `shared/rules/<id>.json`.
 - `script-filename-mismatch` owns its diagnostic policy here. Callers pass
   the `.psc` path relative to its search root and the lexer tokens
   (`ScriptName` plus its name segments). A qualified name must match that
-  whole relative path; an unqualified name is still the file stem. Same
+  relative path after dropping leading folders that are not in the
+  ScriptName (FO4 `Base/`, a DLC pack folder the name does not include);
+  an unqualified name is still the file stem. Same
   mapping as the papyrus-lint-core README. It is not dispatched from
   `collect_diagnostics`.
 - `lint` / `repair` / `repair_filtered*` / `repaired_line` have no resolver.
