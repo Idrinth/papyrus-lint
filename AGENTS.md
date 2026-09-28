@@ -20,8 +20,9 @@ a second copy.
 | Crate / folder layout | [`docs/project-structure.md`](docs/project-structure.md) |
 | Tauri app or editor-plugin setup | [`docs/agent/development.md`](docs/agent/development.md) |
 | `.github/workflows/ci.*.yml` or CI scripts | The explanatory comments in the related workflow |
+| `.github/workflows/pages.yml` or the GitHub Pages workflow | The explanatory comments in `.github/workflows/pages.yml` |
+| `.github/workflows/release.yml` | The explanatory comments in the workflow |
 | `pages/` or the GitHub Pages workflow | The explanatory comments in `.github/workflows/pages.yml` |
-| `.github/workflows/release.yml` | The explanatory comments in that workflow |
 | Lint descriptions / rule docs | [`README.md`](README.md#implemented-lints) |
 
 Do not paste those files back into this index. Update the file you read.
@@ -79,8 +80,7 @@ CI treats clippy warnings as errors.
    `definition` — the long text, `description` — a shorter blurb matching
    `templates/nexuspage.bbcode`'s own style, `category`, `visitor` (`ast`,
    `tokens`, or `none` — how the rule would walk a script as a visitor),
-   `tags`, `severity`,
-   `importance`, `fixable`, optional `repair_order`). `shared/rules.json`
+   `tags`, `severity`, `importance`, `fixable`, optional `repair_order`, optional `games`). `shared/rules.json`
    — the combined array every other consumer actually reads — is
    generated from those files by `.github/scripts/build_rules_json.py`
    and is git-ignored, not checked in; run that script (no arguments)
@@ -89,14 +89,14 @@ CI treats clippy warnings as errors.
    `build.rs` compiles `app/crates/papyrus-lints`'s
    `KNOWN_RULE_IDS`/`FIXABLE_RULE_IDS` (`src/registry.rs`), `RULE_TAGS`
    (`src/tags.rs`), `Rules`/`default_rules()` (`src/config.rs`), the
-   `collect_diagnostics`/`apply_repairs` dispatch, and each rule's `mod`
-   in `src/lib.rs` from the generated `shared/rules.json` at build time.
+   `collect_diagnostics`/`apply_repairs` dispatch, and each rule's
+   `mod` in `src/lib.rs` from the generated `shared/rules.json` at build time.
    `Config`'s other fields are compiled from `configuration/lint-settings.json`.
    `pages/build.py` generates the website's searchable `rules.html`
    straight from it; and release tooling fills in `templates/nexuspage.bbcode`'s
    five lint tables from it (see the comments in `.github/workflows/release.yml`) —
-   the checked-in `templates/nexuspage.bbcode` carries no rows itself. `README.md`'s own
-   "Implemented Lints" section only keeps a short per-category blurb and a
+   the checked-in `templates/nexuspage.bbcode` carries no rows itself. `README.md`'s
+   own "Implemented Lints" section only keeps a short per-category blurb and a
    link to `rules.html` — it carries no per-rule text to keep in sync.
 5. **Match the file you are in.** Don't invent a new module layout, naming
    scheme, or comment style in a file that already has one.
@@ -104,7 +104,7 @@ CI treats clippy warnings as errors.
    A new rule does not need a new abstraction for "all future rules".
 7. **AI-authored PRs get a model label.** In addition to the
    `component:`/`type:` labels, tag the PR with a label naming the model
-   that wrote it — whatever it is actually called, e.g. `codex`, `grok`,
+   that wrote it — whatever it is actually called, e.g. `codex`, `Grok`,
    `Claude Sonnet 5`. Create the label if it doesn't exist yet.
 
 ## Adding a lint
@@ -124,20 +124,21 @@ Minimum touch list (see also [`CONTRIBUTING.md`](CONTRIBUTING.md)):
    `Performance`, `Reliability`, `Bugprone`, `Other`), `visitor` (`ast`
    for a walk of parsed nodes, `tokens` for a walk of the lexer stream,
    `none` for a project-level/post-pass/raw-line rule that is neither),
-   `tags`,
-   `importance`, `severity`, and `fixable`. For an `apply_repairs` auto-fix,
-   set `repair_order` (1..=N, no gaps). Set `"enabled_by_default":
-   false` only for opt-in rules. Run `python3
-   .github/scripts/build_rules_json.py` afterward (and before building or
-   testing anything below) to regenerate the git-ignored `shared/rules.json`
+   `tags`, `importance`, `severity`, and `fixable`. For an `apply_repairs`
+   auto-fix, set `repair_order` (1..=N, no gaps). Optional `"games": ["skyrim", ...]`
+   limits the rule to those `Config.game` values (`skyrim` / `fallout4` /
+   `starfield`); omit it so the rule keeps applying everywhere. Set
+   `"enabled_by_default": false` only for opt-in rules. Run `python3
+   .github/scripts/build_rules_json.py` afterward (and before building
+   or testing anything below) to regenerate the git-ignored `shared/rules.json`
    every consumer below actually reads. No Nexus page regeneration step
    is needed here — that happens at release time (see the comments in
    `.github/workflows/release.yml`). `build.rs` generates
    `registry.rs`'s `KNOWN_RULE_IDS`/`FIXABLE_RULE_IDS`, `tags.rs`'s
    `RULE_TAGS`, `config.rs`'s `Rules`/`default_rules()`,
    `collect_diagnostics`/`apply_repairs`, and `lib.rs`'s rule `mod`s from
-   this file at build time — don't hand-edit those. `Config`'s other
-   fields (everything except `rules`) are generated from
+   this file at build time — don't hand-edit those. `Config`'s other fields
+   (everything except `rules`) are generated from
    `configuration/lint-settings.json` by the same `build.rs`. The desktop
    Settings tab's per-rule checkboxes are the same: `app/scripts/generate-config-types.mjs`
    writes `RULE_SETTINGS` into `app/src/config-types.ts`, and
@@ -152,8 +153,8 @@ Minimum touch list (see also [`CONTRIBUTING.md`](CONTRIBUTING.md)):
    the rule id alone, so it needs no separate slug field either. A new
    `"low"` importance rule is turned off by default in the generated
    `standard`/`careful` presets too (see `papyrus-lint-config/build.rs`);
-   add `"kept_in_standard": true` to its entry only if it belongs with the
-   handful of cheap, auto-fixable formatting rules `standard` keeps on
+   add `"kept_in_standard": true` to its entry only if it belongs with
+   the handful of cheap, auto-fixable formatting rules `standard` keeps on
    regardless.
 3. `README.md`'s "Implemented Lints" section — add a one-line mention
    under the matching category blurb only if the category's own summary
@@ -161,8 +162,8 @@ Minimum touch list (see also [`CONTRIBUTING.md`](CONTRIBUTING.md)):
    lives on `rules.html`, not in the README.
 
 Rules should inspect source/tokens so they still run on scripts that
-don't parse. Configurable behavior goes on `&papyrus_lints::Config`, not
-a new extra parameter. Tests should cover diagnostics, `@disable` /
+'don't parse. Configurable behavior goes on `&papyrus_lints::Config`, not
+`a new extra parameter`. Tests should cover diagnostics, `@disable` /
 `@disable-file`, config off-switches, and repairs when those apply.
 
 If the rule introduces a new *kind* keyword (not `style` /
@@ -174,25 +175,19 @@ If the rule introduces a new *kind* keyword (not `style` /
 - README lint tables → `shared/rules/<id>.json` (rule 4). `shared/rules/*.json` →
   the generated `shared/rules.json` (`.github/scripts/build_rules_json.py`,
   also git-ignored) → `templates/nexuspage.bbcode`'s lint tables (filled in at
-  release time, never checked in — see `.github/workflows/release.yml`) and
+  release time, never checked in — see the comments in `.github/workflows/release.yml`) and
   `papyrus-lints`'s `registry.rs`/`tags.rs`/
   `lib.rs` rule `mod`s (via `build.rs`) — all generated, never hand-edited.
 - `docs/cli.md`/`docs/configuration.md` CLI usage / default config →
   `templates/nexuspage.bbcode` CLI or configuration section (hand-edited; not
   covered by the generator above). Other README/`docs/*.md` edits do not
   need a Nexus update.
-- `CONTRIBUTING.md` development setup and this index's crate map are
-  pointers, not copies: edit [`docs/agent/development.md`](docs/agent/development.md),
-  the crate's `README.md`, or [`docs/project-structure.md`](docs/project-structure.md)
-  instead of pasting those files back here.
-- `pages/index.template.html`'s CLI examples and every `docs/` subpage are
-  generated from `README.md`/`docs/*.md` on deploy. `<!--CLI_EXAMPLES-->`
-  extracts the README examples; add publishable docs to `pages/docs_pages.py`'s
-  `DOCS` list.
+- `pages/index.template.html`'s CLI examples and every `docs/` subpage are generated
+  from `README.md`/`docs/*.md` on deploy. `<!--CLI_EXAMPLES-->` extracts the README examples;
+  add publishable docs to `pages/docs_pages.py`'s `DOCS` list.
 - Contact / download / documentation URLs → `shared/links.yaml`. Markers
-  (`<!--CONTACT-LINKS-->`, `<CONTACT-LINKS>`, `<LINKS>`) are filled at
-  build time by the tag in the marker; never name a YAML key at a
-  destination.
+  (`<!--CONTACT-LINKS-->`, `<CONTACT-LINKS>`, `<LINKS>`) are filled at build time by
+  the tag in the marker; never name a YAML key at a destination.
 
 ## Pull request body
 
