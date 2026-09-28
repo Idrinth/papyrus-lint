@@ -44,6 +44,7 @@ fn ast_rules_return_an_ast_visitor() {
     assert_ast(crate::invariant_loop_condition::visitor());
     assert_ast(crate::local_variable_shadowing::visitor());
     assert_ast(crate::magic_numbers::visitor());
+    assert_ast(crate::member_chain_none_usage::visitor());
     assert_ast(crate::missing_doc_comment::visitor());
     assert_ast(crate::multiple_auto_states::visitor());
     assert_ast(crate::named_arguments::visitor());
@@ -70,7 +71,6 @@ fn ast_rules_return_an_ast_visitor() {
     assert_ast(crate::unchecked_cast::visitor());
     assert_ast(crate::unchecked_form_parameter::visitor());
     assert_ast(crate::unguarded_self_recursion::visitor());
-    assert_ast(crate::register_for_update_in_on_update::visitor());
     assert_ast(crate::unnecessary_function::visitor());
     assert_ast(crate::unreachable_elseif::visitor());
     assert_ast(crate::unreachable_statement::visitor());
