@@ -12,11 +12,27 @@ pub(crate) use papyrus_lint_output::{
 };
 pub use papyrus_lint_output::{JsonDiagnostic, JsonFileReport, JsonParserError, JsonReport};
 
+fn game_edition(game: papyrus_lints::Game) -> papyrus_parser::parser::GameEdition {
+    match game {
+        papyrus_lints::Game::Skyrim => papyrus_parser::parser::GameEdition::Skyrim,
+        papyrus_lints::Game::Fallout4 => papyrus_parser::parser::GameEdition::Fallout4,
+        papyrus_lints::Game::Starfield => papyrus_parser::parser::GameEdition::Starfield,
+    }
+}
+
 /// Collects the lexer/parser errors raised while handling `source`. Empty
 /// when the script lexes and parses cleanly. Currently at most one entry
-/// because [`papyrus_parser::parse`] stops at the first error.
-pub(crate) fn collect_parser_errors(source: &str) -> Vec<JsonParserError> {
-    match papyrus_parser::parse(source) {
+/// because the parser stops at the first error.
+///
+/// Uses `game`'s dialect. The memoized [`papyrus_parser::parse`] entry point
+/// is Skyrim-only; after linting a Fallout 4 / Starfield file the thread-local
+/// parse slot may hold another source, and re-parsing that file as Skyrim
+/// reports valid `Group` / `Default` syntax as a parse error.
+pub(crate) fn collect_parser_errors(
+    source: &str,
+    game: papyrus_lints::Game,
+) -> Vec<JsonParserError> {
+    match papyrus_parser::parse_with_mode(source, game_edition(game)) {
         Ok(_) => Vec::new(),
         Err(papyrus_parser::PapyrusError::Lex(error)) => vec![JsonParserError {
             kind: ParserErrorKind::Lex,
