@@ -27,8 +27,11 @@ use crate::script_locator::{cached_lookup_index, ScriptIndex};
 mod ancestry;
 mod closure;
 mod external;
+mod known;
 mod load;
 mod shared;
+
+use known::known_script_keys;
 
 pub use closure::{ClosedScripts, ParsedDependency, TypeClosureOptions};
 pub use shared::SharedFunctionTable;
@@ -68,7 +71,8 @@ pub struct FunctionTable {
     /// Never used for collision checks.
     lookup_roots: Vec<String>,
     /// When `Some`, resolution is restricted to exactly the scripts
-    /// registered here by name (lowercased file stem -> path), plus native
+    /// registered here by name (lowercased file stem, path-derived
+    /// `folder:stem`, and declared `ScriptName` → path), plus native
     /// singleton globals (see [`Self::script_exists`]/[`Self::ensure_loaded`])
     /// — `root`/`additional_roots` are never scanned at all, so nothing
     /// outside this map can resolve, not even a
@@ -195,7 +199,8 @@ impl FunctionTable {
     }
 
     /// Switches this table into known-scripts mode, where only `paths` (by
-    /// file stem, matched case-insensitively) and native singleton globals
+    /// file stem, path-derived `folder:stem`, and declared `ScriptName`,
+    /// each matched case-insensitively) and native singleton globals
     /// can resolve at all — `root`/`additional_roots` are never scanned
     /// again for the rest of this table's lifetime, in [`Self::ensure_loaded`]/
     /// [`Self::script_exists`] alike. Intended for a set of scripts named
@@ -207,19 +212,18 @@ impl FunctionTable {
     /// (which would also expose every other file in them, including one
     /// under the conventional `scripts/source`/`source/scripts` layout).
     /// [`Self::with_lookup_roots`] is still consulted afterwards, so a
-    /// vanilla game script can resolve without being listed. When two given paths share a file stem, the first one wins, matching
-    /// a directory search's own first-match-wins order; a real conflict
+    /// vanilla game script can resolve without being listed. When two given
+    /// paths share a file stem, the first one wins for that stem, matching
+    /// a directory search's own first-match-wins order; qualified names
+    /// (`User:Foo` vs `Other:Foo`) stay distinct slots. A real conflict
     /// between such paths is instead reported by
     /// [`crate::script_locator::conflicting_script_versions_among`].
     pub fn with_known_scripts(mut self, paths: &[PathBuf]) -> Self {
         let mut known = HashMap::new();
         for path in paths {
-            let Some(stem) = path.file_stem().and_then(|stem| stem.to_str()) else {
-                continue;
-            };
-            known
-                .entry(stem.to_ascii_lowercase())
-                .or_insert_with(|| path.clone());
+            for key in known_script_keys(&self.root, &self.additional_roots, path) {
+                known.entry(key).or_insert_with(|| path.clone());
+            }
         }
         self.known_scripts = Some(known);
         self
