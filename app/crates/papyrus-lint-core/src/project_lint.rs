@@ -78,10 +78,16 @@ pub fn lint_script<E: ExternalSignatures>(
         project_diagnostics.extend(crate::stale_pex::check(path));
     }
     if lint.config.rules.script_filename_mismatch {
-        if let Some(stem) = path.file_stem().and_then(|stem| stem.to_str()) {
-            if let Ok(tokens) = papyrus_parser::tokenize(source) {
+        if let Ok(tokens) = papyrus_parser::tokenize(source) {
+            let relative = crate::script_locator::relative_path_in_script_roots(
+                path,
+                lint.project_root,
+                lint.additional_roots,
+            )
+            .or_else(|| path.file_name().map(PathBuf::from));
+            if let Some(relative) = relative {
                 project_diagnostics.extend(papyrus_lints::script_filename_mismatch::check(
-                    stem, &tokens,
+                    &relative, &tokens,
                 ));
             }
         }
@@ -129,13 +135,27 @@ fn conflicts_for(path: &Path, lint: &ProjectLint<'_>) -> Vec<Diagnostic> {
         ConflictScope::Known {
             candidates,
             short_paths,
-        } => crate::script_locator::conflicting_script_versions_among(
-            path,
-            candidates,
-            lint.project_root,
-            short_paths,
-            lint.config.game,
-        ),
+        } => {
+            let qualified_candidates: Vec<_> = candidates
+                .iter()
+                .filter(|candidate| {
+                    crate::script_locator::same_script_identity(
+                        path,
+                        candidate,
+                        lint.project_root,
+                        lint.additional_roots,
+                    )
+                })
+                .cloned()
+                .collect();
+            crate::script_locator::conflicting_script_versions_among(
+                path,
+                &qualified_candidates,
+                lint.project_root,
+                short_paths,
+                lint.config.game,
+            )
+        }
     }
 }
 

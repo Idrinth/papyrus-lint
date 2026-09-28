@@ -755,6 +755,47 @@ fn conflicting_script_versions_in_index_flags_a_same_named_entry_with_different_
 }
 
 #[test]
+fn conflicting_script_versions_in_index_keeps_namespaces_distinct() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    let user = root.path().join("scripts/source/User");
+    let other = root.path().join("source/scripts/Other");
+    fs::create_dir_all(&user).expect("failed to create user namespace");
+    fs::create_dir_all(&other).expect("failed to create other namespace");
+    let script = write_file(&user, "Foo.psc");
+    fs::write(&script, "ScriptName User:Foo\n").expect("failed to write user script");
+    fs::write(other.join("Foo.psc"), "ScriptName Other:Foo\n")
+        .expect("failed to write other script");
+    let index = build_script_index(root.path(), &[]);
+
+    assert!(
+        conflicting_script_versions_in_index(&script, &index, root.path(), false, GAME).is_empty()
+    );
+}
+
+#[test]
+fn conflicting_script_versions_in_index_matches_qualified_names_across_roots() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    let primary = root.path().join("scripts/source/User");
+    let alternate = root.path().join("source/scripts/User");
+    fs::create_dir_all(&primary).expect("failed to create primary namespace");
+    fs::create_dir_all(&alternate).expect("failed to create alternate namespace");
+    let script = write_file(&primary, "MyScript.psc");
+    fs::write(&script, "ScriptName User:MyScript\n").expect("failed to write primary script");
+    fs::write(
+        alternate.join("MyScript.psc"),
+        "ScriptName User:MyScript\n; different\n",
+    )
+    .expect("failed to write alternate script");
+    let index = build_script_index(root.path(), &[]);
+
+    let diagnostics =
+        conflicting_script_versions_in_index(&script, &index, root.path(), false, GAME);
+
+    assert_eq!(diagnostics.len(), 1);
+    assert!(diagnostics[0].message.contains("MyScript.psc"));
+}
+
+#[test]
 fn conflicting_script_versions_in_index_matches_conflicting_script_versions() {
     let root = tempfile::tempdir().expect("failed to create temp dir");
     let primary = root.path().join("scripts/source");

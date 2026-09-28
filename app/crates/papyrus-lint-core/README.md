@@ -18,7 +18,9 @@ not depend on Tauri.
   in the desktop app.
 - A script name that appears only once is not content-hashed.
   `script_locator` reads a digest from `papyrus-collision-cache` when the
-  stored mtime still matches.
+  stored mtime still matches. Conflict buckets use the complete path below
+  the search root, so equal stems in different namespace folders stay
+  distinct while equal qualified names across roots are compared.
 - `.papyrus-lint-ignore` loads from the resolved project root. Exact
   file / line / rule matches are suppressed after lint, project, and
   compiler diagnostics. Relative paths start at that root. Repairs are
