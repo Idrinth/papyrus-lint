@@ -6,9 +6,9 @@
   "tags": [
     "maintainability"
   ],
-  "severity": "info",
+  "severity": "warning",
   "importance": "low",
   "fixable": false,
   "description": "Flags consecutive If/ElseIf/Else branches whose bodies are the same, since that usually means a branch was copied and left unchanged.",
-  "definition": "Flags, as an `[info]`, two adjacent arms of the same `If`/`ElseIf`/`Else` chain whose bodies are structurally identical (statement and expression shape, identifiers compared case-insensitively). Only neighboring arms are compared, including the last `If`/`ElseIf` against `Else`; a later arm that repeats an earlier body with a different body in between is left alone. Empty bodies are left to `empty-body`. Line numbers, columns, and whitespace alone do not trigger. This rule is enabled by the strict preset and disabled by the standard and careful presets."
+  "definition": "Flags, as a `[warning]`, two adjacent arms of the same `If`/`ElseIf`/`Else` chain whose bodies are structurally identical (statement and expression shape, identifiers compared case-insensitively). Only neighboring arms are compared, including the last `If`/`ElseIf` against `Else`; a later arm that repeats an earlier body with a different body in between is left alone. Empty bodies are left to `empty-body`. Line numbers, columns, and whitespace alone do not trigger. This rule is enabled by the strict preset and disabled by the standard and careful presets."
 }

@@ -50,7 +50,7 @@ impl AstLint for Collect {
                 self.store.emit(
                     current.line,
                     current.col,
-                    "[info] Adjacent If/ElseIf branch body is identical to the previous \
+                    "[warning] Adjacent If/ElseIf branch body is identical to the previous \
                      branch; this often means a condition was copied and the body was \
                      left unchanged",
                     RULE,
@@ -68,7 +68,7 @@ impl AstLint for Collect {
                 self.store.emit(
                     *line,
                     *column,
-                    "[info] Else body is identical to the previous If/ElseIf branch; \
+                    "[warning] Else body is identical to the previous If/ElseIf branch; \
                      this often means the branch was copied and left unchanged",
                     RULE,
                 );

@@ -21,7 +21,7 @@ fn flags_if_and_elseif_with_the_same_body() {
     assert_eq!(diagnostics.len(), 1);
     assert_eq!(diagnostics[0].rule, RULE);
     assert_eq!(diagnostics[0].line, 6);
-    assert!(diagnostics[0].message.starts_with("[info]"));
+    assert!(diagnostics[0].message.starts_with("[warning]"));
     assert!(diagnostics[0].message.contains("identical"));
 }
 
