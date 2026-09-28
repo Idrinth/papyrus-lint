@@ -44,3 +44,71 @@ fn accepts_source_scripts_casing() {
         root.path().join("Source/Scripts")
     );
 }
+
+#[test]
+fn does_not_search_above_project_root() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    let project = root.path().join("Scripts/Source/project");
+    let nested = project.join("custom/nested");
+    fs::create_dir_all(&nested).expect("failed to create custom dir");
+    let script = write_file(&nested, "Foo.psc");
+
+    assert_eq!(inferred_script_search_root(&script, &project), nested);
+}
+
+#[test]
+fn falls_back_to_parent_when_project_root_is_not_an_ancestor() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    let custom = root.path().join("unrelated/custom");
+    fs::create_dir_all(&custom).expect("failed to create custom dir");
+    let script = write_file(&custom, "Foo.psc");
+
+    assert_eq!(
+        inferred_script_search_root(&script, &root.path().join("project")),
+        custom
+    );
+}
+
+#[test]
+fn parentless_path_uses_project_root() {
+    let project = PathBuf::from("project");
+
+    assert_eq!(
+        inferred_script_search_root(std::path::Path::new("/"), &project),
+        project
+    );
+}
+
+#[test]
+fn conventional_root_requires_matching_adjacent_directory_names() {
+    assert!(is_conventional_script_root(std::path::Path::new(
+        "Data/SCRIPTS/sOuRcE"
+    )));
+    assert!(is_conventional_script_root(std::path::Path::new(
+        "Data/SOURCE/sCrIpTs"
+    )));
+    assert!(!is_conventional_script_root(std::path::Path::new(
+        "Data/assets/source"
+    )));
+    assert!(!is_conventional_script_root(std::path::Path::new(
+        "Data/source/assets"
+    )));
+    assert!(!is_conventional_script_root(std::path::Path::new("source")));
+    assert!(!is_conventional_script_root(std::path::Path::new("/")));
+}
+
+#[cfg(unix)]
+#[test]
+fn non_utf8_directory_names_are_not_conventional_roots() {
+    use std::ffi::OsStr;
+    use std::os::unix::ffi::OsStrExt;
+
+    let non_utf8 = OsStr::from_bytes(b"\xff");
+
+    assert!(!is_conventional_script_root(
+        &PathBuf::from("scripts").join(non_utf8)
+    ));
+    assert!(!is_conventional_script_root(
+        &PathBuf::from(non_utf8).join("source")
+    ));
+}

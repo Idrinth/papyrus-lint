@@ -1,4 +1,5 @@
 use std::fs;
+use std::time::{Duration, SystemTime};
 
 use super::*;
 use crate::script_locator::ScriptIndex;
@@ -33,6 +34,17 @@ fn lint_at(
             flush_collision_cache: false,
         },
     )
+}
+
+#[cfg(unix)]
+fn write_stub_compiler(directory: &Path, body: &str) -> PathBuf {
+    use std::os::unix::fs::PermissionsExt;
+
+    let path = directory.join("compiler-stub.sh");
+    fs::write(&path, body).expect("write compiler stub");
+    fs::set_permissions(&path, fs::Permissions::from_mode(0o755))
+        .expect("make compiler stub executable");
+    path
 }
 
 #[test]
@@ -177,4 +189,194 @@ fn a_blank_compiler_path_does_not_fail_the_lint() {
     assert!(diagnostics
         .iter()
         .all(|diagnostic| diagnostic.rule != "compiler-error"));
+}
+
+#[test]
+fn reports_a_filename_mismatch_when_it_is_not_disabled() {
+    let dir = tempfile::tempdir().expect("temp dir");
+    let path = dir.path().join("Example.psc");
+    let source = "ScriptName Other\n";
+    fs::write(&path, source).expect("write script");
+    let config = config_with(|config| {
+        config.rules.script_filename_mismatch = true;
+        config.rules.conflicting_script_versions = false;
+        config.rules.stale_compiled_output = false;
+    });
+
+    let diagnostics = lint_at(
+        &path,
+        source,
+        &config,
+        ConflictScope::Known {
+            candidates: &[],
+            short_paths: false,
+        },
+        None,
+    );
+
+    assert!(diagnostics
+        .iter()
+        .any(|diagnostic| diagnostic.rule == "script-filename-mismatch"));
+}
+
+#[test]
+fn skips_the_filename_check_when_tokenization_fails() {
+    let dir = tempfile::tempdir().expect("temp dir");
+    let path = dir.path().join("Example.psc");
+    let source = "ScriptName Other\n\"unterminated";
+    fs::write(&path, source).expect("write script");
+    let config = config_with(|config| {
+        config.rules.script_filename_mismatch = true;
+        config.rules.conflicting_script_versions = false;
+        config.rules.stale_compiled_output = false;
+    });
+
+    let diagnostics = lint_at(
+        &path,
+        source,
+        &config,
+        ConflictScope::Known {
+            candidates: &[],
+            short_paths: false,
+        },
+        None,
+    );
+
+    assert!(diagnostics
+        .iter()
+        .all(|diagnostic| diagnostic.rule != "script-filename-mismatch"));
+}
+
+#[test]
+fn merges_a_stale_compiled_output_diagnostic() {
+    let dir = tempfile::tempdir().expect("temp dir");
+    let source_dir = dir.path().join("Scripts").join("Source");
+    fs::create_dir_all(&source_dir).expect("create source dir");
+    let path = source_dir.join("Example.psc");
+    let pex_path = dir.path().join("Scripts").join("Example.pex");
+    let now = SystemTime::now();
+    fs::write(&pex_path, "compiled").expect("write compiled output");
+    fs::File::open(&pex_path)
+        .expect("open compiled output")
+        .set_modified(now - Duration::from_secs(60))
+        .expect("age compiled output");
+    let source = "ScriptName Example\n";
+    fs::write(&path, source).expect("write script");
+    fs::File::open(&path)
+        .expect("open script")
+        .set_modified(now)
+        .expect("set script mtime");
+    let config = config_with(|config| {
+        config.rules.conflicting_script_versions = false;
+        config.rules.stale_compiled_output = true;
+        config.rules.script_filename_mismatch = false;
+    });
+
+    let diagnostics = lint_script(
+        &path,
+        source,
+        &mut NoExternalSignatures,
+        &ProjectLint {
+            config: &config,
+            project_root: dir.path(),
+            additional_roots: &[],
+            conflicts: ConflictScope::Known {
+                candidates: &[],
+                short_paths: false,
+            },
+            compile_check: false,
+            compiler_path: "",
+            ignores: None,
+            already_primed: true,
+            flush_collision_cache: false,
+        },
+    );
+
+    assert!(diagnostics
+        .iter()
+        .any(|diagnostic| diagnostic.rule == "stale-compiled-output"));
+}
+
+#[test]
+#[cfg(unix)]
+fn adds_diagnostics_from_a_failed_compiler_check() {
+    let dir = tempfile::tempdir().expect("temp dir");
+    let source_dir = dir.path().join("Scripts").join("Source");
+    fs::create_dir_all(&source_dir).expect("create source dir");
+    let path = source_dir.join("Example.psc");
+    let source = "ScriptName Example\n";
+    fs::write(&path, source).expect("write script");
+    let compiler = write_stub_compiler(
+        dir.path(),
+        "#!/bin/sh\necho 'Example.psc(7,3): deliberate failure' >&2\nexit 1\n",
+    );
+    let config = config_with(|config| {
+        config.rules.conflicting_script_versions = false;
+        config.rules.stale_compiled_output = false;
+        config.rules.script_filename_mismatch = false;
+    });
+
+    let diagnostics = lint_script(
+        &path,
+        source,
+        &mut NoExternalSignatures,
+        &ProjectLint {
+            config: &config,
+            project_root: dir.path(),
+            additional_roots: &[],
+            conflicts: ConflictScope::Known {
+                candidates: &[],
+                short_paths: false,
+            },
+            compile_check: true,
+            compiler_path: compiler.to_str().expect("UTF-8 compiler path"),
+            ignores: None,
+            already_primed: true,
+            flush_collision_cache: false,
+        },
+    );
+
+    let diagnostic = diagnostics
+        .iter()
+        .find(|diagnostic| diagnostic.rule == "compiler-error")
+        .expect("compiler diagnostic");
+    assert_eq!((diagnostic.line, diagnostic.column), (7, 3));
+    assert!(diagnostic.message.contains("deliberate failure"));
+}
+
+#[test]
+fn an_unstartable_compiler_does_not_discard_engine_diagnostics() {
+    let dir = tempfile::tempdir().expect("temp dir");
+    let path = dir.path().join("Example.psc");
+    let source = "ScriptName Other\n";
+    fs::write(&path, source).expect("write script");
+    let config = config_with(|config| {
+        config.rules.script_filename_mismatch = true;
+        config.rules.conflicting_script_versions = false;
+        config.rules.stale_compiled_output = false;
+    });
+
+    let diagnostics = lint_script(
+        &path,
+        source,
+        &mut NoExternalSignatures,
+        &ProjectLint {
+            config: &config,
+            project_root: dir.path(),
+            additional_roots: &[],
+            conflicts: ConflictScope::Known {
+                candidates: &[],
+                short_paths: false,
+            },
+            compile_check: true,
+            compiler_path: dir.path().join("missing-compiler").to_str().unwrap(),
+            ignores: None,
+            already_primed: true,
+            flush_collision_cache: false,
+        },
+    );
+
+    assert!(diagnostics
+        .iter()
+        .any(|diagnostic| diagnostic.rule == "script-filename-mismatch"));
 }
