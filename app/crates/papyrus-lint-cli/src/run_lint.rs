@@ -93,7 +93,7 @@ pub(crate) fn lint_file(
             flush_collision_cache: false,
         },
     );
-    let parser_errors = collect_parser_errors(source);
+    let parser_errors = collect_parser_errors(source, ctx.lint_config.game);
     let parse_failed = !parser_errors.is_empty();
     let should_fail = finalize_diagnostics(
         &mut diagnostics,

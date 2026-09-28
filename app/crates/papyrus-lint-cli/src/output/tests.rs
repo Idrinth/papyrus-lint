@@ -248,9 +248,10 @@ fn format_flag_rejects_unknown_values_and_the_removed_json_alias() {
 
 #[test]
 fn collect_parser_errors_distinguishes_lex_parse_and_valid_sources() {
-    assert!(super::collect_parser_errors("ScriptName Example\n").is_empty());
+    let game = papyrus_lints::Game::Skyrim;
+    assert!(super::collect_parser_errors("ScriptName Example\n", game).is_empty());
 
-    let lex_errors = super::collect_parser_errors("\"unterminated");
+    let lex_errors = super::collect_parser_errors("\"unterminated", game);
     assert_eq!(lex_errors.len(), 1);
     assert_eq!(lex_errors[0].kind, super::ParserErrorKind::Lex);
     assert_eq!(lex_errors[0].line, 1);
@@ -258,10 +259,22 @@ fn collect_parser_errors_distinguishes_lex_parse_and_valid_sources() {
         .message
         .contains("unterminated string literal"));
 
-    let parse_errors = super::collect_parser_errors("ScriptName Example\nFunction Broken(\n");
+    let parse_errors = super::collect_parser_errors("ScriptName Example\nFunction Broken(\n", game);
     assert_eq!(parse_errors.len(), 1);
     assert_eq!(parse_errors[0].kind, super::ParserErrorKind::Parse);
     assert_eq!(parse_errors[0].line, 2);
+
+    let group = "ScriptName Spotlight\nGroup LightTargets CollapsedOnRef\n    Int Property X Auto\nEndGroup\n";
+    assert!(
+        super::collect_parser_errors(group, papyrus_lints::Game::Fallout4).is_empty(),
+        "Fallout 4 Group declarations must not be reported as parse errors"
+    );
+    assert!(
+        super::collect_parser_errors(group, papyrus_lints::Game::Skyrim)
+            .iter()
+            .any(|error| error.message.contains("Group")),
+        "Skyrim must still reject Group"
+    );
 }
 
 #[test]
