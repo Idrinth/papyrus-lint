@@ -58,6 +58,11 @@
 
 .rules-content .lint-rules-table th:nth-child(4),
 .rules-content .lint-rules-table td:nth-child(4) {
+  width: 10em;
+}
+
+.rules-content .lint-rules-table th:nth-child(5),
+.rules-content .lint-rules-table td:nth-child(5) {
   min-width: 14em;
   overflow-wrap: anywhere;
   /* Sit above overflowing nowrap badges in neighboring cells so those
