@@ -21,7 +21,7 @@ a second copy.
 | Tauri app or editor-plugin setup | [`docs/agent/development.md`](docs/agent/development.md) |
 | `.github/workflows/ci.*.yml` or CI scripts | The explanatory comments in the related workflow |
 | `pages/` or the GitHub Pages workflow | The explanatory comments in `.github/workflows/pages.yml` |
-| `.github/workflows/release.yml` | The explanatory comments in that workflow |
+| `.github/workflows/release.yml` | The explanatory comments in the workflow |
 | Lint descriptions / rule docs | [`README.md`](README.md#implemented-lints) |
 
 Do not paste those files back into this index. Update the file you read.
@@ -89,8 +89,8 @@ CI treats clippy warnings as errors.
    `build.rs` compiles `app/crates/papyrus-lints`'s
    `KNOWN_RULE_IDS`/`FIXABLE_RULE_IDS` (`src/registry.rs`), `RULE_TAGS`
    (`src/tags.rs`), `Rules`/`default_rules()` (`src/config.rs`), the
-   `collect_diagnostics`/`apply_repairs` dispatch, and each rule's `mod`
-   in `src/lib.rs` from the generated `shared/rules.json` at build time.
+   `collect_diagnostics`/`apply_repairs` dispatch, and each rule's
+   `mod` in `src/lib.rs` from the generated `shared/rules.json` at build time.
    `Config`'s other fields are compiled from `configuration/lint-settings.json`.
    `pages/build.py` generates the website's searchable `rules.html`
    straight from it; and release tooling fills in `templates/nexuspage.bbcode`'s
@@ -154,8 +154,8 @@ Minimum touch list (see also [`CONTRIBUTING.md`](CONTRIBUTING.md)):
    the rule id alone, so it needs no separate slug field either. A new
    `"low"` importance rule is turned off by default in the generated
    `standard`/`careful` presets too (see `papyrus-lint-config/build.rs`);
-   add `"kept_in_standard": true` to its entry only if it belongs with the
-   handful of cheap, auto-fixable formatting rules `standard` keeps on
+   add `"kept_in_standard": true` to its entry only if it belongs with
+   the handful of cheap, auto-fixable formatting rules `standard` keeps on
    regardless.
 3. `README.md`'s "Implemented Lints" section — add a one-line mention
    under the matching category blurb only if the category's own summary
@@ -176,7 +176,7 @@ If the rule introduces a new *kind* keyword (not `style` /
 - README lint tables → `shared/rules/<id>.json` (rule 4). `shared/rules/*.json` →
   the generated `shared/rules.json` (`.github/scripts/build_rules_json.py`,
   also git-ignored) → `templates/nexuspage.bbcode`'s lint tables (filled in at
-  release time, never checked in — see `.github/workflows/release.yml`) and
+  release time, never checked in — see the comments in `.github/workflows/release.yml`) and
   `papyrus-lints`'s `registry.rs`/`tags.rs`/
   `lib.rs` rule `mod`s (via `build.rs`) — all generated, never hand-edited.
 - `docs/cli.md`/`docs/configuration.md` CLI usage / default config →

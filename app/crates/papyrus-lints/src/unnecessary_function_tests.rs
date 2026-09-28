@@ -59,8 +59,7 @@ fn does_not_flag_a_fragment_function_regardless_of_case() {
 #[test]
 fn still_flags_functions_that_only_resemble_fragment_names() {
     for name in ["Fragment_", "Fragment_12x", "NotFragment_12"] {
-        let source =
-            format!("ScriptName Example\n\nFunction {name}()\n    B()\nEndFunction\n");
+        let source = format!("ScriptName Example\n\nFunction {name}()\n    B()\nEndFunction\n");
 
         assert_eq!(
             check(&source).len(),
@@ -71,10 +70,62 @@ fn still_flags_functions_that_only_resemble_fragment_names() {
 }
 
 #[test]
-fn does_not_flag_a_function_with_no_statements() {
+fn flags_a_function_with_no_statements() {
     let diagnostics = check("ScriptName Example\n\nFunction A()\nEndFunction\n");
 
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!(diagnostics[0].line, 3);
+    assert_eq!(diagnostics[0].rule, RULE);
+    assert!(diagnostics[0].message.contains("empty body"));
+    assert!(diagnostics[0].message.contains("'A'"));
+}
+
+#[test]
+fn flags_a_function_whose_body_is_only_a_comment() {
+    let diagnostics =
+        check("ScriptName Example\n\nFunction A()\n    ; intentionally blank\nEndFunction\n");
+
+    assert_eq!(diagnostics.len(), 1);
+    assert!(diagnostics[0].message.contains("'A'"));
+}
+
+#[test]
+fn does_not_flag_a_native_function() {
+    let diagnostics = check("ScriptName Example\n\nFunction A() Native\n");
+
     assert!(diagnostics.is_empty());
+}
+
+#[test]
+fn does_not_flag_an_event_with_no_statements() {
+    let diagnostics = check("ScriptName Example\n\nEvent OnInit()\nEndEvent\n");
+
+    assert!(diagnostics.is_empty());
+}
+
+#[test]
+fn does_not_flag_an_empty_fragment_function() {
+    let diagnostics = check("ScriptName Example\n\nFunction Fragment_0()\nEndFunction\n");
+
+    assert!(diagnostics.is_empty());
+}
+
+#[test]
+fn flags_an_empty_function_declared_in_a_state() {
+    let diagnostics =
+        check("ScriptName Example\n\nState Active\n    Function A()\n    EndFunction\nEndState\n");
+
+    assert_eq!(diagnostics.len(), 1);
+    assert!(diagnostics[0].message.contains("'A'"));
+    assert!(diagnostics[0].message.contains("empty body"));
+}
+
+#[test]
+fn flags_an_empty_parameterless_function_returning_a_simple_type() {
+    let diagnostics = check("ScriptName Example\n\nInt Function GetFoo() Global\nEndFunction\n");
+
+    assert_eq!(diagnostics.len(), 1);
+    assert!(diagnostics[0].message.contains("'GetFoo'"));
 }
 
 #[test]
@@ -303,6 +354,13 @@ fn repair_leaves_deeply_qualified_wrappers_and_event_wrappers_untouched() {
 #[test]
 fn repair_leaves_a_fragment_function_wrapper_untouched() {
     let source = "ScriptName Example\n\nFunction Fragment_0(ObjectReference akSpeakerRef)\n    B()\nEndFunction\n\nFunction Caller()\n    Fragment_0(None)\nEndFunction\n";
+
+    assert_eq!(repair(source), source);
+}
+
+#[test]
+fn repair_leaves_an_empty_function_untouched() {
+    let source = "ScriptName Example\n\nFunction A()\nEndFunction\n\nFunction Caller()\n    A()\nEndFunction\n";
 
     assert_eq!(repair(source), source);
 }

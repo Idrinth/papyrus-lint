@@ -22,6 +22,8 @@ compile_check: false
 strict_achlist_scope: false
 # true, false
 semicolon: false
+# true, false
+bool_like_int: true
 # tab, space
 indentation: tab
 # Non-negative integer; used only when indentation is space
@@ -46,8 +48,6 @@ magic_numbers: loose
 fail_on_warning: false
 # true, false
 fail_on_info: false
-# true, false
-bool_like_int: true
 # true allows a Bool function to return a non-array Form value, relying on
 # Papyrus to treat None as false and an existing Form as true
 treat_form_as_bool_for_returns: false
