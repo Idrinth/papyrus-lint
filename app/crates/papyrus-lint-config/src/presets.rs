@@ -34,18 +34,18 @@ pub use crate::preset_files::{list_user_preset_names, user_presets_dir};
 
 /// A named baseline `init` can generate `papyrus-lint.yaml` from, selected
 /// via the CLI's `--preset <name>` flag (see [`Preset::parse`]). See
-/// `configuration/presets/` for each built-in preset's own small overwrite YAML (a
+/// `shared/configuration/presets/` for each built-in preset's own small overwrite YAML (a
 /// header comment plus any non-rule settings it changes, e.g. `careful`'s
 /// relaxed cyclomatic complexity thresholds) and the reasoning behind what
 /// it turns on/off relative to the others. `build.rs` layers that overwrite
-/// file onto `configuration/papyrus-lint.default.yaml`, plus (for `standard`/
+/// file onto `shared/configuration/papyrus-lint.default.yaml`, plus (for `standard`/
 /// `careful`) every `rules:` toggle `shared/rules.json` tags `"low"`
 /// importance and doesn't mark `kept_in_standard`, into the full YAML this
 /// module embeds.
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub enum Preset {
     /// Everything on, including pure style/naming nits. Identical to the
-    /// engine's built-in defaults (`configuration/papyrus-lint.default.yaml`), so
+    /// engine's built-in defaults (`shared/configuration/papyrus-lint.default.yaml`), so
     /// plain `init` (no `--preset`) behaves exactly as it did before
     /// presets existed.
     #[default]
@@ -100,11 +100,11 @@ impl Preset {
     }
 
     /// This preset's baseline YAML content: for a built-in preset, `build.rs`
-    /// layers the checked-in `configuration/presets/papyrus-lint.<preset>.yaml`
+    /// layers the checked-in `shared/configuration/presets/papyrus-lint.<preset>.yaml`
     /// overwrite file (a header comment plus any non-rule settings the
     /// preset changes) and, for `standard`/`careful`, every `rules:` toggle
     /// `shared/rules.json` says to turn off (see `build.rs`'s
-    /// `preset_rule_value`), onto `configuration/papyrus-lint.default.yaml`, and
+    /// `preset_rule_value`), onto `shared/configuration/papyrus-lint.default.yaml`, and
     /// writes the result to `$OUT_DIR/papyrus-lint.<preset>.yaml`, which is
     /// compiled into the binary here; for [`Self::Custom`], the contents of
     /// the matching `<name>.yaml`/`.yml` file under `base_dir`'s

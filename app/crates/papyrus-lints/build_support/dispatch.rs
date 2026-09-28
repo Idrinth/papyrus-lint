@@ -4,7 +4,7 @@ use super::{default_config_order, BuildContext};
 use std::collections::BTreeSet;
 
 pub fn compile(context: &BuildContext, rules: &[RuleMetadata]) {
-    let relative = "configuration/papyrus-lint.default.yaml";
+    let relative = "shared/configuration/papyrus-lint.default.yaml";
     let source = context.load_text(relative, "default config");
     let order = default_config_order(&source, &context.input(relative))
         .unwrap_or_else(|error| panic!("{error}"));

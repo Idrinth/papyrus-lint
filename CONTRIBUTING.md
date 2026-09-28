@@ -120,19 +120,22 @@ false` on the `shared/rules/<id>.json` entry for opt-in rules.
 After adding or editing a `shared/rules/*.json` file, run `python3
 .github/scripts/build_rules_json.py` to regenerate the git-ignored
 `shared/rules.json` those generated files (and `pages/build.py`) actually
-read — do this before building or testing anything below.
+read — do this before building or testing anything below. Then run `python3
+.github/scripts/generate_default_config.py` so the git-ignored
+`shared/configuration/papyrus-lint.default.yaml` matches the rules and
+`shared/configuration/lint-settings.json`.
 
 A lint/fix job receives a `&papyrus_lints::Config`, deserialized from a
 project's optional `papyrus-lint.yaml`/`.yml`, so user-configurable behavior
 should be read from there rather than added as a separate parameter. Add tests
 for diagnostics, disable comments, configuration, and repairs as applicable,
 and update `shared/rules/<id>.json` and the configuration
-examples (`configuration/papyrus-lint.default.yaml`, `templates/nexuspage.bbcode`).
+examples (`shared/configuration/papyrus-lint.default.yaml`, `templates/nexuspage.bbcode`).
 `registry.rs`'s `KNOWN_RULE_IDS`/`FIXABLE_RULE_IDS`, `tags.rs`'s
 `RULE_TAGS`, `config.rs`'s `Rules` and the rest of `Config`, the
 check/repair dispatch, and `lib.rs`'s rule `mod`s are all compiled by
 `build.rs` (`Rules` and the dispatch from the generated `shared/rules.json`,
-the other `Config` fields from `configuration/lint-settings.json`), so they
+the other `Config` fields from `shared/configuration/lint-settings.json`), so they
 never need hand-editing. The Settings tab controls for those `Config`
 fields are rendered from the same lint-settings file; don't add them to
 `app/index.html`.

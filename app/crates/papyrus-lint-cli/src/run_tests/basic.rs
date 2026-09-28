@@ -122,7 +122,8 @@ fn does_not_fail_on_warning_level_diagnostics_by_default() {
 
     assert_eq!(code, 0);
     assert!(stdout.contains("[unused-property]"));
-    assert!(stdout.contains("1 problem(s) found in 1 of 1 script(s)"));
+    assert!(stdout.contains("[unnecessary-function]"));
+    assert!(stdout.contains("2 problem(s) found in 1 of 1 script(s)"));
 }
 
 #[test]

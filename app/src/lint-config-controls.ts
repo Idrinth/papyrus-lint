@@ -1,5 +1,5 @@
 // Settings controls for every Config field except `rules`. The markup is
-// built from LINT_SETTINGS (configuration/lint-settings.json) so index.html
+// built from LINT_SETTINGS (shared/configuration/lint-settings.json) so index.html
 // only keeps the empty mounts.
 
 import { type Game, type LintConfig, type LintSetting, LINT_SETTINGS } from "./config-types";

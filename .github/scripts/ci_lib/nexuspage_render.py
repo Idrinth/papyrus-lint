@@ -7,6 +7,7 @@ entrypoint) with no behavior change.
 from pathlib import Path
 
 from .coverage_lcov import MODULES, iter_leaf_paths, parse_lcov
+from .default_config import load_lint_settings, load_rules, render_default_yaml
 from .links import render_bbcode_list, replace_angle_link_markers
 
 MARKERS = {
@@ -47,7 +48,7 @@ def render(template: str, hit: int, found: int, version: str) -> str:
         "found": f"{found:,}",
         "percentage": f"{hit / found * 100:.1f}",
         "version": version,
-        "configuration": Path("configuration/papyrus-lint.default.yaml").read_text(encoding="utf-8", errors="replace"),
+        "configuration": render_default_yaml(load_lint_settings(Path(".")), load_rules(Path("."))),
         "cli": Path("docs/papyrus-cli-usage.txt").read_text(encoding="utf-8", errors="replace"),
     }
     rendered = template

@@ -48,6 +48,10 @@ jobs:
       - name: Build rules.json from shared/rules/
         run: python3 .github/scripts/build_rules_json.py
 
+      - name: Generate default configuration
+        shell: bash
+        run: python3 .github/scripts/generate_default_config.py
+
       - uses: dtolnay/rust-toolchain@stable
 
       - uses: Swatinem/rust-cache@v2

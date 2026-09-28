@@ -162,17 +162,22 @@ behavior.
 ## Configuration
 
 Lint/fix behavior is configured via an optional `papyrus-lint.yaml` (or
-`.yml`) at the project root. Keys you omit fall back to the defaults in
-[`configuration/papyrus-lint.default.yaml`](configuration/papyrus-lint.default.yaml),
-which is also what `PapyrusLinterCLI init` writes. Built-in and user
-presets (`strict`, `standard`, `careful`, plus files next to the binary)
-are available from `init --preset` and from the desktop app's
-Settings/Presets tabs.
+`.yml`) at the project root. Keys you omit fall back to the defaults
+generated from
+[`shared/configuration/lint-settings.json`](shared/configuration/lint-settings.json)
+and [`shared/rules/`](shared/rules/). `PapyrusLinterCLI init` writes that
+annotated file. The generated copy used by builds and docs is git-ignored at
+`shared/configuration/papyrus-lint.default.yaml`; regenerate it with
+`python3 .github/scripts/generate_default_config.py` (after
+`python3 .github/scripts/build_rules_json.py` when `shared/rules.json` is
+missing). Built-in and user presets (`strict`, `standard`, `careful`, plus
+files next to the binary) are available from `init --preset` and from the
+desktop app's Settings/Presets tabs.
 
 See the [configuration reference](docs/configuration.md) for where that
 file is resolved, what every key does, and how presets work, and
-[`configuration/presets/`](configuration/presets/) for each built-in
-preset's own annotated YAML.
+[`shared/configuration/presets/`](shared/configuration/presets/) for each
+built-in preset's own annotated YAML.
 
 ## Command-line interface
 
