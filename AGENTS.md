@@ -80,7 +80,7 @@ CI treats clippy warnings as errors.
    `templates/nexuspage.bbcode`'s own style, `category`, `visitor` (`ast`,
    `tokens`, or `none` — how the rule would walk a script as a visitor),
    `tags`, `severity`,
-   `importance`, `fixable`, optional `repair_order`). `shared/rules.json`
+   `importance`, `fixable`, optional `repair_order`, optional `games`). `shared/rules.json`
    — the combined array every other consumer actually reads — is
    generated from those files by `.github/scripts/build_rules_json.py`
    and is git-ignored, not checked in; run that script (no arguments)
@@ -126,8 +126,10 @@ Minimum touch list (see also [`CONTRIBUTING.md`](CONTRIBUTING.md)):
    `none` for a project-level/post-pass/raw-line rule that is neither),
    `tags`,
    `importance`, `severity`, and `fixable`. For an `apply_repairs` auto-fix,
-   set `repair_order` (1..=N, no gaps). Set `"enabled_by_default":
-   false` only for opt-in rules. Run `python3
+   set `repair_order` (1..=N, no gaps). Optional `"games": ["skyrim", ...]`
+   limits the rule to those `Config.game` values (`skyrim` / `fallout4` /
+   `starfield`); omit it so the rule keeps applying everywhere. Set
+   `"enabled_by_default": false` only for opt-in rules. Run `python3
    .github/scripts/build_rules_json.py` afterward (and before building or
    testing anything below) to regenerate the git-ignored `shared/rules.json`
    every consumer below actually reads. No Nexus page regeneration step
