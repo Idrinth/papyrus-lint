@@ -1,4 +1,5 @@
 use super::*;
+use std::fs;
 use std::sync::Mutex;
 use tempfile::tempdir;
 
@@ -175,6 +176,18 @@ fn apply_config_preset_rejects_a_blank_preset_name() {
 }
 
 #[test]
+fn apply_config_preset_accepts_trimmed_case_insensitive_built_in_names() {
+    let dir = tempdir().unwrap();
+    let dir_string = dir.path().to_string_lossy().into_owned();
+
+    apply_config_preset(dir_string.clone(), "  CAREFUL\t".to_string()).unwrap();
+
+    let config = load_lint_config(dir_string).unwrap();
+    assert_eq!(config.cyclomatic_complexity_warning, 20);
+    assert!(!config.rules.trailing_whitespace);
+}
+
+#[test]
 fn apply_config_preset_reports_a_missing_user_preset() {
     let _guard = USER_PRESETS.lock().unwrap();
     let dir = tempdir().unwrap();
@@ -208,6 +221,29 @@ fn get_preset_lint_config_resolves_each_built_in_preset_case_insensitively() {
     let careful = get_preset_lint_config(" Careful ".to_string()).unwrap();
     assert!(!careful.rules.trailing_whitespace);
     assert_eq!(careful.cyclomatic_complexity_warning, 20);
+}
+
+#[test]
+fn malformed_user_preset_errors_are_forwarded_without_creating_a_project_config() {
+    let _guard = USER_PRESETS.lock().unwrap();
+    let dir = tempdir().unwrap();
+    let name = format!("desktop-malformed-test-{}", std::process::id());
+    let _cleanup = UserPresetCleanup(vec![name.clone()]);
+    let presets_dir = config_presets::user_presets_dir().expect("test executable has a parent");
+    fs::create_dir_all(&presets_dir).unwrap();
+    fs::write(presets_dir.join(format!("{name}.yaml")), "rules: [\n").unwrap();
+
+    let get_error = get_preset_lint_config(name.clone())
+        .expect_err("a malformed preset should not produce lint settings");
+    assert!(!get_error.is_empty());
+
+    let apply_error = apply_config_preset(
+        dir.path().to_string_lossy().into_owned(),
+        name.to_uppercase(),
+    )
+    .expect_err("a malformed preset should not initialize a project");
+    assert!(!apply_error.is_empty());
+    assert!(!dir.path().join("papyrus-lint.yaml").exists());
 }
 
 #[test]
