@@ -140,8 +140,10 @@ fn lint_runs_for_skyrim_by_default() {
 
 #[test]
 fn lint_skips_when_game_is_fallout4() {
-    let mut config = Config::default();
-    config.game = Game::Fallout4;
+    let config = Config {
+        game: Game::Fallout4,
+        ..Default::default()
+    };
     let diagnostics = crate::lint(
         "ScriptName Example\n\nEvent OnUpdate()\n    RegisterForUpdate(1.0)\nEndEvent\n",
         &config,
@@ -151,8 +153,10 @@ fn lint_skips_when_game_is_fallout4() {
 
 #[test]
 fn lint_skips_when_game_is_starfield() {
-    let mut config = Config::default();
-    config.game = Game::Starfield;
+    let config = Config {
+        game: Game::Starfield,
+        ..Default::default()
+    };
     let diagnostics = crate::lint(
         "ScriptName Example\n\nEvent OnUpdate()\n    RegisterForUpdate(1.0)\nEndEvent\n",
         &config,
