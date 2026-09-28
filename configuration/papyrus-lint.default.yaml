@@ -90,6 +90,7 @@ rules:
   unused_local_variable: true
   variable_used_before_assignment: true
   none_form_usage: true
+  member_chain_none_usage: false
   local_variable_shadowing: true
   parameter_reassignment: true
   chain_whitespace: true
@@ -144,7 +145,6 @@ rules:
   missing_doc_comment: false
   invalid_random_range: true
   float_equality: false
-  register_for_update_in_on_update: true
   missing_update_handler: false
   unused_import: true
   event_signature_mismatch: false
