@@ -94,7 +94,7 @@ impl Parser {
                     || self.at_identifier_ignore_ascii_case("Default"))
             {
                 self.advance();
-            }  else if self.mode.has_starfield_dialect()
+            } else if self.mode.has_starfield_dialect()
                 && self.at_identifier_ignore_ascii_case("Mandatory")
             {
                 self.advance();
