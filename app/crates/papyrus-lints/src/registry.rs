@@ -34,6 +34,13 @@ include!(concat!(env!("OUT_DIR"), "/known_rule_ids_data.rs"));
 
 include!(concat!(env!("OUT_DIR"), "/rules_dispatch.rs"));
 
+/// Whether a rule whose optional `games` metadata is `allowed` should run for
+/// `game`. An empty slice means the field was omitted from
+/// `shared/rules.json` and the rule applies to every [`crate::Game`].
+pub(crate) fn rule_applies_to_game(game: crate::Game, allowed: &[crate::Game]) -> bool {
+    allowed.is_empty() || allowed.contains(&game)
+}
+
 fn apply_rule(source: String, enabled: bool, repair: impl FnOnce(&str) -> String) -> String {
     if enabled {
         repair(&source)
