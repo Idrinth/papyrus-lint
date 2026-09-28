@@ -170,3 +170,126 @@ fn repair_keeps_a_disable_that_still_applies() {
     assert!(repaired.contains("@disable comma-spacing"));
     assert!(!repaired.contains("mystery-rule"));
 }
+
+#[test]
+fn named_disable_file_matches_rule_ids_case_insensitively() {
+    let disables = Disables::scan("; @disable-file COMMA-SPACING\nCall(1,2)\n");
+    let diagnostics = [diagnostic(2, "comma-spacing")];
+
+    assert!(check(&disables, &diagnostics, KNOWN_RULES).is_empty());
+}
+
+#[test]
+fn repair_returns_an_unchanged_source_when_there_are_no_unused_directives() {
+    let source = "ScriptName Example\r\n";
+
+    assert_eq!(
+        super::repair(source, None, None, &crate::config::Config::default()),
+        source
+    );
+}
+
+#[test]
+fn repair_preserves_line_endings_and_a_missing_final_newline() {
+    let source = "; @file-disable mystery-rule\r\nScriptName Example";
+    let repaired = super::repair(source, None, None, &crate::config::Config::default());
+
+    assert_eq!(repaired, "\r\nScriptName Example");
+}
+
+#[test]
+fn rewrite_removes_only_unused_ids_and_normalizes_the_remaining_list() {
+    let line = "Call(1,2) ; @disable MYSTERY-rule, comma-spacing trailing-whitespace";
+    let unused = vec!["mystery-rule".to_string(), "TRAILING-WHITESPACE".to_string()];
+
+    assert_eq!(
+        rewrite_disable_line(line, &unused),
+        "Call(1,2) ; @disable comma-spacing"
+    );
+}
+
+#[test]
+fn rewrite_removes_a_whole_directive_without_damaging_surrounding_comments() {
+    let unused = vec!["mystery-rule".to_string()];
+
+    assert_eq!(
+        rewrite_disable_line(
+            "Int value = 1 ; @disable mystery-rule @nodiscard",
+            &unused
+        ),
+        "Int value = 1 ; @nodiscard"
+    );
+    assert_eq!(
+        rewrite_disable_line("; @disable mystery-rule @nodiscard", &unused),
+        "; @nodiscard"
+    );
+    assert_eq!(
+        rewrite_disable_line("Int value = 1 ; @disable mystery-rule", &unused),
+        "Int value = 1"
+    );
+    assert_eq!(
+        rewrite_disable_line("; @disable mystery-rule", &unused),
+        ""
+    );
+}
+
+#[test]
+fn rewrite_handles_bare_directives_aliases_and_unrelated_lines() {
+    assert_eq!(
+        rewrite_disable_line("; @disable", &["*".to_string()]),
+        ""
+    );
+    assert_eq!(
+        rewrite_disable_line(
+            "; @file-disable mystery-rule, comma-spacing",
+            &["mystery-rule".to_string()]
+        ),
+        "; @file-disable comma-spacing"
+    );
+    assert_eq!(
+        rewrite_disable_line("Int value = 1 ; ordinary comment", &["*".to_string()]),
+        "Int value = 1 ; ordinary comment"
+    );
+}
+
+#[test]
+fn unused_rule_id_extracts_named_and_bare_directives() {
+    assert_eq!(
+        unused_rule_id("[warning] Unused @disable `Mixed-Case`: reason"),
+        "mixed-case"
+    );
+    assert_eq!(
+        unused_rule_id("[warning] Unused @disable-file `some-rule`: reason"),
+        "some-rule"
+    );
+    assert_eq!(
+        unused_rule_id("[warning] Unused @disable: no diagnostics"),
+        "*"
+    );
+    assert_eq!(unused_rule_id("unexpected message"), "*");
+}
+
+#[test]
+fn unused_ids_are_grouped_by_source_line() {
+    let diagnostics = [
+        Diagnostic {
+            line: 3,
+            column: 4,
+            message: "[warning] Unused @disable `first-rule`: reason".into(),
+            rule: RULE,
+        },
+        Diagnostic {
+            line: 3,
+            column: 20,
+            message: "[warning] Unused @disable-file `SECOND-RULE`: reason".into(),
+            rule: RULE,
+        },
+    ];
+
+    let grouped = unused_ids_by_line(&diagnostics);
+
+    assert_eq!(
+        grouped.get(&3),
+        Some(&vec!["first-rule".to_string(), "second-rule".to_string()])
+    );
+}
