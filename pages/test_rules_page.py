@@ -28,6 +28,8 @@ class RulesPageTest(unittest.TestCase):
                             "name": "Example rule",
                             "tags": ["correctness", "style"],
                             "severity": "warning",
+                            "importance": "low",
+                            "kept_in_standard": True,
                             "fixable": True,
                             "description": "Flags an `example`.",
                             "definition": "The full behavior of this rule.",
@@ -49,24 +51,30 @@ class RulesPageTest(unittest.TestCase):
             output = (out_dir / "rules.html").read_text(encoding="utf-8")
 
         self.assertNotIn("<!--RULES_CONTENT-->", output)
-        self.assertIn('id=rule-example-rule', output)
+        self.assertIn("id=rule-example-rule", output)
         self.assertIn("Example rule", output)
-        self.assertIn('<code>example-rule</code>', output)
-        self.assertIn('data-severity=warning', output)
+        self.assertIn("<code>example-rule</code>", output)
+        self.assertIn("data-severity=warning", output)
         self.assertIn('data-tags="correctness style"', output)
-        self.assertIn('data-fixable=true', output)
-        self.assertIn('<td class=fix-yes>✓</td>', output)
+        self.assertIn('data-presets="strict standard"', output)
+        self.assertIn("data-fixable=true", output)
+        self.assertIn("<td class=fix-yes>✓</td>", output)
         self.assertIn("<code>example</code>", output)
         self.assertIn("The full behavior of this rule.", output)
-        self.assertIn('value=warning', output)
-        self.assertIn('value=correctness', output)
-        self.assertIn('value=style', output)
-        self.assertNotIn('value=performance', output)
-        self.assertNotIn('value=maintainability', output)
-        self.assertNotIn('value=error', output)
-        self.assertNotIn('value=info', output)
-        self.assertIn('id=rules-fixable-filter', output)
-        self.assertIn('id=rules-count', output)
+        self.assertIn("value=warning", output)
+        self.assertIn("value=correctness", output)
+        self.assertIn("value=style", output)
+        self.assertIn("value=strict", output)
+        self.assertIn("value=standard", output)
+        self.assertNotIn("value=careful", output)
+        self.assertNotIn("value=none", output)
+        self.assertNotIn("value=performance", output)
+        self.assertNotIn("value=maintainability", output)
+        self.assertNotIn("value=error", output)
+        self.assertNotIn("value=info", output)
+        self.assertIn("id=rules-fixable-filter", output)
+        self.assertIn("id=rules-count", output)
+        self.assertIn(">Presets<", output)
 
     def test_build_rules_page_rejects_a_template_missing_a_marker(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -89,6 +97,28 @@ class RulesPageTest(unittest.TestCase):
             self.assertFalse((out_dir / "rules.html").exists())
 
 
+class RulePresetMembershipTest(unittest.TestCase):
+    def test_presets_follow_importance_and_default_enablement(self) -> None:
+        self.assertEqual(
+            rules_page.presets_for({"enabled_by_default": True, "importance": "high"}),
+            ["strict", "standard", "careful"],
+        )
+        self.assertEqual(
+            rules_page.presets_for({"enabled_by_default": True, "importance": "low"}),
+            ["strict"],
+        )
+        self.assertEqual(
+            rules_page.presets_for(
+                {"enabled_by_default": True, "importance": "low", "kept_in_standard": True}
+            ),
+            ["strict", "standard"],
+        )
+        self.assertEqual(
+            rules_page.presets_for({"enabled_by_default": False, "importance": "high"}),
+            [],
+        )
+
+
 class RepositoryRulesConfigurationTest(unittest.TestCase):
     """Keep rules_page.py's checked-in inputs synchronized with shared/rules.json."""
 
@@ -109,6 +139,9 @@ class RepositoryRulesConfigurationTest(unittest.TestCase):
                 self.assertTrue(rule["name"].strip())
                 self.assertTrue(rule["description"].strip())
                 self.assertTrue(rule["definition"].strip())
+                self.assertIn(rule.get("importance"), ("low", "medium", "high"))
+                for name in rules_page.presets_for(rule):
+                    self.assertIn(name, rules_page.RULE_PRESETS)
 
 
 if __name__ == "__main__":
