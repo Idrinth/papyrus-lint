@@ -1,4 +1,4 @@
-//! Flags a `.psc` whose declared `ScriptName` doesn't match its file stem,
+//! Flags a `.psc` whose declared `ScriptName` doesn't match its relative path,
 //! aside from casing. Papyrus resolves and compiles a script by matching the
 //! two, and rejects a mismatch at compile time.
 //!
@@ -8,6 +8,8 @@
 //! for that reason — the same way [`crate::conflicting_script_versions`]
 //! takes a project snapshot the dispatch never has.
 
+use std::path::Path;
+
 use papyrus_parser::token::{Keyword, Token, TokenKind};
 
 use crate::Diagnostic;
@@ -16,24 +18,21 @@ use crate::Diagnostic;
 /// and the `rules.script_filename_mismatch` config key.
 pub const RULE: &str = "script-filename-mismatch";
 
-/// Checks `tokens` for a `ScriptName` whose final `:`-separated segment
-/// differs from `file_stem` (case-insensitively).
+/// Checks `tokens` for a `ScriptName` that differs from `relative_path`
+/// (case-insensitively).
 ///
-/// `file_stem` is the `.psc` file's stem (`Path::file_stem`), not a path and
-/// not the `.psc` suffix. A Fallout 4-style name (`User:MyScript`, stored at
-/// `Scripts/Source/User/MyScript.psc`) is compared by that final segment
-/// only — the namespace is the containing folder, not part of the file name.
-/// No `ScriptName`, a `ScriptName` that isn't followed by an identifier (and
-/// optional `:identifier` pieces), or an empty `file_stem` yields nothing.
+/// A qualified Fallout 4-style name (`User:MyScript`) must match the complete
+/// path below its script search root (`User/MyScript.psc`). An unqualified
+/// name keeps the Skyrim behavior and is compared only with the file stem.
+/// No `ScriptName`, an invalid declaration, or a path without a UTF-8 stem
+/// yields nothing.
 ///
 /// This does not apply `; @disable` / `; @disable-file`. Callers merge the
 /// diagnostic through
 /// [`crate::lint_with_external_arguments_and_extra_diagnostics`], which
 /// honors a matching directive and counts it as used.
-pub fn check(file_stem: &str, tokens: &[Token]) -> Option<Diagnostic> {
-    if file_stem.is_empty() {
-        return None;
-    }
+pub fn check(relative_path: &Path, tokens: &[Token]) -> Option<Diagnostic> {
+    let file_stem = relative_path.file_stem()?.to_str()?;
     let mut tokens = tokens.iter().peekable();
     while let Some(token) = tokens.next() {
         if token.kind != TokenKind::Keyword(Keyword::ScriptName) {
@@ -44,7 +43,7 @@ pub fn check(file_stem: &str, tokens: &[Token]) -> Option<Diagnostic> {
             return None;
         };
         let mut full_name = first_segment.clone();
-        let mut last_segment = first_segment.clone();
+        let mut segments = vec![first_segment.as_str()];
         while tokens.peek().map(|next| &next.kind) == Some(&TokenKind::Colon) {
             tokens.next();
             let TokenKind::Identifier(segment) = &tokens.next()?.kind else {
@@ -52,9 +51,30 @@ pub fn check(file_stem: &str, tokens: &[Token]) -> Option<Diagnostic> {
             };
             full_name.push(':');
             full_name.push_str(segment);
-            last_segment.clone_from(segment);
+            segments.push(segment);
         }
-        if last_segment.eq_ignore_ascii_case(file_stem) {
+        let matches = if segments.len() == 1 {
+            first_segment.eq_ignore_ascii_case(file_stem)
+        } else {
+            let mut actual: Vec<_> = relative_path
+                .parent()
+                .into_iter()
+                .flat_map(Path::components)
+                .filter_map(|component| {
+                    let std::path::Component::Normal(part) = component else {
+                        return None;
+                    };
+                    part.to_str()
+                })
+                .collect();
+            actual.push(file_stem);
+            segments.len() == actual.len()
+                && segments
+                    .iter()
+                    .zip(actual)
+                    .all(|(expected, actual)| expected.eq_ignore_ascii_case(actual))
+        };
+        if matches {
             return None;
         }
         return Some(Diagnostic {
@@ -62,7 +82,8 @@ pub fn check(file_stem: &str, tokens: &[Token]) -> Option<Diagnostic> {
             column: name_token.col,
             rule: RULE,
             message: format!(
-                "[error] Script name '{full_name}' does not match its file name '{file_stem}'; Papyrus requires them to match (aside from casing, and any leading 'Namespace:' segment)"
+                "[error] Script name '{full_name}' does not match its relative file path '{}'; Papyrus requires them to match aside from casing",
+                relative_path.display()
             ),
         });
     }

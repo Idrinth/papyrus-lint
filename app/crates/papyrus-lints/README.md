@@ -17,8 +17,9 @@ One rule is `src/<rule>.rs` plus `shared/rules/<id>.json`.
   pass a `ProjectFile` snapshot of the same-named copies, not every script
   in the project. It is not dispatched from `collect_diagnostics`.
 - `script-filename-mismatch` owns its diagnostic policy here. Callers pass
-  the `.psc` file stem and the lexer tokens (`ScriptName` plus its name
-  segments). It is not dispatched from `collect_diagnostics`.
+  the `.psc` path relative to its search root and the lexer tokens
+  (`ScriptName` plus its name segments). It is not dispatched from
+  `collect_diagnostics`.
 - `lint` / `repair` / `repair_filtered*` / `repaired_line` have no resolver.
   `unused-import` and `argument-naming` are no-ops there. Project callers,
   including desktop preview, use the `*_with_external_arguments` siblings.

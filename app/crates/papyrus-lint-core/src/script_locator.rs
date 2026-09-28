@@ -263,6 +263,43 @@ pub fn detected_script_roots(root: &Path, additional_roots: &[String]) -> Vec<Pa
         .collect()
 }
 
+/// Returns `script_path` relative to the search root that contains it.
+pub fn relative_path_in_script_roots(
+    script_path: &Path,
+    root: &Path,
+    additional_roots: &[String],
+) -> Option<PathBuf> {
+    detected_script_roots(root, additional_roots)
+        .into_iter()
+        .find_map(|search_root| {
+            script_path
+                .strip_prefix(search_root)
+                .ok()
+                .map(Path::to_path_buf)
+        })
+}
+
+/// Whether two paths have the same qualified identity below their owning
+/// script roots. Paths outside known roots fall back to their leaf names.
+pub fn same_script_identity(
+    left: &Path,
+    right: &Path,
+    root: &Path,
+    additional_roots: &[String],
+) -> bool {
+    let relative = |path| {
+        relative_path_in_script_roots(path, root, additional_roots)
+            .or_else(|| path.file_name().map(PathBuf::from))
+    };
+    relative(left)
+        .zip(relative(right))
+        .is_some_and(|(left, right)| {
+            let left = left.to_string_lossy().replace('\\', "/");
+            let right = right.to_string_lossy().replace('\\', "/");
+            left.eq_ignore_ascii_case(&right)
+        })
+}
+
 /// Recursively scans `dir` and every subdirectory beneath it for `.psc`
 /// files, matched case-insensitively on extension, and returns their paths
 /// in sorted order for a deterministic report.
@@ -308,33 +345,8 @@ pub fn conflicting_script_versions(
     short_paths: bool,
     game: Game,
 ) -> Vec<papyrus_lints::Diagnostic> {
-    let Some(file_name) = script_path.file_name().and_then(|name| name.to_str()) else {
-        return Vec::new();
-    };
-    let Some(current) = file_content_hash(script_path, game) else {
-        return Vec::new();
-    };
-    let mut paths = Vec::new();
-    for search_root in detected_script_roots(root, additional_roots) {
-        for candidate in dir_children(&search_root) {
-            let same_name = candidate
-                .file_name()
-                .and_then(|name| name.to_str())
-                .is_some_and(|name| name.eq_ignore_ascii_case(file_name));
-            if !same_name || !candidate.is_file() || candidate == script_path {
-                continue;
-            }
-            if !paths.contains(&candidate) {
-                paths.push(candidate);
-            }
-        }
-    }
-
-    papyrus_lints::conflicting_script_versions::check(
-        script_path,
-        &current,
-        &project_files(paths, root, short_paths, game),
-    )
+    let index = build_script_index(root, additional_roots);
+    conflicting_script_versions_in_index(script_path, &index, root, short_paths, game)
 }
 
 /// Maps a script lookup key to every path found under the indexed search
@@ -347,8 +359,7 @@ pub fn conflicting_script_versions(
 /// not satisfy `Other:Foo` or a bare `Foo`. Built once by
 /// [`build_script_index`] so both exact-name resolution and conflict checks
 /// over a whole batch of scripts (e.g. an achlist's worth) can avoid
-/// re-scanning the same roots. Conflict checks still look up the leaf file
-/// name; qualified conflict identity is intentionally left unchanged here.
+/// re-scanning the same roots. Conflict checks use the same qualified key.
 pub type ScriptIndex = HashMap<String, Vec<PathBuf>>;
 
 /// Looks up `name` in a pre-built [`ScriptIndex`], returning the first path
@@ -581,7 +592,8 @@ fn relative_script_key(search_root: &Path, path: &Path) -> Option<String> {
 
 /// Like [`conflicting_script_versions`], but checks `script_path` against a
 /// pre-built [`ScriptIndex`] (see [`build_script_index`]) instead of
-/// scanning `root`'s search directories itself. Use this when checking many
+/// scanning `root`'s search directories itself. The bucket is selected by
+/// the complete qualified path, not the leaf file name. Use this when checking many
 /// scripts from the same project in one run, so the directories are only
 /// scanned once for the whole batch rather than once per script. `root` and
 /// `short_paths` are forwarded to [`conflicting_script_versions_among`].
@@ -592,10 +604,10 @@ pub fn conflicting_script_versions_in_index(
     short_paths: bool,
     game: Game,
 ) -> Vec<papyrus_lints::Diagnostic> {
-    let Some(file_name) = script_path.file_name().and_then(|name| name.to_str()) else {
-        return Vec::new();
-    };
-    let Some(candidates) = index.get(&file_name.to_ascii_lowercase()) else {
+    let Some(candidates) = index
+        .values()
+        .find(|candidates| candidates.iter().any(|candidate| candidate == script_path))
+    else {
         return Vec::new();
     };
     if !has_other_candidate(script_path, candidates) {

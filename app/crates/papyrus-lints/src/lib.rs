@@ -176,7 +176,7 @@ pub fn lint_with_external_arguments<E: ExternalSignatures>(
 /// `stale-compiled-output` still needs a compiled `.pex` this crate never
 /// sees. `conflicting-script-versions` and `script-filename-mismatch` own
 /// their diagnostic policy here (`conflicting_script_versions::check` takes
-/// a project snapshot; `script_filename_mismatch::check` takes the file stem
+/// a project snapshot; `script_filename_mismatch::check` takes the path
 /// and the `ScriptName` lexer tokens), but neither is dispatched from
 /// [`registry::collect_diagnostics`] — the stem and the snapshot aren't
 /// known there. A caller computes them and passes them in here as
