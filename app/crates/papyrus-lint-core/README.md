@@ -37,7 +37,11 @@ not depend on Tauri.
   path-derived `folder:stem` name when the file sits under a script root
   (`Scripts/Source/User/Foo.psc` → `user:foo`), and the declared
   `ScriptName`. Qualified names stay distinct; an unqualified stem still
-  keeps first-listed-wins.
+  keeps first-listed-wins. Directory lookup uses that same qualified key
+  through the namespaced locator; a nested file is not a bare stem.
+  Preload caches every key that still resolves to the file, so `Extends`
+  and `Import` of `User:Foo` hit `user:foo`. Project files win over lookup
+  roots and the bundled blob.
 - `type_exists` treats `T[]` as an array of `T` (not a script named `T[]`),
   `CustomEventName` and `ScriptEventName` as compiler typedefs (no script
   file, same as `String`/`Int`), and `Script:Struct` /

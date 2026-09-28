@@ -12,10 +12,12 @@
 //! not retry it.
 //!
 //! Names already queued or resolved are skipped, which is the same cycle
-//! break ancestry walks use (`visited`). A seed counts as resolved only
-//! when this table would load that same path for its file stem, so a
+//! break ancestry walks use (`visited`). A seed counts as resolved when
+//! this table would load that same path for any of its cache keys (file
+//! stem, path-derived `folder:stem`, or declared `ScriptName`), so a
 //! same-stem file that loses to a higher-priority root does not hide the
-//! winner. A missing parent stops that branch instead of being retried. Scripts reached only through this closure are
+//! winner and a nested `User/Foo.psc` is seen as `user:foo` rather than a
+//! bare `foo`. A missing parent stops that branch instead of being retried. Scripts reached only through this closure are
 //! analysis-only: callers preload them and must not add them to the lint
 //! target list. [`FunctionTable::preload`] still checks
 //! [`FunctionTable::resolved_path_and_mtime`], so a same-stem file in a
@@ -186,16 +188,9 @@ impl FunctionTable {
 
         let mut seen = HashSet::new();
         for path in seed_paths {
-            if let Some(name) = stem_lower(path) {
-                // A seed occupies its stem only when this table would load
-                // that same path. Otherwise a higher-priority root of the
-                // same name must still be parsed for the cache.
-                if self
-                    .resolve_script_path_kind(&name)
-                    .is_some_and(|(resolved, _)| resolved.as_path() == path)
-                {
-                    seen.insert(name);
-                }
+            let explicit = stem_lower(path).unwrap_or_default();
+            for key in self.cache_keys_resolving_to(path, &explicit) {
+                seen.insert(key);
             }
         }
 
