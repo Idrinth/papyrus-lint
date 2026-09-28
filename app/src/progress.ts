@@ -1,5 +1,5 @@
 // The Lint results progress bar shown while handleDroppedPaths/
-// relintCurrentFiles (drop.ts) parse, resolve, and lint a batch of files.
+// relintCurrentFiles (drop.ts) list, prepare, parse, and lint a batch of files.
 
 let lintProgressEl: HTMLElement | null;
 let lintProgressLabelEl: HTMLElement | null;
