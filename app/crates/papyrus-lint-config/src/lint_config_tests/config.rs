@@ -82,13 +82,13 @@ fn default_config_matches_the_checked_in_configuration_copy() {
     let generated = fs::read_to_string(&path).expect("failed to read generated config");
 
     let checked_in_path = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../../../configuration/papyrus-lint.default.yaml");
+        .join("../../../shared/configuration/papyrus-lint.default.yaml");
     let checked_in_copy = fs::read_to_string(&checked_in_path)
-        .expect("failed to read configuration/papyrus-lint.default.yaml");
+        .expect("failed to read shared/configuration/papyrus-lint.default.yaml");
 
     assert_eq!(
         generated, checked_in_copy,
-        "configuration/papyrus-lint.default.yaml is out of date; regenerate it with `PapyrusLinterCLI init`"
+        "shared/configuration/papyrus-lint.default.yaml is out of date; regenerate it with `PapyrusLinterCLI init`"
     );
 }
 

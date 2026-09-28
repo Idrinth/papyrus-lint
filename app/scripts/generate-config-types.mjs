@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Generates app/src/config-types.ts from shared/rules/*.json,
-// configuration/papyrus-lint.default.yaml, and configuration/lint-settings.json.
+// shared/configuration/papyrus-lint.default.yaml, and shared/configuration/lint-settings.json.
 // Mirrors papyrus-lints/build.rs writing Rules / default_rules() and Config
 // into $OUT_DIR.
 
@@ -15,8 +15,8 @@ export const RULE_ID_TO_CONFIG_KEY = {
 
 const HEADER = [
   "// Generated from `shared/rules/*.json`,",
-  "// `configuration/papyrus-lint.default.yaml`, and",
-  "// `configuration/lint-settings.json` by",
+  "// `shared/configuration/papyrus-lint.default.yaml`, and",
+  "// `shared/configuration/lint-settings.json` by",
   "// `app/scripts/generate-config-types.mjs`. Do not edit by hand.",
   "",
 ].join("\n");
@@ -120,7 +120,7 @@ export function orderRules(rules, fieldOrder) {
     const rule = byKey.get(key);
     if (!rule) {
       throw new Error(
-        `configuration/papyrus-lint.default.yaml lists rules.${key} but shared/rules has no matching id`,
+        `shared/configuration/papyrus-lint.default.yaml lists rules.${key} but shared/rules has no matching id`,
       );
     }
     byKey.delete(key);
@@ -129,7 +129,7 @@ export function orderRules(rules, fieldOrder) {
   if (byKey.size > 0) {
     const missing = [...byKey.keys()].sort().join(", ");
     throw new Error(
-      `configuration/papyrus-lint.default.yaml is missing rules: ${missing}; add them next to the other rules: keys`,
+      `shared/configuration/papyrus-lint.default.yaml is missing rules: ${missing}; add them next to the other rules: keys`,
     );
   }
   return ordered;
@@ -360,8 +360,8 @@ if (isMain) {
   const repoRoot = path.resolve(appDir, "..");
   const count = writeConfigTypes({
     rulesDir: path.join(repoRoot, "shared", "rules"),
-    defaultYamlPath: path.join(repoRoot, "configuration", "papyrus-lint.default.yaml"),
-    settingsPath: path.join(repoRoot, "configuration", "lint-settings.json"),
+    defaultYamlPath: path.join(repoRoot, "shared", "configuration", "papyrus-lint.default.yaml"),
+    settingsPath: path.join(repoRoot, "shared", "configuration", "lint-settings.json"),
     outPath: path.join(appDir, "src", "config-types.ts"),
   });
   console.log(`Wrote ${count} rule flags to app/src/config-types.ts.`);

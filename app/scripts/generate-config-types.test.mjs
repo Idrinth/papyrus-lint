@@ -226,11 +226,11 @@ describe("generate-config-types", () => {
   it("renders the repository lint settings against the default YAML and rules", () => {
     const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
     const settings = JSON.parse(
-      readFileSync(path.join(repoRoot, "configuration/lint-settings.json"), "utf8"),
+      readFileSync(path.join(repoRoot, "shared/configuration/lint-settings.json"), "utf8"),
     ).settings;
     const rendered = renderConfigTypes(
       assembleRules(path.join(repoRoot, "shared/rules")),
-      readFileSync(path.join(repoRoot, "configuration/papyrus-lint.default.yaml"), "utf8"),
+      readFileSync(path.join(repoRoot, "shared/configuration/papyrus-lint.default.yaml"), "utf8"),
       settings,
     );
     expect(rendered).toContain('"id":"semicolon-style"');

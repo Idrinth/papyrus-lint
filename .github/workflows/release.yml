@@ -135,6 +135,10 @@ jobs:
       - name: Build rules.json from shared/rules/
         run: python3 .github/scripts/build_rules_json.py
 
+      - name: Generate default configuration
+        shell: bash
+        run: python3 .github/scripts/generate_default_config.py
+
       - name: Regenerate Nexus page lint tables from rules.json
         run: python3 .github/scripts/generate_nexuspage_tables.py shared/rules.json templates/nexuspage.bbcode
 
@@ -166,6 +170,10 @@ jobs:
       - name: Build rules.json from shared/rules/
         shell: bash
         run: python3 .github/scripts/build_rules_json.py
+
+      - name: Generate default configuration
+        shell: bash
+        run: python3 .github/scripts/generate_default_config.py
 
       - uses: actions/setup-node@v7
         with:
@@ -289,7 +297,7 @@ jobs:
       - name: Copy default configuration
         if: matrix.platform == 'ubuntu-latest'
         shell: bash
-        run: cp configuration/papyrus-lint.default.yaml cli-dist/papyrus-lint.yaml
+        run: cp shared/configuration/papyrus-lint.default.yaml cli-dist/papyrus-lint.yaml
 
       - name: Collect Tauri bundles under stable names
         shell: bash

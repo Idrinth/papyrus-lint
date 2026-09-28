@@ -166,14 +166,14 @@ pub fn order_by_config<'a>(
     let mut ordered = Vec::with_capacity(rules.len());
     for key in field_order {
         let Some(rule) = by_key.remove(key) else {
-            return fail(format!("configuration/papyrus-lint.default.yaml lists rules.{key} but shared/rules.json has no matching id"));
+            return fail(format!("shared/configuration/papyrus-lint.default.yaml lists rules.{key} but shared/rules.json has no matching id"));
         };
         ordered.push(rule);
     }
     if !by_key.is_empty() {
         let mut missing: Vec<_> = by_key.into_keys().collect();
         missing.sort();
-        return fail(format!("configuration/papyrus-lint.default.yaml is missing rules: {missing:?}; add them next to the other `rules:` keys"));
+        return fail(format!("shared/configuration/papyrus-lint.default.yaml is missing rules: {missing:?}; add them next to the other `rules:` keys"));
     }
     Ok(ordered)
 }

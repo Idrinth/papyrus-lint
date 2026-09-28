@@ -36,6 +36,9 @@ jobs:
       - name: Check rule metadata invariants
         run: python3 .github/scripts/build_rules_json.py --out /tmp/rules.json
 
+      - name: Check generated configuration schema
+        run: python3 .github/scripts/generate_config_schema.py --check
+
   yaml:
     name: CI / Linters / Rules and links YAML
     runs-on: ubuntu-latest
@@ -195,6 +198,10 @@ jobs:
 
       - name: Build rules.json from shared/rules/
         run: python3 .github/scripts/build_rules_json.py
+
+      - name: Generate default configuration
+        shell: bash
+        run: python3 .github/scripts/generate_default_config.py
 
       - name: Install Tauri Linux dependencies
         if: matrix.crate == 'src-tauri'

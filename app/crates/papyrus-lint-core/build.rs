@@ -16,7 +16,7 @@ fn main() {
 }
 
 fn compile_preset_descriptions(manifest_dir: &str, out_dir: &str) {
-    let presets_dir = Path::new(manifest_dir).join("../../../configuration/presets");
+    let presets_dir = Path::new(manifest_dir).join("../../../shared/configuration/presets");
     println!("cargo:rerun-if-changed={}", presets_dir.display());
 
     let mut paths: Vec<_> = fs::read_dir(&presets_dir)
@@ -36,7 +36,7 @@ fn compile_preset_descriptions(manifest_dir: &str, out_dir: &str) {
     paths.sort();
 
     let mut generated = String::from(
-        "/// Compiled from `configuration/presets/papyrus-lint.*.yaml` header comments by `build.rs`. Do not edit by hand.\n\
+        "/// Compiled from `shared/configuration/presets/papyrus-lint.*.yaml` header comments by `build.rs`. Do not edit by hand.\n\
          const DESCRIPTIONS: &[(&str, &str, &str)] = &[\n",
     );
     for path in paths {

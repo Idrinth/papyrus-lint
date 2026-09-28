@@ -2,9 +2,11 @@
 
 Lint/fix behavior is configured via an optional `papyrus-lint.yaml` (or
 `papyrus-lint.yml`) at the project root. Any omitted setting uses its default.
-The complete, annotated default file is
-[`configuration/papyrus-lint.default.yaml`](../configuration/papyrus-lint.default.yaml);
-it is the reference for the available keys, accepted values, and rule switches.
+The complete, annotated default file is generated from
+[`shared/configuration/lint-settings.json`](../shared/configuration/lint-settings.json)
+and [`shared/rules/`](../shared/rules/); it is the reference for the available
+keys, accepted values, and rule switches. Regenerate the git-ignored artifact
+with `python3 .github/scripts/generate_default_config.py`.
 `PapyrusLinterCLI init` writes this file using the `strict` preset unless another
 preset is requested.
 
@@ -49,7 +51,7 @@ exact line:
   project.
 
 The annotated built-ins are under
-[`configuration/presets/`](https://github.com/idrinth/papyrus-lint/tree/the-one/configuration/presets).
+[`shared/configuration/presets/`](../shared/configuration/presets).
 
 Custom presets are full configuration files stored as `<name>.yaml` or
 `<name>.yml` in a `presets` directory next to the executable. They work in both

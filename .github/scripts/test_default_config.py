@@ -10,7 +10,6 @@ from pathlib import Path
 from ci_lib.config_schema import render_schema
 from ci_lib.default_config import config_key_for, render_default_yaml
 
-
 ROOT = Path(__file__).resolve().parents[2]
 
 

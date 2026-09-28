@@ -36,7 +36,7 @@ ROOT = Path(__file__).resolve().parent.parent
 PAGES_DIR = Path(__file__).resolve().parent
 DOCS_DIR = ROOT / "docs"
 SCHEMA_DIR = ROOT / "schema"
-CONFIGURATION_DIR = ROOT / "configuration"
+CONFIGURATION_DIR = ROOT / "shared" / "configuration"
 
 GITHUB_BLOB_BASE = "https://github.com/idrinth/papyrus-lint/blob/the-one"
 
@@ -115,6 +115,7 @@ DOCS = [
         "filename": "papyrus-lint.default.yaml",
         "source_dir": CONFIGURATION_DIR,
         "repo_dir": "configuration",
+        "source_url": f"{GITHUB_BLOB_BASE}/shared/configuration/lint-settings.json",
         "slug": "papyrus-lint-default-yaml",
         "kind": "yaml",
         "title": "Default configuration (papyrus-lint.yaml)",
