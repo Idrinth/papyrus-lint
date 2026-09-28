@@ -530,3 +530,49 @@ DailyUpdateData Property Update Auto
     assert_eq!(diagnostics.len(), 1);
     assert!(diagnostics[0].message.contains("DailyUpdateData"));
 }
+
+#[test]
+fn does_not_flag_an_unsupported_namespaced_script() {
+    let diagnostics = check_fallout4(
+        r#"
+ScriptName Example Extends gamejam:GJDialogueScript
+Import gamejam:GJDialogueScript
+
+gamejam:GJDialogueScript Property Speaker Auto
+gamejam:GJDialogueScript[] Property Speakers Auto
+
+Function Test()
+    gamejam:GJDialogueScript local
+    local = local as gamejam:GJDialogueScript
+    gamejam:GJDialogueScript.Run()
+EndFunction
+"#,
+        &mut FakeExternal,
+    );
+
+    assert!(
+        diagnostics.is_empty(),
+        "namespaced scripts are unsupported and must not be flagged as missing, got {diagnostics:?}"
+    );
+}
+
+#[test]
+fn still_flags_a_missing_struct_on_a_known_script() {
+    let diagnostics = check_fallout4(
+        r#"
+ScriptName Example
+
+Actor:MissingStruct Property Broken Auto
+MissingType Property AlsoBroken Auto
+"#,
+        &mut FakeExternal,
+    );
+
+    assert_eq!(diagnostics.len(), 2, "got {diagnostics:?}");
+    assert!(diagnostics
+        .iter()
+        .any(|diagnostic| diagnostic.message.contains("Actor:MissingStruct")));
+    assert!(diagnostics
+        .iter()
+        .any(|diagnostic| diagnostic.message.contains("MissingType")));
+}
