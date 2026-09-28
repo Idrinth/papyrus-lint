@@ -32,9 +32,16 @@ not depend on Tauri.
   parses the file.
 - Side-effect flags are computed here (`script_functions`). Lints read
   them through `ExternalSignatures`.
+- In Fallout 4 / Starfield, a type or `ScriptName` `A:B:C` resolves to
+  `A/B/C.psc` under a script root, an import, or a lookup root. Lookup is
+  case-insensitive. A namespaced script that exists is not a
+  `Script:Struct`. Skyrim names stay a single segment and match only a
+  file sitting directly in a search root. `script_locator`, `FunctionTable`,
+  and `.ppj` `<Script>` entries share this mapping.
 - Vanilla engine types with no on-disk `.psc` resolve from the bundled AST
   cache by `ScriptName` (`FunctionTable::ensure_loaded` /
-  `script_exists`). A project or lookup-root file of the same name wins.
+  `script_exists`), including a qualified name. A project or lookup-root
+  file of the same name wins.
 - Known-scripts mode registers each listed path under its file stem, a
   path-derived `folder:stem` name when the file sits under a script root
   (`Scripts/Source/User/Foo.psc` → `user:foo`), and the declared
