@@ -1,0 +1,33 @@
+# === "careful" preset ==========================================================
+# The quietest of the three: meant for a first pass over a project that
+# wasn't necessarily written with this linter in mind (an imported/legacy
+# codebase, someone else's mod). Only rules tagged "medium" or "high"
+# importance by papyrus-lints' tags module are on — real correctness bugs
+# (type mismatches, unresolved references, division by zero, unguarded
+# recursion, ...) and real performance problems (slow/forbidden function
+# calls, short wait intervals, ...); a rule tagged partly "maintainability"
+# alongside "correctness"/"performance" (e.g. `unused_getter`) still stays
+# on, since importance — not kind — is what this preset filters by. Every
+# "low" importance rule is off, including the mechanical
+# formatting/whitespace ones "standard" still keeps, since hundreds of
+# trailing-whitespace/indentation findings on a codebase formatted
+# differently from this linter's conventions would bury the findings that
+# actually matter. `cyclomatic_complexity`'s thresholds are also relaxed,
+# since unfamiliar code often has a few gnarly functions that aren't worth
+# flagging on a first pass.
+#
+# Selected via `PapyrusLinterCLI init --preset careful` and by the desktop
+# app's first-run preset picker for a project with no
+# papyrus-lint.yaml/.yml yet. See shared/configuration/presets/papyrus-lint.strict.yaml
+# (today's built-in default, and `init`'s own default) and
+# shared/configuration/presets/papyrus-lint.standard.yaml for the other two presets.
+#
+# Only the two threshold overrides below are listed here — every "low"
+# importance rule (per `shared/rules.json`), including the free formatting
+# ones "standard" keeps, is turned off by `papyrus-lint-config/build.rs`
+# itself when it generates this preset's `rules:` section from that file
+# and `shared/configuration/papyrus-lint.default.yaml`.
+# ===============================================================================
+
+cyclomatic_complexity_warning: 20  # was 10: avoid flooding unfamiliar/legacy code with complexity findings
+cyclomatic_complexity_error: 40    # was 20: same as above
