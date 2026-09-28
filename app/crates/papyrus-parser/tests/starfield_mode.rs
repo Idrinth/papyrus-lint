@@ -379,3 +379,12 @@ fn parses_bare_guards() {
     assert_eq!(script.guards[1].name, "CoraGuardReward");
     assert!(!script.guards[1].protects_function_logic);
 }
+
+#[test]
+fn parses_mandatory_flag() {
+    parse_with_mode(
+        "ScriptName FrontDoorToLodgeScript Hidden Mandatory\n",
+        GameEdition::Starfield,
+    )
+    .expect("Mandatory should parse as a Starfield script flag");
+}

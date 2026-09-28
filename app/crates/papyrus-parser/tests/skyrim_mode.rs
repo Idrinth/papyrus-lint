@@ -309,3 +309,12 @@ fn accepts_guard_as_an_identifier() {
     assert_eq!(script.functions[0].params[0].name, "guard");
     assert!(script.guards.is_empty());
 }
+
+#[test]
+fn parses_mandatory_flag() {
+    parse_with_mode(
+        "ScriptName FrontDoorToLodgeScript Hidden Mandatory\n",
+        GameEdition::Fallout4,
+    )
+    .expect_err("Mandatory should not parse as a Skyrim script flag");
+}
