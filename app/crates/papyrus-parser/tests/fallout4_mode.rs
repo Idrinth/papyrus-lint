@@ -577,3 +577,12 @@ fn fallout4_mode_rejects_guard_declarations() {
         );
     }
 }
+
+#[test]
+fn parses_mandatory_flag() {
+    parse_with_mode(
+        "ScriptName FrontDoorToLodgeScript Hidden Mandatory\n",
+        GameEdition::Fallout4,
+    )
+    .expect_err("expected end of line, found Identifier(\"Mandatory\")");
+}
