@@ -129,4 +129,73 @@ mod tests {
         .unwrap();
         assert!(IgnoreFile::load_optional(root.path()).is_err());
     }
+
+    #[test]
+    fn malformed_yaml_and_unknown_fields_report_the_ignore_file() {
+        let root = tempfile::tempdir().unwrap();
+        let path = root.path().join(IGNORE_FILE_NAME);
+
+        fs::write(&path, "- file: [\n").unwrap();
+        let malformed = IgnoreFile::load_optional(root.path()).unwrap_err();
+        assert!(malformed.starts_with(&format!("failed to parse {}:", path.display())));
+
+        fs::write(
+            &path,
+            "- file: Example.psc\n  line: 1\n  rule: semicolon\n  unexpected: true\n",
+        )
+        .unwrap();
+        let unknown = IgnoreFile::load_optional(root.path()).unwrap_err();
+        assert!(unknown.starts_with(&format!("failed to parse {}:", path.display())));
+        assert!(unknown.contains("unknown field"));
+    }
+
+    #[test]
+    fn unreadable_ignore_path_reports_a_read_error() {
+        let root = tempfile::tempdir().unwrap();
+        let path = root.path().join(IGNORE_FILE_NAME);
+        fs::create_dir(&path).unwrap();
+
+        let error = IgnoreFile::load_optional(root.path()).unwrap_err();
+
+        assert!(error.starts_with(&format!("failed to read {}:", path.display())));
+    }
+
+    #[test]
+    fn canonical_paths_match_even_when_the_configured_path_contains_parent_segments() {
+        let root = tempfile::tempdir().unwrap();
+        let scripts = root.path().join("scripts");
+        let actual = scripts.join("Example.psc");
+        fs::create_dir(&scripts).unwrap();
+        fs::write(&actual, "").unwrap();
+        fs::write(
+            root.path().join(IGNORE_FILE_NAME),
+            "- file: scripts/../scripts/Example.psc\n  line: 3\n  rule: semicolon\n",
+        )
+        .unwrap();
+        let ignores = IgnoreFile::load_optional(root.path()).unwrap().unwrap();
+        let mut diagnostics = vec![diagnostic(3, "semicolon")];
+
+        ignores.retain_diagnostics(&actual, &mut diagnostics);
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn missing_paths_use_lexical_matching() {
+        let root = tempfile::tempdir().unwrap();
+        fs::write(
+            root.path().join(IGNORE_FILE_NAME),
+            "- file: Missing.psc\n  line: 7\n  rule: semicolon\n",
+        )
+        .unwrap();
+        let ignores = IgnoreFile::load_optional(root.path()).unwrap().unwrap();
+        let mut matching = vec![diagnostic(7, "semicolon")];
+        let mut different = vec![diagnostic(7, "semicolon")];
+
+        ignores.retain_diagnostics(&root.path().join("Missing.psc"), &mut matching);
+        ignores.retain_diagnostics(&root.path().join("Other.psc"), &mut different);
+
+        assert!(matching.is_empty());
+        assert_eq!(different.len(), 1);
+    }
 }
