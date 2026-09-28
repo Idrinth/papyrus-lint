@@ -383,6 +383,146 @@ fn find_psc_file_in_lookup_roots_finds_a_script_outside_the_project() {
 }
 
 #[test]
+fn finds_a_colon_qualified_name_as_a_nested_path() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    let script_dir = root.path().join("scripts/source/User");
+    fs::create_dir_all(&script_dir).expect("failed to create namespace dir");
+    let expected = write_file(&script_dir, "MyQuestScript.psc");
+
+    assert_eq!(
+        find_psc_file(root.path(), "user:myquestscript", &[]),
+        Some(expected)
+    );
+}
+
+#[test]
+fn finds_a_multi_segment_colon_qualified_name() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    let script_dir = root.path().join("scripts/source/A/B");
+    fs::create_dir_all(&script_dir).expect("failed to create namespace dir");
+    let expected = write_file(&script_dir, "C.psc");
+
+    assert_eq!(
+        find_psc_file(root.path(), "a:b:c", &[]),
+        Some(expected.clone())
+    );
+    assert_eq!(find_psc_file(root.path(), "A:B:C.psc", &[]), Some(expected));
+}
+
+#[test]
+fn qualified_lookup_matches_each_path_segment_case_insensitively() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    let script_dir = root.path().join("scripts/source/user");
+    fs::create_dir_all(&script_dir).expect("failed to create namespace dir");
+    let expected = write_file(&script_dir, "myquestscript.PSC");
+
+    assert_eq!(
+        find_psc_file(root.path(), "USER:MyQuestScript", &[]),
+        Some(expected)
+    );
+}
+
+#[test]
+fn qualified_lookup_does_not_accept_the_same_stem_from_another_namespace() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    let script_dir = root.path().join("scripts/source/User");
+    fs::create_dir_all(&script_dir).expect("failed to create namespace dir");
+    write_file(&script_dir, "Foo.psc");
+
+    assert_eq!(find_psc_file(root.path(), "Other:Foo", &[]), None);
+    assert_eq!(find_psc_file(root.path(), "Foo", &[]), None);
+}
+
+#[test]
+fn bare_name_does_not_match_a_script_nested_under_the_search_root() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    let script_dir = root.path().join("scripts/source/Base");
+    fs::create_dir_all(&script_dir).expect("failed to create namespace dir");
+    let expected = write_file(&script_dir, "Actor.psc");
+
+    assert_eq!(find_psc_file(root.path(), "Actor", &[]), None);
+    assert_eq!(
+        find_psc_file(root.path(), "Base:Actor", &[]),
+        Some(expected)
+    );
+}
+
+#[test]
+fn find_psc_file_in_lookup_roots_resolves_a_namespaced_script() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    let vanilla = tempfile::tempdir().expect("failed to create temp dir");
+    let script_dir = vanilla.path().join("DLC03/Workshop");
+    fs::create_dir_all(&script_dir).expect("failed to create namespace dir");
+    let expected = write_file(&script_dir, "Foo.psc");
+
+    assert_eq!(
+        find_psc_file_in_lookup_roots(
+            root.path(),
+            "dlc03:workshop:foo",
+            &[vanilla.path().to_string_lossy().into_owned()],
+        ),
+        Some(expected)
+    );
+}
+
+#[test]
+fn indexed_qualified_lookup_matches_the_nested_path_and_not_another_namespace() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    let source = root.path().join("scripts/source");
+    let user = source.join("User");
+    let nested = source.join("A/B");
+    fs::create_dir_all(&user).expect("failed to create User dir");
+    fs::create_dir_all(&nested).expect("failed to create A/B dir");
+    let quest = write_file(&user, "MyQuestScript.psc");
+    let multi = write_file(&nested, "C.psc");
+    write_file(&user, "Foo.psc");
+    let flat = write_file(&source, "Example.psc");
+
+    let index = build_script_index(root.path(), &[]);
+
+    assert_eq!(
+        find_psc_file_in_index(&index, "user:myquestscript"),
+        Some(quest.clone())
+    );
+    assert_eq!(
+        find_psc_file_in_index(&index, "user:myquestscript"),
+        find_psc_file(root.path(), "User:MyQuestScript", &[])
+    );
+    assert_eq!(find_psc_file_in_index(&index, "a:b:c"), Some(multi));
+    assert_eq!(find_psc_file_in_index(&index, "Other:Foo"), None);
+    assert_eq!(find_psc_file_in_index(&index, "Foo"), None);
+    assert_eq!(index.get("user/myquestscript.psc"), Some(&vec![quest]));
+    assert!(!index.contains_key("myquestscript.psc"));
+    assert!(!index.contains_key("foo.psc"));
+    assert_eq!(index.get("example.psc"), Some(&vec![flat]));
+}
+
+#[test]
+fn indexed_qualified_lookup_prefers_the_earlier_search_root() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    let primary = root.path().join("scripts/source/User");
+    let alternate = root.path().join("source/scripts/User");
+    fs::create_dir_all(&primary).expect("failed to create primary namespace dir");
+    fs::create_dir_all(&alternate).expect("failed to create alternate namespace dir");
+    let expected = write_file(&primary, "MyQuestScript.psc");
+    write_file(&alternate, "MyQuestScript.psc");
+
+    let index = build_script_index(root.path(), &[]);
+
+    assert_eq!(
+        find_psc_file_in_index(&index, "User:MyQuestScript"),
+        Some(expected)
+    );
+    assert_eq!(
+        index
+            .get("user/myquestscript.psc")
+            .expect("expected both copies under the relative-path key")
+            .len(),
+        2
+    );
+}
+
+#[test]
 fn conflicting_script_versions_ignores_lookup_roots() {
     let root = tempfile::tempdir().expect("failed to create temp dir");
     let primary = root.path().join("scripts/source");
@@ -456,6 +596,31 @@ fn cached_script_index_reuses_a_scan_until_a_source_directory_changes() {
     assert!(
         second.contains_key("other.psc"),
         "a newer directory mtime must invalidate the cached script index"
+    );
+    assert!(!std::sync::Arc::ptr_eq(&first, &second));
+}
+
+#[test]
+fn cached_script_index_rebuilds_when_a_namespaced_script_is_added() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    let namespace = root.path().join("scripts/source/User");
+    fs::create_dir_all(&namespace).expect("failed to create namespace dir");
+    write_file(&namespace, "Existing.psc");
+
+    let first = cached_script_index(root.path(), &[]);
+    assert!(first.contains_key("user/existing.psc"));
+    assert!(!first.contains_key("user/added.psc"));
+
+    write_file(&namespace, "Added.psc");
+    let later = std::time::SystemTime::now() + std::time::Duration::from_secs(2);
+    if let Ok(dir) = fs::File::open(&namespace) {
+        let _ = dir.set_modified(later);
+    }
+
+    let second = cached_script_index(root.path(), &[]);
+    assert!(
+        second.contains_key("user/added.psc"),
+        "a newer namespace-directory mtime must invalidate the cached script index"
     );
     assert!(!std::sync::Arc::ptr_eq(&first, &second));
 }
