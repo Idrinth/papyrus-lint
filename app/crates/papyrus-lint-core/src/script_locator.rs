@@ -1,4 +1,12 @@
 //! Locates Papyrus `.psc` source files by case-insensitive name.
+//!
+//! A colon-qualified name (`User:MyQuestScript`, `A:B:C`) is a path under a
+//! search root (`User/MyQuestScript.psc`, `A/B/C.psc`), the same mapping
+//! `.ppj` script entries already use. A name with no colon matches only a
+//! file sitting directly in a search root — namespace folders are not
+//! searched for a bare stem, so `Base/Actor.psc` is `Base:Actor`, not
+//! `Actor`. This module does not split `Script:Struct`; that is a separate
+//! concern from locating a script file.
 
 use std::collections::HashMap;
 use std::fs;
@@ -55,6 +63,15 @@ pub const CANDIDATE_DIRS: [&str; 2] = ["scripts/source", "source/scripts"];
 /// extension. Each entry in `additional_roots` is resolved relative to
 /// `root` unless it's already absolute (see [`resolve_additional_roots`]).
 ///
+/// A name containing `:` is a Fallout 4 / Starfield namespace path: each
+/// segment is a directory and the last segment is the file
+/// (`user:myquestscript` → `User/MyQuestScript.psc`). Segments are matched
+/// case-insensitively. A name with no colon matches only an immediate child
+/// of a search root, which is the Skyrim layout and any script whose
+/// `ScriptName` has no namespace. A nested file is therefore not found by a
+/// bare stem, even when that stem is unique (`scripts/source/Base/Actor.psc`
+/// does not satisfy `Actor` when the search root is `scripts/source`).
+///
 /// Returns the path to the first match found, or `None` if none of those
 /// locations contains a matching file. Analysis-only lookup directories
 /// (see [`find_psc_file_in_lookup_roots`]) are not searched here.
@@ -81,19 +98,23 @@ pub fn find_psc_file_in_lookup_roots(
 }
 
 fn find_named_psc(dirs: impl IntoIterator<Item = PathBuf>, name: &str) -> Option<PathBuf> {
-    let name_lower = name.to_ascii_lowercase();
-    let target = if name_lower.ends_with(".psc") {
-        name_lower
-    } else {
-        format!("{name_lower}.psc")
-    };
+    let key = script_index_key(name);
+    if name.contains(':') {
+        let relative = PathBuf::from(&key);
+        for dir in dirs {
+            if let Some(path) = find_case_insensitive_file(&dir, &relative) {
+                return Some(path);
+            }
+        }
+        return None;
+    }
 
     for dir in dirs {
         for path in dir_children(&dir) {
             let matches = path
                 .file_name()
                 .and_then(|n| n.to_str())
-                .is_some_and(|file_name| file_name.to_ascii_lowercase() == target);
+                .is_some_and(|file_name| file_name.to_ascii_lowercase() == key);
 
             if matches && path.is_file() {
                 return Some(path);
@@ -102,6 +123,61 @@ fn find_named_psc(dirs: impl IntoIterator<Item = PathBuf>, name: &str) -> Option
     }
 
     None
+}
+
+/// Index key for `name`, matching [`find_psc_file`] / [`find_psc_file_in_index`].
+///
+/// Unqualified names stay a single lowercased file name (`Example` and
+/// `Example.psc` → `example.psc`). A colon-qualified name becomes a
+/// `/`-separated relative path ending in `.psc` (`User:MyQuestScript` and
+/// `User:MyQuestScript.psc` → `user/myquestscript.psc`). The `.psc` suffix is
+/// the script file's extension, not a namespace segment.
+fn script_index_key(name: &str) -> String {
+    let name_lower = name.to_ascii_lowercase();
+    let stripped = name_lower.strip_suffix(".psc");
+    let stem = stripped.unwrap_or(name_lower.as_str());
+    if stem.contains(':') {
+        return format!("{}.psc", stem.replace(':', "/"));
+    }
+    if stripped.is_some() {
+        name_lower
+    } else {
+        format!("{name_lower}.psc")
+    }
+}
+
+/// Walks `relative` under `root` one component at a time, comparing each
+/// directory or file name case-insensitively. The last component must be a
+/// file. `..` and other non-normal components do not match.
+fn find_case_insensitive_file(root: &Path, relative: &Path) -> Option<PathBuf> {
+    let mut current = root.to_path_buf();
+    let components: Vec<_> = relative.components().collect();
+    if components.is_empty() {
+        return None;
+    }
+    for (index, component) in components.iter().enumerate() {
+        let std::path::Component::Normal(expected) = component else {
+            return None;
+        };
+        let expected = expected.to_str()?;
+        let last = index + 1 == components.len();
+        let child = dir_children(&current).find(|candidate| {
+            let name_matches = candidate
+                .file_name()
+                .and_then(|file_name| file_name.to_str())
+                .is_some_and(|file_name| file_name.eq_ignore_ascii_case(expected));
+            if !name_matches {
+                return false;
+            }
+            if last {
+                candidate.is_file()
+            } else {
+                candidate.is_dir()
+            }
+        })?;
+        current = child;
+    }
+    Some(current)
 }
 
 /// Immediate children of `dir`. An unreadable directory yields no entries,
@@ -261,41 +337,48 @@ pub fn conflicting_script_versions(
     )
 }
 
-/// Maps a script file name (case-insensitively lowercased, as returned by
-/// [`detected_script_roots`]'s directories) to every path found under those
-/// directories carrying that name. Built once by [`build_script_index`] so
-/// both exact-name resolution and conflict checks over a whole batch of
-/// scripts (e.g. an achlist's worth) can avoid re-scanning the same roots.
+/// Maps a script lookup key to every path found under the indexed search
+/// roots, in search-root order.
+///
+/// A file sitting directly in a search root is keyed by its lowercased file
+/// name (`example.psc`). A `.psc` nested under namespace folders is keyed by
+/// its relative path from that root, lowercased and `/`-separated
+/// (`user/myquestscript.psc`), not by the leaf name — so `User/Foo.psc` does
+/// not satisfy `Other:Foo` or a bare `Foo`. Built once by
+/// [`build_script_index`] so both exact-name resolution and conflict checks
+/// over a whole batch of scripts (e.g. an achlist's worth) can avoid
+/// re-scanning the same roots. Conflict checks still look up the leaf file
+/// name; qualified conflict identity is intentionally left unchanged here.
 pub type ScriptIndex = HashMap<String, Vec<PathBuf>>;
 
 /// Looks up `name` in a pre-built [`ScriptIndex`], returning the first path
 /// in search-root order. `name` may be supplied with or without `.psc` and
-/// is matched case-insensitively, just like [`find_psc_file`].
+/// is matched case-insensitively, just like [`find_psc_file`]. A colon in
+/// `name` selects the relative-path key (`user:myquestscript` →
+/// `user/myquestscript.psc`) rather than a file whose name contains `:`.
 pub fn find_psc_file_in_index(index: &ScriptIndex, name: &str) -> Option<PathBuf> {
-    let name_lower = name.to_ascii_lowercase();
-    let target = if name_lower.ends_with(".psc") {
-        name_lower
-    } else {
-        format!("{name_lower}.psc")
-    };
-
-    index.get(&target).and_then(|paths| paths.first()).cloned()
+    index
+        .get(&script_index_key(name))
+        .and_then(|paths| paths.first())
+        .cloned()
 }
 
 /// Scans `root`'s conventional and configured search directories (see
-/// [`detected_script_roots`]) once, recording every `.psc` file found under
-/// them by lowercased file name. Reuse the result with
-/// [`find_psc_file_in_index`] for name resolution and
+/// [`detected_script_roots`]) once. Files directly in a search root are
+/// recorded by lowercased file name. Nested `.psc` files are recorded by
+/// lowercased relative path (`user/myquestscript.psc`) so a namespaced
+/// script can be resolved with [`find_psc_file_in_index`]. Reuse the result
+/// with [`find_psc_file_in_index`] for name resolution and
 /// [`conflicting_script_versions_in_index`] for each script being checked.
 pub fn build_script_index(root: &Path, additional_roots: &[String]) -> ScriptIndex {
-    index_psc_files(detected_script_roots(root, additional_roots))
+    index_psc_files(detected_script_roots(root, additional_roots)).index
 }
 
 /// Like [`build_script_index`], but indexes only analysis-only lookup
 /// directories (see [`find_psc_file_in_lookup_roots`]). The result is used
 /// for name resolution, never for [`conflicting_script_versions_in_index`].
 pub fn build_lookup_index(root: &Path, lookup_roots: &[String]) -> ScriptIndex {
-    index_psc_files(resolve_additional_roots(root, lookup_roots))
+    index_psc_files(resolve_additional_roots(root, lookup_roots)).index
 }
 
 /// Process-wide cache of [`build_lookup_index`] results, keyed by the
@@ -303,9 +386,16 @@ pub fn build_lookup_index(root: &Path, lookup_roots: &[String]) -> ScriptIndex {
 /// later `FunctionTable` in the same process (the desktop app's per-file
 /// lint commands) can skip re-walking a large vanilla `Scripts/Source`
 /// tree. Rebuilt when a directory's mtime changes, so a newly added file
-/// is still picked up.
+/// is still picked up. Namespace folders are part of that check: adding
+/// `User/MyQuestScript.psc` updates `User`'s mtime, not the search root's.
 type LookupIndexCacheKey = Vec<(PathBuf, u128)>;
-type LookupIndexCache = Mutex<HashMap<LookupIndexCacheKey, Arc<ScriptIndex>>>;
+struct CachedScriptIndex {
+    index: Arc<ScriptIndex>,
+    /// Modification times of directories beneath the search roots. The roots
+    /// themselves are already in [`LookupIndexCacheKey`].
+    nested_dir_mtimes: Vec<(PathBuf, u128)>,
+}
+type LookupIndexCache = Mutex<HashMap<LookupIndexCacheKey, CachedScriptIndex>>;
 
 static LOOKUP_INDEX_CACHE: OnceLock<LookupIndexCache> = OnceLock::new();
 
@@ -335,7 +425,7 @@ pub fn cached_lookup_index(root: &Path, lookup_roots: &[String]) -> Arc<ScriptIn
     cached_index(
         lookup_index_cache(),
         lookup_index_cache_key(root, lookup_roots),
-        || build_lookup_index(root, lookup_roots),
+        || index_psc_files(resolve_additional_roots(root, lookup_roots)),
     )
 }
 
@@ -363,28 +453,49 @@ pub fn cached_script_index(root: &Path, additional_roots: &[String]) -> Arc<Scri
     cached_index(
         script_index_cache(),
         script_index_cache_key(root, additional_roots),
-        || build_script_index(root, additional_roots),
+        || index_psc_files(detected_script_roots(root, additional_roots)),
     )
 }
 
 fn cached_index(
     cache: &LookupIndexCache,
     key: LookupIndexCacheKey,
-    build: impl FnOnce() -> ScriptIndex,
+    build: impl FnOnce() -> IndexedScripts,
 ) -> Arc<ScriptIndex> {
     let mut cache = cache
         .lock()
         .unwrap_or_else(|poisoned| poisoned.into_inner());
-    if let Some(index) = cache.get(&key) {
-        return Arc::clone(index);
+    if let Some(cached) = cache.get(&key) {
+        if nested_dir_mtimes_current(&cached.nested_dir_mtimes) {
+            return Arc::clone(&cached.index);
+        }
     }
-    let index = Arc::new(build());
-    cache.insert(key, Arc::clone(&index));
+    let built = build();
+    let index = Arc::new(built.index);
+    cache.insert(
+        key,
+        CachedScriptIndex {
+            index: Arc::clone(&index),
+            nested_dir_mtimes: built.nested_dir_mtimes,
+        },
+    );
     index
 }
 
-fn index_psc_files(dirs: impl IntoIterator<Item = PathBuf>) -> ScriptIndex {
+fn nested_dir_mtimes_current(recorded: &[(PathBuf, u128)]) -> bool {
+    recorded
+        .iter()
+        .all(|(path, mtime)| dir_mtime_nanos(path).unwrap_or(0) == *mtime)
+}
+
+struct IndexedScripts {
+    index: ScriptIndex,
+    nested_dir_mtimes: Vec<(PathBuf, u128)>,
+}
+
+fn index_psc_files(dirs: impl IntoIterator<Item = PathBuf>) -> IndexedScripts {
     let mut index: ScriptIndex = HashMap::new();
+    let mut nested_dir_mtimes = Vec::new();
 
     for search_root in dirs {
         for path in dir_children(&search_root) {
@@ -394,14 +505,78 @@ fn index_psc_files(dirs: impl IntoIterator<Item = PathBuf>) -> ScriptIndex {
             let Some(file_name) = path.file_name().and_then(|name| name.to_str()) else {
                 continue;
             };
-            let bucket = index.entry(file_name.to_ascii_lowercase()).or_default();
-            if !bucket.contains(&path) {
-                bucket.push(path);
-            }
+            push_indexed_path(&mut index, file_name.to_ascii_lowercase(), path);
         }
+        index_nested_scripts(&search_root, &mut index, &mut nested_dir_mtimes);
     }
 
-    index
+    IndexedScripts {
+        index,
+        nested_dir_mtimes,
+    }
+}
+
+/// Records `.psc` files below `search_root` (not its immediate children) by
+/// relative path, and every nested directory's mtime so
+/// [`cached_script_index`] / [`cached_lookup_index`] notice a script added
+/// inside a namespace folder.
+fn index_nested_scripts(
+    search_root: &Path,
+    index: &mut ScriptIndex,
+    nested_dir_mtimes: &mut Vec<(PathBuf, u128)>,
+) {
+    for entry in WalkDir::new(search_root)
+        .min_depth(1)
+        .follow_links(true)
+        .into_iter()
+        .filter_map(Result::ok)
+    {
+        let depth = entry.depth();
+        let path = entry.into_path();
+        if path.is_dir() {
+            let mtime = dir_mtime_nanos(&path).unwrap_or(0);
+            nested_dir_mtimes.push((path, mtime));
+            continue;
+        }
+        if depth < 2 || !path.is_file() || !is_psc_file(&path) {
+            continue;
+        }
+        let Some(key) = relative_script_key(search_root, &path) else {
+            continue;
+        };
+        push_indexed_path(index, key, path);
+    }
+}
+
+fn push_indexed_path(index: &mut ScriptIndex, key: String, path: PathBuf) {
+    let bucket = index.entry(key).or_default();
+    if !bucket.contains(&path) {
+        bucket.push(path);
+    }
+}
+
+fn is_psc_file(path: &Path) -> bool {
+    path.extension()
+        .and_then(|ext| ext.to_str())
+        .is_some_and(|ext| ext.eq_ignore_ascii_case("psc"))
+}
+
+/// Lowercased `/`-separated path of `path` relative to `search_root`.
+/// `None` when `path` is not nested (a direct child uses the leaf file name)
+/// or a component is not a normal UTF-8 path segment.
+fn relative_script_key(search_root: &Path, path: &Path) -> Option<String> {
+    let relative = path.strip_prefix(search_root).ok()?;
+    let mut parts = Vec::new();
+    for component in relative.components() {
+        let std::path::Component::Normal(part) = component else {
+            return None;
+        };
+        parts.push(part.to_str()?.to_ascii_lowercase());
+    }
+    if parts.len() < 2 {
+        return None;
+    }
+    Some(parts.join("/"))
 }
 
 /// Like [`conflicting_script_versions`], but checks `script_path` against a

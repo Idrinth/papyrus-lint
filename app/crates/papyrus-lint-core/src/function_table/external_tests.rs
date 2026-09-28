@@ -393,11 +393,13 @@ fn type_exists_accepts_arrays_and_nested_structs() {
         "Holder",
         "ScriptName Holder\n\nStruct Payload\n    Int Count\nEndStruct\n",
     );
-    write_script(
-        root.path(),
-        "Ns:Script",
+    let namespace = root.path().join("scripts/source/Ns");
+    std::fs::create_dir_all(&namespace).expect("failed to create namespace dir");
+    std::fs::write(
+        namespace.join("Script.psc"),
         "ScriptName Ns:Script\n\nStruct Inner\n    String Label\nEndStruct\n",
-    );
+    )
+    .expect("failed to write namespaced script");
 
     let mut table =
         FunctionTable::new(root.path().to_path_buf()).with_game(papyrus_lints::Game::Fallout4);
