@@ -27,3 +27,7 @@ pub(crate) fn tokens_import(tokens: &[Token], name: &str) -> bool {
             && matches!(&window[1].kind, TokenKind::Identifier(imported) if imported.eq_ignore_ascii_case(name))
     })
 }
+
+#[cfg(test)]
+#[path = "imports_tests.rs"]
+mod tests;

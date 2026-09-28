@@ -102,6 +102,16 @@ fn does_not_flag_implicit_widening_between_primitives() {
 }
 
 #[test]
+fn does_not_flag_a_cast_from_an_object_to_a_primitive() {
+    let diagnostics = check_with(
+        "ScriptName Example\n\nFunction Test(Actor value)\n    Foo(value as Int)\nEndFunction\n",
+        &mut FakeExternalWithSubtypes,
+    );
+
+    assert!(diagnostics.is_empty());
+}
+
+#[test]
 fn flags_cast_to_the_same_primitive_type() {
     let diagnostics =
         check("ScriptName Example\n\nFunction Test(Int a)\n    Foo(a as Int)\nEndFunction\n");
