@@ -14,11 +14,15 @@ One rule is `src/<rule>.rs` plus `shared/rules/<id>.json`.
   (`external_signatures.rs`). Do not re-derive side-effect flags;
   `papyrus-lint-core` computes them.
 - `conflicting-script-versions` owns its diagnostic policy here. Callers
-  pass a `ProjectFile` snapshot of the same-named copies, not every script
-  in the project. It is not dispatched from `collect_diagnostics`.
+  pass a `ProjectFile` snapshot of copies with the same qualified identity
+  (Fallout 4 / Starfield `A:B:C` is `A/B/C.psc`; see the
+  papyrus-lint-core README), not every script that shares a leaf name.
+  It is not dispatched from `collect_diagnostics`.
 - `script-filename-mismatch` owns its diagnostic policy here. Callers pass
   the `.psc` path relative to its search root and the lexer tokens
-  (`ScriptName` plus its name segments). It is not dispatched from
+  (`ScriptName` plus its name segments). A qualified name must match that
+  whole relative path; an unqualified name is still the file stem. Same
+  mapping as the papyrus-lint-core README. It is not dispatched from
   `collect_diagnostics`.
 - `lint` / `repair` / `repair_filtered*` / `repaired_line` have no resolver.
   `unused-import` and `argument-naming` are no-ops there. Project callers,

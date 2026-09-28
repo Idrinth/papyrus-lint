@@ -9,6 +9,6 @@
   "severity": "warning",
   "importance": "medium",
   "fixable": false,
-  "description": "Flags same-named scripts with different contents in separate source directories.",
-  "definition": "Flags, as a `[warning]`, a `.psc` file when another script search directory contains a case-insensitively same-named file with different contents (determined by MD5), since which version Papyrus resolves can depend on search-directory order. Byte-identical copies are ignored. Only available when linting a file with project context in the desktop app or CLI."
+  "description": "Flags byte-different copies of the same script in separate source directories. Identity is the path under the script root, so User/Foo.psc does not conflict with Other/Foo.psc.",
+  "definition": "Flags, as a `[warning]`, a `.psc` file when another script search directory contains a byte-different copy of the same script (determined by MD5). Identity is the path relative to the search root, case-insensitively: Fallout 4 / Starfield `A:B:C` is `A/B/C.psc`, so equal stems in different namespace folders stay distinct while the same qualified path across roots is compared. An unqualified script is still just its file name. Byte-identical copies are ignored. Only available when linting a file with project context in the desktop app or CLI."
 }
