@@ -37,6 +37,7 @@ fn ast_rules_return_an_ast_visitor() {
     assert_ast(crate::global_variable_setvalue::visitor());
     assert_ast(crate::goto_state::visitor());
     assert_ast(crate::identifier_casing::visitor());
+    assert_ast(crate::identical_if_bodies::visitor());
     assert_ast(crate::impossible_cast::visitor());
     assert_ast(crate::int_division_to_float::visitor());
     assert_ast(crate::invalid_random_range::visitor());
