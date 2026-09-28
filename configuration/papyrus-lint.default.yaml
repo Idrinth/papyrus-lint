@@ -46,8 +46,6 @@ magic_numbers: loose
 fail_on_warning: false
 # true, false
 fail_on_info: false
-# true, false
-bool_like_int: true
 # true allows a Bool function to return a non-array Form value, relying on
 # Papyrus to treat None as false and an existing Form as true
 treat_form_as_bool_for_returns: false
@@ -144,6 +142,7 @@ rules:
   missing_doc_comment: false
   invalid_random_range: true
   float_equality: false
+  register_for_update_in_on_update: true
   missing_update_handler: false
   unused_import: true
   event_signature_mismatch: false

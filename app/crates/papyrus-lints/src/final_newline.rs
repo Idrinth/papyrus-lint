@@ -5,7 +5,7 @@ use crate::Diagnostic;
 /// This lint's [`Diagnostic::rule`] id, for `@disable` comments.
 pub const RULE: &str = "final-newline";
 
-/// Checks that a non-empty `source` ends with exactly one `newline`.
+/// Checks that a non-empty `source` ends with exactly one newline.
 pub fn check(
     source: &str,
     ast: Option<&papyrus_parser::ast::Script>,
