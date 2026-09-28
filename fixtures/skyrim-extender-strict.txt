@@ -825,6 +825,7 @@ Scripts/Source/CombatStyle.psc:60:1: [identifier-casing] [warning] Parameter 'mu
 Scripts/Source/CombatStyle.psc:67:1: [identifier-casing] [warning] Parameter 'chance' does not match the configured PascalCase casing style (https://papyrus-lint.idrinth.de/rules.html#rule-identifier-casing)
 Scripts/Source/CombatStyle.psc:68:1: [identifier-casing] [warning] Parameter 'chance' does not match the configured PascalCase casing style (https://papyrus-lint.idrinth.de/rules.html#rule-identifier-casing)
 Scripts/Source/CombatStyle.psc:69:1: [identifier-casing] [warning] Parameter 'mult' does not match the configured PascalCase casing style (https://papyrus-lint.idrinth.de/rules.html#rule-identifier-casing)
+Scripts/Source/CombatStyle.psc:71:1: [final-newline] [warning] File ends with extra blank lines (https://papyrus-lint.idrinth.de/rules.html#rule-final-newline)
 Scripts/Source/ConstructibleObject.psc:7:1: [identifier-casing] [warning] Parameter 'result' does not match the configured PascalCase casing style (https://papyrus-lint.idrinth.de/rules.html#rule-identifier-casing)
 Scripts/Source/ConstructibleObject.psc:11:1: [identifier-casing] [warning] Parameter 'quantity' does not match the configured PascalCase casing style (https://papyrus-lint.idrinth.de/rules.html#rule-identifier-casing)
 Scripts/Source/ConstructibleObject.psc:17:1: [identifier-casing] [warning] Parameter 'n' does not match the configured PascalCase casing style (https://papyrus-lint.idrinth.de/rules.html#rule-identifier-casing)
@@ -2864,6 +2865,7 @@ Scripts/Source/Race.psc:212:1: [unnecessary-function] [info] Function 'SetCantOp
 Scripts/Source/Race.psc:216:1: [unnecessary-function] [info] Function 'ClearCantOpenDoors' contains only a single statement; consider inlining it at its call site(s) instead of keeping it as a separate function (https://papyrus-lint.idrinth.de/rules.html#rule-unnecessary-function)
 Scripts/Source/Race.psc:224:1: [unnecessary-function] [info] Function 'SetNoShadow' contains only a single statement; consider inlining it at its call site(s) instead of keeping it as a separate function (https://papyrus-lint.idrinth.de/rules.html#rule-unnecessary-function)
 Scripts/Source/Race.psc:228:1: [unnecessary-function] [info] Function 'ClearNoShadow' contains only a single statement; consider inlining it at its call site(s) instead of keeping it as a separate function (https://papyrus-lint.idrinth.de/rules.html#rule-unnecessary-function)
+Scripts/Source/Race.psc:231:1: [final-newline] [warning] File ends with extra blank lines (https://papyrus-lint.idrinth.de/rules.html#rule-final-newline)
 Scripts/Source/SKSE.psc:20:1: [identifier-casing] [warning] Parameter 'name' does not match the configured PascalCase casing style (https://papyrus-lint.idrinth.de/rules.html#rule-identifier-casing)
 Scripts/Source/SKSE.psc:20:57: [final-newline] [warning] File does not end with a newline (https://papyrus-lint.idrinth.de/rules.html#rule-final-newline)
 Scripts/Source/Scroll.psc:4:1: [identifier-casing] [warning] Parameter 'akSource' does not match the configured PascalCase casing style (https://papyrus-lint.idrinth.de/rules.html#rule-identifier-casing)
@@ -3235,4 +3237,4 @@ Scripts/Source/WornObject.psc:62:1: [identifier-casing] [warning] Parameter 'akA
 Scripts/Source/WornObject.psc:62:1: [identifier-casing] [warning] Parameter 'handSlot' does not match the configured PascalCase casing style (https://papyrus-lint.idrinth.de/rules.html#rule-identifier-casing)
 Scripts/Source/WornObject.psc:62:1: [identifier-casing] [warning] Parameter 'slotMask' does not match the configured PascalCase casing style (https://papyrus-lint.idrinth.de/rules.html#rule-identifier-casing)
 Scripts/Source/WornObject.psc:62:103: [final-newline] [warning] File does not end with a newline (https://papyrus-lint.idrinth.de/rules.html#rule-final-newline)
-PapyrusLinterCLI: 3237 problem(s) found in 61 of 62 script(s).
+PapyrusLinterCLI: 3239 problem(s) found in 61 of 62 script(s).

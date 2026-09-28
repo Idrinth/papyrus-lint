@@ -20,6 +20,7 @@ fn flags_a_file_without_a_final_newline() {
     assert_eq!(diagnostics[0].line, 1);
     assert_eq!(diagnostics[0].column, 19);
     assert_eq!(diagnostics[0].rule, RULE);
+    assert!(diagnostics[0].message.contains("does not end with a newline"));
 }
 
 #[test]
@@ -35,6 +36,25 @@ fn reports_the_end_of_the_final_line() {
 fn accepts_lf_and_crlf_endings() {
     assert!(check("ScriptName Example\n").is_empty());
     assert!(check("ScriptName Example\r\n").is_empty());
+}
+
+#[test]
+fn flags_extra_trailing_newlines() {
+    let diagnostics = check("ScriptName Example\n\n");
+
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!(diagnostics[0].line, 2);
+    assert_eq!(diagnostics[0].column, 1);
+    assert_eq!(diagnostics[0].rule, RULE);
+    assert!(diagnostics[0].message.contains("extra blank lines"));
+}
+
+#[test]
+fn flags_extra_trailing_crlf_newlines() {
+    let diagnostics = check("ScriptName Example\r\n\r\n");
+
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!(diagnostics[0].rule, RULE);
 }
 
 #[test]
@@ -82,6 +102,19 @@ fn repair_preserves_crlf_by_appending_crlf() {
 }
 
 #[test]
+fn repair_collapses_extra_trailing_newlines() {
+    assert_eq!(repair("ScriptName Example\n\n\n"), "ScriptName Example\n");
+}
+
+#[test]
+fn repair_collapses_extra_trailing_crlf() {
+    assert_eq!(
+        repair("ScriptName Example\r\n\r\n"),
+        "ScriptName Example\r\n"
+    );
+}
+
+#[test]
 fn repair_leaves_a_file_that_already_ends_with_a_newline() {
     assert_eq!(repair("ScriptName Example\n"), "ScriptName Example\n");
 }
@@ -95,4 +128,6 @@ fn repair_leaves_an_empty_file_alone() {
 fn repair_result_has_no_remaining_diagnostics() {
     let repaired = repair("ScriptName Example");
     assert!(check(&repaired).is_empty());
+    let collapsed = repair("ScriptName Example\n\n");
+    assert!(check(&collapsed).is_empty());
 }
