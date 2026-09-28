@@ -96,6 +96,29 @@ fn code_action_and_execute_command_are_empty() {
 }
 
 #[test]
+fn fix_file_is_a_noop_when_the_document_needs_no_repairs() {
+    let uri = "file:///Quest.psc";
+    let (_code, responses) = exchange(&[
+        request(1, "initialize", json!({})),
+        json!({
+            "jsonrpc": "2.0",
+            "method": "textDocument/didOpen",
+            "params": { "textDocument": { "uri": uri, "version": 1, "text": "Scriptname Quest\n" } }
+        }),
+        request(
+            2,
+            "workspace/executeCommand",
+            json!({ "command": FIX_FILE_COMMAND, "arguments": [uri] }),
+        ),
+    ]);
+
+    assert!(responses
+        .iter()
+        .all(|message| message["method"] != "workspace/applyEdit"));
+    assert!(responses.iter().find(|message| message["id"] == 2).unwrap()["result"].is_null());
+}
+
+#[test]
 fn unknown_request_is_method_not_found() {
     let (_code, responses) = exchange(&[
         request(1, "initialize", json!({})),
