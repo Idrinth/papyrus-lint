@@ -532,7 +532,7 @@ DailyUpdateData Property Update Auto
 }
 
 #[test]
-fn does_not_flag_an_unsupported_namespaced_script() {
+fn flags_a_missing_namespaced_script() {
     let diagnostics = check_fallout4(
         r#"
 ScriptName Example Extends gamejam:GJDialogueScript
@@ -550,10 +550,76 @@ EndFunction
         &mut FakeExternal,
     );
 
+    let messages: Vec<_> = diagnostics
+        .iter()
+        .map(|diagnostic| diagnostic.message.as_str())
+        .collect();
+    assert!(
+        messages
+            .iter()
+            .any(|message| message.contains("Parent script 'gamejam:GJDialogueScript'")),
+        "missing Extends parent should be flagged, got {messages:?}"
+    );
+    assert!(
+        messages
+            .iter()
+            .any(|message| message.contains("Script 'gamejam:GJDialogueScript'")),
+        "missing static call should be flagged, got {messages:?}"
+    );
+    assert!(
+        messages
+            .iter()
+            .filter(|message| message.contains("Type 'gamejam:GJDialogueScript'"))
+            .count()
+            >= 4,
+        "property, array, local, and cast should be flagged, got {messages:?}"
+    );
+}
+
+#[test]
+fn does_not_flag_a_namespaced_script_that_can_be_located() {
+    let diagnostics = check_fallout4(
+        r#"
+ScriptName Example Extends gamejam:GJDialogueScript
+Import gamejam:GJDialogueScript
+
+gamejam:GJDialogueScript Property Speaker Auto
+gamejam:GJDialogueScript[] Property Speakers Auto
+
+Function Test()
+    gamejam:GJDialogueScript local
+    local = local as gamejam:GJDialogueScript
+    gamejam:GJDialogueScript.Run()
+EndFunction
+"#,
+        &mut LocatedNamespaced,
+    );
+
     assert!(
         diagnostics.is_empty(),
-        "namespaced scripts are unsupported and must not be flagged as missing, got {diagnostics:?}"
+        "a located namespaced script is not unresolved, got {diagnostics:?}"
     );
+}
+
+struct LocatedNamespaced;
+
+impl ExternalSignatures for LocatedNamespaced {
+    fn lookup(
+        &mut self,
+        _type_name: &str,
+        _function_name: &str,
+    ) -> Option<Vec<crate::external_signatures::ParamInfo>> {
+        None
+    }
+
+    fn script_exists(&mut self, type_name: &str) -> bool {
+        type_name.eq_ignore_ascii_case("gamejam:GJDialogueScript")
+    }
+
+    fn type_exists(&mut self, type_name: &str) -> bool {
+        let base = type_name.strip_suffix("[]").unwrap_or(type_name);
+        base.eq_ignore_ascii_case("gamejam:GJDialogueScript")
+    }
 }
 
 #[test]

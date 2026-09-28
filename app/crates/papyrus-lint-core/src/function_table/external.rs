@@ -45,9 +45,15 @@ impl FunctionTable {
     }
 
     /// Whether `type_name` names a struct declared on another script.
-    /// Loads that script when it exists and is not cached yet.
+    /// Loads that script when it exists and is not cached yet. A name that
+    /// is itself a script (`User:Foo`) is not a struct, even when splitting
+    /// on the last `:` would name one.
     pub(super) fn declared_struct_exists(&mut self, type_name: &str) -> bool {
-        let Some((owner, struct_name)) = struct_reference(type_name) else {
+        let base = array_element_name(type_name);
+        if self.script_exists(base) {
+            return false;
+        }
+        let Some((owner, struct_name)) = struct_reference(base) else {
             return false;
         };
         if !self.script_exists(owner) {
