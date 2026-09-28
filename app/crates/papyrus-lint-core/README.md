@@ -25,7 +25,7 @@ not depend on Tauri.
   unaffected.
 - A `.ppj`'s `<Import>` entries (`ppj::PpjProject::imports`) feed
   `additional_script_roots` for that run or `init` — never
-  `lookup_script_roots`. `ppj::parse_ppj` normalizes `\` to `/` and does
+  `lookup_script_roots`. `ppj::parse_ppj` normalizes `\\` to `/` and does
   not decompose an already-absolute Windows or UNC path. This crate only
   parses the file.
 - Side-effect flags are computed here (`script_functions`). Lints read
@@ -33,6 +33,11 @@ not depend on Tauri.
 - Vanilla engine types with no on-disk `.psc` resolve from the bundled AST
   cache by `ScriptName` (`FunctionTable::ensure_loaded` /
   `script_exists`). A project or lookup-root file of the same name wins.
+- Known-scripts mode registers each listed path under its file stem, a
+  path-derived `folder:stem` name when the file sits under a script root
+  (`Scripts/Source/User/Foo.psc` → `user:foo`), and the declared
+  `ScriptName`. Qualified names stay distinct; an unqualified stem still
+  keeps first-listed-wins.
 - `type_exists` treats `T[]` as an array of `T` (not a script named `T[]`),
   `CustomEventName` and `ScriptEventName` as compiler typedefs (no script
   file, same as `String`/`Int`), and `Script:Struct` /
