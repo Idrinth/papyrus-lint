@@ -234,13 +234,11 @@ fn bundled_cache_covers_the_skyrim_vanilla_script_archive() {
 
 #[test]
 fn bundled_cache_covers_the_fallout4_vanilla_script_archive() {
-    // Lower than Skyrim's threshold: a chunk of the Fallout 4 archive uses
-    // constructs `papyrus-parser` doesn't accept yet (e.g. the
-    // `Namespace:ScriptName` form used by Creation Club content), which
-    // `build.rs` skips with a `cargo:warning` rather than failing the
-    // build (see its module docs). This only needs to cover the base
-    // engine hierarchy (`Actor`, `ObjectReference`, `Form`, …) that
-    // `FunctionTable` actually walks without project data.
+    // Lower than Skyrim's threshold because scripts using constructs the
+    // parser does not accept yet are skipped with a `cargo:warning` rather
+    // than failing the build (see `build.rs`'s module docs). Namespaced
+    // Creation Club scripts that do parse are included under their full
+    // declared `ScriptName`.
     assert!(
         entry_count(FALLOUT4) >= 700,
         "expected the bundled cache to cover most of the Fallout 4 archive, got {}",
@@ -470,6 +468,20 @@ fn fallout4_is_a_bundled_hit_by_script_name_without_source_bytes() {
 }
 
 #[test]
+fn fallout4_namespaced_script_is_a_bundled_hit_by_qualified_name() {
+    let name = "CreationClub:CCAdoptDogAliasScript";
+
+    assert!(crate::contains_script_name(FALLOUT4, name));
+    assert!(crate::contains_script_name(
+        FALLOUT4,
+        "creationclub:ccadoptdogaliasscript"
+    ));
+    let ast = crate::ast_for_script_name(FALLOUT4, name)
+        .expect("Creation Club script should be in the qualified-name index");
+    assert_eq!(ast.name, name);
+}
+
+#[test]
 fn starfield_is_a_bundled_hit_by_script_name_without_source_bytes() {
     assert!(contains_name(STARFIELD, "Actor"));
     assert!(!contains_name(STARFIELD, "DefinitelyNotAVanillaScript"));
@@ -478,6 +490,16 @@ fn starfield_is_a_bundled_hit_by_script_name_without_source_bytes() {
     assert_eq!(ast.name, "Actor");
     assert_eq!(crate::ast_for_script_name(STARFIELD, "Actor"), Some(ast));
     assert!(crate::contains_script_name(STARFIELD, "Form"));
+}
+
+#[test]
+fn starfield_namespaced_script_is_a_bundled_hit_by_qualified_name() {
+    let name = "DLC03:SFBGS003InevitableFurnitureScript";
+
+    assert!(crate::contains_script_name(STARFIELD, name));
+    let ast = crate::ast_for_script_name(STARFIELD, name)
+        .expect("DLC script should be in the qualified-name index");
+    assert_eq!(ast.name, name);
 }
 
 #[test]
