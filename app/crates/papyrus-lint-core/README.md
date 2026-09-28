@@ -40,8 +40,10 @@ not depend on Tauri.
   and `.ppj` `<Script>` entries share this mapping.
 - Vanilla engine types with no on-disk `.psc` resolve from the bundled AST
   cache by `ScriptName` (`FunctionTable::ensure_loaded` /
-  `script_exists`), including a qualified name. A project or lookup-root
-  file of the same name wins.
+  `script_exists`), including a qualified name. Outside known-scripts mode, a
+  project or lookup-root file of the same name wins. In known-scripts mode,
+  only registered project paths are considered; lookup roots are still
+  searched before the bundled cache.
 - Known-scripts mode registers each listed path under its file stem, a
   path-derived `folder:stem` name when the file sits under a script root
   (`Scripts/Source/User/Foo.psc` → `user:foo`), and the declared
