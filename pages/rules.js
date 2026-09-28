@@ -1,8 +1,8 @@
 // Progressive enhancement for rules.html: without this script every rule is
 // listed and every filter control is simply inert; with it, the search box
-// and severity/tag/auto-fix checkboxes filter the table client-side against
-// the data-search/data-severity/data-tags/data-fixable attributes build.py
-// wrote onto each row.
+// and severity/tag/preset/auto-fix checkboxes filter the table client-side
+// against the data-search/data-severity/data-tags/data-presets/data-fixable
+// attributes build.py wrote onto each row.
 (function () {
   "use strict";
 
@@ -16,6 +16,7 @@
     var searchInput = document.getElementById("rules-search");
     var severityInputs = Array.prototype.slice.call(document.querySelectorAll(".rules-severity-filter"));
     var tagInputs = Array.prototype.slice.call(document.querySelectorAll(".rules-tag-filter"));
+    var presetInputs = Array.prototype.slice.call(document.querySelectorAll(".rules-preset-filter"));
     var fixableInput = document.getElementById("rules-fixable-filter");
     var countEl = document.getElementById("rules-count");
 
@@ -33,17 +34,23 @@
       var query = (searchInput ? searchInput.value : "").trim().toLowerCase();
       var severities = checkedValues(severityInputs);
       var tags = checkedValues(tagInputs);
+      var presets = checkedValues(presetInputs);
       var fixableOnly = fixableInput ? fixableInput.checked : false;
       var visible = 0;
 
       rows.forEach(function (row) {
         var rowTags = row.dataset.tags ? row.dataset.tags.split(" ") : [];
+        var rowPresets = row.dataset.presets ? row.dataset.presets.split(" ") : [];
         var matches =
           (!query || row.dataset.search.indexOf(query) !== -1) &&
           severities.indexOf(row.dataset.severity) !== -1 &&
           tags.some(function (tag) {
             return rowTags.indexOf(tag) !== -1;
           }) &&
+          (presetInputs.length === 0 ||
+            presets.some(function (preset) {
+              return rowPresets.indexOf(preset) !== -1;
+            })) &&
           (!fixableOnly || row.dataset.fixable === "true");
 
         row.hidden = !matches;
@@ -60,7 +67,7 @@
     if (searchInput) {
       searchInput.addEventListener("input", applyFilters);
     }
-    severityInputs.concat(tagInputs).forEach(function (input) {
+    severityInputs.concat(tagInputs, presetInputs).forEach(function (input) {
       input.addEventListener("change", applyFilters);
     });
     if (fixableInput) {
