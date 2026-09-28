@@ -425,6 +425,8 @@ fn type_exists_accepts_arrays_and_nested_structs() {
         "Holder:Payload",
         "holder:payload",
         "Holder:Payload[]",
+        "FollowersScript:AffinityEventData",
+        "followersscript:affinityeventdata[]",
         "Ns:Script",
         "Ns:Script[]",
         "Ns:Script:Inner",
@@ -440,6 +442,8 @@ fn type_exists_accepts_arrays_and_nested_structs() {
         "Holder:NotAStruct",
         "Ns:Script:Missing",
         "MissingScript:Whatever",
+        "FollowersScript:NotARealStruct",
+        "gamejam:GJDialogueScript",
     ] {
         assert!(
             !papyrus_lints::ExternalSignatures::type_exists(&mut table, name),
@@ -487,7 +491,7 @@ EndFunction\n";
 }
 
 #[test]
-fn namespaced_scripts_are_not_flagged_as_unresolved() {
+fn missing_namespaced_script_is_unresolved_and_a_present_one_is_not() {
     let root = tempfile::tempdir().expect("failed to create temp dir");
     write_script(
         root.path(),
@@ -496,18 +500,25 @@ fn namespaced_scripts_are_not_flagged_as_unresolved() {
     );
 
     let mut table = fallout_table(root.path());
-    let source = "\
+    let absent = "\
 ScriptName Example\n\
 \n\
 gamejam:GJDialogueScript Property Speaker Auto\n\
 Holder:Payload Property Value Auto\n\
 Holder:Missing Property Broken Auto\n\
+FollowersScript:AffinityEventData Property Affinity Auto\n\
 \n\
 Function Test()\n\
     gamejam:GJDialogueScript.Run()\n\
 EndFunction\n";
 
-    let diagnostics = unresolved_in(source, &mut table);
+    let diagnostics = unresolved_in(absent, &mut table);
+    assert!(
+        diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.message.contains("gamejam:GJDialogueScript")),
+        "a missing namespaced script should be flagged, got {diagnostics:?}"
+    );
     assert!(
         diagnostics
             .iter()
@@ -516,11 +527,41 @@ EndFunction\n";
     );
     assert!(
         diagnostics.iter().all(|diagnostic| {
-            !diagnostic.message.contains("gamejam:GJDialogueScript")
-                && !diagnostic.message.contains("Holder:Payload")
+            !diagnostic.message.contains("Holder:Payload")
+                && !diagnostic
+                    .message
+                    .contains("FollowersScript:AffinityEventData")
         }),
-        "namespaced scripts and resolved structs should not be flagged, got {diagnostics:?}"
+        "located structs should not be flagged, got {diagnostics:?}"
     );
+
+    let namespace = root.path().join("scripts/source/gamejam");
+    std::fs::create_dir_all(&namespace).expect("failed to create gamejam dir");
+    std::fs::write(
+        namespace.join("GJDialogueScript.psc"),
+        "ScriptName gamejam:GJDialogueScript\n\nFunction Run() Global\nEndFunction\n",
+    )
+    .expect("failed to write namespaced script");
+
+    let present = "\
+ScriptName Example Extends gamejam:GJDialogueScript\n\
+\n\
+gamejam:GJDialogueScript Property Speaker Auto\n\
+\n\
+Function Test()\n\
+    gamejam:GJDialogueScript.Run()\n\
+EndFunction\n";
+    let diagnostics = unresolved_in(present, &mut table);
+    assert!(
+        diagnostics
+            .iter()
+            .all(|diagnostic| !diagnostic.message.contains("gamejam:GJDialogueScript")),
+        "a present namespaced script should not be flagged, got {diagnostics:?}"
+    );
+    assert!(papyrus_lints::ExternalSignatures::type_exists(
+        &mut table,
+        "gamejam:GJDialogueScript"
+    ));
 }
 
 #[test]

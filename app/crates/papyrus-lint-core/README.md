@@ -46,9 +46,10 @@ not depend on Tauri.
   `CustomEventName` and `ScriptEventName` as compiler typedefs (no script
   file, same as `String`/`Int`), and `Script:Struct` /
   `Namespace:Script:Struct` as a struct declared on that script. A namespaced
-  script that itself exists still wins over the struct reading. The declaring
-  script is parsed in the table's game dialect so Fallout 4 / Starfield
-  `Struct` blocks are visible.
+  script that itself exists still wins over the struct reading. A colon
+  name that is neither that script nor a struct on a located owner is an
+  unresolved reference. The declaring script is parsed in the table's game
+  dialect so Fallout 4 / Starfield `Struct` blocks are visible.
   Unqualified struct names are not global: `declares_struct` is that
   script's own structs (what `Import` exposes) and
   `declares_struct_in_ancestry` walks `Extends`. `unresolved-script`

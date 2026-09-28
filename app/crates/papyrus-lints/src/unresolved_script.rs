@@ -20,10 +20,10 @@
 //!
 //! A bare name that is a `Struct` on the script being linted, on an
 //! ancestor it `Extends`, or declared directly on a script it `Import`s is
-//! a type, not a missing script. Qualified `Script:Struct` names stay on
-//! [`ExternalSignatures::type_exists`]. Namespaced scripts (`namespace:Script`)
-//! are not resolved; they are left unflagged rather than treated as a
-//! missing `Script:Struct`.
+//! a type, not a missing script. A colon name is a script when that full
+//! name can be located (`gamejam:GJDialogueScript`), and a struct only when
+//! it cannot and the owner can (`FollowersScript:AffinityEventData`,
+//! `Namespace:Script:Struct`). A colon name that is neither is unresolved.
 
 use papyrus_parser::ast::{Expr, FunctionDecl, Script, TypeName};
 use papyrus_parser::types::TypeEnv;
@@ -64,9 +64,7 @@ impl AstLint for Collect {
             .map(|import| import.name.clone())
             .collect();
         if let Some(parent) = &script.extends {
-            if !ctx.external.type_exists(parent)
-                && !is_unsupported_namespace(ctx.external, parent)
-            {
+            if !ctx.external.type_exists(parent) {
                 self.store
                     .push(missing_type(script.line, 1, parent, "Parent script"));
             }
@@ -103,10 +101,7 @@ impl AstLint for Collect {
                 let Some(env) = self.env.as_ref() else {
                     return;
                 };
-                if env.lookup(name).is_none()
-                    && !ctx.external.script_exists(name)
-                    && !is_unsupported_namespace(ctx.external, name)
-                {
+                if env.lookup(name).is_none() && !ctx.external.script_exists(name) {
                     self.store.push(missing(*line, *col, name));
                 }
             }
@@ -129,9 +124,6 @@ impl Collect {
         // when an `Extends` ancestor declares it, or an `Import` declares
         // that struct itself (not a struct on the import's parent).
         if self.inherited_or_imported_struct(ctx, name) {
-            return;
-        }
-        if is_unsupported_namespace(ctx.external, name) {
             return;
         }
         self.store.push(missing_type(ctx.line, 1, name, "Type"));
@@ -212,19 +204,6 @@ fn missing_type(line: usize, col: usize, name: &str, kind: &str) -> Diagnostic {
 /// keep the brackets on [`TypeName::is_array`] instead.
 fn array_element_name(name: &str) -> &str {
     name.strip_suffix("[]").unwrap_or(name)
-}
-
-/// `namespace:Script` is not something this lint resolves. A colon name is
-/// only treated as a missing `Script:Struct` when the left-hand side is a
-/// script (or type) that can already be located.
-fn is_unsupported_namespace(external: &mut dyn ExternalSignatures, name: &str) -> bool {
-    let Some((owner, member)) = name.rsplit_once(':') else {
-        return false;
-    };
-    if owner.is_empty() || member.is_empty() {
-        return false;
-    }
-    !external.script_exists(owner) && !external.type_exists(owner)
 }
 
 fn missing(line: usize, col: usize, name: &str) -> Diagnostic {
