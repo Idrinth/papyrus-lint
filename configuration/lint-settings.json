@@ -417,6 +417,24 @@
         "title": "Whether the \"None used as an existing Form\" lint treats a script-level Auto/AutoReadOnly property as already filled in by the time a function runs, instead of possibly still None. A local variable is always tracked either way.",
         "ui_order": 150
       }
+    },
+    {
+      "key": "bool_like_int",
+      "rust_type": "bool",
+      "rust_default": "true",
+      "yaml_default": "true",
+      "ts_type": "boolean",
+      "doc": "Treats 0/1 as boolean like and won't call them out.",
+      "ui": {
+        "mount": "lint-config-settings",
+        "group": "treat-bool-like-int",
+        "group_kind": "fieldset",
+        "group_legend": "0 and 1 used as boolean replacements",
+        "id": "treat-bool-like-int",
+        "widget": "checkbox",
+        "checkbox_label": "Treat 0 and 1 as equivalent to false and true.",
+        "title": "Whether the strict boolean check accepts 0 and 1 as valid boolean replacements.",
+        "ui_order": 155
     }
   ]
 }
