@@ -19,6 +19,11 @@ pub struct RuleMetadata {
     pub repair_order: Option<u32>,
     #[serde(default = "enabled_by_default")]
     pub enabled_by_default: bool,
+    /// Optional allow-list of `Game::as_str()` values this rule runs for.
+    /// Empty (the default when the field is omitted) means every game —
+    /// matching `papyrus_lint_globals::Game::{Skyrim,Fallout4,Starfield}`.
+    #[serde(default)]
+    pub games: Vec<String>,
 }
 
 fn enabled_by_default() -> bool {
@@ -97,6 +102,23 @@ pub fn validate(rules: &[RuleMetadata]) -> Result<(), ValidationError> {
                 "shared/rules.json: unknown visitor `{}` for {} (expected ast, tokens, or none)",
                 rule.visitor, rule.id
             ));
+        }
+        for game in &rule.games {
+            if !matches!(game.as_str(), "skyrim" | "fallout4" | "starfield") {
+                return fail(format!(
+                    "shared/rules.json: unknown game `{game}` for {} (expected skyrim, fallout4, or starfield)",
+                    rule.id
+                ));
+            }
+        }
+        let mut seen_games = HashSet::new();
+        for game in &rule.games {
+            if !seen_games.insert(game.as_str()) {
+                return fail(format!(
+                    "shared/rules.json: duplicate game `{game}` for {}",
+                    rule.id
+                ));
+            }
         }
         let no_source = NO_SOURCE_CHECK_IDS.contains(&rule.id.as_str());
         let external_repair = EXTERNAL_REPAIR_IDS.contains(&rule.id.as_str());

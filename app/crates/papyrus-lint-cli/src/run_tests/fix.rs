@@ -161,9 +161,13 @@ fn fix_line_and_type_filters_combine() {
 fn line_filter_errors_when_a_fix_changes_the_line_count() {
     let dir = tempfile::tempdir().expect("failed to create temp dir");
     let script_path = dir.path().join("scripts/source/Example.psc");
+    // No blank line after ScriptName, plus a function after the properties,
+    // so property-sorting inserts a separator between the relocated
+    // properties and the line count changes even after final-newline
+    // collapses extra blanks at EOF.
     write_file(
         &script_path,
-        "ScriptName Example\n\nInt Property Zulu = 1 Auto\nActor Property Alpha Auto\n",
+        "ScriptName Example\nInt Property Zulu = 1 Auto\nActor Property Alpha Auto\nFunction F()\nEndFunction\n",
     );
     write_file(
         &dir.path().join("papyrus-lint.yaml"),
@@ -180,7 +184,7 @@ fn line_filter_errors_when_a_fix_changes_the_line_count() {
     assert!(stderr.contains("changes the file's line count"));
     assert_eq!(
         fs::read_to_string(&script_path).unwrap(),
-        "ScriptName Example\n\nInt Property Zulu = 1 Auto\nActor Property Alpha Auto\n"
+        "ScriptName Example\nInt Property Zulu = 1 Auto\nActor Property Alpha Auto\nFunction F()\nEndFunction\n"
     );
 }
 
