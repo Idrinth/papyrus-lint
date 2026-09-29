@@ -93,3 +93,7 @@ pub(crate) fn fix_file(
         plain_text,
     })
 }
+
+#[cfg(test)]
+#[path = "run_fix_tests.rs"]
+mod tests;
