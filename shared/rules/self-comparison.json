@@ -1,0 +1,14 @@
+{
+  "id": "self-comparison",
+  "name": "Self-comparison",
+  "category": "Bugprone",
+  "visitor": "ast",
+  "tags": [
+    "correctness"
+  ],
+  "severity": "warning",
+  "importance": "medium",
+  "fixable": false,
+  "description": "Flags comparing a reference to itself (e.g. count == count, actor != actor), which is always true or always false and almost always a typo. Only bare names / member chains; calls and indexes are never treated as identical.",
+  "definition": "Flags, as a `[warning]`, a comparison (`==`, `!=`, `<=`, or `>=`) whose left and right sides are the exact same simple reference (e.g. `count == count`, `actor != actor`, `Self.Foo <= Self.Foo`), since that comparison is always true (`==`/`<=`/`>=`) or always false (`!=`) and is almost always a typo or unfinished edit. Only a bare identifier or a chain of member accesses rooted at one (or at `Self`/`Parent`) is ever compared this way; a call, an index, or any other expression shape never counts as a self-comparison, since re-evaluating it on both sides isn't guaranteed to read the same value twice. Float NaN quirks are irrelevant in Papyrus, so the rule stays simple."
+}
