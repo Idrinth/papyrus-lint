@@ -1,0 +1,502 @@
+project_settings:
+  - key: compiler_path
+    yaml:
+      default: 'null'
+      comment: compiler_path
+    schema:
+      description: compiler_path
+      type:
+        - string
+        - 'null'
+      default: null
+  - key: additional_script_roots
+    yaml:
+      default: '[]'
+      comment: additional_script_roots
+    schema:
+      description: additional_script_roots
+      type: array
+      items:
+        type: string
+        minLength: 1
+      default: []
+  - key: lookup_script_roots
+    yaml:
+      default: '[]'
+      comment: lookup_script_roots
+    schema:
+      description: lookup_script_roots
+      type: array
+      items:
+        type: string
+        minLength: 1
+      default: []
+  - key: compile_check
+    yaml:
+      default: 'false'
+      comment: compile_check
+    schema:
+      description: compile_check
+      type: boolean
+      default: false
+  - key: strict_achlist_scope
+    yaml:
+      default: 'false'
+      comment: strict_achlist_scope
+    schema:
+      description: strict_achlist_scope
+      type: boolean
+      default: false
+rules_yaml_comment: Each rule accepts true or false
+settings:
+  - key: game
+    rust:
+      type: Game
+      default: Game::default()
+    yaml:
+      default: skyrim
+      comment: game
+    ts_type: Game
+    ts_alias: Game
+    doc: game
+    ui:
+      mount: lint-config-game
+      id: game-select
+      widget: game
+      label: Target game
+      title: Target game
+      options:
+        - value: skyrim
+          label: Skyrim
+        - value: fallout4
+          label: Fallout 4
+        - value: starfield
+          label: Starfield
+      fill_selects:
+        - config-picker-game-select
+    schema:
+      description: game
+      type: string
+      enum:
+        - skyrim
+        - fallout4
+        - starfield
+      default: skyrim
+  - key: semicolon
+    rust:
+      type: bool
+      default: 'false'
+    yaml:
+      default: 'false'
+      comment: semicolon
+    ts_type: boolean
+    doc: semicolon
+    ui:
+      mount: lint-config-settings
+      id: semicolon-style
+      widget: bool-select
+      label: Trailing semicolons
+      true_value: require
+      false_value: forbid
+      options:
+        - value: forbid
+          label: Remove where possible
+        - value: require
+          label: Add to non-empty lines
+    schema:
+      description: semicolon
+      type: boolean
+      default: false
+  - key: indentation
+    rust:
+      type: Indentation
+      default: Indentation::default()
+    yaml:
+      default: tab
+      comment: indentation
+    ts_type: '"tab" | "space"'
+    doc: indentation
+    ui:
+      mount: lint-config-settings
+      group: indentation
+      group_kind: indentation
+      group_prefix: Indentation
+      id: indentation-style
+      widget: mapped-select
+      aria_label: Indentation style
+      options:
+        - value: tabs
+          label: Tabs
+          config: tab
+        - value: spaces
+          label: Spaces
+          config: space
+      enables_key: indentation_width
+      enables_when: space
+    schema:
+      description: indentation
+      type: string
+      enum:
+        - tab
+        - space
+      default: tab
+  - key: indentation_width
+    rust:
+      type: usize
+      default: '4'
+    yaml:
+      default: '4'
+      comment: indentation_width
+    ts_type: number
+    doc: indentation_width
+    ui:
+      mount: lint-config-settings
+      group: indentation
+      group_kind: indentation
+      id: indentation-width
+      widget: number
+      label: Width
+      min: 1
+      max: 16
+      clamp_min: 1
+      clamp_max: 16
+      treat_zero_as_empty: true
+      disabled_by_default: true
+    schema:
+      description: indentation_width
+      type: integer
+      minimum: 1
+      maximum: 16
+      default: 4
+  - key: max_line_length
+    rust:
+      type: usize
+      default: '120'
+    yaml:
+      default: '120'
+      comment: max_line_length
+    ts_type: number
+    doc: max_line_length
+    ui:
+      mount: lint-config-settings
+      id: max-line-length
+      widget: number
+      label: Maximum line length
+      min: 1
+      clamp_min: 1
+      treat_zero_as_empty: true
+    schema:
+      description: max_line_length
+      type: integer
+      minimum: 0
+      default: 120
+  - key: type_casing
+    rust:
+      type: TypeCasing
+      default: TypeCasing::default()
+    yaml:
+      default: PascalCase
+      comment: type_casing
+    ts_type: TypeCasingStyle
+    ts_alias: TypeCasingStyle
+    doc: type_casing
+    ui:
+      mount: lint-config-settings
+      id: type-casing-style
+      widget: select
+      label: Type name casing
+      options:
+        - value: PascalCase
+          label: PascalCase
+        - value: camelCase
+          label: camelCase
+        - value: lowercase
+          label: lowercase
+        - value: UPPERCASE
+          label: UPPERCASE
+    schema:
+      description: type_casing
+      type: string
+      enum:
+        - PascalCase
+        - camelCase
+        - lowercase
+        - UPPERCASE
+      default: PascalCase
+  - key: identifier_casing
+    rust:
+      type: IdentifierCasing
+      default: IdentifierCasing::default()
+    yaml:
+      default: PascalCase
+      comment: identifier_casing
+    ts_type: IdentifierCasingStyle
+    ts_alias: IdentifierCasingStyle
+    doc: identifier_casing
+    ui:
+      mount: lint-config-settings
+      id: identifier-casing-style
+      widget: select
+      label: Identifier casing
+      options:
+        - value: camelCase
+          label: camelCase
+        - value: PascalCase
+          label: PascalCase
+        - value: snake_case
+          label: snake_case
+        - value: CONSTANT_CASE
+          label: CONSTANT_CASE
+    schema:
+      description: identifier_casing
+      type: string
+      enum:
+        - camelCase
+        - PascalCase
+        - snake_case
+        - CONSTANT_CASE
+      default: PascalCase
+  - key: named_arguments
+    rust:
+      type: NamedArguments
+      default: NamedArguments::default()
+    yaml:
+      default: never
+      comment: named_arguments
+    ts_type: NamedArgumentsStyle
+    ts_alias: NamedArgumentsStyle
+    doc: named_arguments
+    ui:
+      mount: lint-config-settings
+      id: named-arguments-style
+      widget: select
+      label: Prefer named arguments
+      options:
+        - value: never
+          label: Never
+        - value: instead_of_defaults
+          label: Instead of defaults
+        - value: always
+          label: Always
+    schema:
+      description: named_arguments
+      type: string
+      enum:
+        - always
+        - instead_of_defaults
+        - never
+      default: never
+  - key: magic_numbers
+    rust:
+      type: MagicNumbers
+      default: MagicNumbers::default()
+    yaml:
+      default: loose
+      comment: magic_numbers
+    ts_type: MagicNumbersMode
+    ts_alias: MagicNumbersMode
+    doc: magic_numbers
+    ui:
+      mount: lint-config-settings
+      id: magic-numbers-mode
+      widget: select
+      label: Magic numbers
+      options:
+        - value: loose
+          label: Loose (exempt Wait/RegisterFor* intervals)
+        - value: strict
+          label: Strict (check every call argument)
+    schema:
+      description: magic_numbers
+      type: string
+      enum:
+        - loose
+        - strict
+      default: loose
+  - key: cyclomatic_complexity_warning
+    rust:
+      type: usize
+      default: '10'
+    yaml:
+      default: '10'
+      comment: cyclomatic_complexity_warning
+    ts_type: number
+    doc: cyclomatic_complexity_warning
+    ui:
+      mount: lint-config-settings
+      group: cyclomatic
+      group_kind: fieldset
+      group_legend: Cyclomatic complexity thresholds
+      row: true
+      id: cyclomatic-complexity-warning
+      widget: number
+      label: Warning at
+      min: 1
+      clamp_min: 1
+      treat_zero_as_empty: true
+    schema:
+      description: cyclomatic_complexity_warning
+      type: integer
+      minimum: 0
+      default: 10
+  - key: cyclomatic_complexity_error
+    rust:
+      type: usize
+      default: '20'
+    yaml:
+      default: '20'
+      comment: cyclomatic_complexity_error
+    ts_type: number
+    doc: cyclomatic_complexity_error
+    ui:
+      mount: lint-config-settings
+      group: cyclomatic
+      group_kind: fieldset
+      row: true
+      id: cyclomatic-complexity-error
+      widget: number
+      label: Error at
+      min: 1
+      clamp_min: 1
+      clamp_min_from: cyclomatic_complexity_warning
+      treat_zero_as_empty: true
+    schema:
+      description: cyclomatic_complexity_error
+      type: integer
+      minimum: 0
+      default: 20
+  - key: min_wait_interval
+    rust:
+      type: f64
+      default: '0.1'
+    yaml:
+      default: '0.1'
+      comment: min_wait_interval
+    ts_type: number
+    doc: min_wait_interval
+    ui:
+      mount: lint-config-settings
+      group: wait
+      group_kind: fieldset
+      group_legend: Short wait/update interval threshold
+      row: true
+      id: min-wait-interval
+      widget: number
+      label: Minimum interval
+      min: 0
+      step: 0.01
+      clamp_min: 0
+    schema:
+      description: min_wait_interval
+      type: number
+      minimum: 0
+      default: 0.1
+  - key: fail_on_warning
+    rust:
+      type: bool
+      default: 'false'
+    yaml:
+      default: 'false'
+      comment: fail_on_warning
+    ts_type: boolean
+    doc: fail_on_warning
+    ui:
+      mount: lint-config-settings
+      group: fail-levels
+      group_kind: fieldset
+      group_legend: CLI failure levels
+      id: fail-on-warning
+      widget: checkbox
+      checkbox_label: Fail on warning
+      title: fail_on_warning
+    schema:
+      description: fail_on_warning
+      type: boolean
+      default: false
+  - key: fail_on_info
+    rust:
+      type: bool
+      default: 'false'
+    yaml:
+      default: 'false'
+      comment: fail_on_info
+    ts_type: boolean
+    doc: fail_on_info
+    ui:
+      mount: lint-config-settings
+      group: fail-levels
+      group_kind: fieldset
+      id: fail-on-info
+      widget: checkbox
+      checkbox_label: Fail on info
+      title: fail_on_info
+    schema:
+      description: fail_on_info
+      type: boolean
+      default: false
+  - key: bool_like_int
+    rust:
+      type: bool
+      default: 'true'
+    yaml:
+      default: 'true'
+      comment: bool_like_int
+    ts_type: boolean
+    doc: bool_like_int
+    ui:
+      mount: lint-config-settings
+      group: bool-like
+      group_kind: fieldset
+      group_legend: Strict boolean check
+      id: bool-like-int
+      widget: checkbox
+      checkbox_label: Allow 1/0 as bool-like
+      title: bool_like_int
+    schema:
+      description: bool_like_int
+      type: boolean
+      default: true
+  - key: treat_form_as_bool_for_returns
+    rust:
+      type: bool
+      default: 'false'
+    yaml:
+      default: 'false'
+      comment: treat_form_as_bool_for_returns
+    ts_type: boolean
+    doc: treat_form_as_bool_for_returns
+    ui:
+      mount: lint-config-settings
+      group: treat-form-as-bool
+      group_kind: fieldset
+      group_legend: Return type check
+      id: treat-form-as-bool-for-returns
+      widget: checkbox
+      checkbox_label: Treat Forms as Bool for returns
+      title: treat_form_as_bool_for_returns
+    schema:
+      description: treat_form_as_bool_for_returns
+      type: boolean
+      default: false
+  - key: assume_auto_properties_filled
+    rust:
+      type: bool
+      default: 'false'
+    yaml:
+      default: 'false'
+      comment: assume_auto_properties_filled
+    ts_type: boolean
+    doc: assume_auto_properties_filled
+    ui:
+      mount: lint-config-settings
+      group: assume-auto
+      group_kind: fieldset
+      group_legend: None used as an existing Form
+      id: assume-auto-properties-filled
+      widget: checkbox
+      checkbox_label: Assume Auto properties are filled
+      title: assume_auto_properties_filled
+    schema:
+      description: assume_auto_properties_filled
+      type: boolean
+      default: false
