@@ -5211,6 +5211,7 @@ Scripts/Source/Base/CIS_ManagerScript.psc:122:1:identifier-casing
 Scripts/Source/Base/CIS_ManagerScript.psc:122:121:line-length
 Scripts/Source/Base/CIS_ManagerScript.psc:123:1:trailing-whitespace
 Scripts/Source/Base/CIS_ManagerScript.psc:124:1:identifier-casing
+Scripts/Source/Base/CIS_ManagerScript.psc:126:1:self-comparison
 Scripts/Source/Base/CIS_ManagerScript.psc:126:1:unchecked-cast
 Scripts/Source/Base/CIS_ManagerScript.psc:127:1:trailing-whitespace
 Scripts/Source/Base/CIS_ManagerScript.psc:128:22:boolean-simplification
