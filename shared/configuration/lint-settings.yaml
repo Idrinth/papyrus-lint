@@ -1,0 +1,35 @@
+rules_comment: Each rule accepts true to enable or false to disable
+project:
+  - compiler_path
+  - additional_script_roots
+  - lookup_script_roots
+  - compile_check
+  - strict_achlist_scope
+settings:
+  - game
+  - semicolon
+  - indentation
+  - indentation_width
+  - max_line_length
+  - type_casing
+  - identifier_casing
+  - hungarian
+  - named_arguments
+  - magic_numbers
+  - cyclomatic_complexity_warning
+  - cyclomatic_complexity_error
+  - nesting_depth_info
+  - nesting_depth_warning
+  - nesting_depth_error
+  - parameter_count_max
+  - function_length_max_code_lines
+  - function_length_max_lines
+  - min_wait_interval
+  - fail_on_warning
+  - fail_on_info
+  - bool_like_int
+  - treat_form_as_bool_for_returns
+  - assume_auto_properties_filled
+  - utf8_bom_mode
+  - encoding_enforced
+  - line_endings_mode
