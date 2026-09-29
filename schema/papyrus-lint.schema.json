@@ -324,7 +324,7 @@
           "default": true
         },
         "empty_event_handler": {
-          "description": "Flags a completely empty Event in the empty/default state. Empty handlers inside a named State are left alone, since those often intentionally mute an inherited or engine event.",
+          "description": "Empty event handler",
           "type": "boolean",
           "default": true
         },
@@ -654,7 +654,7 @@
           "default": true
         },
         "boolean_simplification": {
-          "description": "Flags a Bool compared with == or != against true or false, since the value or its negation already says the same thing. The fix rewrites it to the value or '! value'.",
+          "description": "Boolean simplification",
           "type": "boolean",
           "default": true
         }
