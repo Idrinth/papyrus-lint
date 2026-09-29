@@ -1,1 +1,1 @@
-PLACEHOLDER
+@/tmp/mcp_file_redundant_condition.rs.json
