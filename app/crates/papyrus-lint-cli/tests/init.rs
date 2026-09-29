@@ -68,10 +68,10 @@ fn init_preset_flag_selects_a_user_preset_from_the_presets_directory() {
     let config = fs::read_to_string(project_dir.path().join("papyrus-lint.yaml"))
         .expect("init should create papyrus-lint.yaml");
     assert!(config.contains("semicolon: true"));
-    assert!(config.contains("  identifier_casing: false\n"));
+    assert!(config.contains("  identifier_casing: false # "));
     // Settings the user preset didn't set still fall back to the engine's
     // built-in default.
-    assert!(config.contains("  trailing_whitespace: true\n"));
+    assert!(config.contains("  trailing_whitespace: true # "));
 }
 
 #[test]
@@ -145,7 +145,7 @@ fn preset_add_makes_the_preset_selectable_via_init() {
     let config = fs::read_to_string(project_dir.path().join("papyrus-lint.yaml"))
         .expect("init should create papyrus-lint.yaml");
     assert!(config.contains("semicolon: true"));
-    assert!(config.contains("  identifier_casing: false\n"));
+    assert!(config.contains("  identifier_casing: false # "));
 }
 
 #[test]
@@ -282,7 +282,7 @@ fn init_defaults_to_the_strict_preset() {
         .expect("init should create papyrus-lint.yaml");
     // Strict is the default, and matches every rule on (including pure
     // style/naming nits like identifier casing).
-    assert!(config.contains("  identifier_casing: true\n"));
+    assert!(config.contains("  identifier_casing: true # "));
 }
 
 #[test]
@@ -297,8 +297,8 @@ fn init_preset_flag_selects_the_standard_preset() {
     assert!(output.status.success());
     let config = fs::read_to_string(dir.path().join("papyrus-lint.yaml"))
         .expect("init should create papyrus-lint.yaml");
-    assert!(config.contains("  identifier_casing: false\n"));
-    assert!(config.contains("  trailing_whitespace: true\n"));
+    assert!(config.contains("  identifier_casing: false # "));
+    assert!(config.contains("  trailing_whitespace: true # "));
 }
 
 #[test]
@@ -314,7 +314,7 @@ fn init_preset_flag_accepts_the_equals_form_case_insensitively() {
     let config = fs::read_to_string(dir.path().join("papyrus-lint.yaml"))
         .expect("init should create papyrus-lint.yaml");
     assert!(config.contains("cyclomatic_complexity_warning: 20\n"));
-    assert!(config.contains("  trailing_whitespace: false\n"));
+    assert!(config.contains("  trailing_whitespace: false # "));
 }
 
 #[test]
