@@ -1,0 +1,39 @@
+{
+  "key": "line_endings_mode",
+  "rust": {
+    "type": "LineEndingsMode",
+    "default": "LineEndingsMode::default()"
+  },
+  "yaml": {
+    "default": "lf",
+    "comment": "lf (\\n), crlf (\\r\\n)"
+  },
+  "ts_type": "LineEndingsMode",
+  "ts_alias": "LineEndingsMode",
+  "doc": "Line terminator the \"Line endings\" lint requires (`lf` for `\\n`, `crlf` for `\\r\\n`). Ignored while `rules.line_endings` is off.",
+  "ui": {
+    "mount": "lint-config-settings",
+    "id": "line-endings-mode",
+    "widget": "select",
+    "label": "Line endings",
+    "options": [
+      {
+        "value": "lf",
+        "label": "LF (\\n)"
+      },
+      {
+        "value": "crlf",
+        "label": "CRLF (\\r\\n)"
+      }
+    ]
+  },
+  "schema": {
+    "description": "Required line terminator when the line-endings rule is enabled. lf is \\n; crlf is \\r\\n.",
+    "type": "string",
+    "enum": [
+      "lf",
+      "crlf"
+    ],
+    "default": "lf"
+  }
+}
