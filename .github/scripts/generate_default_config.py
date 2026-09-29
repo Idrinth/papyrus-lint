@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
-"""Generate shared/configuration/papyrus-lint.default.yaml from lint-settings + rules.
+"""Generate shared/configuration/papyrus-lint.default.yaml (and the config JSON Schema).
 
 Run after editing shared/configuration/lint-settings.json or shared/rules/*.json
-(and after build_rules_json.py). The output is a build/release/docs artifact and
-is git-ignored — not a source of truth.
+(and after build_rules_json.py). Both outputs are build/release/docs artifacts and
+are git-ignored - not a source of truth. The schema is also produced so Pages and
+CI jobs that already call this script can publish/validate without a checked-in
+copy of schema/papyrus-lint.schema.json.
 """
 
 from __future__ import annotations
@@ -15,6 +17,7 @@ from pathlib import Path
 SCRIPT_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(SCRIPT_DIR))
 
+from ci_lib.config_schema import write_schema  # noqa: E402
 from ci_lib.default_config import write_default_yaml  # noqa: E402
 
 
@@ -31,11 +34,20 @@ def main() -> int:
         "--output",
         type=Path,
         default=None,
-        help="Output path (default: shared/configuration/papyrus-lint.default.yaml)",
+        help="Default YAML output path (default: shared/configuration/papyrus-lint.default.yaml)",
+    )
+    parser.add_argument(
+        "--skip-schema",
+        action="store_true",
+        help="Do not also write schema/papyrus-lint.schema.json",
     )
     args = parser.parse_args()
-    dest = write_default_yaml(args.repo_root.resolve(), args.output)
+    root = args.repo_root.resolve()
+    dest = write_default_yaml(root, args.output)
     print(f"Wrote {dest}")
+    if not args.skip_schema:
+        schema_dest = write_schema(root)
+        print(f"Wrote {schema_dest}")
     return 0
 
 
