@@ -1,0 +1,49 @@
+{
+  "key": "type_casing",
+  "rust": {
+    "type": "TypeCasing",
+    "default": "TypeCasing::default()"
+  },
+  "yaml": {
+    "default": "PascalCase",
+    "comment": "PascalCase, camelCase, lowercase, UPPERCASE"
+  },
+  "ts_type": "TypeCasingStyle",
+  "ts_alias": "TypeCasingStyle",
+  "doc": "The casing convention required of a script's declared type name\n(the identifier following `ScriptName`), checked by the \"Type name\ncasing\" lint.",
+  "ui": {
+    "mount": "lint-config-settings",
+    "id": "type-casing-style",
+    "widget": "select",
+    "label": "Type name casing",
+    "options": [
+      {
+        "value": "PascalCase",
+        "label": "PascalCase"
+      },
+      {
+        "value": "camelCase",
+        "label": "camelCase"
+      },
+      {
+        "value": "lowercase",
+        "label": "lowercase"
+      },
+      {
+        "value": "UPPERCASE",
+        "label": "UPPERCASE"
+      }
+    ]
+  },
+  "schema": {
+    "description": "Casing convention for a script's declared type name (the identifier following ScriptName).",
+    "type": "string",
+    "enum": [
+      "PascalCase",
+      "camelCase",
+      "lowercase",
+      "UPPERCASE"
+    ],
+    "default": "PascalCase"
+  }
+}

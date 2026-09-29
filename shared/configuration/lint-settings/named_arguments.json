@@ -1,0 +1,44 @@
+{
+  "key": "named_arguments",
+  "rust": {
+    "type": "NamedArguments",
+    "default": "NamedArguments::default()"
+  },
+  "yaml": {
+    "default": "never",
+    "comment": "always, instead_of_defaults, never"
+  },
+  "ts_type": "NamedArgumentsStyle",
+  "ts_alias": "NamedArgumentsStyle",
+  "doc": "How strongly the \"Prefer named arguments\" lint prefers Papyrus's\nnamed-argument call syntax (`func(argB = 1)`) over positional\narguments. See [`NamedArguments`].",
+  "ui": {
+    "mount": "lint-config-settings",
+    "id": "named-arguments-style",
+    "widget": "select",
+    "label": "Prefer named arguments",
+    "options": [
+      {
+        "value": "never",
+        "label": "Never"
+      },
+      {
+        "value": "instead_of_defaults",
+        "label": "Instead of defaults"
+      },
+      {
+        "value": "always",
+        "label": "Always"
+      }
+    ]
+  },
+  "schema": {
+    "description": "How strongly a positional call argument should be passed by name instead.",
+    "type": "string",
+    "enum": [
+      "always",
+      "instead_of_defaults",
+      "never"
+    ],
+    "default": "never"
+  }
+}

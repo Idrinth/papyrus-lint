@@ -1,0 +1,49 @@
+{
+  "key": "identifier_casing",
+  "rust": {
+    "type": "IdentifierCasing",
+    "default": "IdentifierCasing::default()"
+  },
+  "yaml": {
+    "default": "PascalCase",
+    "comment": "camelCase, PascalCase, snake_case, CONSTANT_CASE"
+  },
+  "ts_type": "IdentifierCasingStyle",
+  "ts_alias": "IdentifierCasingStyle",
+  "doc": "The casing style enforced by the \"Identifier casing\" lint. See\n[`IdentifierCasing`].",
+  "ui": {
+    "mount": "lint-config-settings",
+    "id": "identifier-casing-style",
+    "widget": "select",
+    "label": "Identifier casing",
+    "options": [
+      {
+        "value": "camelCase",
+        "label": "camelCase"
+      },
+      {
+        "value": "PascalCase",
+        "label": "PascalCase"
+      },
+      {
+        "value": "snake_case",
+        "label": "snake_case"
+      },
+      {
+        "value": "CONSTANT_CASE",
+        "label": "CONSTANT_CASE"
+      }
+    ]
+  },
+  "schema": {
+    "description": "Casing style declared identifiers must match (functions, events, properties, states, parameters, locals).",
+    "type": "string",
+    "enum": [
+      "camelCase",
+      "PascalCase",
+      "snake_case",
+      "CONSTANT_CASE"
+    ],
+    "default": "PascalCase"
+  }
+}

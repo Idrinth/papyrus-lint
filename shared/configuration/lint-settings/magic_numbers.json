@@ -1,0 +1,39 @@
+{
+  "key": "magic_numbers",
+  "rust": {
+    "type": "MagicNumbers",
+    "default": "MagicNumbers::default()"
+  },
+  "yaml": {
+    "default": "loose",
+    "comment": "loose, strict"
+  },
+  "ts_type": "MagicNumbersMode",
+  "ts_alias": "MagicNumbersMode",
+  "doc": "Whether the \"Magic numbers\" lint also checks the interval argument\nof a `Utility.Wait`/`RegisterForUpdate`/`RegisterForSingleUpdate`/\n`RegisterForUpdateGameTime`/`RegisterForSingleUpdateGameTime` call\n(`strict`), or leaves it unflagged since a hardcoded interval there\nis common and usually self-explanatory (`loose`, the default). See\n[`MagicNumbers`].",
+  "ui": {
+    "mount": "lint-config-settings",
+    "id": "magic-numbers-mode",
+    "widget": "select",
+    "label": "Magic numbers",
+    "options": [
+      {
+        "value": "loose",
+        "label": "Loose (exempt Wait/RegisterFor* intervals)"
+      },
+      {
+        "value": "strict",
+        "label": "Strict (check every call argument)"
+      }
+    ]
+  },
+  "schema": {
+    "description": "Whether the magic-numbers lint also flags Wait/RegisterFor* interval arguments (strict) or leaves them unflagged (loose).",
+    "type": "string",
+    "enum": [
+      "loose",
+      "strict"
+    ],
+    "default": "loose"
+  }
+}
