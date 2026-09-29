@@ -102,6 +102,7 @@ pub(crate) fn run_blob(
             should_fail || parse_failed,
             use_color,
         ),
+        OutputFormat::Short => write_blob_short(&mut report_buf, &diagnostics, &parser_errors),
     }
 
     let write_status = flush_report(&report_buf, output_path, stdout, stderr);
@@ -224,6 +225,27 @@ fn write_blob_plain(
         "{}",
         colorize(&summary, summary_color, use_color)
     );
+}
+
+fn write_blob_short(
+    report_buf: &mut Vec<u8>,
+    diagnostics: &[papyrus_lints::Diagnostic],
+    parser_errors: &[JsonParserError],
+) {
+    for error in parser_errors {
+        let _ = writeln!(
+            report_buf,
+            "{}",
+            format_short_parser_error_line(BLOB_PATH, error)
+        );
+    }
+    for diagnostic in diagnostics {
+        let _ = writeln!(
+            report_buf,
+            "{}",
+            format_short_diagnostic_line(BLOB_PATH, diagnostic)
+        );
+    }
 }
 
 fn blob_parser_errors(failure: Option<ParserFailure>) -> Vec<JsonParserError> {
