@@ -110,3 +110,68 @@ fn does_not_flag_non_array_none() {
 
     assert!(diagnostics.is_empty());
 }
+
+#[test]
+fn narrows_array_inside_truthy_and_condition() {
+    let diagnostics = check(
+        "ScriptName Example\n\nFunction Test()\n    Int[] a = None\n    If a != None && a.Length > 0\n        Debug.Trace(a[0])\n    EndIf\nEndFunction\n",
+    );
+
+    assert!(diagnostics.is_empty());
+}
+
+#[test]
+fn narrows_array_on_right_side_of_or_condition() {
+    let diagnostics = check(
+        "ScriptName Example\n\nFunction Test()\n    Int[] a = None\n    If a == None || a.Length == 0\n        Return\n    EndIf\nEndFunction\n",
+    );
+
+    assert!(diagnostics.is_empty());
+}
+
+#[test]
+fn narrows_array_inside_while_body() {
+    let diagnostics = check(
+        "ScriptName Example\n\nFunction Test()\n    Int[] a = None\n    While a != None\n        Debug.Trace(a.Length)\n    EndWhile\nEndFunction\n",
+    );
+
+    assert!(diagnostics.is_empty());
+}
+
+#[test]
+fn keeps_possible_none_state_after_loop() {
+    let diagnostics = check(
+        "ScriptName Example\n\nFunction Test(Bool choose)\n    Int[] a = None\n    While choose\n        a = new Int[1]\n        choose = False\n    EndWhile\n    Debug.Trace(a.Length)\nEndFunction\n",
+    );
+
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!(diagnostics[0].line, 9);
+}
+
+#[test]
+fn merges_none_state_from_multiple_surviving_branches() {
+    let diagnostics = check(
+        "ScriptName Example\n\nFunction Test(Bool choose)\n    Int[] a = None\n    If choose\n        a = new Int[1]\n    Else\n        a = None\n    EndIf\n    Debug.Trace(a.Length)\nEndFunction\n",
+    );
+
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!(diagnostics[0].line, 10);
+}
+
+#[test]
+fn discards_none_state_from_a_diverging_branch() {
+    let diagnostics = check(
+        "ScriptName Example\n\nFunction Test(Bool choose)\n    Int[] a = None\n    If choose\n        Return\n    Else\n        a = new Int[1]\n    EndIf\n    Debug.Trace(a.Length)\nEndFunction\n",
+    );
+
+    assert!(diagnostics.is_empty());
+}
+
+#[test]
+fn resets_tracking_between_functions() {
+    let diagnostics = check(
+        "ScriptName Example\n\nFunction First()\n    Int[] a = None\nEndFunction\n\nFunction Second()\n    Int[] a = new Int[1]\n    Debug.Trace(a.Length)\nEndFunction\n",
+    );
+
+    assert!(diagnostics.is_empty());
+}
