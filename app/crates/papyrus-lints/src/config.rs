@@ -4,43 +4,7 @@
 //! Locating, loading, and saving that file is `papyrus-lint-config`'s job;
 //! this module owns the settings types themselves. A config file only
 //! needs to set the keys it wants to override — any key it omits falls
-//! back to the default shown below:
-//!
-//! ```yaml
-//! game: skyrim
-//! semicolon: false
-//! indentation: tab
-//! indentation_width: 4
-//! max_line_length: 120
-//! identifier_casing: PascalCase
-//! cyclomatic_complexity_warning: 10
-//! cyclomatic_complexity_error: 20
-//! nesting_depth_info: 4
-//! nesting_depth_warning: 6
-//! nesting_depth_error: 9
-//! type_casing: PascalCase
-//! named_arguments: never
-//! hungarian: allow
-//! min_wait_interval: 0.1
-//! magic_numbers: loose
-//! fail_on_warning: false
-//! fail_on_info: false
-//! bool_like_int: true
-//! treat_form_as_bool_for_returns: false
-//! assume_auto_properties_filled: false
-//! rules:
-//!   trailing_whitespace: true   # one boolean per lint; see [`Rules`]
-//! ```
-//!
-//! Every key under `rules` may be omitted and falls back to
-//! [`Rules::default`], which is generated from `shared/rules.json`
-//! (`enabled_by_default`, defaulting to `true`). A ruleset set to `false`
-//! disables that lint (and its automatic fix, if it has one) entirely.
-//! The other [`Config`] fields are generated from
-//! `shared/configuration/lint-settings.yaml` the same way.
-//!
-//! `assume_auto_properties_filled` (a top-level key, not a `rules` entry)
-//! is `false` by default: see [`Config::assume_auto_properties_filled`].
+//! back to the default.
 
 use serde::{Deserialize, Serialize};
 
