@@ -1,0 +1,14 @@
+{
+  "id": "assignment-overwritten",
+  "name": "Assignment overwritten before read",
+  "category": "Bugprone",
+  "visitor": "ast",
+  "tags": [
+    "correctness"
+  ],
+  "severity": "warning",
+  "importance": "medium",
+  "fixable": false,
+  "description": "Flags a write to a local variable or function parameter that is overwritten by a later assignment with no read of that value in between.",
+  "definition": "Flags, as a `[warning]`, a write to a function/event local variable or parameter whose value is overwritten by a later assignment (`name = ...` or a compound `name += ...`) with no intervening read of that name. The diagnostic points at the overwritten write — the initializer of `Int x = 1` followed by `x = 2`, the first of two back-to-back assignments, or the incoming argument when a parameter is assigned before that argument is read. A read of the name on the right-hand side (`x = x + 1`), through a compound assignment that uses the current value, via a member/index expression built from it (`name.Foo`, `name[0]`), or as a function argument, counts as a use and clears the pending write. `If`/`ElseIf`/`Else` branches are each checked from the same incoming writes; a write that originated before the `If` is only flagged when every surviving path overwrites it without reading it, so a one-sided `If` that overwrites a name still used on the implicit-else path is left alone. Writes that exist only inside a branch are flagged when they are overwritten later on that same branch; they are not carried past the `If`. A `While` loop may run zero times, so an assignment made only inside its body is never taken to overwrite a write from before the loop; dead stores that sit entirely inside the body are still flagged. Script properties are out of scope and are never flagged by this lint."
+}

@@ -1411,6 +1411,7 @@ Scripts/Source/F4SE/ObjectReference.psc:89:1:unnecessary-function
 Scripts/Source/F4SE/ObjectReference.psc:94:1:function-length
 Scripts/Source/F4SE/ObjectReference.psc:94:1:identifier-casing
 Scripts/Source/F4SE/ObjectReference.psc:94:1:identifier-casing
+Scripts/Source/F4SE/ObjectReference.psc:100:1:assignment-overwritten
 Scripts/Source/F4SE/ObjectReference.psc:100:1:identifier-casing
 Scripts/Source/F4SE/ObjectReference.psc:105:10:forbidden-functions
 Scripts/Source/F4SE/ObjectReference.psc:110:29:forbidden-functions
