@@ -1,4 +1,19 @@
 use super::*;
+use tauri::test::{
+    assert_ipc_response, get_ipc_response, mock_builder, mock_context, noop_assets, INVOKE_KEY,
+};
+
+fn invoke_request(command: &str, body: serde_json::Value) -> tauri::webview::InvokeRequest {
+    tauri::webview::InvokeRequest {
+        cmd: command.into(),
+        callback: tauri::ipc::CallbackFn(0),
+        error: tauri::ipc::CallbackFn(1),
+        url: "tauri://localhost".parse().unwrap(),
+        body: tauri::ipc::InvokeBody::Json(body),
+        headers: Default::default(),
+        invoke_key: INVOKE_KEY.to_string(),
+    }
+}
 
 fn finding(line: usize, column: usize, rule: &str, message: &str) -> OwnedDiagnostic {
     OwnedDiagnostic {
@@ -211,4 +226,73 @@ fn format_issues_for_ai_base_aggregates_counts_across_files() {
     assert_eq!(report["findings"]["severity_counts"]["errors"], 1);
     assert_eq!(report["findings"]["files"][0]["source"]["type"], "hash");
     assert_eq!(report["findings"]["files"][1]["source"]["type"], "error");
+}
+
+#[test]
+fn export_commands_accept_frontend_payloads_over_ipc() {
+    let app = crate::configure_builder(mock_builder())
+        .build(mock_context(noop_assets()))
+        .unwrap();
+    let webview = tauri::WebviewWindowBuilder::new(&app, "export-test", Default::default())
+        .build()
+        .unwrap();
+    let files = serde_json::json!([{
+        "path": "Example.psc",
+        "findings": [{
+            "line": 2,
+            "column": 3,
+            "rule": "trailing-whitespace",
+            "message": "[warning] trailing whitespace"
+        }]
+    }]);
+
+    assert_ipc_response(
+        &webview,
+        invoke_request("format_issues_as_text", serde_json::json!({ "files": files })),
+        Ok("Example.psc:2:3: [trailing-whitespace] [warning] trailing whitespace (https://papyrus-lint.idrinth.de/rules.html#rule-trailing-whitespace)"),
+    );
+
+    let expected_json = format_issues_as_json(vec![IssuesFileInput {
+        path: "Example.psc".to_string(),
+        findings: vec![finding(
+            2,
+            3,
+            "trailing-whitespace",
+            "[warning] trailing whitespace",
+        )],
+    }]);
+    assert_ipc_response(
+        &webview,
+        invoke_request(
+            "format_issues_as_json",
+            serde_json::json!({ "files": files }),
+        ),
+        Ok(expected_json),
+    );
+}
+
+#[test]
+fn export_commands_reject_malformed_frontend_payloads_over_ipc() {
+    let app = crate::configure_builder(mock_builder())
+        .build(mock_context(noop_assets()))
+        .unwrap();
+    let webview = tauri::WebviewWindowBuilder::new(&app, "export-error-test", Default::default())
+        .build()
+        .unwrap();
+
+    let error = get_ipc_response(
+        &webview,
+        invoke_request(
+            "format_issues_as_text",
+            serde_json::json!({ "files": [{ "path": "Example.psc" }] }),
+        ),
+    )
+    .expect_err("an incomplete issues file should be rejected");
+
+    assert!(
+        error
+            .as_str()
+            .is_some_and(|message| message.contains("missing field `findings`")),
+        "{error}"
+    );
 }
