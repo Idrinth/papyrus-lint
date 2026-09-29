@@ -164,7 +164,7 @@ behavior.
 Lint/fix behavior is configured via an optional `papyrus-lint.yaml` (or
 `.yml`) at the project root. Keys you omit fall back to the defaults
 generated from
-[`shared/configuration/lint-settings.json`](shared/configuration/lint-settings.json)
+[`shared/configuration/lint-settings.yaml`](shared/configuration/lint-settings.yaml)
 and [`shared/rules/`](shared/rules/). `PapyrusLinterCLI init` writes that
 annotated file. The generated copy used by builds and docs is git-ignored at
 `shared/configuration/papyrus-lint.default.yaml`; regenerate it with
