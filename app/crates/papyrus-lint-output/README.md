@@ -1,6 +1,6 @@
 # papyrus-lint-output
 
-Plain-text, JSON, and AI report formatting shared by the CLI and the
+Plain-text, short, JSON, and AI report formatting shared by the CLI and the
 desktop app. This crate only formats.
 
 Report links use `papyrus_lints::tags::RuleTags::doc_url`. Do not invent a

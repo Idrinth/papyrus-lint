@@ -236,7 +236,7 @@ fn format_flag_rejects_unknown_values_and_the_removed_json_alias() {
     assert!(unknown_stdout.is_empty());
     assert_eq!(
         unknown_stderr,
-        "error: --format must be 'plain', 'json', or 'ai', got 'yaml'\n"
+        "error: --format must be 'plain', 'short', 'json', or 'ai', got 'yaml'\n"
     );
 
     let (json_code, json_stdout, json_stderr) =

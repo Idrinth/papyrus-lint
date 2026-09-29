@@ -307,3 +307,26 @@ fn blob_plain_reports_parser_errors() {
     assert!(stdout.contains("[parse]"));
     assert!(stdout.contains("problem(s) found in the given blob"));
 }
+
+#[test]
+fn blob_short_format_prints_one_compact_line_per_finding() {
+    let (code, stdout, stderr) = run_captured(&[
+        "--format=short".to_string(),
+        "--blob".to_string(),
+        "ScriptName Example   \n".to_string(),
+    ]);
+
+    assert!(stderr.is_empty());
+    assert_eq!(code, 0);
+    let lines: Vec<&str> = stdout.lines().filter(|line| !line.is_empty()).collect();
+    assert_eq!(
+        lines.len(),
+        1,
+        "short format should be findings only, got {stdout:?}"
+    );
+    assert!(lines[0].starts_with("<blob>:"));
+    assert!(lines[0].ends_with(":trailing-whitespace"));
+    assert!(!stdout.contains('['));
+    assert!(!stdout.contains("problem(s)"));
+    assert!(!stdout.contains("http"));
+}

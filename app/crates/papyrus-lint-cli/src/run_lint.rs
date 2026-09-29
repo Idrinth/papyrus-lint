@@ -47,7 +47,7 @@ pub(crate) struct LintContext<'a> {
 /// alongside whatever [`crate::run_fix::fix_file`] already contributed
 /// (its own diff text, and whether it changed the file).
 pub(crate) struct LintFileOutcome {
-    /// This file's diagnostic lines, empty in JSON/AI mode.
+    /// This file's diagnostic lines (plain or short), empty in JSON/AI mode.
     pub(crate) plain_text: Vec<u8>,
     pub(crate) json_file: Option<JsonFileReport>,
     pub(crate) ai_file: Option<AiFileReport>,
@@ -156,19 +156,22 @@ fn build_file_reports(
 ) -> (Vec<u8>, Option<JsonFileReport>, Option<AiFileReport>) {
     let mut plain_text: Vec<u8> = Vec::new();
     if !ctx.json {
+        let short = ctx.output_format == OutputFormat::Short;
         for error in &parser_errors {
-            let _ = writeln!(
-                plain_text,
-                "{}",
+            let line = if short {
+                format_short_parser_error_line(reported_path, error)
+            } else {
                 format_parser_error_line(reported_path, error, ctx.use_color)
-            );
+            };
+            let _ = writeln!(plain_text, "{line}");
         }
         for diagnostic in diagnostics {
-            let _ = writeln!(
-                plain_text,
-                "{}",
+            let line = if short {
+                format_short_diagnostic_line(reported_path, diagnostic)
+            } else {
                 format_diagnostic_line(reported_path, diagnostic, ctx.use_color)
-            );
+            };
+            let _ = writeln!(plain_text, "{line}");
         }
     }
 
