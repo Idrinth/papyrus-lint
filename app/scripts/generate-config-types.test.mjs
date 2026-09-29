@@ -2,9 +2,8 @@ import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { parse as parseYaml } from "yaml";
 import { describe, expect, it } from "vitest";
-import { assembleRules, configKeyFor, renderConfigTypes } from "./generate-config-types.mjs";
+import { assembleRules, configKeyFor, loadYamlFile, renderConfigTypes } from "./generate-config-types.mjs";
 
 const SAMPLE_SETTINGS = [
   {
@@ -221,8 +220,8 @@ describe("generate-config-types", () => {
 
   it("renders the repository lint settings against the default YAML and rules", () => {
     const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-    const settings = parseYaml(
-      readFileSync(path.join(repoRoot, "shared/configuration/lint-settings.yaml"), "utf8"),
+    const settings = loadYamlFile(
+      path.join(repoRoot, "shared/configuration/lint-settings.yaml"),
     ).settings;
     const rendered = renderConfigTypes(
       assembleRules(path.join(repoRoot, "shared/rules")),
