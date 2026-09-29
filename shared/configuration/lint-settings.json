@@ -94,6 +94,7 @@
     "unreachable_elseif",
     "division_by_zero",
     "empty_body",
+    "empty_event_handler",
     "duplicate_conditional_body",
     "unused_local_variable",
     "variable_used_before_assignment",

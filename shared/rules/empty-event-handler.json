@@ -1,0 +1,15 @@
+{
+  "id": "empty-event-handler",
+  "name": "Empty event handler",
+  "category": "Bugprone",
+  "visitor": "ast",
+  "tags": [
+    "correctness",
+    "maintainability"
+  ],
+  "severity": "info",
+  "importance": "low",
+  "fixable": false,
+  "description": "Flags a completely empty Event in the empty/default state. Empty handlers inside a named State are left alone, since those often intentionally mute an inherited or engine event.",
+  "definition": "Flags, as an `[info]`, a completely empty `Event … EndEvent` declared in the empty/default state (directly on the script, not inside a named `State`). An empty top-level handler is often a forgotten stub. Empty handlers inside a named `State` are never flagged: overriding an inherited or engine event with an empty body is the usual way to mute it for that state. The first mention of an event in an inheritance hierarchy (a definition rather than an override) is also left alone: scripts that declare any `Native` member, scripts marked `Native` themselves, remote event handlers (`Event OtherScript.OnFoo(...)`), and events that are known not to exist on any ancestor are skipped. `empty-body` covers empty `While`/`If`/`Else` bodies only; `unnecessary-function` never flags `Event`s. Intentional empty top-level stubs can be silenced with `; @disable empty-event-handler`."
+}

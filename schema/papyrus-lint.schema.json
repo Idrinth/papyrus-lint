@@ -318,6 +318,11 @@
           "type": "boolean",
           "default": true
         },
+        "empty_event_handler": {
+          "description": "Flags a completely empty Event in the empty/default state. Empty handlers inside a named State are left alone, since those often intentionally mute an inherited or engine event.",
+          "type": "boolean",
+          "default": true
+        },
         "duplicate_conditional_body": {
           "description": "Flags consecutive If/ElseIf/Else branches whose bodies are the same, since that usually means a branch was copied and left unchanged.",
           "type": "boolean",
