@@ -110,8 +110,8 @@ impl EncodingEnforced {
             EncodingEnforced::Utf8 => "utf8",
             EncodingEnforced::Windows1252 => "windows-1252",
             EncodingEnforced::Iso88591 => "iso-8859-1",
-      }
-  }
+        }
+    }
 }
 
 /// Line terminator required by the "Line endings" lint.
