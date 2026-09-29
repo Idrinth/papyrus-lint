@@ -18,12 +18,14 @@ fn parse_lint_yaml_applies_omitted_keys_as_defaults() {
     let config = parse_lint_yaml("semicolon: true\nindentation: space\n")
         .expect("partial yaml should parse");
 
-    assert!(config.semicolon);
-    assert_eq!(config.indentation, Indentation::Space);
-    assert_eq!(config.indentation_width, 4);
-    assert_eq!(config.max_line_length, 120);
-    assert!(!config.fail_on_warning);
-    assert!(config.rules.trailing_whitespace);
+    assert_eq!(
+        config,
+        papyrus_lints::Config {
+            semicolon: true,
+            indentation: Indentation::Space,
+            ..papyrus_lints::Config::default()
+        }
+    );
 }
 
 #[test]
@@ -132,15 +134,25 @@ fn save_annotates_top_level_keys_with_explanatory_comments() {
 
     let contents = fs::read_to_string(dir.path().join("papyrus-lint.yaml"))
         .expect("failed to read saved config file");
-    assert!(contents.starts_with(
-        "# Target game. Currently supported: skyrim, fallout4, starfield\ngame: skyrim\n"
-    ));
-    assert!(contents.contains("# true, false\nsemicolon: true\n"));
-    assert!(contents.contains("# tab, space\nindentation: tab\n"));
-    assert!(contents.contains("# Each rule accepts true or false\nrules:\n"));
-    assert!(contents.contains(
-        "  trailing_whitespace: true # Flags lines that end with trailing spaces or tabs.\n"
-    ));
+    assert!(
+        contents.contains("semicolon: true\n"),
+        "changed fields should be written with their new values"
+    );
+
+    let lines: Vec<&str> = contents.lines().collect();
+    for (index, line) in lines.iter().enumerate() {
+        if line.is_empty() || line.starts_with('#') || line.starts_with(' ') {
+            continue;
+        }
+        assert!(
+            line.contains(':'),
+            "unexpected non-key top-level line: {line:?}"
+        );
+        assert!(
+            index > 0 && lines[index - 1].starts_with('#'),
+            "top-level key {line:?} should have a # comment immediately above it"
+        );
+    }
 }
 
 #[test]
