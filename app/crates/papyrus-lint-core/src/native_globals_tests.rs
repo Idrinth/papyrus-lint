@@ -3,13 +3,14 @@ use super::*;
 #[test]
 fn bundled_games_expose_native_globals() {
     assert!(!globals_for(Game::Skyrim).is_empty());
+    assert!(!globals_for(Game::Legacy).is_empty());
     assert!(!globals_for(Game::Fallout4).is_empty());
     assert!(!globals_for(Game::Starfield).is_empty());
 }
 
 #[test]
 fn recognizes_generated_entries_for_each_supported_game() {
-    for game in [Game::Skyrim, Game::Fallout4, Game::Starfield] {
+    for game in Game::ALL {
         let first = globals_for(game)
             .first()
             .expect("supported games should contain native globals");

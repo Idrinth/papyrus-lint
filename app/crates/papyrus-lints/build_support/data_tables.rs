@@ -24,6 +24,10 @@ struct GameTableSpec<'a> {
     const_name: &'a str,
     selector: &'a str,
     skyrim_rows: &'a [String],
+    /// When `None`, [`Game::Legacy`] reuses the Skyrim static so curated
+    /// rule YAML is not copied. Catalog tables extracted from LE archives
+    /// pass `Some`.
+    legacy_rows: Option<&'a [String]>,
     fallout4_rows: &'a [String],
     starfield_rows: &'a [String],
 }
@@ -36,6 +40,7 @@ fn emit_game_tables(context: &BuildContext, spec: GameTableSpec<'_>) {
         const_name,
         selector,
         skyrim_rows,
+        legacy_rows,
         fallout4_rows,
         starfield_rows,
     } = spec;
@@ -60,6 +65,15 @@ fn emit_game_tables(context: &BuildContext, spec: GameTableSpec<'_>) {
         skyrim_rows,
     );
     out.blank();
+    if let Some(legacy_rows) = legacy_rows {
+        emit_static(
+            &mut out,
+            &format!("LEGACY_{const_name}"),
+            static_item_ty,
+            legacy_rows,
+        );
+        out.blank();
+    }
     emit_static(
         &mut out,
         &format!("FALLOUT4_{const_name}"),
@@ -80,9 +94,15 @@ fn emit_game_tables(context: &BuildContext, spec: GameTableSpec<'_>) {
         ),
         |out| {
             out.block("match game", |out| {
+                let legacy_arm = if legacy_rows.is_some() {
+                    format!("papyrus_lint_globals::Game::Legacy => LEGACY_{const_name},")
+                } else {
+                    format!("papyrus_lint_globals::Game::Legacy => SKYRIM_{const_name},")
+                };
                 out.line(format!(
                     "papyrus_lint_globals::Game::Skyrim => SKYRIM_{const_name},"
                 ));
+                out.line(legacy_arm);
                 out.line(format!(
                     "papyrus_lint_globals::Game::Fallout4 => FALLOUT4_{const_name},"
                 ));
@@ -118,6 +138,7 @@ fn deprecated_functions(context: &BuildContext) {
             item_ty: "DeprecatedFunctionRule",
             const_name: "DEPRECATED_FUNCTIONS",
             selector: "deprecated_functions_for",
+            legacy_rows: None,
             skyrim_rows: &policy::deprecated_functions(context, Game::Skyrim)
                 .iter()
                 .map(row)
@@ -155,6 +176,7 @@ fn forbidden_functions(context: &BuildContext) {
             item_ty: "ForbiddenFunctionRule",
             const_name: "FORBIDDEN_FUNCTIONS",
             selector: "forbidden_functions_for",
+            legacy_rows: None,
             skyrim_rows: &policy::forbidden_functions(context, Game::Skyrim)
                 .iter()
                 .map(row)
@@ -186,6 +208,7 @@ fn slow_functions(context: &BuildContext) {
             item_ty: "SlowFunctionRule",
             const_name: "SLOW_FUNCTIONS",
             selector: "slow_functions_for",
+            legacy_rows: None,
             skyrim_rows: &policy::slow_functions(context, Game::Skyrim)
                 .iter()
                 .map(row)
@@ -210,6 +233,22 @@ fn native_methods(context: &BuildContext) {
             rule.object, rule.function
         )
     };
+    let skyrim_rows = script_catalog::native_methods(&scripts_dir, Game::Skyrim)
+        .iter()
+        .map(row)
+        .collect::<Vec<_>>();
+    let legacy_rows = script_catalog::native_methods(&scripts_dir, Game::Legacy)
+        .iter()
+        .map(row)
+        .collect::<Vec<_>>();
+    let fallout4_rows = script_catalog::native_methods(&scripts_dir, Game::Fallout4)
+        .iter()
+        .map(row)
+        .collect::<Vec<_>>();
+    let starfield_rows = script_catalog::native_methods(&scripts_dir, Game::Starfield)
+        .iter()
+        .map(row)
+        .collect::<Vec<_>>();
     emit_game_tables(
         context,
         GameTableSpec {
@@ -218,18 +257,10 @@ fn native_methods(context: &BuildContext) {
             item_ty: "NativeMethodRule",
             const_name: "NATIVE_METHODS",
             selector: "native_methods_for",
-            skyrim_rows: &script_catalog::native_methods(&scripts_dir, Game::Skyrim)
-                .iter()
-                .map(row)
-                .collect::<Vec<_>>(),
-            fallout4_rows: &script_catalog::native_methods(&scripts_dir, Game::Fallout4)
-                .iter()
-                .map(row)
-                .collect::<Vec<_>>(),
-            starfield_rows: &script_catalog::native_methods(&scripts_dir, Game::Starfield)
-                .iter()
-                .map(row)
-                .collect::<Vec<_>>(),
+            skyrim_rows: &skyrim_rows,
+            legacy_rows: Some(&legacy_rows),
+            fallout4_rows: &fallout4_rows,
+            starfield_rows: &starfield_rows,
         },
     );
 }
@@ -244,6 +275,7 @@ fn actor_values(context: &BuildContext) {
             item_ty: "&str",
             const_name: "ACTOR_VALUES",
             selector: "actor_values_for",
+            legacy_rows: None,
             skyrim_rows: &policy::actor_values(context, Game::Skyrim)
                 .iter()
                 .map(row)
@@ -275,6 +307,7 @@ fn update_event_pairs(context: &BuildContext) {
             item_ty: "UpdateEventPairRule",
             const_name: "UPDATE_EVENT_PAIRS",
             selector: "update_event_pairs_for",
+            legacy_rows: None,
             skyrim_rows: &policy::update_event_pairs(context, Game::Skyrim)
                 .iter()
                 .map(row)
@@ -309,6 +342,22 @@ fn known_events(context: &BuildContext) {
         )
     };
     let scripts_dir = context.input("shared/scripts");
+    let skyrim_rows = script_catalog::known_events(&scripts_dir, Game::Skyrim)
+        .iter()
+        .map(row)
+        .collect::<Vec<_>>();
+    let legacy_rows = script_catalog::known_events(&scripts_dir, Game::Legacy)
+        .iter()
+        .map(row)
+        .collect::<Vec<_>>();
+    let fallout4_rows = script_catalog::known_events(&scripts_dir, Game::Fallout4)
+        .iter()
+        .map(row)
+        .collect::<Vec<_>>();
+    let starfield_rows = script_catalog::known_events(&scripts_dir, Game::Starfield)
+        .iter()
+        .map(row)
+        .collect::<Vec<_>>();
     emit_game_tables(
         context,
         GameTableSpec {
@@ -317,18 +366,10 @@ fn known_events(context: &BuildContext) {
             item_ty: "KnownEventRule",
             const_name: "KNOWN_EVENTS",
             selector: "known_events_for",
-            skyrim_rows: &script_catalog::known_events(&scripts_dir, Game::Skyrim)
-                .iter()
-                .map(row)
-                .collect::<Vec<_>>(),
-            fallout4_rows: &script_catalog::known_events(&scripts_dir, Game::Fallout4)
-                .iter()
-                .map(row)
-                .collect::<Vec<_>>(),
-            starfield_rows: &script_catalog::known_events(&scripts_dir, Game::Starfield)
-                .iter()
-                .map(row)
-                .collect::<Vec<_>>(),
+            skyrim_rows: &skyrim_rows,
+            legacy_rows: Some(&legacy_rows),
+            fallout4_rows: &fallout4_rows,
+            starfield_rows: &starfield_rows,
         },
     );
 }

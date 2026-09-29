@@ -98,7 +98,7 @@ class DefaultConfigTests(unittest.TestCase):
             json.loads(path.read_text(encoding="utf-8")) for path in sorted((ROOT / "shared/rules").glob("*.json"))
         ]
         schema = render_schema(settings, rules)
-        self.assertEqual(schema["properties"]["game"]["enum"], ["skyrim", "fallout4", "starfield"])
+        self.assertEqual(schema["properties"]["game"]["enum"], ["skyrim", "legacy", "fallout4", "starfield"])
         self.assertIn("max_line_length", schema["properties"])
         self.assertEqual(len(schema["properties"]["rules"]["properties"]), len(rules))
         rule_keys = list(schema["properties"]["rules"]["properties"])

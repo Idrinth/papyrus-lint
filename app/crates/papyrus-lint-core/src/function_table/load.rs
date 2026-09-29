@@ -117,14 +117,7 @@ pub(super) fn parse_script_source(
     game: papyrus_lint_globals::Game,
     source: &str,
 ) -> Option<papyrus_parser::ast::Script> {
-    use papyrus_lint_globals::Game;
-    use papyrus_parser::parser::GameEdition;
-
-    match game {
-        Game::Skyrim => papyrus_parser::parse(source).ok(),
-        Game::Fallout4 => papyrus_parser::parse_with_mode(source, GameEdition::Fallout4).ok(),
-        Game::Starfield => papyrus_parser::parse_with_mode(source, GameEdition::Starfield).ok(),
-    }
+    papyrus_parser::parse_for_game(source, game).ok()
 }
 
 impl FunctionTable {
