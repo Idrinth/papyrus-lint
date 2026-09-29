@@ -34,6 +34,7 @@ Source/Scripts/AchievementsScript.psc:125:1:indentation
 Source/Scripts/AchievementsScript.psc:153:17:trailing-whitespace
 Source/Scripts/AchievementsScript.psc:164:25:trailing-whitespace
 Source/Scripts/AchievementsScript.psc:175:1:cyclomatic-complexity
+Source/Scripts/AchievementsScript.psc:175:1:nesting-depth
 Source/Scripts/AchievementsScript.psc:178:19:operator-spacing
 Source/Scripts/AchievementsScript.psc:178:19:operator-spacing
 Source/Scripts/AchievementsScript.psc:179:18:operator-spacing
@@ -721,6 +722,7 @@ Source/Scripts/BYOHDivertItemScript.psc:6:27:exclamation-spacing
 Source/Scripts/BYOHDivertItemScript.psc:6:33:forbidden-functions
 Source/Scripts/BYOHDivertItemScript.psc:7:28:forbidden-functions
 Source/Scripts/BYOHDivertPrefabsScript.psc:2:121:line-length
+Source/Scripts/BYOHDivertPrefabsScript.psc:6:1:nesting-depth
 Source/Scripts/BYOHDivertPrefabsScript.psc:7:31:forbidden-functions
 Source/Scripts/BYOHDivertPrefabsScript.psc:12:27:exclamation-spacing
 Source/Scripts/BYOHDivertPrefabsScript.psc:12:33:forbidden-functions
@@ -782,6 +784,7 @@ Source/Scripts/BYOHHouseBardScript.psc:1:45:trailing-whitespace
 Source/Scripts/BYOHHouseBardScript.psc:3:42:trailing-whitespace
 Source/Scripts/BYOHHouseBardScript.psc:9:1:indentation
 Source/Scripts/BYOHHouseBardScript.psc:20:41:trailing-whitespace
+Source/Scripts/BYOHHouseBardScript.psc:25:1:nesting-depth
 Source/Scripts/BYOHHouseBardScript.psc:26:1:none-form-usage
 Source/Scripts/BYOHHouseBardScript.psc:27:6:exclamation-spacing
 Source/Scripts/BYOHHouseBardScript.psc:34:1:none-form-usage
@@ -847,6 +850,7 @@ Source/Scripts/BYOHHouseBuildingScript.psc:148:121:line-length
 Source/Scripts/BYOHHouseBuildingScript.psc:151:2:empty-body
 Source/Scripts/BYOHHouseBuildingScript.psc:152:1:indentation
 Source/Scripts/BYOHHouseBuildingScript.psc:158:1:cyclomatic-complexity
+Source/Scripts/BYOHHouseBuildingScript.psc:158:1:nesting-depth
 Source/Scripts/BYOHHouseBuildingScript.psc:162:1:indentation
 Source/Scripts/BYOHHouseBuildingScript.psc:165:1:indentation
 Source/Scripts/BYOHHouseBuildingScript.psc:168:1:none-form-usage
@@ -878,6 +882,7 @@ Source/Scripts/BYOHHouseBuildingScript.psc:256:1:indentation
 Source/Scripts/BYOHHouseBuildingScript.psc:257:1:indentation
 Source/Scripts/BYOHHouseBuildingScript.psc:258:1:indentation
 Source/Scripts/BYOHHouseBuildingScript.psc:265:1:cyclomatic-complexity
+Source/Scripts/BYOHHouseBuildingScript.psc:265:1:nesting-depth
 Source/Scripts/BYOHHouseBuildingScript.psc:265:121:line-length
 Source/Scripts/BYOHHouseBuildingScript.psc:268:11:forbidden-functions
 Source/Scripts/BYOHHouseBuildingScript.psc:274:1:indentation
@@ -972,6 +977,7 @@ Source/Scripts/BYOHHouseBuildingScript.psc:504:1:indentation
 Source/Scripts/BYOHHouseBuildingScript.psc:505:1:none-form-usage
 Source/Scripts/BYOHHouseBuildingScript.psc:506:1:none-form-usage
 Source/Scripts/BYOHHouseBuildingScript.psc:507:1:trailing-whitespace
+Source/Scripts/BYOHHouseBuildingScript.psc:512:1:nesting-depth
 Source/Scripts/BYOHHouseBuildingScript.psc:513:1:indentation
 Source/Scripts/BYOHHouseBuildingScript.psc:514:22:forbidden-functions
 Source/Scripts/BYOHHouseBuildingScript.psc:515:1:none-form-usage
@@ -1041,6 +1047,7 @@ Source/Scripts/BYOHHouseBuildingScript.psc:686:97:slow-functions
 Source/Scripts/BYOHHouseBuildingScript.psc:688:1:unchecked-cast
 Source/Scripts/BYOHHouseBuildingScript.psc:693:1:cyclomatic-complexity
 Source/Scripts/BYOHHouseBuildingScript.psc:693:1:explicit-return
+Source/Scripts/BYOHHouseBuildingScript.psc:693:1:nesting-depth
 Source/Scripts/BYOHHouseBuildingScript.psc:694:1:indentation
 Source/Scripts/BYOHHouseBuildingScript.psc:697:1:unchecked-cast
 Source/Scripts/BYOHHouseBuildingScript.psc:699:39:trailing-whitespace
@@ -1071,6 +1078,7 @@ Source/Scripts/BYOHHouseBuildingScript.psc:762:1:setvalue-in-loop
 Source/Scripts/BYOHHouseBuildingScript.psc:762:1:unchecked-cast
 Source/Scripts/BYOHHouseBuildingScript.psc:768:1:trailing-whitespace
 Source/Scripts/BYOHHouseBuildingScript.psc:772:1:explicit-return
+Source/Scripts/BYOHHouseBuildingScript.psc:772:1:nesting-depth
 Source/Scripts/BYOHHouseBuildingScript.psc:773:1:indentation
 Source/Scripts/BYOHHouseBuildingScript.psc:776:1:unchecked-cast
 Source/Scripts/BYOHHouseBuildingScript.psc:780:1:unchecked-cast
@@ -1270,6 +1278,7 @@ Source/Scripts/BYOHHouseChickenScript.psc:4:46:trailing-whitespace
 Source/Scripts/BYOHHouseChickenScript.psc:11:1:none-form-usage
 Source/Scripts/BYOHHouseCowScript.psc:1:54:trailing-whitespace
 Source/Scripts/BYOHHouseCowScript.psc:4:46:trailing-whitespace
+Source/Scripts/BYOHHouseCowScript.psc:19:1:nesting-depth
 Source/Scripts/BYOHHouseCowScript.psc:20:1:none-form-usage
 Source/Scripts/BYOHHouseCowScript.psc:23:1:unchecked-cast
 Source/Scripts/BYOHHouseCowScript.psc:23:20:exclamation-spacing
@@ -1638,6 +1647,7 @@ Source/Scripts/BYOHHouseWEScript.psc:4:57:trailing-whitespace
 Source/Scripts/BYOHHouseWEScript.psc:6:1:indentation
 Source/Scripts/BYOHKidsAttendWeddingMarker.psc:2:121:line-length
 Source/Scripts/BYOHKidsAttendWeddingMarker.psc:14:1:cyclomatic-complexity
+Source/Scripts/BYOHKidsAttendWeddingMarker.psc:14:1:nesting-depth
 Source/Scripts/BYOHKidsAttendWeddingMarker.psc:16:1:none-form-usage
 Source/Scripts/BYOHKidsAttendWeddingMarker.psc:16:1:none-form-usage
 Source/Scripts/BYOHKidsAttendWeddingMarker.psc:17:1:indentation
@@ -2174,6 +2184,7 @@ Source/Scripts/BYOHRelationshipAdoptableScript.psc:408:1:trailing-whitespace
 Source/Scripts/BYOHRelationshipAdoptableScript.psc:411:1:trailing-whitespace
 Source/Scripts/BYOHRelationshipAdoptableScript.psc:413:1:indentation
 Source/Scripts/BYOHRelationshipAdoptableScript.psc:419:1:cyclomatic-complexity
+Source/Scripts/BYOHRelationshipAdoptableScript.psc:419:1:nesting-depth
 Source/Scripts/BYOHRelationshipAdoptableScript.psc:420:121:line-length
 Source/Scripts/BYOHRelationshipAdoptableScript.psc:428:1:indentation
 Source/Scripts/BYOHRelationshipAdoptableScript.psc:429:1:unchecked-cast
@@ -2297,6 +2308,7 @@ Source/Scripts/BYOHRelationshipAdoptionChildScript.psc:141:1:argument-naming
 Source/Scripts/BYOHRelationshipAdoptionChildScript.psc:141:1:argument-naming
 Source/Scripts/BYOHRelationshipAdoptionChildScript.psc:141:1:argument-naming
 Source/Scripts/BYOHRelationshipAdoptionChildScript.psc:141:1:cyclomatic-complexity
+Source/Scripts/BYOHRelationshipAdoptionChildScript.psc:141:1:nesting-depth
 Source/Scripts/BYOHRelationshipAdoptionChildScript.psc:145:1:trailing-whitespace
 Source/Scripts/BYOHRelationshipAdoptionChildScript.psc:146:1:indentation
 Source/Scripts/BYOHRelationshipAdoptionChildScript.psc:147:1:trailing-whitespace
@@ -3048,6 +3060,7 @@ Source/Scripts/BYOHRelationshipAdoptionScript.psc:1317:1:indentation
 Source/Scripts/BYOHRelationshipAdoptionScript.psc:1320:1:indentation
 Source/Scripts/BYOHRelationshipAdoptionScript.psc:1324:1:indentation
 Source/Scripts/BYOHRelationshipAdoptionScript.psc:1356:1:cyclomatic-complexity
+Source/Scripts/BYOHRelationshipAdoptionScript.psc:1356:1:nesting-depth
 Source/Scripts/BYOHRelationshipAdoptionScript.psc:1357:1:indentation
 Source/Scripts/BYOHRelationshipAdoptionScript.psc:1358:1:indentation
 Source/Scripts/BYOHRelationshipAdoptionScript.psc:1359:1:trailing-whitespace
@@ -5651,6 +5664,7 @@ Source/Scripts/CCHorseArmorChangeScript.psc:22:121:line-length
 Source/Scripts/CCHorseArmorChangeScript.psc:26:121:line-length
 Source/Scripts/CCHorseArmorChangeScript.psc:37:121:line-length
 Source/Scripts/CCHorseArmorChangeScript.psc:48:1:cyclomatic-complexity
+Source/Scripts/CCHorseArmorChangeScript.psc:48:1:nesting-depth
 Source/Scripts/CCHorseArmorChangeScript.psc:49:1:indentation
 Source/Scripts/CCHorseArmorChangeScript.psc:49:121:line-length
 Source/Scripts/CCHorseArmorChangeScript.psc:53:23:exclamation-spacing
@@ -6081,6 +6095,7 @@ Source/Scripts/CR13QuestScript.psc:39:1:none-form-usage
 Source/Scripts/CR13QuestScript.psc:39:33:unresolved-script
 Source/Scripts/CR13QuestScript.psc:40:1:unchecked-cast
 Source/Scripts/CR13SconceScript.psc:1:51:trailing-whitespace
+Source/Scripts/CR13SconceScript.psc:15:1:nesting-depth
 Source/Scripts/CR13SconceScript.psc:16:27:forbidden-functions
 Source/Scripts/CR13SconceScript.psc:18:14:forbidden-functions
 Source/Scripts/CR13SconceScript.psc:20:1:none-form-usage
@@ -6629,6 +6644,7 @@ Source/Scripts/CWArrowVolleyParentScript.psc:73:1:trailing-whitespace
 Source/Scripts/CWArrowVolleyParentScript.psc:75:1:none-form-usage
 Source/Scripts/CWArrowVolleyParentScript.psc:76:1:trailing-whitespace
 Source/Scripts/CWArrowVolleyParentScript.psc:91:1:cyclomatic-complexity
+Source/Scripts/CWArrowVolleyParentScript.psc:91:1:nesting-depth
 Source/Scripts/CWArrowVolleyParentScript.psc:92:1:indentation
 Source/Scripts/CWArrowVolleyParentScript.psc:93:1:trailing-whitespace
 Source/Scripts/CWArrowVolleyParentScript.psc:95:1:trailing-whitespace
@@ -10390,6 +10406,7 @@ Source/Scripts/CWReinforcementControllerScript.psc:209:1:trailing-whitespace
 Source/Scripts/CWReinforcementControllerScript.psc:237:1:trailing-whitespace
 Source/Scripts/CWReinforcementControllerScript.psc:258:1:trailing-whitespace
 Source/Scripts/CWReinforcementControllerScript.psc:263:1:cyclomatic-complexity
+Source/Scripts/CWReinforcementControllerScript.psc:263:1:nesting-depth
 Source/Scripts/CWReinforcementControllerScript.psc:267:1:trailing-whitespace
 Source/Scripts/CWReinforcementControllerScript.psc:268:5:exclamation-spacing
 Source/Scripts/CWReinforcementControllerScript.psc:269:1:indentation
@@ -11052,6 +11069,7 @@ Source/Scripts/CWReinforcementControllerScript.psc:1162:2:empty-body
 Source/Scripts/CWReinforcementControllerScript.psc:1163:1:indentation
 Source/Scripts/CWReinforcementControllerScript.psc:1163:121:line-length
 Source/Scripts/CWReinforcementControllerScript.psc:1163:149:trailing-whitespace
+Source/Scripts/CWReinforcementControllerScript.psc:1168:1:nesting-depth
 Source/Scripts/CWReinforcementControllerScript.psc:1171:2:strict-boolean
 Source/Scripts/CWReinforcementControllerScript.psc:1173:12:forbidden-functions
 Source/Scripts/CWReinforcementControllerScript.psc:1174:43:forbidden-functions
@@ -12019,6 +12037,7 @@ Source/Scripts/CWScript.psc:1605:121:line-length
 Source/Scripts/CWScript.psc:1607:1:trailing-whitespace
 Source/Scripts/CWScript.psc:1611:1:trailing-whitespace
 Source/Scripts/CWScript.psc:1614:1:cyclomatic-complexity
+Source/Scripts/CWScript.psc:1614:1:nesting-depth
 Source/Scripts/CWScript.psc:1615:1:indentation
 Source/Scripts/CWScript.psc:1616:1:indentation
 Source/Scripts/CWScript.psc:1616:121:line-length
@@ -13035,6 +13054,7 @@ Source/Scripts/CWScript.psc:3988:121:line-length
 Source/Scripts/CWScript.psc:3989:1:trailing-whitespace
 Source/Scripts/CWScript.psc:3991:1:trailing-whitespace
 Source/Scripts/CWScript.psc:3995:1:cyclomatic-complexity
+Source/Scripts/CWScript.psc:3995:1:nesting-depth
 Source/Scripts/CWScript.psc:3995:121:line-length
 Source/Scripts/CWScript.psc:3996:1:trailing-whitespace
 Source/Scripts/CWScript.psc:3998:121:line-length
@@ -13620,6 +13640,7 @@ Source/Scripts/CWSiegeCityDoorScript.psc:13:47:trailing-whitespace
 Source/Scripts/CWSiegeCityDoorScript.psc:16:47:trailing-whitespace
 Source/Scripts/CWSiegeCityDoorScript.psc:33:1:argument-naming
 Source/Scripts/CWSiegeCityDoorScript.psc:33:1:cyclomatic-complexity
+Source/Scripts/CWSiegeCityDoorScript.psc:33:1:nesting-depth
 Source/Scripts/CWSiegeCityDoorScript.psc:34:1:trailing-whitespace
 Source/Scripts/CWSiegeCityDoorScript.psc:36:1:trailing-whitespace
 Source/Scripts/CWSiegeCityDoorScript.psc:37:1:indentation
@@ -13720,6 +13741,7 @@ Source/Scripts/CWSiegePollPlayerLocation.psc:73:121:line-length
 Source/Scripts/CWSiegePollPlayerLocation.psc:74:1:trailing-whitespace
 Source/Scripts/CWSiegePollPlayerLocation.psc:76:1:trailing-whitespace
 Source/Scripts/CWSiegePollPlayerLocation.psc:80:1:cyclomatic-complexity
+Source/Scripts/CWSiegePollPlayerLocation.psc:80:1:nesting-depth
 Source/Scripts/CWSiegePollPlayerLocation.psc:83:1:indentation
 Source/Scripts/CWSiegePollPlayerLocation.psc:86:2:empty-body
 Source/Scripts/CWSiegePollPlayerLocation.psc:87:1:indentation
@@ -15784,6 +15806,7 @@ Source/Scripts/CraftingActivateLinker.psc:7:38:trailing-whitespace
 Source/Scripts/CraftingActivateLinker.psc:10:37:trailing-whitespace
 Source/Scripts/CraftingActivateLinker.psc:15:1:indentation
 Source/Scripts/CraftingActivateLinker.psc:32:1:argument-naming
+Source/Scripts/CraftingActivateLinker.psc:32:1:nesting-depth
 Source/Scripts/CraftingActivateLinker.psc:33:1:indentation
 Source/Scripts/CraftingActivateLinker.psc:34:1:trailing-whitespace
 Source/Scripts/CraftingActivateLinker.psc:36:2:strict-boolean
@@ -15858,6 +15881,7 @@ Source/Scripts/CrimeGuardsScript.psc:111:7:forbidden-functions
 Source/Scripts/CrimeGuardsScript.psc:116:1:none-form-usage
 Source/Scripts/CrimeGuardsScript.psc:118:7:forbidden-functions
 Source/Scripts/Critter.psc:33:121:line-length
+Source/Scripts/Critter.psc:104:1:nesting-depth
 Source/Scripts/Critter.psc:112:4:strict-boolean
 Source/Scripts/Critter.psc:112:65:trailing-whitespace
 Source/Scripts/Critter.psc:123:1:none-form-usage
@@ -16496,6 +16520,7 @@ Source/Scripts/DA02Script.psc:366:1:indentation
 Source/Scripts/DA02Script.psc:367:1:indentation
 Source/Scripts/DA02Script.psc:371:1:trailing-whitespace
 Source/Scripts/DA02Script.psc:374:1:cyclomatic-complexity
+Source/Scripts/DA02Script.psc:374:1:nesting-depth
 Source/Scripts/DA02Script.psc:376:1:indentation
 Source/Scripts/DA02Script.psc:376:121:line-length
 Source/Scripts/DA02Script.psc:377:9:trailing-whitespace
@@ -16849,6 +16874,7 @@ Source/Scripts/DA05QuestScript.psc:88:1:none-form-usage
 Source/Scripts/DA05QuestScript.psc:89:1:none-form-usage
 Source/Scripts/DA05QuestScript.psc:90:1:none-form-usage
 Source/Scripts/DA05QuestScript.psc:91:1:none-form-usage
+Source/Scripts/DA05QuestScript.psc:95:1:nesting-depth
 Source/Scripts/DA05QuestScript.psc:96:1:unchecked-cast
 Source/Scripts/DA05QuestScript.psc:96:6:exclamation-spacing
 Source/Scripts/DA05QuestScript.psc:97:1:indentation
@@ -16908,6 +16934,7 @@ Source/Scripts/DA06CaveTrigger.psc:1:51:trailing-whitespace
 Source/Scripts/DA06CaveTrigger.psc:3:26:trailing-whitespace
 Source/Scripts/DA06CaveTrigger.psc:5:41:trailing-whitespace
 Source/Scripts/DA06CaveTrigger.psc:11:1:argument-naming
+Source/Scripts/DA06CaveTrigger.psc:11:1:nesting-depth
 Source/Scripts/DA06CaveTrigger.psc:13:1:none-form-usage
 Source/Scripts/DA06CaveTrigger.psc:14:17:trailing-whitespace
 Source/Scripts/DA06CaveTrigger.psc:15:1:none-form-usage
@@ -16995,6 +17022,7 @@ Source/Scripts/DA06PreRitualSceneTriggerScript.psc:5:35:trailing-whitespace
 Source/Scripts/DA06PreRitualSceneTriggerScript.psc:7:40:trailing-whitespace
 Source/Scripts/DA06PreRitualSceneTriggerScript.psc:9:31:trailing-whitespace
 Source/Scripts/DA06PreRitualSceneTriggerScript.psc:15:1:argument-naming
+Source/Scripts/DA06PreRitualSceneTriggerScript.psc:15:1:nesting-depth
 Source/Scripts/DA06PreRitualSceneTriggerScript.psc:18:1:none-form-usage
 Source/Scripts/DA06PreRitualSceneTriggerScript.psc:19:25:forbidden-functions
 Source/Scripts/DA06PreRitualSceneTriggerScript.psc:20:1:none-form-usage
@@ -17034,6 +17062,7 @@ Source/Scripts/DA06StartSceneTriggerScript.psc:10:1:argument-naming
 Source/Scripts/DA06UgorScript.psc:1:49:trailing-whitespace
 Source/Scripts/DA06UgorScript.psc:3:26:trailing-whitespace
 Source/Scripts/DA06UgorScript.psc:5:51:trailing-whitespace
+Source/Scripts/DA06UgorScript.psc:9:1:nesting-depth
 Source/Scripts/DA06UgorScript.psc:11:1:indentation
 Source/Scripts/DA06UgorScript.psc:14:1:unchecked-cast
 Source/Scripts/DA06UgorScript.psc:15:1:none-form-usage
@@ -17461,6 +17490,7 @@ Source/Scripts/DA10HauntingControllerScript.psc:82:53:trailing-whitespace
 Source/Scripts/DA10HauntingControllerScript.psc:83:55:trailing-whitespace
 Source/Scripts/DA10HauntingControllerScript.psc:84:54:trailing-whitespace
 Source/Scripts/DA10HauntingControllerScript.psc:114:1:cyclomatic-complexity
+Source/Scripts/DA10HauntingControllerScript.psc:114:1:nesting-depth
 Source/Scripts/DA10HauntingControllerScript.psc:114:1:undefined-event
 Source/Scripts/DA10HauntingControllerScript.psc:118:1:indentation
 Source/Scripts/DA10HauntingControllerScript.psc:119:4:empty-body
@@ -19408,6 +19438,7 @@ Source/Scripts/DBCiceroArriveTrigScript.psc:8:1:trailing-whitespace
 Source/Scripts/DBCiceroArriveTrigScript.psc:9:1:trailing-whitespace
 Source/Scripts/DBCiceroArriveTrigScript.psc:11:1:argument-naming
 Source/Scripts/DBCiceroArriveTrigScript.psc:11:1:cyclomatic-complexity
+Source/Scripts/DBCiceroArriveTrigScript.psc:11:1:nesting-depth
 Source/Scripts/DBCiceroArriveTrigScript.psc:13:1:indentation
 Source/Scripts/DBCiceroArriveTrigScript.psc:14:1:indentation
 Source/Scripts/DBCiceroArriveTrigScript.psc:16:1:indentation
@@ -19771,6 +19802,7 @@ Source/Scripts/DBSanctuaryWordWallTriggerScript.psc:53:15:forbidden-functions
 Source/Scripts/DBSanctuaryWordWallTriggerScript.psc:53:49:exclamation-spacing
 Source/Scripts/DBSanctuaryWordWallTriggerScript.psc:53:97:trailing-whitespace
 Source/Scripts/DBSanctuaryWordWallTriggerScript.psc:58:1:cyclomatic-complexity
+Source/Scripts/DBSanctuaryWordWallTriggerScript.psc:58:1:nesting-depth
 Source/Scripts/DBSanctuaryWordWallTriggerScript.psc:60:10:forbidden-functions
 Source/Scripts/DBSanctuaryWordWallTriggerScript.psc:61:1:indentation
 Source/Scripts/DBSanctuaryWordWallTriggerScript.psc:64:28:unresolved-script
@@ -19849,6 +19881,7 @@ Source/Scripts/DBSanctuaryWordWallTriggerScript.psc:203:24:unresolved-script
 Source/Scripts/DBSanctuaryWordWallTriggerScript.psc:212:25:unresolved-script
 Source/Scripts/DBSanctuaryWordWallTriggerScript.psc:213:32:unresolved-script
 Source/Scripts/DBSanctuaryWordWallTriggerScript.psc:213:34:trailing-whitespace
+Source/Scripts/DBSanctuaryWordWallTriggerScript.psc:227:1:nesting-depth
 Source/Scripts/DBSanctuaryWordWallTriggerScript.psc:231:28:exclamation-spacing
 Source/Scripts/DBSanctuaryWordWallTriggerScript.psc:237:7:exclamation-spacing
 Source/Scripts/DBSanctuaryWordWallTriggerScript.psc:241:9:exclamation-spacing
@@ -20161,6 +20194,7 @@ Source/Scripts/DLC01SoulCairnFissureScript.psc:36:1:none-form-usage
 Source/Scripts/DLC01SoulCairnLightningRodScript.psc:1:68:trailing-whitespace
 Source/Scripts/DLC01SoulCairnLightningRodScript.psc:6:36:trailing-whitespace
 Source/Scripts/DLC01SoulCairnLightningRodScript.psc:20:1:indentation
+Source/Scripts/DLC01SoulCairnLightningRodScript.psc:20:1:nesting-depth
 Source/Scripts/DLC01SoulCairnLightningRodScript.psc:22:1:indentation
 Source/Scripts/DLC01SoulCairnLightningRodScript.psc:24:1:indentation
 Source/Scripts/DLC01SoulCairnLightningRodScript.psc:24:1:none-form-usage
@@ -20540,6 +20574,7 @@ Source/Scripts/DLC1ArkngthamzBallista.psc:8:13:trailing-whitespace
 Source/Scripts/DLC1ArkngthamzBallista.psc:29:1:trailing-whitespace
 Source/Scripts/DLC1ArkngthamzBallista.psc:34:121:line-length
 Source/Scripts/DLC1ArkngthamzBallista.psc:38:1:cyclomatic-complexity
+Source/Scripts/DLC1ArkngthamzBallista.psc:38:1:nesting-depth
 Source/Scripts/DLC1ArkngthamzBallista.psc:39:5:exclamation-spacing
 Source/Scripts/DLC1ArkngthamzBallista.psc:42:6:exclamation-spacing
 Source/Scripts/DLC1ArkngthamzBallista.psc:45:3:empty-body
@@ -20636,6 +20671,7 @@ Source/Scripts/DLC1AurielsBowPlayerScript.psc:29:1:indentation
 Source/Scripts/DLC1AurielsBowPlayerScript.psc:30:1:indentation
 Source/Scripts/DLC1AurielsBowPlayerScript.psc:30:121:line-length
 Source/Scripts/DLC1AurielsBowPlayerScript.psc:33:1:argument-naming
+Source/Scripts/DLC1AurielsBowPlayerScript.psc:33:1:nesting-depth
 Source/Scripts/DLC1AurielsBowPlayerScript.psc:34:1:indentation
 Source/Scripts/DLC1AurielsBowPlayerScript.psc:35:1:none-form-usage
 Source/Scripts/DLC1AurielsBowPlayerScript.psc:37:1:indentation
@@ -20819,6 +20855,7 @@ Source/Scripts/DLC1CritterFollowSCRIPT.psc:83:5:assignment-operator-spacing
 Source/Scripts/DLC1CritterFollowSCRIPT.psc:83:5:assignment-operator-spacing
 Source/Scripts/DLC1CritterFollowSCRIPT.psc:91:1:short-wait-interval
 Source/Scripts/DLC1CritterFollowSCRIPT.psc:96:1:trailing-whitespace
+Source/Scripts/DLC1CritterFollowSCRIPT.psc:105:1:nesting-depth
 Source/Scripts/DLC1CritterFollowSCRIPT.psc:106:1:trailing-whitespace
 Source/Scripts/DLC1CritterFollowSCRIPT.psc:108:6:exclamation-spacing
 Source/Scripts/DLC1CritterFollowSCRIPT.psc:108:13:forbidden-functions
@@ -21024,6 +21061,7 @@ Source/Scripts/DLC1DragonSummonScript.psc:41:1:none-form-usage
 Source/Scripts/DLC1DragonSummonScript.psc:44:47:trailing-whitespace
 Source/Scripts/DLC1DrainBloodPointScript.psc:1:63:trailing-whitespace
 Source/Scripts/DLC1DrainBloodPointScript.psc:4:1:indentation
+Source/Scripts/DLC1DrainBloodPointScript.psc:9:1:nesting-depth
 Source/Scripts/DLC1DrainBloodPointScript.psc:10:1:indentation
 Source/Scripts/DLC1DrainBloodPointScript.psc:11:22:forbidden-functions
 Source/Scripts/DLC1DrainBloodPointScript.psc:13:1:indentation
@@ -22078,6 +22116,7 @@ Source/Scripts/DLC1LD_ForgeSteamValveScript.psc:21:35:comma-spacing
 Source/Scripts/DLC1LD_ForgeSteamValveScript.psc:24:1:none-form-usage
 Source/Scripts/DLC1LD_ForgeSteamValveScript.psc:25:35:comma-spacing
 Source/Scripts/DLC1LD_ForgeSteamValveScript.psc:32:1:cyclomatic-complexity
+Source/Scripts/DLC1LD_ForgeSteamValveScript.psc:32:1:nesting-depth
 Source/Scripts/DLC1LD_ForgeSteamValveScript.psc:36:1:unchecked-cast
 Source/Scripts/DLC1LD_ForgeSteamValveScript.psc:37:1:unchecked-cast
 Source/Scripts/DLC1LD_ForgeSteamValveScript.psc:38:1:unchecked-cast
@@ -22354,6 +22393,7 @@ Source/Scripts/DLC1MagicCastFromSunScript.psc:43:1:indentation
 Source/Scripts/DLC1MagicCastFromSunScript.psc:59:1:undefined-event
 Source/Scripts/DLC1MagicCastFromSunScript.psc:65:1:argument-naming
 Source/Scripts/DLC1MagicCastFromSunScript.psc:65:1:argument-naming
+Source/Scripts/DLC1MagicCastFromSunScript.psc:65:1:nesting-depth
 Source/Scripts/DLC1MagicCastFromSunScript.psc:66:1:trailing-whitespace
 Source/Scripts/DLC1MagicCastFromSunScript.psc:69:1:trailing-whitespace
 Source/Scripts/DLC1MagicCastFromSunScript.psc:72:1:trailing-whitespace
@@ -22872,6 +22912,7 @@ Source/Scripts/DLC1PlayerVampireChangeScript.psc:385:1:indentation
 Source/Scripts/DLC1PlayerVampireChangeScript.psc:389:1:argument-naming
 Source/Scripts/DLC1PlayerVampireChangeScript.psc:389:1:argument-naming
 Source/Scripts/DLC1PlayerVampireChangeScript.psc:389:1:cyclomatic-complexity
+Source/Scripts/DLC1PlayerVampireChangeScript.psc:389:1:nesting-depth
 Source/Scripts/DLC1PlayerVampireChangeScript.psc:390:1:indentation
 Source/Scripts/DLC1PlayerVampireChangeScript.psc:390:30:forbidden-functions
 Source/Scripts/DLC1PlayerVampireChangeScript.psc:391:1:indentation
@@ -23790,6 +23831,7 @@ Source/Scripts/DLC1RandomLightningStrikeTrigSCRIPT.psc:68:121:line-length
 Source/Scripts/DLC1RandomLightningStrikeTrigSCRIPT.psc:73:1:indentation
 Source/Scripts/DLC1RandomLightningStrikeTrigSCRIPT.psc:81:1:indentation
 Source/Scripts/DLC1RandomLightningStrikeTrigSCRIPT.psc:81:121:line-length
+Source/Scripts/DLC1RandomLightningStrikeTrigSCRIPT.psc:82:1:nesting-depth
 Source/Scripts/DLC1RandomLightningStrikeTrigSCRIPT.psc:83:1:trailing-whitespace
 Source/Scripts/DLC1RandomLightningStrikeTrigSCRIPT.psc:84:1:indentation
 Source/Scripts/DLC1RandomLightningStrikeTrigSCRIPT.psc:84:121:line-length
@@ -23870,6 +23912,7 @@ Source/Scripts/DLC1RefAliasMoveTriggerScript.psc:23:1:unchecked-cast
 Source/Scripts/DLC1RefAliasMoveTriggerScript.psc:24:1:none-form-usage
 Source/Scripts/DLC1RefAliasMoveTriggerScript.psc:25:1:none-form-usage
 Source/Scripts/DLC1RefAliasMoveTriggerScript.psc:26:1:none-form-usage
+Source/Scripts/DLC1RefAliasMoveTriggerScript.psc:30:1:nesting-depth
 Source/Scripts/DLC1RefAliasMoveTriggerScript.psc:31:26:forbidden-functions
 Source/Scripts/DLC1RefAliasMoveTriggerScript.psc:32:29:forbidden-functions
 Source/Scripts/DLC1RefAliasMoveTriggerScript.psc:33:7:exclamation-spacing
@@ -24087,6 +24130,7 @@ Source/Scripts/DLC1SeranaLevelingScript.psc:1:50:trailing-whitespace
 Source/Scripts/DLC1SeranaLevelingScript.psc:5:1:undefined-event
 Source/Scripts/DLC1SeranaLevelingScript.psc:6:2:forbidden-functions
 Source/Scripts/DLC1SeranaLevelingScript.psc:9:1:cyclomatic-complexity
+Source/Scripts/DLC1SeranaLevelingScript.psc:9:1:nesting-depth
 Source/Scripts/DLC1SeranaLevelingScript.psc:71:1:undefined-event
 Source/Scripts/DLC1SeranaLevelingScript.psc:73:42:trailing-whitespace
 Source/Scripts/DLC1SeranaLevelingScript.psc:74:1:numeric-comparison
@@ -24405,6 +24449,7 @@ Source/Scripts/DLC1TrapInfectedBones.psc:117:1:trailing-whitespace
 Source/Scripts/DLC1TrapInfectedBones.psc:118:52:trailing-whitespace
 Source/Scripts/DLC1TrapInfectedBones.psc:120:1:trailing-whitespace
 Source/Scripts/DLC1TrapInfectedBones.psc:139:1:cyclomatic-complexity
+Source/Scripts/DLC1TrapInfectedBones.psc:139:1:nesting-depth
 Source/Scripts/DLC1TrapInfectedBones.psc:143:1:trailing-whitespace
 Source/Scripts/DLC1TrapInfectedBones.psc:145:30:comma-spacing
 Source/Scripts/DLC1TrapInfectedBones.psc:147:30:comma-spacing
@@ -24493,6 +24538,7 @@ Source/Scripts/DLC1TrapPoisonBloom.psc:234:1:trailing-whitespace
 Source/Scripts/DLC1TrapPoisonBloom.psc:238:64:semicolon
 Source/Scripts/DLC1TrapPoisonBloom.psc:239:121:line-length
 Source/Scripts/DLC1TrapPoisonBloom.psc:241:1:cyclomatic-complexity
+Source/Scripts/DLC1TrapPoisonBloom.psc:241:1:nesting-depth
 Source/Scripts/DLC1TrapPoisonBloom.psc:243:1:indentation
 Source/Scripts/DLC1TrapPoisonBloom.psc:245:25:forbidden-functions
 Source/Scripts/DLC1TrapPoisonBloom.psc:246:1:indentation
@@ -24942,6 +24988,7 @@ Source/Scripts/DLC1VQ03HunterNoteScript.psc:22:1:indentation
 Source/Scripts/DLC1VQ03HunterNoteScript.psc:29:9:trailing-whitespace
 Source/Scripts/DLC1VQ03HunterUpdateObjectiveScript.psc:1:71:trailing-whitespace
 Source/Scripts/DLC1VQ03HunterUpdateObjectiveScript.psc:7:28:trailing-whitespace
+Source/Scripts/DLC1VQ03HunterUpdateObjectiveScript.psc:23:1:nesting-depth
 Source/Scripts/DLC1VQ03HunterUpdateObjectiveScript.psc:26:1:none-form-usage
 Source/Scripts/DLC1VQ03HunterUpdateObjectiveScript.psc:28:1:none-form-usage
 Source/Scripts/DLC1VQ03HunterUpdateObjectiveScript.psc:29:1:none-form-usage
@@ -24988,6 +25035,7 @@ Source/Scripts/DLC1VQ03MothpriestFightScript.psc:87:12:forbidden-functions
 Source/Scripts/DLC1VQ03MothpriestFightScript.psc:90:1:none-form-usage
 Source/Scripts/DLC1VQ03MothpriestFightScript.psc:94:1:none-form-usage
 Source/Scripts/DLC1VQ03SetStageDoorTrigScript.psc:7:28:trailing-whitespace
+Source/Scripts/DLC1VQ03SetStageDoorTrigScript.psc:27:1:nesting-depth
 Source/Scripts/DLC1VQ03SetStageDoorTrigScript.psc:29:1:none-form-usage
 Source/Scripts/DLC1VQ03SetStageDoorTrigScript.psc:31:1:none-form-usage
 Source/Scripts/DLC1VQ03SetStageDoorTrigScript.psc:34:1:trailing-whitespace
@@ -24995,6 +25043,7 @@ Source/Scripts/DLC1VQ03SetStageDoorTrigScript.psc:35:4:strict-boolean
 Source/Scripts/DLC1VQ03SetStageDoorTrigScript.psc:38:1:trailing-whitespace
 Source/Scripts/DLC1VQ03VampireDisplayObjectiveScript.psc:1:73:trailing-whitespace
 Source/Scripts/DLC1VQ03VampireDisplayObjectiveScript.psc:7:28:trailing-whitespace
+Source/Scripts/DLC1VQ03VampireDisplayObjectiveScript.psc:24:1:nesting-depth
 Source/Scripts/DLC1VQ03VampireDisplayObjectiveScript.psc:27:1:none-form-usage
 Source/Scripts/DLC1VQ03VampireDisplayObjectiveScript.psc:29:1:none-form-usage
 Source/Scripts/DLC1VQ03VampireDisplayObjectiveScript.psc:30:1:none-form-usage
@@ -25277,6 +25326,7 @@ Source/Scripts/DLC1VQ05JumpPadTrigger.psc:7:25:forbidden-functions
 Source/Scripts/DLC1VQ05JumpPadTrigger.psc:8:1:none-form-usage
 Source/Scripts/DLC1VQ05JumpPadTrigger.psc:9:1:none-form-usage
 Source/Scripts/DLC1VQ05MeetSceneTriggerScript.psc:3:31:trailing-whitespace
+Source/Scripts/DLC1VQ05MeetSceneTriggerScript.psc:9:1:nesting-depth
 Source/Scripts/DLC1VQ05MeetSceneTriggerScript.psc:12:1:none-form-usage
 Source/Scripts/DLC1VQ05MeetSceneTriggerScript.psc:13:1:none-form-usage
 Source/Scripts/DLC1VQ05MeetSceneTriggerScript.psc:16:1:none-form-usage
@@ -25309,6 +25359,7 @@ Source/Scripts/DLC1VQ05QuestScript.psc:27:1:none-form-usage
 Source/Scripts/DLC1VQ05QuestScript.psc:28:1:none-form-usage
 Source/Scripts/DLC1VQ05QuestScript.psc:29:1:none-form-usage
 Source/Scripts/DLC1VQ05QuestScript.psc:34:1:trailing-whitespace
+Source/Scripts/DLC1VQ05ReturnHomeTriggerScript.psc:6:1:nesting-depth
 Source/Scripts/DLC1VQ05ReturnHomeTriggerScript.psc:9:26:forbidden-functions
 Source/Scripts/DLC1VQ05ReturnHomeTriggerScript.psc:10:1:none-form-usage
 Source/Scripts/DLC1VQ05ReturnHomeTriggerScript.psc:11:1:none-form-usage
@@ -25716,6 +25767,7 @@ Source/Scripts/DLC1VQ07FinalBossTriggerScript.psc:9:1:none-form-usage
 Source/Scripts/DLC1VQ07FinalBossTriggerScript.psc:10:27:forbidden-functions
 Source/Scripts/DLC1VQ07FinalBossTriggerScript.psc:11:1:none-form-usage
 Source/Scripts/DLC1VQ07GeleborHelloTriggerScript.psc:3:31:trailing-whitespace
+Source/Scripts/DLC1VQ07GeleborHelloTriggerScript.psc:7:1:nesting-depth
 Source/Scripts/DLC1VQ07GeleborHelloTriggerScript.psc:10:1:none-form-usage
 Source/Scripts/DLC1VQ07GeleborHelloTriggerScript.psc:11:27:forbidden-functions
 Source/Scripts/DLC1VQ07GeleborHelloTriggerScript.psc:12:1:none-form-usage
@@ -25723,6 +25775,7 @@ Source/Scripts/DLC1VQ07GeleborHelloTriggerScript.psc:13:1:none-form-usage
 Source/Scripts/DLC1VQ07GeleborHelloTriggerScript.psc:14:1:none-form-usage
 Source/Scripts/DLC1VQ07GeleborHelloTriggerScript02.psc:1:71:trailing-whitespace
 Source/Scripts/DLC1VQ07GeleborHelloTriggerScript02.psc:3:31:trailing-whitespace
+Source/Scripts/DLC1VQ07GeleborHelloTriggerScript02.psc:7:1:nesting-depth
 Source/Scripts/DLC1VQ07GeleborHelloTriggerScript02.psc:10:1:none-form-usage
 Source/Scripts/DLC1VQ07GeleborHelloTriggerScript02.psc:11:1:none-form-usage
 Source/Scripts/DLC1VQ07GeleborHelloTriggerScript02.psc:12:28:forbidden-functions
@@ -26628,6 +26681,7 @@ Source/Scripts/DLC1WispShieldScript.psc:64:1:indentation
 Source/Scripts/DLC1WispShieldScript.psc:65:1:indentation
 Source/Scripts/DLC1WispShieldScript.psc:66:1:indentation
 Source/Scripts/DLC1WispShieldScript.psc:67:1:indentation
+Source/Scripts/DLC1WordWallTrigger02Script.psc:20:1:nesting-depth
 Source/Scripts/DLC1WordWallTrigger02Script.psc:22:23:forbidden-functions
 Source/Scripts/DLC1WordWallTrigger02Script.psc:31:1:trailing-whitespace
 Source/Scripts/DLC1WordWallTrigger02Script.psc:43:1:trailing-whitespace
@@ -26637,6 +26691,7 @@ Source/Scripts/DLC1WordWallTrigger02Script.psc:76:24:forbidden-functions
 Source/Scripts/DLC1WordWallTriggerScript.psc:135:15:forbidden-functions
 Source/Scripts/DLC1WordWallTriggerScript.psc:135:49:exclamation-spacing
 Source/Scripts/DLC1WordWallTriggerScript.psc:140:1:cyclomatic-complexity
+Source/Scripts/DLC1WordWallTriggerScript.psc:140:1:nesting-depth
 Source/Scripts/DLC1WordWallTriggerScript.psc:142:12:forbidden-functions
 Source/Scripts/DLC1WordWallTriggerScript.psc:142:67:exclamation-spacing
 Source/Scripts/DLC1WordWallTriggerScript.psc:142:73:forbidden-functions
@@ -26715,6 +26770,7 @@ Source/Scripts/DLC1WordWallTriggerScript.psc:281:1:none-form-usage
 Source/Scripts/DLC1WordWallTriggerScript.psc:291:1:none-form-usage
 Source/Scripts/DLC1WordWallTriggerScript.psc:292:1:none-form-usage
 Source/Scripts/DLC1WordWallTriggerScript.psc:293:39:trailing-whitespace
+Source/Scripts/DLC1WordWallTriggerScript.psc:312:1:nesting-depth
 Source/Scripts/DLC1WordWallTriggerScript.psc:317:28:exclamation-spacing
 Source/Scripts/DLC1WordWallTriggerScript.psc:318:1:indentation
 Source/Scripts/DLC1WordWallTriggerScript.psc:324:7:exclamation-spacing
@@ -26937,6 +26993,7 @@ Source/Scripts/DLC1_BF_FallingDebrisTrigSCRIPT.psc:5:1:indentation
 Source/Scripts/DLC1_BF_FallingDebrisTrigSCRIPT.psc:34:53:trailing-whitespace
 Source/Scripts/DLC1_BF_FallingDebrisTrigSCRIPT.psc:77:121:line-length
 Source/Scripts/DLC1_BF_FallingDebrisTrigSCRIPT.psc:92:1:cyclomatic-complexity
+Source/Scripts/DLC1_BF_FallingDebrisTrigSCRIPT.psc:92:1:nesting-depth
 Source/Scripts/DLC1_BF_FallingDebrisTrigSCRIPT.psc:96:1:none-form-usage
 Source/Scripts/DLC1_BF_FallingDebrisTrigSCRIPT.psc:96:2:empty-body
 Source/Scripts/DLC1_BF_FallingDebrisTrigSCRIPT.psc:99:1:indentation
@@ -32356,6 +32413,7 @@ Source/Scripts/DLC1dunHarkonBossBattle.psc:193:1:indentation
 Source/Scripts/DLC1dunHarkonBossBattle.psc:195:1:indentation
 Source/Scripts/DLC1dunHarkonBossBattle.psc:196:1:cyclomatic-complexity
 Source/Scripts/DLC1dunHarkonBossBattle.psc:196:1:indentation
+Source/Scripts/DLC1dunHarkonBossBattle.psc:196:1:nesting-depth
 Source/Scripts/DLC1dunHarkonBossBattle.psc:197:1:indentation
 Source/Scripts/DLC1dunHarkonBossBattle.psc:198:1:indentation
 Source/Scripts/DLC1dunHarkonBossBattle.psc:199:1:indentation
@@ -34203,6 +34261,7 @@ Source/Scripts/DLC2DBBookLevelLightTranslationSCRIPT.psc:22:6:forbidden-function
 Source/Scripts/DLC2DBBookLevelLightTranslationSCRIPT.psc:25:3:empty-body
 Source/Scripts/DLC2DBBookLevelLightTranslationSCRIPT.psc:26:1:indentation
 Source/Scripts/DLC2DBBookLevelLightTranslationSCRIPT.psc:29:15:forbidden-functions
+Source/Scripts/DLC2DBBookLevelLightTranslationSCRIPT.psc:34:1:nesting-depth
 Source/Scripts/DLC2DBBookLevelLightTranslationSCRIPT.psc:35:6:forbidden-functions
 Source/Scripts/DLC2DBBookLevelLightTranslationSCRIPT.psc:37:40:forbidden-functions
 Source/Scripts/DLC2DBBookLevelLightTranslationSCRIPT.psc:40:5:empty-body
@@ -34218,6 +34277,7 @@ Source/Scripts/DLC2DBBookLevelLightTranslationSCRIPT.psc:69:1:indentation
 Source/Scripts/DLC2DBBookLevelLightTranslationSCRIPT.psc:78:6:forbidden-functions
 Source/Scripts/DLC2DBBookLevelLightTranslationSCRIPT.psc:89:6:forbidden-functions
 Source/Scripts/DLC2DBBookLevelLightTranslationSCRIPT.psc:99:1:cyclomatic-complexity
+Source/Scripts/DLC2DBBookLevelLightTranslationSCRIPT.psc:99:1:nesting-depth
 Source/Scripts/DLC2DBBookLevelLightTranslationSCRIPT.psc:100:6:forbidden-functions
 Source/Scripts/DLC2DBBookLevelLightTranslationSCRIPT.psc:101:3:empty-body
 Source/Scripts/DLC2DBBookLevelLightTranslationSCRIPT.psc:102:1:indentation
@@ -34729,6 +34789,7 @@ Source/Scripts/DLC2ExpSpiderCraftingSCRIPT.psc:216:1:indentation
 Source/Scripts/DLC2ExpSpiderCraftingSCRIPT.psc:217:11:forbidden-functions
 Source/Scripts/DLC2ExpSpiderDeadSpiderSCRIPT.psc:1:65:trailing-whitespace
 Source/Scripts/DLC2ExpSpiderDeadSpiderSCRIPT.psc:21:10:forbidden-functions
+Source/Scripts/DLC2ExpSpiderDeadSpiderSCRIPT.psc:26:1:nesting-depth
 Source/Scripts/DLC2ExpSpiderDeadSpiderSCRIPT.psc:28:1:unchecked-cast
 Source/Scripts/DLC2ExpSpiderDeadSpiderSCRIPT.psc:28:35:exclamation-spacing
 Source/Scripts/DLC2ExpSpiderDeadSpiderSCRIPT.psc:29:1:unchecked-cast
@@ -34845,6 +34906,7 @@ Source/Scripts/DLC2ExpSpiderZombieScrollSCRIPT.psc:25:1:trailing-whitespace
 Source/Scripts/DLC2ExplodingSpiderEggSCRIPT.psc:1:71:trailing-whitespace
 Source/Scripts/DLC2ExplodingSpiderEggSCRIPT.psc:16:1:indentation
 Source/Scripts/DLC2ExplodingSpiderEggSCRIPT.psc:17:1:trailing-whitespace
+Source/Scripts/DLC2ExplodingSpiderEggSCRIPT.psc:23:1:nesting-depth
 Source/Scripts/DLC2ExplodingSpiderEggSCRIPT.psc:24:1:indentation
 Source/Scripts/DLC2ExplodingSpiderEggSCRIPT.psc:25:1:indentation
 Source/Scripts/DLC2ExplodingSpiderEggSCRIPT.psc:26:3:strict-boolean
@@ -35837,6 +35899,7 @@ Source/Scripts/DLC2LvlSeekerMirrorScript.psc:27:1:indentation
 Source/Scripts/DLC2MH01BujoldScript.psc:1:55:trailing-whitespace
 Source/Scripts/DLC2MH01EnterThirskTrigger.psc:1:62:trailing-whitespace
 Source/Scripts/DLC2MH01EnterThirskTrigger.psc:10:1:argument-naming
+Source/Scripts/DLC2MH01EnterThirskTrigger.psc:10:1:nesting-depth
 Source/Scripts/DLC2MH01EnterThirskTrigger.psc:11:26:forbidden-functions
 Source/Scripts/DLC2MH01EnterThirskTrigger.psc:12:1:none-form-usage
 Source/Scripts/DLC2MH01EnterThirskTrigger.psc:13:1:none-form-usage
@@ -36275,6 +36338,7 @@ Source/Scripts/DLC2MQ06MiraakBossBattle.psc:196:1:indentation
 Source/Scripts/DLC2MQ06MiraakBossBattle.psc:199:79:semicolon
 Source/Scripts/DLC2MQ06MiraakBossBattle.psc:202:79:semicolon
 Source/Scripts/DLC2MQ06MiraakBossBattle.psc:203:1:cyclomatic-complexity
+Source/Scripts/DLC2MQ06MiraakBossBattle.psc:203:1:nesting-depth
 Source/Scripts/DLC2MQ06MiraakBossBattle.psc:204:1:indentation
 Source/Scripts/DLC2MQ06MiraakBossBattle.psc:204:12:exclamation-spacing
 Source/Scripts/DLC2MQ06MiraakBossBattle.psc:205:1:indentation
@@ -37703,6 +37767,7 @@ Source/Scripts/DLC2PillarScript.psc:87:121:line-length
 Source/Scripts/DLC2PillarScript.psc:89:1:indentation
 Source/Scripts/DLC2PillarScript.psc:92:1:indentation
 Source/Scripts/DLC2PillarScript.psc:95:1:trailing-whitespace
+Source/Scripts/DLC2PillarScript.psc:98:1:nesting-depth
 Source/Scripts/DLC2PillarScript.psc:99:1:indentation
 Source/Scripts/DLC2PillarScript.psc:100:27:forbidden-functions
 Source/Scripts/DLC2PillarScript.psc:103:1:none-form-usage
@@ -39126,6 +39191,7 @@ Source/Scripts/DLC2TrapApoTentacle.psc:273:1:indentation
 Source/Scripts/DLC2TrapApoTentacle.psc:276:1:indentation
 Source/Scripts/DLC2TrapApoTentacle.psc:277:1:indentation
 Source/Scripts/DLC2TrapApoTentacle.psc:283:1:cyclomatic-complexity
+Source/Scripts/DLC2TrapApoTentacle.psc:283:1:nesting-depth
 Source/Scripts/DLC2TrapApoTentacle.psc:285:1:indentation
 Source/Scripts/DLC2TrapApoTentacle.psc:287:25:forbidden-functions
 Source/Scripts/DLC2TrapApoTentacle.psc:288:1:indentation
@@ -39261,6 +39327,7 @@ Source/Scripts/DLC2WhirlwindDamageScript.psc:3:25:trailing-whitespace
 Source/Scripts/DLC2WhirlwindDamageScript.psc:5:1:argument-naming
 Source/Scripts/DLC2WhirlwindDamageScript.psc:5:1:argument-naming
 Source/Scripts/DLC2WhirlwindDamageScript.psc:6:1:indentation
+Source/Scripts/DLC2WordWallTrigger02Script.psc:20:1:nesting-depth
 Source/Scripts/DLC2WordWallTrigger02Script.psc:22:23:forbidden-functions
 Source/Scripts/DLC2WordWallTrigger02Script.psc:31:1:trailing-whitespace
 Source/Scripts/DLC2WordWallTrigger02Script.psc:43:1:trailing-whitespace
@@ -39273,6 +39340,7 @@ Source/Scripts/DLC2WordWallTriggerBendWillScript.psc:42:24:forbidden-functions
 Source/Scripts/DLC2WordWallTriggerScript.psc:135:15:forbidden-functions
 Source/Scripts/DLC2WordWallTriggerScript.psc:135:49:exclamation-spacing
 Source/Scripts/DLC2WordWallTriggerScript.psc:140:1:cyclomatic-complexity
+Source/Scripts/DLC2WordWallTriggerScript.psc:140:1:nesting-depth
 Source/Scripts/DLC2WordWallTriggerScript.psc:142:12:forbidden-functions
 Source/Scripts/DLC2WordWallTriggerScript.psc:142:67:exclamation-spacing
 Source/Scripts/DLC2WordWallTriggerScript.psc:142:73:forbidden-functions
@@ -39351,6 +39419,7 @@ Source/Scripts/DLC2WordWallTriggerScript.psc:281:1:none-form-usage
 Source/Scripts/DLC2WordWallTriggerScript.psc:291:1:none-form-usage
 Source/Scripts/DLC2WordWallTriggerScript.psc:292:1:none-form-usage
 Source/Scripts/DLC2WordWallTriggerScript.psc:293:39:trailing-whitespace
+Source/Scripts/DLC2WordWallTriggerScript.psc:312:1:nesting-depth
 Source/Scripts/DLC2WordWallTriggerScript.psc:317:28:exclamation-spacing
 Source/Scripts/DLC2WordWallTriggerScript.psc:318:1:indentation
 Source/Scripts/DLC2WordWallTriggerScript.psc:324:7:exclamation-spacing
@@ -43339,6 +43408,7 @@ Source/Scripts/DLC2dunGyldenhulFurnitureScript.psc:124:36:forbidden-functions
 Source/Scripts/DLC2dunGyldenhulFurnitureScript.psc:125:36:forbidden-functions
 Source/Scripts/DLC2dunGyldenhulMineScript.psc:7:37:trailing-whitespace
 Source/Scripts/DLC2dunGyldenhulMineScript.psc:15:1:argument-naming
+Source/Scripts/DLC2dunGyldenhulMineScript.psc:15:1:nesting-depth
 Source/Scripts/DLC2dunGyldenhulMineScript.psc:16:2:strict-boolean
 Source/Scripts/DLC2dunGyldenhulMineScript.psc:17:28:forbidden-functions
 Source/Scripts/DLC2dunGyldenhulMineScript.psc:18:13:forbidden-functions
@@ -44130,6 +44200,7 @@ Source/Scripts/DLC2dunNchardakDoorSeal.psc:38:7:exclamation-spacing
 Source/Scripts/DLC2dunNchardakDoorSeal.psc:43:7:exclamation-spacing
 Source/Scripts/DLC2dunNchardakDoorSeal.psc:50:31:trailing-whitespace
 Source/Scripts/DLC2dunNchardakDoorSeal.psc:69:1:cyclomatic-complexity
+Source/Scripts/DLC2dunNchardakDoorSeal.psc:69:1:nesting-depth
 Source/Scripts/DLC2dunNchardakDoorSeal.psc:73:8:exclamation-spacing
 Source/Scripts/DLC2dunNchardakDoorSeal.psc:80:32:trailing-whitespace
 Source/Scripts/DLC2dunNchardakDoorSeal.psc:93:1:unchecked-cast
@@ -44313,6 +44384,7 @@ Source/Scripts/DLC2dunNchardakTrackingScript.psc:67:12:trailing-whitespace
 Source/Scripts/DLC2dunNchardakTrackingScript.psc:91:1:indentation
 Source/Scripts/DLC2dunNchardakTrackingScript.psc:93:1:unchecked-cast
 Source/Scripts/DLC2dunNchardakTrackingScript.psc:108:44:trailing-whitespace
+Source/Scripts/DLC2dunNchardakTrackingScript.psc:117:1:nesting-depth
 Source/Scripts/DLC2dunNchardakTrackingScript.psc:120:12:forbidden-functions
 Source/Scripts/DLC2dunNchardakTrackingScript.psc:121:9:forbidden-functions
 Source/Scripts/DLC2dunNchardakTrackingScript.psc:122:25:forbidden-functions
@@ -44322,6 +44394,7 @@ Source/Scripts/DLC2dunNchardakTrackingScript.psc:127:1:none-form-usage
 Source/Scripts/DLC2dunNchardakTrackingScript.psc:129:1:none-form-usage
 Source/Scripts/DLC2dunNchardakTrackingScript.psc:131:1:none-form-usage
 Source/Scripts/DLC2dunNchardakTrackingScript.psc:139:1:indentation
+Source/Scripts/DLC2dunNchardakTrackingScript.psc:143:1:nesting-depth
 Source/Scripts/DLC2dunNchardakTrackingScript.psc:146:12:forbidden-functions
 Source/Scripts/DLC2dunNchardakTrackingScript.psc:147:9:forbidden-functions
 Source/Scripts/DLC2dunNchardakTrackingScript.psc:148:25:forbidden-functions
@@ -44332,6 +44405,7 @@ Source/Scripts/DLC2dunNchardakTrackingScript.psc:155:1:none-form-usage
 Source/Scripts/DLC2dunNchardakTrackingScript.psc:163:1:indentation
 Source/Scripts/DLC2dunNchardakTrackingScript.psc:170:33:forbidden-functions
 Source/Scripts/DLC2dunNchardakTrackingScript.psc:178:1:cyclomatic-complexity
+Source/Scripts/DLC2dunNchardakTrackingScript.psc:178:1:nesting-depth
 Source/Scripts/DLC2dunNchardakTrackingScript.psc:178:121:line-length
 Source/Scripts/DLC2dunNchardakTrackingScript.psc:179:1:none-form-usage
 Source/Scripts/DLC2dunNchardakTrackingScript.psc:182:1:trailing-whitespace
@@ -44728,6 +44802,7 @@ Source/Scripts/DarkBrotherhood.psc:124:43:trailing-whitespace
 Source/Scripts/DarkBrotherhood.psc:125:46:trailing-whitespace
 Source/Scripts/DarkBrotherhood.psc:141:50:trailing-whitespace
 Source/Scripts/DarkBrotherhood.psc:143:1:trailing-whitespace
+Source/Scripts/DarkBrotherhood.psc:154:1:nesting-depth
 Source/Scripts/DarkBrotherhood.psc:155:1:indentation
 Source/Scripts/DarkBrotherhood.psc:156:1:indentation
 Source/Scripts/DarkBrotherhood.psc:158:1:indentation
@@ -46325,6 +46400,7 @@ Source/Scripts/FXAlduinScript.psc:133:11:forbidden-functions
 Source/Scripts/FXAlduinScript.psc:140:1:undefined-event
 Source/Scripts/FXAlduinScript.psc:142:1:none-form-usage
 Source/Scripts/FXAlduinScript.psc:147:1:cyclomatic-complexity
+Source/Scripts/FXAlduinScript.psc:147:1:nesting-depth
 Source/Scripts/FXAlduinScript.psc:149:22:forbidden-functions
 Source/Scripts/FXAlduinScript.psc:151:1:none-form-usage
 Source/Scripts/FXAlduinScript.psc:154:1:none-form-usage
@@ -48115,6 +48191,7 @@ Source/Scripts/FireFly.psc:62:1:indentation
 Source/Scripts/FireFly.psc:68:9:exclamation-spacing
 Source/Scripts/FireFly.psc:76:1:short-wait-interval
 Source/Scripts/FireFly.psc:78:1:trailing-whitespace
+Source/Scripts/FireFly.psc:87:1:nesting-depth
 Source/Scripts/FireFly.psc:88:1:trailing-whitespace
 Source/Scripts/FireFly.psc:90:12:forbidden-functions
 Source/Scripts/FireFly.psc:98:1:trailing-whitespace
@@ -49216,6 +49293,7 @@ Source/Scripts/HelgenRandomSoundScript.psc:113:1:none-form-usage
 Source/Scripts/HelgenRandomSoundScript.psc:117:1:none-form-usage
 Source/Scripts/HelgenRandomSoundScript.psc:122:1:trailing-whitespace
 Source/Scripts/HildeSoldierScript.psc:1:54:trailing-whitespace
+Source/Scripts/HildeSoldierScript.psc:7:1:nesting-depth
 Source/Scripts/HildeSoldierScript.psc:8:25:forbidden-functions
 Source/Scripts/HildeSoldierScript.psc:9:1:none-form-usage
 Source/Scripts/HildeSoldierScript.psc:10:1:none-form-usage
@@ -49588,6 +49666,7 @@ Source/Scripts/MG01FireEffectScript.psc:11:1:unchecked-cast
 Source/Scripts/MG01NiryaScript.psc:1:50:trailing-whitespace
 Source/Scripts/MG01NiryaScript.psc:3:26:trailing-whitespace
 Source/Scripts/MG01NiryaScript.psc:5:40:trailing-whitespace
+Source/Scripts/MG01NiryaScript.psc:8:1:nesting-depth
 Source/Scripts/MG01NiryaScript.psc:10:1:indentation
 Source/Scripts/MG01NiryaScript.psc:11:1:indentation
 Source/Scripts/MG01NiryaScript.psc:13:1:indentation
@@ -49974,6 +50053,7 @@ Source/Scripts/MG02SaarthalTravelTrigger1Script.psc:23:1:unchecked-cast
 Source/Scripts/MG02SaarthalTravelTrigger1Script.psc:24:1:none-form-usage
 Source/Scripts/MG02Stage20FGTriggerScript.psc:1:61:trailing-whitespace
 Source/Scripts/MG02Stage20FGTriggerScript.psc:4:1:argument-naming
+Source/Scripts/MG02Stage20FGTriggerScript.psc:4:1:nesting-depth
 Source/Scripts/MG02Stage20FGTriggerScript.psc:6:1:indentation
 Source/Scripts/MG02Stage20FGTriggerScript.psc:8:23:forbidden-functions
 Source/Scripts/MG02Stage20FGTriggerScript.psc:10:12:assignment-operator-spacing
@@ -50056,6 +50136,7 @@ Source/Scripts/MG02VisionPlayerTriggerScript.psc:25:43:trailing-whitespace
 Source/Scripts/MG02VisionPlayerTriggerScript.psc:27:37:trailing-whitespace
 Source/Scripts/MG02VisionPlayerTriggerScript.psc:29:38:trailing-whitespace
 Source/Scripts/MG02VisionPlayerTriggerScript.psc:31:1:argument-naming
+Source/Scripts/MG02VisionPlayerTriggerScript.psc:31:1:nesting-depth
 Source/Scripts/MG02VisionPlayerTriggerScript.psc:33:1:indentation
 Source/Scripts/MG02VisionPlayerTriggerScript.psc:35:23:forbidden-functions
 Source/Scripts/MG02VisionPlayerTriggerScript.psc:36:1:unchecked-cast
@@ -50072,6 +50153,7 @@ Source/Scripts/MG02VisionTolfdirTriggerScript.psc:1:66:trailing-whitespace
 Source/Scripts/MG02VisionTolfdirTriggerScript.psc:3:26:trailing-whitespace
 Source/Scripts/MG02VisionTolfdirTriggerScript.psc:5:42:trailing-whitespace
 Source/Scripts/MG02VisionTolfdirTriggerScript.psc:9:1:argument-naming
+Source/Scripts/MG02VisionTolfdirTriggerScript.psc:9:1:nesting-depth
 Source/Scripts/MG02VisionTolfdirTriggerScript.psc:11:1:indentation
 Source/Scripts/MG02VisionTolfdirTriggerScript.psc:13:1:none-form-usage
 Source/Scripts/MG02VisionTolfdirTriggerScript.psc:14:1:unchecked-cast
@@ -50096,6 +50178,7 @@ Source/Scripts/MG02WallAliasScript.psc:14:1:indentation
 Source/Scripts/MG02WallAliasScript.psc:15:1:indentation
 Source/Scripts/MG02WallAliasScript.psc:19:1:trailing-whitespace
 Source/Scripts/MG02WallAliasScript.psc:23:121:line-length
+Source/Scripts/MG02WallAliasScript.psc:25:1:nesting-depth
 Source/Scripts/MG02WallAliasScript.psc:27:22:forbidden-functions
 Source/Scripts/MG02WallAliasScript.psc:28:11:forbidden-functions
 Source/Scripts/MG02WallAliasScript.psc:28:45:operator-spacing
@@ -50143,6 +50226,7 @@ Source/Scripts/MG03BookScript.psc:30:1:indentation
 Source/Scripts/MG03BookScript.psc:32:1:unchecked-cast
 Source/Scripts/MG03BookScript.psc:38:41:trailing-whitespace
 Source/Scripts/MG03BookScript.psc:40:48:trailing-whitespace
+Source/Scripts/MG03CallerTriggerScript.psc:10:1:nesting-depth
 Source/Scripts/MG03CallerTriggerScript.psc:11:28:assignment-operator-spacing
 Source/Scripts/MG03CallerTriggerScript.psc:13:16:operator-spacing
 Source/Scripts/MG03CallerTriggerScript.psc:13:24:forbidden-functions
@@ -50237,6 +50321,7 @@ Source/Scripts/MG04ArchMageDoorScript.psc:5:46:trailing-whitespace
 Source/Scripts/MG04ArchMageDoorScript.psc:7:48:trailing-whitespace
 Source/Scripts/MG04ArchMageDoorScript.psc:9:37:trailing-whitespace
 Source/Scripts/MG04ArchMageDoorScript.psc:13:1:argument-naming
+Source/Scripts/MG04ArchMageDoorScript.psc:13:1:nesting-depth
 Source/Scripts/MG04ArchMageDoorScript.psc:15:25:forbidden-functions
 Source/Scripts/MG04ArchMageDoorScript.psc:16:1:none-form-usage
 Source/Scripts/MG04ArchMageDoorScript.psc:17:1:none-form-usage
@@ -50283,6 +50368,7 @@ Source/Scripts/MG05SavosArenScript.psc:9:1:none-form-usage
 Source/Scripts/MG05SavosArenScript.psc:10:1:none-form-usage
 Source/Scripts/MG05WinterholdUpdateTriggerScript.psc:3:26:trailing-whitespace
 Source/Scripts/MG05WinterholdUpdateTriggerScript.psc:8:1:argument-naming
+Source/Scripts/MG05WinterholdUpdateTriggerScript.psc:8:1:nesting-depth
 Source/Scripts/MG05WinterholdUpdateTriggerScript.psc:10:23:forbidden-functions
 Source/Scripts/MG05WinterholdUpdateTriggerScript.psc:13:1:none-form-usage
 Source/Scripts/MG05WinterholdUpdateTriggerScript.psc:15:19:assignment-operator-spacing
@@ -50449,6 +50535,7 @@ Source/Scripts/MG06CrystalTriggerScript.psc:37:40:trailing-whitespace
 Source/Scripts/MG06Dome01Script.psc:1:52:trailing-whitespace
 Source/Scripts/MG06Dome01Script.psc:3:26:trailing-whitespace
 Source/Scripts/MG06Dome01Script.psc:37:1:cyclomatic-complexity
+Source/Scripts/MG06Dome01Script.psc:37:1:nesting-depth
 Source/Scripts/MG06Dome01Script.psc:39:1:indentation
 Source/Scripts/MG06Dome01Script.psc:44:1:indentation
 Source/Scripts/MG06Dome01Script.psc:44:12:goto-state
@@ -50632,6 +50719,7 @@ Source/Scripts/MG06VisionTriggerScript.psc:21:41:trailing-whitespace
 Source/Scripts/MG06VisionTriggerScript.psc:23:42:trailing-whitespace
 Source/Scripts/MG06VisionTriggerScript.psc:26:32:trailing-whitespace
 Source/Scripts/MG06VisionTriggerScript.psc:28:43:trailing-whitespace
+Source/Scripts/MG06VisionTriggerScript.psc:32:1:nesting-depth
 Source/Scripts/MG06VisionTriggerScript.psc:34:25:forbidden-functions
 Source/Scripts/MG06VisionTriggerScript.psc:38:1:none-form-usage
 Source/Scripts/MG06VisionTriggerScript.psc:38:27:trailing-whitespace
@@ -50782,6 +50870,7 @@ Source/Scripts/MG07VisionTriggerScript.psc:23:44:trailing-whitespace
 Source/Scripts/MG07VisionTriggerScript.psc:29:33:trailing-whitespace
 Source/Scripts/MG07VisionTriggerScript.psc:34:1:argument-naming
 Source/Scripts/MG07VisionTriggerScript.psc:34:1:cyclomatic-complexity
+Source/Scripts/MG07VisionTriggerScript.psc:34:1:nesting-depth
 Source/Scripts/MG07VisionTriggerScript.psc:36:1:indentation
 Source/Scripts/MG07VisionTriggerScript.psc:39:1:indentation
 Source/Scripts/MG07VisionTriggerScript.psc:41:23:forbidden-functions
@@ -50871,6 +50960,7 @@ Source/Scripts/MG08EyeScript.psc:5:37:trailing-whitespace
 Source/Scripts/MG08EyeScript.psc:9:21:trailing-whitespace
 Source/Scripts/MG08EyeScript.psc:12:1:argument-naming
 Source/Scripts/MG08EyeScript.psc:12:1:argument-naming
+Source/Scripts/MG08EyeScript.psc:12:1:nesting-depth
 Source/Scripts/MG08EyeScript.psc:15:1:indentation
 Source/Scripts/MG08EyeScript.psc:16:1:unchecked-cast
 Source/Scripts/MG08EyeScript.psc:18:1:indentation
@@ -50926,6 +51016,7 @@ Source/Scripts/MG08EyeScript.psc:87:47:trailing-whitespace
 Source/Scripts/MG08EyeScript.psc:89:41:trailing-whitespace
 Source/Scripts/MG08GateScript.psc:3:42:trailing-whitespace
 Source/Scripts/MG08GateScript.psc:5:26:trailing-whitespace
+Source/Scripts/MG08GateScript.psc:9:1:nesting-depth
 Source/Scripts/MG08GateScript.psc:12:25:forbidden-functions
 Source/Scripts/MG08GateScript.psc:13:1:none-form-usage
 Source/Scripts/MG08GateScript.psc:15:1:none-form-usage
@@ -50964,6 +51055,7 @@ Source/Scripts/MGClassroomTriggerScript.psc:3:26:trailing-whitespace
 Source/Scripts/MGClassroomTriggerScript.psc:5:40:trailing-whitespace
 Source/Scripts/MGClassroomTriggerScript.psc:7:26:trailing-whitespace
 Source/Scripts/MGClassroomTriggerScript.psc:9:40:trailing-whitespace
+Source/Scripts/MGClassroomTriggerScript.psc:14:1:nesting-depth
 Source/Scripts/MGClassroomTriggerScript.psc:16:1:indentation
 Source/Scripts/MGClassroomTriggerScript.psc:17:1:indentation
 Source/Scripts/MGClassroomTriggerScript.psc:19:25:forbidden-functions
@@ -50971,6 +51063,7 @@ Source/Scripts/MGClassroomTriggerScript.psc:20:1:none-form-usage
 Source/Scripts/MGClassroomTriggerScript.psc:22:1:none-form-usage
 Source/Scripts/MGClassroomTriggerScript.psc:23:1:none-form-usage
 Source/Scripts/MGClassroomTriggerScript.psc:24:1:none-form-usage
+Source/Scripts/MGCollegeLecturesQuestScript.psc:4:1:nesting-depth
 Source/Scripts/MGCollegeLecturesQuestScript.psc:7:1:indentation
 Source/Scripts/MGCollegeLecturesQuestScript.psc:11:1:indentation
 Source/Scripts/MGCollegeLecturesQuestScript.psc:13:1:unchecked-cast
@@ -50985,6 +51078,7 @@ Source/Scripts/MGCollegeLecturesQuestScript.psc:22:1:indentation
 Source/Scripts/MGCollegeLecturesQuestScript.psc:23:1:trailing-whitespace
 Source/Scripts/MGCollegeLecturesQuestScript.psc:27:1:indentation
 Source/Scripts/MGCollegeLecturesQuestScript.psc:40:1:cyclomatic-complexity
+Source/Scripts/MGCollegeLecturesQuestScript.psc:40:1:nesting-depth
 Source/Scripts/MGCollegeLecturesQuestScript.psc:42:1:indentation
 Source/Scripts/MGCollegeLecturesQuestScript.psc:43:1:indentation
 Source/Scripts/MGCollegeLecturesQuestScript.psc:43:1:none-form-usage
@@ -51182,6 +51276,7 @@ Source/Scripts/MGR02QuestScript.psc:11:38:trailing-whitespace
 Source/Scripts/MGR02QuestScript.psc:13:38:trailing-whitespace
 Source/Scripts/MGR02QuestScript.psc:15:31:trailing-whitespace
 Source/Scripts/MGR02QuestScript.psc:35:1:cyclomatic-complexity
+Source/Scripts/MGR02QuestScript.psc:35:1:nesting-depth
 Source/Scripts/MGR02QuestScript.psc:38:1:indentation
 Source/Scripts/MGR02QuestScript.psc:42:1:indentation
 Source/Scripts/MGR02QuestScript.psc:43:1:indentation
@@ -51277,6 +51372,7 @@ Source/Scripts/MGR22QuestScript.psc:16:61:trailing-whitespace
 Source/Scripts/MGR22QuestScript.psc:19:1:none-form-usage
 Source/Scripts/MGR22QuestScript.psc:20:1:none-form-usage
 Source/Scripts/MGR22QuestScript.psc:25:1:cyclomatic-complexity
+Source/Scripts/MGR22QuestScript.psc:25:1:nesting-depth
 Source/Scripts/MGR22QuestScript.psc:30:1:indentation
 Source/Scripts/MGR22QuestScript.psc:33:1:indentation
 Source/Scripts/MGR22QuestScript.psc:34:1:indentation
@@ -51553,6 +51649,7 @@ Source/Scripts/MGRArniel03SContainerScript.psc:38:41:comma-spacing
 Source/Scripts/MGRArniel03SContainerScript.psc:39:1:none-form-usage
 Source/Scripts/MGRArniel03SContainerScript.psc:46:1:argument-naming
 Source/Scripts/MGRArniel03SContainerScript.psc:46:1:argument-naming
+Source/Scripts/MGRArniel03SContainerScript.psc:46:1:nesting-depth
 Source/Scripts/MGRArniel03SContainerScript.psc:48:1:indentation
 Source/Scripts/MGRArniel03SContainerScript.psc:51:1:indentation
 Source/Scripts/MGRArniel03SContainerScript.psc:55:1:indentation
@@ -51908,6 +52005,7 @@ Source/Scripts/MGRitual03EffectScript.psc:10:1:none-form-usage
 Source/Scripts/MGRitual03EffectScript.psc:11:1:unchecked-cast
 Source/Scripts/MGRitual03EffectScript.psc:12:1:indentation
 Source/Scripts/MGRitual03EffectScript.psc:12:1:none-form-usage
+Source/Scripts/MGRitual03EffectScript.psc:19:1:nesting-depth
 Source/Scripts/MGRitual03EffectScript.psc:21:1:indentation
 Source/Scripts/MGRitual03EffectScript.psc:23:1:unchecked-cast
 Source/Scripts/MGRitual03EffectScript.psc:23:32:operator-spacing
@@ -52499,6 +52597,7 @@ Source/Scripts/MQ105QuestScript.psc:86:1:none-form-usage
 Source/Scripts/MQ105QuestScript.psc:87:1:none-form-usage
 Source/Scripts/MQ105QuestScript.psc:95:1:indentation
 Source/Scripts/MQ105QuestScript.psc:102:7:forbidden-functions
+Source/Scripts/MQ105QuestScript.psc:106:1:nesting-depth
 Source/Scripts/MQ105QuestScript.psc:107:1:indentation
 Source/Scripts/MQ105QuestScript.psc:109:1:indentation
 Source/Scripts/MQ105QuestScript.psc:112:1:none-form-usage
@@ -52833,6 +52932,7 @@ Source/Scripts/MQ201ThalmorEmbassyDisguiseScript.psc:64:1:indentation
 Source/Scripts/MQ201ThalmorEmbassyDisguiseScript.psc:65:1:indentation
 Source/Scripts/MQ201ThalmorEmbassyDisguiseScript.psc:66:1:indentation
 Source/Scripts/MQ201ThalmorEmbassyDisguiseScript.psc:75:1:cyclomatic-complexity
+Source/Scripts/MQ201ThalmorEmbassyDisguiseScript.psc:75:1:nesting-depth
 Source/Scripts/MQ201ThalmorEmbassyDisguiseScript.psc:76:1:trailing-whitespace
 Source/Scripts/MQ201ThalmorEmbassyDisguiseScript.psc:81:1:trailing-whitespace
 Source/Scripts/MQ201ThalmorEmbassyDisguiseScript.psc:82:1:indentation
@@ -53508,6 +53608,7 @@ Source/Scripts/MQ305Script.psc:63:50:trailing-whitespace
 Source/Scripts/MQ305Script.psc:65:50:trailing-whitespace
 Source/Scripts/MQCallDragonScript.psc:1:44:trailing-whitespace
 Source/Scripts/MQCallDragonScript.psc:3:1:cyclomatic-complexity
+Source/Scripts/MQCallDragonScript.psc:3:1:nesting-depth
 Source/Scripts/MQCallDragonScript.psc:4:1:indentation
 Source/Scripts/MQCallDragonScript.psc:6:5:exclamation-spacing
 Source/Scripts/MQCallDragonScript.psc:7:1:indentation
@@ -55071,6 +55172,7 @@ Source/Scripts/MS14HelgiCoffinScript.psc:1:56:trailing-whitespace
 Source/Scripts/MS14HelgiCoffinScript.psc:3:43:trailing-whitespace
 Source/Scripts/MS14HelgiCoffinScript.psc:4:36:trailing-whitespace
 Source/Scripts/MS14HelgiCoffinScript.psc:6:1:argument-naming
+Source/Scripts/MS14HelgiCoffinScript.psc:6:1:nesting-depth
 Source/Scripts/MS14HelgiCoffinScript.psc:7:1:indentation
 Source/Scripts/MS14HelgiCoffinScript.psc:7:25:forbidden-functions
 Source/Scripts/MS14HelgiCoffinScript.psc:8:1:indentation
@@ -55424,6 +55526,7 @@ Source/Scripts/MagicTrap.psc:320:1:trailing-whitespace
 Source/Scripts/MagicTrap.psc:332:1:trailing-whitespace
 Source/Scripts/MagicTrap.psc:334:1:indentation
 Source/Scripts/MagicTrap.psc:337:1:indentation
+Source/Scripts/MagicTrap.psc:344:1:nesting-depth
 Source/Scripts/MagicTrap.psc:345:1:indentation
 Source/Scripts/MagicTrap.psc:347:1:indentation
 Source/Scripts/MagicTrap.psc:348:5:exclamation-spacing
@@ -55662,6 +55765,7 @@ Source/Scripts/MineOreScript.psc:72:5:exclamation-spacing
 Source/Scripts/MineOreScript.psc:72:6:forbidden-functions
 Source/Scripts/MineOreScript.psc:73:1:indentation
 Source/Scripts/MineOreScript.psc:78:1:argument-naming
+Source/Scripts/MineOreScript.psc:78:1:nesting-depth
 Source/Scripts/MineOreScript.psc:79:1:indentation
 Source/Scripts/MineOreScript.psc:80:1:trailing-whitespace
 Source/Scripts/MineOreScript.psc:82:2:strict-boolean
@@ -55849,6 +55953,7 @@ Source/Scripts/NightMotherCoffinScript.psc:17:54:trailing-whitespace
 Source/Scripts/NightMotherCoffinScript.psc:18:47:trailing-whitespace
 Source/Scripts/NightMotherCoffinScript.psc:19:49:trailing-whitespace
 Source/Scripts/NightMotherCoffinScript.psc:20:48:trailing-whitespace
+Source/Scripts/NightMotherCoffinScript.psc:26:1:nesting-depth
 Source/Scripts/NightMotherCoffinScript.psc:27:1:indentation
 Source/Scripts/NightMotherCoffinScript.psc:28:1:indentation
 Source/Scripts/NightMotherCoffinScript.psc:28:10:forbidden-functions
@@ -57058,6 +57163,7 @@ Source/Scripts/PhysicsTrapHit.psc:11:1:indentation
 Source/Scripts/PhysicsTrapHit.psc:12:1:indentation
 Source/Scripts/PhysicsTrapHit.psc:13:1:indentation
 Source/Scripts/PhysicsTrapHit.psc:15:18:trailing-whitespace
+Source/Scripts/PhysicsTrapHit.psc:16:1:nesting-depth
 Source/Scripts/PhysicsTrapHit.psc:16:121:line-length
 Source/Scripts/PhysicsTrapHit.psc:18:1:trailing-whitespace
 Source/Scripts/PhysicsTrapHit.psc:20:1:indentation
@@ -72086,6 +72192,7 @@ Source/Scripts/QF_MQ302_00045923.psc:1133:1:none-form-usage
 Source/Scripts/QF_MQ302_00045923.psc:1137:1:none-form-usage
 Source/Scripts/QF_MQ302_00045923.psc:1175:1:none-form-usage
 Source/Scripts/QF_MQ302_00045923.psc:1182:1:cyclomatic-complexity
+Source/Scripts/QF_MQ302_00045923.psc:1182:1:nesting-depth
 Source/Scripts/QF_MQ302_00045923.psc:1192:86:slow-functions
 Source/Scripts/QF_MQ302_00045923.psc:1199:9:forbidden-functions
 Source/Scripts/QF_MQ302_00045923.psc:1204:1:indentation
@@ -80518,6 +80625,7 @@ Source/Scripts/Quest.psc:8:121:line-length
 Source/Scripts/Quest.psc:9:121:line-length
 Source/Scripts/Quest.psc:10:121:line-length
 Source/Scripts/Quest.psc:11:121:line-length
+Source/Scripts/Quest.psc:12:1:nesting-depth
 Source/Scripts/Quest.psc:12:121:line-length
 Source/Scripts/Quest.psc:17:1:numeric-comparison
 Source/Scripts/Quest.psc:18:63:exclamation-spacing
@@ -81466,6 +81574,7 @@ Source/Scripts/ResourceFurnitureScript.psc:11:34:trailing-whitespace
 Source/Scripts/ResourceFurnitureScript.psc:35:27:forbidden-functions
 Source/Scripts/ResourceFurnitureScript.psc:36:2:strict-boolean
 Source/Scripts/ResourceFurnitureScript.psc:42:1:indentation
+Source/Scripts/ResourceFurnitureScript.psc:42:1:nesting-depth
 Source/Scripts/ResourceFurnitureScript.psc:43:1:indentation
 Source/Scripts/ResourceFurnitureScript.psc:44:1:indentation
 Source/Scripts/ResourceFurnitureScript.psc:45:1:indentation
@@ -83922,6 +84031,7 @@ Source/Scripts/SarcophagusSkullLock01SCRIPT.psc:141:1:trailing-whitespace
 Source/Scripts/SarcophagusSkullLock01SCRIPT.psc:153:1:unchecked-cast
 Source/Scripts/SarcophagusSkullLock01SCRIPT.psc:168:1:trailing-whitespace
 Source/Scripts/SayOnHitByMagicEffectScript.psc:1:65:trailing-whitespace
+Source/Scripts/SayOnHitByMagicEffectScript.psc:7:1:nesting-depth
 Source/Scripts/SayOnHitByMagicEffectScript.psc:9:1:indentation
 Source/Scripts/SayOnHitByMagicEffectScript.psc:11:22:forbidden-functions
 Source/Scripts/SayOnHitByMagicEffectScript.psc:13:1:none-form-usage
@@ -84039,6 +84149,7 @@ Source/Scripts/SlowdownStrikeScript.psc:17:1:indentation
 Source/Scripts/SlowdownStrikeScript.psc:18:1:indentation
 Source/Scripts/SlowdownStrikeScript.psc:19:1:indentation
 Source/Scripts/SlowdownStrikeScript.psc:20:1:trailing-whitespace
+Source/Scripts/SlowdownStrikeScript.psc:24:1:nesting-depth
 Source/Scripts/SlowdownStrikeScript.psc:30:1:trailing-whitespace
 Source/Scripts/SlowdownStrikeScript.psc:31:121:line-length
 Source/Scripts/SlowdownStrikeScript.psc:32:1:indentation
@@ -84404,6 +84515,7 @@ Source/Scripts/StartSceneTriggerSpecificTime.psc:31:29:assignment-operator-spaci
 Source/Scripts/StartSceneTriggerSpecificTime.psc:31:40:trailing-whitespace
 Source/Scripts/StartSceneTriggerSpecificTime.psc:32:121:line-length
 Source/Scripts/StartSceneTriggerSpecificTime.psc:35:1:indentation
+Source/Scripts/StartSceneTriggerSpecificTime.psc:35:1:nesting-depth
 Source/Scripts/StartSceneTriggerSpecificTime.psc:36:1:indentation
 Source/Scripts/StartSceneTriggerSpecificTime.psc:37:1:indentation
 Source/Scripts/StartSceneTriggerSpecificTime.psc:39:1:indentation
@@ -86073,6 +86185,7 @@ Source/Scripts/TG04EECDoorScript.psc:17:1:none-form-usage
 Source/Scripts/TG04FirebrandCaseScript.psc:7:28:forbidden-functions
 Source/Scripts/TG04FirebrandCaseScript.psc:8:1:none-form-usage
 Source/Scripts/TG04FirebrandCaseScript.psc:9:1:none-form-usage
+Source/Scripts/TG04GulumEiScript.psc:14:1:nesting-depth
 Source/Scripts/TG04GulumEiScript.psc:18:1:none-form-usage
 Source/Scripts/TG04GulumEiScript.psc:19:1:none-form-usage
 Source/Scripts/TG04GulumEiScript.psc:20:12:forbidden-functions
@@ -86133,6 +86246,7 @@ Source/Scripts/TG04PostQuestScript.psc:26:8:forbidden-functions
 Source/Scripts/TG04PostQuestScript.psc:26:44:comma-spacing
 Source/Scripts/TG04QuestScript.psc:23:56:trailing-whitespace
 Source/Scripts/TG04QuestScript.psc:26:61:trailing-whitespace
+Source/Scripts/TG04SceneBreakerScript.psc:9:1:nesting-depth
 Source/Scripts/TG04SceneBreakerScript.psc:11:1:none-form-usage
 Source/Scripts/TG04SceneBreakerScript.psc:12:1:none-form-usage
 Source/Scripts/TG04SceneBreakerScript.psc:13:1:none-form-usage
@@ -86205,6 +86319,7 @@ Source/Scripts/TG05SceneModTriggerScript.psc:11:1:none-form-usage
 Source/Scripts/TG05SceneStartTriggerScript.psc:3:32:trailing-whitespace
 Source/Scripts/TG05SceneStartTriggerScript.psc:8:25:forbidden-functions
 Source/Scripts/TG05SceneStartTriggerScript.psc:10:1:none-form-usage
+Source/Scripts/TG06BreadScriptCell01.psc:7:1:nesting-depth
 Source/Scripts/TG06BreadScriptCell01.psc:9:1:none-form-usage
 Source/Scripts/TG06BreadScriptCell01.psc:10:1:none-form-usage
 Source/Scripts/TG06BreadScriptCell01.psc:11:1:none-form-usage
@@ -86292,6 +86407,7 @@ Source/Scripts/TG07SceneTriggerScript.psc:10:1:none-form-usage
 Source/Scripts/TG07SceneTriggerScript.psc:11:1:none-form-usage
 Source/Scripts/TG07ValdDebtScript.psc:8:28:forbidden-functions
 Source/Scripts/TG07ValdDebtScript.psc:10:1:none-form-usage
+Source/Scripts/TG07ValdTriggerScript.psc:9:1:nesting-depth
 Source/Scripts/TG07ValdTriggerScript.psc:11:1:none-form-usage
 Source/Scripts/TG07ValdTriggerScript.psc:13:1:none-form-usage
 Source/Scripts/TG07ValdTriggerScript.psc:14:28:forbidden-functions
@@ -86769,6 +86885,7 @@ Source/Scripts/TG08BTowerFallScript.psc:42:2:strict-boolean
 Source/Scripts/TG08BTowerFallScript.psc:43:29:forbidden-functions
 Source/Scripts/TG08BTowerFallScript.psc:47:1:trailing-whitespace
 Source/Scripts/TG08CircleTriggerScript.psc:8:1:argument-naming
+Source/Scripts/TG08CircleTriggerScript.psc:8:1:nesting-depth
 Source/Scripts/TG08CircleTriggerScript.psc:10:25:forbidden-functions
 Source/Scripts/TG08CircleTriggerScript.psc:12:1:none-form-usage
 Source/Scripts/TG08CircleTriggerScript.psc:13:1:none-form-usage
@@ -86791,6 +86908,7 @@ Source/Scripts/TG08EarthquakeDustEffects.psc:54:1:place-at-me
 Source/Scripts/TG08EarthquakeDustEffects.psc:56:1:trailing-whitespace
 Source/Scripts/TG08EarthquakeDustEffects.psc:57:2:strict-boolean
 Source/Scripts/TG08EarthquakeDustEffects.psc:58:1:place-at-me
+Source/Scripts/TG08GuildSceneTriggerScript.psc:7:1:nesting-depth
 Source/Scripts/TG08GuildSceneTriggerScript.psc:9:25:forbidden-functions
 Source/Scripts/TG08GuildSceneTriggerScript.psc:10:1:none-form-usage
 Source/Scripts/TG08GuildSceneTriggerScript.psc:12:1:none-form-usage
@@ -87125,10 +87243,12 @@ Source/Scripts/TG09TriggerSubterfugeScript.psc:9:1:none-form-usage
 Source/Scripts/TG09TriggerSubterfugeScript.psc:10:9:forbidden-functions
 Source/Scripts/TG09TriggerSubterfugeScript.psc:11:1:none-form-usage
 Source/Scripts/TGAssaultFenceScript.psc:1:46:trailing-whitespace
+Source/Scripts/TGAssaultFenceScript.psc:6:1:nesting-depth
 Source/Scripts/TGAssaultFenceScript.psc:9:11:forbidden-functions
 Source/Scripts/TGAssaultFenceScript.psc:10:24:forbidden-functions
 Source/Scripts/TGAssaultFenceScript.psc:12:1:none-form-usage
 Source/Scripts/TGAssaultFenceScript.psc:13:1:none-form-usage
+Source/Scripts/TGAssaultScript.psc:6:1:nesting-depth
 Source/Scripts/TGAssaultScript.psc:6:1:undefined-event
 Source/Scripts/TGAssaultScript.psc:8:10:forbidden-functions
 Source/Scripts/TGAssaultScript.psc:9:23:forbidden-functions
@@ -87140,6 +87260,7 @@ Source/Scripts/TGAssaultScript.psc:23:11:forbidden-functions
 Source/Scripts/TGAssaultScript.psc:24:1:none-form-usage
 Source/Scripts/TGAssaultScript.psc:25:1:none-form-usage
 Source/Scripts/TGAssaultSpecialScript.psc:1:58:trailing-whitespace
+Source/Scripts/TGAssaultSpecialScript.psc:8:1:nesting-depth
 Source/Scripts/TGAssaultSpecialScript.psc:8:1:undefined-event
 Source/Scripts/TGAssaultSpecialScript.psc:9:1:trailing-whitespace
 Source/Scripts/TGAssaultSpecialScript.psc:10:1:none-form-usage
@@ -96005,6 +96126,7 @@ Source/Scripts/TestMoth.psc:71:1:indentation
 Source/Scripts/TestMoth.psc:77:9:exclamation-spacing
 Source/Scripts/TestMoth.psc:85:1:short-wait-interval
 Source/Scripts/TestMoth.psc:87:1:trailing-whitespace
+Source/Scripts/TestMoth.psc:96:1:nesting-depth
 Source/Scripts/TestMoth.psc:97:1:trailing-whitespace
 Source/Scripts/TestMoth.psc:99:12:forbidden-functions
 Source/Scripts/TestMoth.psc:107:1:trailing-whitespace
@@ -96257,6 +96379,7 @@ Source/Scripts/TrapDweBallista.psc:8:13:trailing-whitespace
 Source/Scripts/TrapDweBallista.psc:29:1:trailing-whitespace
 Source/Scripts/TrapDweBallista.psc:34:121:line-length
 Source/Scripts/TrapDweBallista.psc:38:1:cyclomatic-complexity
+Source/Scripts/TrapDweBallista.psc:38:1:nesting-depth
 Source/Scripts/TrapDweBallista.psc:39:5:exclamation-spacing
 Source/Scripts/TrapDweBallista.psc:42:6:exclamation-spacing
 Source/Scripts/TrapDweBallista.psc:45:3:empty-body
@@ -96508,6 +96631,7 @@ Source/Scripts/TrapExplosiveGas.psc:88:1:indentation
 Source/Scripts/TrapExplosiveGas.psc:91:1:indentation
 Source/Scripts/TrapExplosiveGas.psc:96:1:trailing-whitespace
 Source/Scripts/TrapExplosiveGas.psc:98:1:cyclomatic-complexity
+Source/Scripts/TrapExplosiveGas.psc:98:1:nesting-depth
 Source/Scripts/TrapExplosiveGas.psc:99:31:exclamation-spacing
 Source/Scripts/TrapExplosiveGas.psc:100:7:exclamation-spacing
 Source/Scripts/TrapExplosiveGas.psc:103:1:indentation
@@ -96777,6 +96901,7 @@ Source/Scripts/TrapFlamethrower.psc:34:1:trailing-whitespace
 Source/Scripts/TrapFlamethrower.psc:49:5:exclamation-spacing
 Source/Scripts/TrapFlamethrower.psc:60:1:indentation
 Source/Scripts/TrapFlamethrower.psc:64:1:cyclomatic-complexity
+Source/Scripts/TrapFlamethrower.psc:64:1:nesting-depth
 Source/Scripts/TrapFlamethrower.psc:66:5:exclamation-spacing
 Source/Scripts/TrapFlamethrower.psc:87:1:trailing-whitespace
 Source/Scripts/TrapFlamethrower.psc:90:1:trailing-whitespace
@@ -96943,6 +97068,7 @@ Source/Scripts/TrapHitBase.psc:45:1:indentation
 Source/Scripts/TrapHitBase.psc:46:1:trailing-whitespace
 Source/Scripts/TrapHitBase.psc:58:13:trailing-whitespace
 Source/Scripts/TrapHitBase.psc:59:1:cyclomatic-complexity
+Source/Scripts/TrapHitBase.psc:59:1:nesting-depth
 Source/Scripts/TrapHitBase.psc:59:121:line-length
 Source/Scripts/TrapHitBase.psc:60:1:indentation
 Source/Scripts/TrapHitBase.psc:61:1:unchecked-cast
@@ -97201,6 +97327,7 @@ Source/Scripts/TrapPoisonGas.psc:225:1:indentation
 Source/Scripts/TrapPoisonGas.psc:226:1:indentation
 Source/Scripts/TrapPoisonGas.psc:227:1:indentation
 Source/Scripts/TrapPoisonGas.psc:232:1:cyclomatic-complexity
+Source/Scripts/TrapPoisonGas.psc:232:1:nesting-depth
 Source/Scripts/TrapPoisonGas.psc:236:2:strict-boolean
 Source/Scripts/TrapPoisonGas.psc:239:4:empty-body
 Source/Scripts/TrapPoisonGas.psc:241:1:trailing-whitespace
@@ -97397,6 +97524,7 @@ Source/Scripts/TrapTriggerBase.psc:256:1:indentation
 Source/Scripts/TrapTriggerBase.psc:263:1:trailing-whitespace
 Source/Scripts/TrapTriggerBase.psc:274:1:indentation
 Source/Scripts/TrapTriggerBase.psc:275:1:cyclomatic-complexity
+Source/Scripts/TrapTriggerBase.psc:275:1:nesting-depth
 Source/Scripts/TrapTriggerBase.psc:277:1:indentation
 Source/Scripts/TrapTriggerBase.psc:279:25:forbidden-functions
 Source/Scripts/TrapTriggerBase.psc:280:1:indentation
@@ -98745,6 +98873,7 @@ Source/Scripts/WIKill02Script.psc:4:31:trailing-whitespace
 Source/Scripts/WIKill02Script.psc:7:31:trailing-whitespace
 Source/Scripts/WIKill02Script.psc:13:38:trailing-whitespace
 Source/Scripts/WIKill02Script.psc:16:40:trailing-whitespace
+Source/Scripts/WIKill02Script.psc:19:1:nesting-depth
 Source/Scripts/WIKill02Script.psc:22:1:none-form-usage
 Source/Scripts/WIKill02Script.psc:22:58:forbidden-functions
 Source/Scripts/WIKill02Script.psc:23:1:none-form-usage
@@ -98962,6 +99091,7 @@ Source/Scripts/WRDrawBridge01SCRIPT.psc:71:1:trailing-whitespace
 Source/Scripts/WRDrawBridge01SCRIPT.psc:75:1:undefined-event
 Source/Scripts/WRDrawBridge01SCRIPT.psc:77:1:none-form-usage
 Source/Scripts/WeaponRackActivateSCRIPT.psc:1:67:trailing-whitespace
+Source/Scripts/WeaponRackActivateSCRIPT.psc:107:1:nesting-depth
 Source/Scripts/WeaponRackActivateSCRIPT.psc:109:18:forbidden-functions
 Source/Scripts/WeaponRackActivateSCRIPT.psc:133:20:forbidden-functions
 Source/Scripts/WeaponRackActivateSCRIPT.psc:135:1:trailing-whitespace
@@ -98970,6 +99100,7 @@ Source/Scripts/WeaponRackActivateSCRIPT.psc:147:1:trailing-whitespace
 Source/Scripts/WeaponRackActivateSCRIPT.psc:149:2:empty-body
 Source/Scripts/WeaponRackActivateSCRIPT.psc:158:1:trailing-whitespace
 Source/Scripts/WeaponRackActivateSCRIPT.psc:160:1:cyclomatic-complexity
+Source/Scripts/WeaponRackActivateSCRIPT.psc:160:1:nesting-depth
 Source/Scripts/WeaponRackActivateSCRIPT.psc:160:46:trailing-whitespace
 Source/Scripts/WeaponRackActivateSCRIPT.psc:162:1:trailing-whitespace
 Source/Scripts/WeaponRackActivateSCRIPT.psc:163:1:trailing-whitespace
@@ -99499,6 +99630,7 @@ Source/Scripts/WordWallListenerQuestScript.psc:28:2:empty-body
 Source/Scripts/WordWallListenerQuestScript.psc:29:1:indentation
 Source/Scripts/WordWallListenerQuestScript.psc:29:121:line-length
 Source/Scripts/WordWallListenerQuestScript.psc:30:1:trailing-whitespace
+Source/Scripts/WordWallTrigger02Script.psc:20:1:nesting-depth
 Source/Scripts/WordWallTrigger02Script.psc:22:23:forbidden-functions
 Source/Scripts/WordWallTrigger02Script.psc:31:1:trailing-whitespace
 Source/Scripts/WordWallTrigger02Script.psc:43:1:trailing-whitespace
@@ -99511,6 +99643,7 @@ Source/Scripts/WordWallTriggerBleakFallsScript.psc:42:24:forbidden-functions
 Source/Scripts/WordWallTriggerScript.psc:135:15:forbidden-functions
 Source/Scripts/WordWallTriggerScript.psc:135:49:exclamation-spacing
 Source/Scripts/WordWallTriggerScript.psc:140:1:cyclomatic-complexity
+Source/Scripts/WordWallTriggerScript.psc:140:1:nesting-depth
 Source/Scripts/WordWallTriggerScript.psc:142:12:forbidden-functions
 Source/Scripts/WordWallTriggerScript.psc:142:67:exclamation-spacing
 Source/Scripts/WordWallTriggerScript.psc:142:73:forbidden-functions
@@ -99589,6 +99722,7 @@ Source/Scripts/WordWallTriggerScript.psc:280:1:none-form-usage
 Source/Scripts/WordWallTriggerScript.psc:289:1:none-form-usage
 Source/Scripts/WordWallTriggerScript.psc:290:1:none-form-usage
 Source/Scripts/WordWallTriggerScript.psc:291:39:trailing-whitespace
+Source/Scripts/WordWallTriggerScript.psc:305:1:nesting-depth
 Source/Scripts/WordWallTriggerScript.psc:309:28:exclamation-spacing
 Source/Scripts/WordWallTriggerScript.psc:315:7:exclamation-spacing
 Source/Scripts/WordWallTriggerScript.psc:319:9:exclamation-spacing
@@ -99818,6 +99952,7 @@ Source/Scripts/bpwMatchCardScript.psc:149:1:trailing-whitespace
 Source/Scripts/bpwMatchCardScript.psc:153:9:trailing-whitespace
 Source/Scripts/briarheartIngredientScript.psc:1:62:trailing-whitespace
 Source/Scripts/briarheartIngredientScript.psc:7:1:cyclomatic-complexity
+Source/Scripts/briarheartIngredientScript.psc:7:1:nesting-depth
 Source/Scripts/briarheartIngredientScript.psc:9:2:strict-boolean
 Source/Scripts/briarheartIngredientScript.psc:11:1:indentation
 Source/Scripts/briarheartIngredientScript.psc:13:1:unchecked-cast
@@ -100098,6 +100233,7 @@ Source/Scripts/ccBGSSSE001_CrabMQ4CrabCtrlr.psc:175:1:none-form-usage
 Source/Scripts/ccBGSSSE001_CrabMQ4CrabCtrlr.psc:175:1:place-at-me
 Source/Scripts/ccBGSSSE001_CrabMQ4CrabSpawner.psc:97:121:line-length
 Source/Scripts/ccBGSSSE001_CrabMQ4CrabSpawner.psc:107:1:none-form-usage
+Source/Scripts/ccBGSSSE001_CrabMQ4CrabSpawner.psc:118:1:nesting-depth
 Source/Scripts/ccBGSSSE001_CrabMQ4CrabSpawner.psc:118:1:parameter-count
 Source/Scripts/ccBGSSSE001_CrabMQ4CrabSpawner.psc:118:121:line-length
 Source/Scripts/ccBGSSSE001_CrabMQ4CrabSpawner.psc:119:121:line-length
@@ -100128,6 +100264,7 @@ Source/Scripts/ccBGSSSE001_CrabMQ4CrabSpawner.psc:265:1:none-form-usage
 Source/Scripts/ccBGSSSE001_CrabMQ4CrabSpawner.psc:265:1:none-form-usage
 Source/Scripts/ccBGSSSE001_CrabMQ4CrabSpawner.psc:266:37:slow-functions
 Source/Scripts/ccBGSSSE001_CrabMQ4CrabSpawner.psc:266:86:slow-functions
+Source/Scripts/ccBGSSSE001_CrabMQ4CrabSpawner.psc:273:1:nesting-depth
 Source/Scripts/ccBGSSSE001_CrabMQ4CrabSpawner.psc:280:78:trailing-whitespace
 Source/Scripts/ccBGSSSE001_CrabMQ4CrabSpawner.psc:295:7:exclamation-spacing
 Source/Scripts/ccBGSSSE001_CrabMQ4CrabSpawner.psc:315:9:exclamation-spacing
@@ -100264,6 +100401,7 @@ Source/Scripts/ccBGSSSE001_DLCDetectionScript.psc:290:1:none-form-usage
 Source/Scripts/ccBGSSSE001_DLCDetectionScript.psc:292:1:none-form-usage
 Source/Scripts/ccBGSSSE001_DLCDetectionScript.psc:301:1:none-form-usage
 Source/Scripts/ccBGSSSE001_DLCDetectionScript.psc:305:10:forbidden-functions
+Source/Scripts/ccBGSSSE001_DLCDetectionScript.psc:311:1:nesting-depth
 Source/Scripts/ccBGSSSE001_DLCDetectionScript.psc:313:5:exclamation-spacing
 Source/Scripts/ccBGSSSE001_DLCDetectionScript.psc:314:9:forbidden-functions
 Source/Scripts/ccBGSSSE001_DLCDetectionScript.psc:326:4:strict-boolean
@@ -100561,6 +100699,7 @@ Source/Scripts/ccBGSSSE001_FishingSystemScript.psc:349:1:indentation
 Source/Scripts/ccBGSSSE001_FishingSystemScript.psc:350:1:indentation
 Source/Scripts/ccBGSSSE001_FishingSystemScript.psc:351:1:indentation
 Source/Scripts/ccBGSSSE001_FishingSystemScript.psc:352:1:cyclomatic-complexity
+Source/Scripts/ccBGSSSE001_FishingSystemScript.psc:352:1:nesting-depth
 Source/Scripts/ccBGSSSE001_FishingSystemScript.psc:356:11:forbidden-functions
 Source/Scripts/ccBGSSSE001_FishingSystemScript.psc:362:5:exclamation-spacing
 Source/Scripts/ccBGSSSE001_FishingSystemScript.psc:377:6:exclamation-spacing
@@ -100891,6 +101030,7 @@ Source/Scripts/ccBGSSSE001_PlayerHitScript.psc:8:1:none-form-usage
 Source/Scripts/ccBGSSSE001_PlayerHitScript.psc:14:121:line-length
 Source/Scripts/ccBGSSSE001_PlayerTrackedCatches.psc:1:67:trailing-whitespace
 Source/Scripts/ccBGSSSE001_PlayerTrackedCatches.psc:23:1:undefined-event
+Source/Scripts/ccBGSSSE001_PlayerTrackedCatches.psc:28:1:nesting-depth
 Source/Scripts/ccBGSSSE001_PlayerTrackedCatches.psc:32:1:none-form-usage
 Source/Scripts/ccBGSSSE001_PlayerTrackedCatches.psc:32:1:none-form-usage
 Source/Scripts/ccBGSSSE001_PlayerTrackedCatches.psc:32:121:line-length
@@ -101411,6 +101551,7 @@ Source/Scripts/critterBird.psc:64:16:forbidden-functions
 Source/Scripts/critterBird.psc:65:1:trailing-whitespace
 Source/Scripts/critterBird.psc:72:1:short-wait-interval
 Source/Scripts/critterBird.psc:76:1:cyclomatic-complexity
+Source/Scripts/critterBird.psc:76:1:nesting-depth
 Source/Scripts/critterBird.psc:76:18:trailing-whitespace
 Source/Scripts/critterBird.psc:77:1:indentation
 Source/Scripts/critterBird.psc:78:1:indentation
@@ -101630,6 +101771,7 @@ Source/Scripts/critterMoth.psc:81:5:assignment-operator-spacing
 Source/Scripts/critterMoth.psc:81:5:assignment-operator-spacing
 Source/Scripts/critterMoth.psc:89:1:short-wait-interval
 Source/Scripts/critterMoth.psc:94:1:trailing-whitespace
+Source/Scripts/critterMoth.psc:103:1:nesting-depth
 Source/Scripts/critterMoth.psc:104:1:trailing-whitespace
 Source/Scripts/critterMoth.psc:106:6:exclamation-spacing
 Source/Scripts/critterMoth.psc:106:13:forbidden-functions
@@ -102036,6 +102178,7 @@ Source/Scripts/defaultDisableOtherObjectWhenTaken.psc:6:1:trailing-whitespace
 Source/Scripts/defaultDisableOtherObjectWhenTaken.psc:9:29:forbidden-functions
 Source/Scripts/defaultDisableOtherObjectWhenTaken.psc:11:1:none-form-usage
 Source/Scripts/defaultDisableSelfOnActivate.psc:1:64:trailing-whitespace
+Source/Scripts/defaultDisplayItemInListScript.psc:21:1:nesting-depth
 Source/Scripts/defaultDisplayItemInListScript.psc:24:6:exclamation-spacing
 Source/Scripts/defaultDisplayItemInListScript.psc:26:1:none-form-usage
 Source/Scripts/defaultDisplayItemInListScript.psc:30:22:exclamation-spacing
@@ -102171,6 +102314,7 @@ Source/Scripts/defaultFakeSummonSpell.psc:36:6:exclamation-spacing
 Source/Scripts/defaultFakeSummonSpell.psc:37:1:place-at-me
 Source/Scripts/defaultFireWeaponScript.psc:1:59:trailing-whitespace
 Source/Scripts/defaultFireWeaponScript.psc:72:1:cyclomatic-complexity
+Source/Scripts/defaultFireWeaponScript.psc:72:1:nesting-depth
 Source/Scripts/defaultFireWeaponScript.psc:72:1:undefined-event
 Source/Scripts/defaultFireWeaponScript.psc:77:53:trailing-whitespace
 Source/Scripts/defaultFireWeaponScript.psc:80:1:trailing-whitespace
@@ -102905,6 +103049,7 @@ Source/Scripts/defaultSetStageTRIGSpecificFaction.psc:32:1:none-form-usage
 Source/Scripts/defaultSetStageTRIGSpecificFaction.psc:33:1:none-form-usage
 Source/Scripts/defaultSetStageTrigOnLeaveSCRIPT.psc:1:68:trailing-whitespace
 Source/Scripts/defaultSetStageTrigOnLeaveSCRIPT.psc:7:28:trailing-whitespace
+Source/Scripts/defaultSetStageTrigOnLeaveSCRIPT.psc:24:1:nesting-depth
 Source/Scripts/defaultSetStageTrigOnLeaveSCRIPT.psc:27:1:none-form-usage
 Source/Scripts/defaultSetStageTrigOnLeaveSCRIPT.psc:29:1:none-form-usage
 Source/Scripts/defaultSetStageTrigOnLeaveSCRIPT.psc:30:1:none-form-usage
@@ -102940,6 +103085,7 @@ Source/Scripts/defaultStartSceneIfNoCombatTrigScript.psc:1:73:trailing-whitespac
 Source/Scripts/defaultStartSceneIfNoCombatTrigScript.psc:5:34:trailing-whitespace
 Source/Scripts/defaultStartSceneIfNoCombatTrigScript.psc:8:33:trailing-whitespace
 Source/Scripts/defaultStartSceneIfNoCombatTrigScript.psc:18:1:indentation
+Source/Scripts/defaultStartSceneIfNoCombatTrigScript.psc:18:1:nesting-depth
 Source/Scripts/defaultStartSceneIfNoCombatTrigScript.psc:19:1:indentation
 Source/Scripts/defaultStartSceneIfNoCombatTrigScript.psc:19:49:forbidden-functions
 Source/Scripts/defaultStartSceneIfNoCombatTrigScript.psc:20:1:indentation
@@ -103131,6 +103277,7 @@ Source/Scripts/defaultsetStageRefScript.psc:94:1:indentation
 Source/Scripts/defaultsetStageRefScript.psc:95:1:none-form-usage
 Source/Scripts/defaultsetStageRefScript.psc:102:34:trailing-whitespace
 Source/Scripts/defaultsetStageTrigSCRIPT.psc:7:28:trailing-whitespace
+Source/Scripts/defaultsetStageTrigSCRIPT.psc:24:1:nesting-depth
 Source/Scripts/defaultsetStageTrigSCRIPT.psc:27:1:none-form-usage
 Source/Scripts/defaultsetStageTrigSCRIPT.psc:29:1:none-form-usage
 Source/Scripts/defaultsetStageTrigSCRIPT.psc:30:1:none-form-usage
@@ -103352,6 +103499,7 @@ Source/Scripts/dlc2DBStatBoosterSCRIPT.psc:47:9:trailing-whitespace
 Source/Scripts/dlc2DBStatuePerkActivatorSCRIPT.psc:1:67:trailing-whitespace
 Source/Scripts/dlc2DBStatuePerkActivatorSCRIPT.psc:38:1:argument-naming
 Source/Scripts/dlc2DBStatuePerkActivatorSCRIPT.psc:38:1:cyclomatic-complexity
+Source/Scripts/dlc2DBStatuePerkActivatorSCRIPT.psc:38:1:nesting-depth
 Source/Scripts/dlc2DBStatuePerkActivatorSCRIPT.psc:39:1:trailing-whitespace
 Source/Scripts/dlc2DBStatuePerkActivatorSCRIPT.psc:41:17:forbidden-functions
 Source/Scripts/dlc2DBStatuePerkActivatorSCRIPT.psc:42:1:trailing-whitespace
@@ -103853,6 +104001,7 @@ Source/Scripts/dunAnsilvundShrineSCRIPT.psc:31:25:forbidden-functions
 Source/Scripts/dunAnsilvundShrineSCRIPT.psc:32:1:none-form-usage
 Source/Scripts/dunAnsilvundShrineSCRIPT.psc:35:1:trailing-whitespace
 Source/Scripts/dunArcherPressurePlateScript.psc:31:1:cyclomatic-complexity
+Source/Scripts/dunArcherPressurePlateScript.psc:31:1:nesting-depth
 Source/Scripts/dunArcherPressurePlateScript.psc:31:121:line-length
 Source/Scripts/dunArcherPressurePlateScript.psc:37:1:trailing-whitespace
 Source/Scripts/dunArcherPressurePlateScript.psc:39:1:trailing-whitespace
@@ -104063,6 +104212,7 @@ Source/Scripts/dunBloatedManSindingScript.psc:56:121:line-length
 Source/Scripts/dunBloatedManSindingScript.psc:57:121:line-length
 Source/Scripts/dunBloatedManSindingScript.psc:58:1:argument-naming
 Source/Scripts/dunBloatedManSindingScript.psc:58:1:cyclomatic-complexity
+Source/Scripts/dunBloatedManSindingScript.psc:58:1:nesting-depth
 Source/Scripts/dunBloatedManSindingScript.psc:58:121:line-length
 Source/Scripts/dunBloatedManSindingScript.psc:59:26:forbidden-functions
 Source/Scripts/dunBloatedManSindingScript.psc:61:1:none-form-usage
@@ -104652,6 +104802,7 @@ Source/Scripts/dunDustmansCairnEndController.psc:176:1:none-form-usage
 Source/Scripts/dunDustmansCairnEndController.psc:179:1:trailing-whitespace
 Source/Scripts/dunDustmansCairnEndController.psc:180:1:none-form-usage
 Source/Scripts/dunDustmansCairnEndController.psc:181:1:none-form-usage
+Source/Scripts/dunDustmansCairnLever.psc:23:1:nesting-depth
 Source/Scripts/dunDustmansCairnLever.psc:25:1:indentation
 Source/Scripts/dunDustmansCairnLever.psc:25:121:line-length
 Source/Scripts/dunDustmansCairnLever.psc:26:6:exclamation-spacing
@@ -105282,6 +105433,7 @@ Source/Scripts/dunGeirmundsBossBattle.psc:84:1:argument-naming
 Source/Scripts/dunGeirmundsBossBattle.psc:84:1:argument-naming
 Source/Scripts/dunGeirmundsBossBattle.psc:84:121:line-length
 Source/Scripts/dunGeirmundsBossBattle.psc:88:1:cyclomatic-complexity
+Source/Scripts/dunGeirmundsBossBattle.psc:88:1:nesting-depth
 Source/Scripts/dunGeirmundsBossBattle.psc:89:48:exclamation-spacing
 Source/Scripts/dunGeirmundsBossBattle.psc:125:1:none-form-usage
 Source/Scripts/dunGeirmundsBossBattle.psc:125:47:forbidden-functions
@@ -106950,6 +107102,7 @@ Source/Scripts/dunMarkarthWizardFadeSteam.psc:26:1:none-form-usage
 Source/Scripts/dunMarkarthWizardFadeSteam.psc:27:1:none-form-usage
 Source/Scripts/dunMarkarthWizardFadeSteam.psc:29:14:exclamation-spacing
 Source/Scripts/dunMarkarthWizardForceReferences.psc:65:1:cyclomatic-complexity
+Source/Scripts/dunMarkarthWizardForceReferences.psc:65:1:nesting-depth
 Source/Scripts/dunMarkarthWizardForceReferences.psc:66:1:none-form-usage
 Source/Scripts/dunMarkarthWizardForceReferences.psc:66:6:exclamation-spacing
 Source/Scripts/dunMarkarthWizardForceReferences.psc:67:1:none-form-usage
@@ -107628,6 +107781,7 @@ Source/Scripts/dunPOISoldiersRaidOnStart.psc:30:1:none-form-usage
 Source/Scripts/dunPOISoldiersRaidOnStart.psc:31:1:none-form-usage
 Source/Scripts/dunPOISoldiersRaidOnStart.psc:32:1:none-form-usage
 Source/Scripts/dunPOISoldiersRaidOnStart.psc:40:1:trailing-whitespace
+Source/Scripts/dunPOISoldiersRaidOnStart.psc:51:1:nesting-depth
 Source/Scripts/dunPOISoldiersRaidOnStart.psc:52:8:exclamation-spacing
 Source/Scripts/dunPOISoldiersRaidOnStart.psc:53:12:forbidden-functions
 Source/Scripts/dunPOISoldiersRaidOnStart.psc:58:11:exclamation-spacing
@@ -107806,6 +107960,7 @@ Source/Scripts/dunPotemasMS06BossFightDummy.psc:119:1:none-form-usage
 Source/Scripts/dunPotemasMS06BossFightDummy.psc:120:1:indentation
 Source/Scripts/dunPotemasMS06BossFightDummy.psc:120:1:none-form-usage
 Source/Scripts/dunPotemasMS06BossFightDummy.psc:121:1:none-form-usage
+Source/Scripts/dunPotemasMS06BossFightDummy.psc:126:1:nesting-depth
 Source/Scripts/dunPotemasMS06BossFightDummy.psc:128:1:none-form-usage
 Source/Scripts/dunPotemasMS06BossFightDummy.psc:128:26:comma-spacing
 Source/Scripts/dunPotemasMS06BossFightDummy.psc:131:1:trailing-whitespace
@@ -108241,6 +108396,7 @@ Source/Scripts/dunReachwaterRockSigdisBossBattle.psc:112:1:argument-naming
 Source/Scripts/dunReachwaterRockSigdisBossBattle.psc:112:1:argument-naming
 Source/Scripts/dunReachwaterRockSigdisBossBattle.psc:112:121:line-length
 Source/Scripts/dunReachwaterRockSigdisBossBattle.psc:116:1:cyclomatic-complexity
+Source/Scripts/dunReachwaterRockSigdisBossBattle.psc:116:1:nesting-depth
 Source/Scripts/dunReachwaterRockSigdisBossBattle.psc:117:48:exclamation-spacing
 Source/Scripts/dunReachwaterRockSigdisBossBattle.psc:150:1:argument-naming
 Source/Scripts/dunReachwaterRockSigdisBossBattle.psc:156:1:cyclomatic-complexity
@@ -108384,6 +108540,7 @@ Source/Scripts/dunRiftenJailOpenCellDoor.psc:5:1:argument-naming
 Source/Scripts/dunRiftenJailOpenCellDoor.psc:6:1:none-form-usage
 Source/Scripts/dunRiftenJailOpenCellDoor.psc:6:34:forbidden-functions
 Source/Scripts/dunRiftenJailSetStageOnOpen.psc:7:28:trailing-whitespace
+Source/Scripts/dunRiftenJailSetStageOnOpen.psc:22:1:nesting-depth
 Source/Scripts/dunRiftenJailSetStageOnOpen.psc:25:1:none-form-usage
 Source/Scripts/dunRiftenJailSetStageOnOpen.psc:27:26:forbidden-functions
 Source/Scripts/dunRiftenJailSetStageOnOpen.psc:29:18:assignment-operator-spacing
@@ -109471,6 +109628,7 @@ Source/Scripts/magicAbsorbFXScript.psc:27:88:semicolon
 Source/Scripts/magicAbsorbFXScript.psc:34:88:semicolon
 Source/Scripts/magicAbsorbFXScript.psc:39:1:argument-naming
 Source/Scripts/magicAbsorbFXScript.psc:39:1:argument-naming
+Source/Scripts/magicAbsorbFXScript.psc:39:1:nesting-depth
 Source/Scripts/magicAbsorbFXScript.psc:41:1:indentation
 Source/Scripts/magicAbsorbFXScript.psc:41:3:strict-boolean
 Source/Scripts/magicAbsorbFXScript.psc:42:1:indentation
@@ -109827,6 +109985,7 @@ Source/Scripts/magicProjectileStormScript.psc:155:1:indentation
 Source/Scripts/magicProjectileStormScript.psc:155:52:comma-spacing
 Source/Scripts/magicProjectileStormScript.psc:156:1:indentation
 Source/Scripts/magicProjectileStormScript.psc:160:1:cyclomatic-complexity
+Source/Scripts/magicProjectileStormScript.psc:160:1:nesting-depth
 Source/Scripts/magicProjectileStormScript.psc:161:1:none-form-usage
 Source/Scripts/magicProjectileStormScript.psc:165:1:indentation
 Source/Scripts/magicProjectileStormScript.psc:165:63:trailing-whitespace
@@ -110663,6 +110822,7 @@ Source/Scripts/pDortheScript.psc:15:1:undefined-event
 Source/Scripts/pDortheScript.psc:16:1:indentation
 Source/Scripts/pDortheScript.psc:16:71:trailing-whitespace
 Source/Scripts/pDortheScript.psc:17:1:indentation
+Source/Scripts/pDortheScript.psc:20:1:nesting-depth
 Source/Scripts/pDortheScript.psc:22:1:indentation
 Source/Scripts/pDortheScript.psc:23:1:indentation
 Source/Scripts/pDortheScript.psc:24:1:indentation
@@ -111245,6 +111405,7 @@ Source/Scripts/pVittoriaScript.psc:39:46:trailing-whitespace
 Source/Scripts/pVoltusScript.psc:1:60:trailing-whitespace
 Source/Scripts/pVoltusScript.psc:3:27:trailing-whitespace
 Source/Scripts/pVoltusScript.psc:4:42:trailing-whitespace
+Source/Scripts/pVoltusScript.psc:11:1:nesting-depth
 Source/Scripts/pVoltusScript.psc:14:1:indentation
 Source/Scripts/pVoltusScript.psc:15:1:indentation
 Source/Scripts/pVoltusScript.psc:15:47:trailing-whitespace
@@ -111667,6 +111828,7 @@ Source/Scripts/testPhilDwarvenForgeInputBoxSCRIPT.psc:55:121:line-length
 Source/Scripts/testPhilDwarvenForgeInputBoxSCRIPT.psc:56:121:line-length
 Source/Scripts/testPhilDwarvenForgeInputBoxSCRIPT.psc:58:9:trailing-whitespace
 Source/Scripts/testPhilDwarvenForgeInputBoxSCRIPT.psc:67:1:cyclomatic-complexity
+Source/Scripts/testPhilDwarvenForgeInputBoxSCRIPT.psc:67:1:nesting-depth
 Source/Scripts/testPhilDwarvenForgeInputBoxSCRIPT.psc:69:1:indentation
 Source/Scripts/testPhilDwarvenForgeInputBoxSCRIPT.psc:74:1:indentation
 Source/Scripts/testPhilDwarvenForgeInputBoxSCRIPT.psc:77:121:line-length
@@ -111722,6 +111884,7 @@ Source/Scripts/testPhilSlotMachineLeverSCRIPT.psc:54:1:argument-naming
 Source/Scripts/testPhilSlotMachineLeverSCRIPT.psc:57:1:none-form-usage
 Source/Scripts/testPhilSlotMachineLeverSCRIPT.psc:67:1:trailing-whitespace
 Source/Scripts/testPhilSlotMachineLeverSCRIPT.psc:70:1:cyclomatic-complexity
+Source/Scripts/testPhilSlotMachineLeverSCRIPT.psc:70:1:nesting-depth
 Source/Scripts/testPhilSlotMachineLeverSCRIPT.psc:82:35:comma-spacing
 Source/Scripts/testPhilSlotMachineLeverSCRIPT.psc:83:1:trailing-whitespace
 Source/Scripts/testPhilSlotMachineLeverSCRIPT.psc:85:36:comma-spacing

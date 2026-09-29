@@ -53,6 +53,7 @@ fn ast_rules_return_an_ast_visitor() {
     assert_ast(crate::multiple_auto_states::visitor());
     assert_ast(crate::named_arguments::visitor());
     assert_ast(crate::native_function_usage::visitor());
+    assert_ast(crate::nesting_depth::visitor());
     assert_ast(crate::non_global_function_call::visitor());
     assert_ast(crate::none_form_usage::visitor());
     assert_ast(crate::numeric_comparison::visitor());
