@@ -303,8 +303,8 @@
           "type": "boolean",
           "default": true
         },
-        "redundant_condition": {
-          "description": "Redundant condition",
+        "contradictory_condition": {
+          "description": "Contradictory condition",
           "type": "boolean",
           "default": true
         },
@@ -655,6 +655,11 @@
         },
         "boolean_simplification": {
           "description": "Boolean simplification",
+          "type": "boolean",
+          "default": true
+        },
+        "redundant_condition": {
+          "description": "Redundant condition",
           "type": "boolean",
           "default": true
         }
