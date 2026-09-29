@@ -181,3 +181,35 @@ fn report_write_failure_returns_io_status_without_using_stdout() {
         .expect("error output should be UTF-8")
         .contains("error: failed to write"));
 }
+
+#[test]
+fn short_report_omits_the_summary_line() {
+    let mut stdout = Vec::new();
+    let mut stderr = Vec::new();
+    let status = fold_and_flush_report(
+        vec![outcome(
+            "Example.psc:1:20:trailing-whitespace\n",
+            false,
+            false,
+            1,
+            false,
+        )],
+        OutputFormat::Short,
+        &papyrus_lints::Config::default(),
+        1,
+        false,
+        false,
+        false,
+        false,
+        None,
+        &mut stdout,
+        &mut stderr,
+    );
+
+    assert_eq!(status, 0);
+    assert_eq!(stderr, b"");
+    assert_eq!(
+        String::from_utf8(stdout).expect("short report should be UTF-8"),
+        "Example.psc:1:20:trailing-whitespace\n"
+    );
+}
