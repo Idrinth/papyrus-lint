@@ -6668,6 +6668,7 @@ Scripts/Source/City_Neon_DrugGameScript.psc:161:1:indentation
 Scripts/Source/City_Neon_DrugGameScript.psc:161:11:forbidden-functions
 Scripts/Source/City_Neon_DrugGameScript.psc:162:1:indentation
 Scripts/Source/City_Neon_DrugGameScript.psc:164:1:indentation
+Scripts/Source/City_Neon_DrugGameScript.psc:165:1:assignment-overwritten
 Scripts/Source/City_Neon_DrugGameScript.psc:165:1:identifier-casing
 Scripts/Source/City_Neon_DrugGameScript.psc:165:1:indentation
 Scripts/Source/City_Neon_DrugGameScript.psc:167:1:indentation
@@ -6718,6 +6719,7 @@ Scripts/Source/City_Neon_DrugGameScript.psc:202:1:indentation
 Scripts/Source/City_Neon_DrugGameScript.psc:203:1:indentation
 Scripts/Source/City_Neon_DrugGameScript.psc:203:1:none-form-usage
 Scripts/Source/City_Neon_DrugGameScript.psc:205:1:indentation
+Scripts/Source/City_Neon_DrugGameScript.psc:206:1:assignment-overwritten
 Scripts/Source/City_Neon_DrugGameScript.psc:206:1:identifier-casing
 Scripts/Source/City_Neon_DrugGameScript.psc:206:1:indentation
 Scripts/Source/City_Neon_DrugGameScript.psc:206:1:none-form-usage
@@ -11838,6 +11840,7 @@ Scripts/Source/DefaultAliasOnShipDock.psc:19:1:identifier-casing
 Scripts/Source/DefaultAliasOnShipDock.psc:21:121:line-length
 Scripts/Source/DefaultAliasOnShipDock.psc:23:1:identifier-casing
 Scripts/Source/DefaultAliasOnShipDock.psc:24:1:identifier-casing
+Scripts/Source/DefaultAliasOnShipDock.psc:25:1:assignment-overwritten
 Scripts/Source/DefaultAliasOnShipDock.psc:25:1:identifier-casing
 Scripts/Source/DefaultAliasOnShipDock.psc:34:121:line-length
 Scripts/Source/DefaultAliasOnShipDock.psc:35:121:line-length
@@ -12240,6 +12243,7 @@ Scripts/Source/DefaultAliasOnShipUndock.psc:19:1:identifier-casing
 Scripts/Source/DefaultAliasOnShipUndock.psc:21:121:line-length
 Scripts/Source/DefaultAliasOnShipUndock.psc:23:1:identifier-casing
 Scripts/Source/DefaultAliasOnShipUndock.psc:24:1:identifier-casing
+Scripts/Source/DefaultAliasOnShipUndock.psc:25:1:assignment-overwritten
 Scripts/Source/DefaultAliasOnShipUndock.psc:25:1:identifier-casing
 Scripts/Source/DefaultAliasOnShipUndock.psc:34:121:line-length
 Scripts/Source/DefaultAliasOnShipUndock.psc:35:121:line-length
@@ -13537,6 +13541,7 @@ Scripts/Source/DefaultCrowdEventManager.psc:61:59:trailing-whitespace
 Scripts/Source/DefaultCrowdEventManager.psc:64:57:trailing-whitespace
 Scripts/Source/DefaultCrowdEventManager.psc:72:1:function-length
 Scripts/Source/DefaultCrowdEventManager.psc:72:1:function-override
+Scripts/Source/DefaultCrowdEventManager.psc:76:1:assignment-overwritten
 Scripts/Source/DefaultCrowdEventManager.psc:76:1:identifier-casing
 Scripts/Source/DefaultCrowdEventManager.psc:77:1:trailing-whitespace
 Scripts/Source/DefaultCrowdEventManager.psc:83:1:trailing-whitespace
@@ -16521,6 +16526,7 @@ Scripts/Source/DefaultScriptFunctions.psc:130:1:indentation
 Scripts/Source/DefaultScriptFunctions.psc:131:1:indentation
 Scripts/Source/DefaultScriptFunctions.psc:132:1:trailing-whitespace
 Scripts/Source/DefaultScriptFunctions.psc:133:121:line-length
+Scripts/Source/DefaultScriptFunctions.psc:135:1:assignment-overwritten
 Scripts/Source/DefaultScriptFunctions.psc:135:1:identifier-casing
 Scripts/Source/DefaultScriptFunctions.psc:135:24:trailing-whitespace
 Scripts/Source/DefaultScriptFunctions.psc:137:121:line-length
@@ -49129,6 +49135,7 @@ Scripts/Source/Fragments/Quests/QF_MQ204_002C6D74.psc:23:43:forbidden-functions
 Scripts/Source/Fragments/Quests/QF_MQ204_002C6D74.psc:24:1:none-form-usage
 Scripts/Source/Fragments/Quests/QF_MQ204_002C6D74.psc:24:1:unchecked-cast
 Scripts/Source/Fragments/Quests/QF_MQ204_002C6D74.psc:24:43:forbidden-functions
+Scripts/Source/Fragments/Quests/QF_MQ204_002C6D74.psc:27:1:assignment-overwritten
 Scripts/Source/Fragments/Quests/QF_MQ204_002C6D74.psc:27:1:none-form-usage
 Scripts/Source/Fragments/Quests/QF_MQ204_002C6D74.psc:29:1:indentation
 Scripts/Source/Fragments/Quests/QF_MQ204_002C6D74.psc:31:1:indentation
@@ -59209,6 +59216,7 @@ Scripts/Source/Fragments/Quests/QF_OE_MP_HuntedHomesteaders_000F3D39.psc:20:1:no
 Scripts/Source/Fragments/Quests/QF_OE_MP_HuntedHomesteaders_000F3D39.psc:30:1:none-form-usage
 Scripts/Source/Fragments/Quests/QF_OE_MP_HuntedHomesteaders_000F3D39.psc:31:1:none-form-usage
 Scripts/Source/Fragments/Quests/QF_OE_MP_HuntedHomesteaders_000F3D39.psc:32:24:forbidden-functions
+Scripts/Source/Fragments/Quests/QF_OE_MP_HuntedHomesteaders_000F3D39.psc:33:1:assignment-overwritten
 Scripts/Source/Fragments/Quests/QF_OE_MP_HuntedHomesteaders_000F3D39.psc:36:1:indentation
 Scripts/Source/Fragments/Quests/QF_OE_MP_HuntedHomesteaders_000F3D39.psc:38:1:indentation
 Scripts/Source/Fragments/Quests/QF_OE_MP_HuntedHomesteaders_000F3D39.psc:40:1:indentation
@@ -59967,6 +59975,7 @@ Scripts/Source/Fragments/Quests/QF_OE_TerrormorphEncounter.psc:49:1:unnecessary-
 Scripts/Source/Fragments/Quests/QF_OE_TerrormorphEncounter.psc:59:9:forbidden-functions
 Scripts/Source/Fragments/Quests/QF_OE_TerrormorphEncounter.psc:60:1:indentation
 Scripts/Source/Fragments/Quests/QF_OE_TerrormorphEncounter.psc:60:10:forbidden-functions
+Scripts/Source/Fragments/Quests/QF_OE_TerrormorphEncounter.psc:71:1:assignment-overwritten
 Scripts/Source/Fragments/Quests/QF_OE_TerrormorphEncounter.psc:72:1:none-form-usage
 Scripts/Source/Fragments/Quests/QF_OE_TerrormorphEncounter.psc:74:1:strict-boolean
 Scripts/Source/Fragments/Quests/QF_OE_TerrormorphEncounter.psc:75:1:indentation
@@ -60002,11 +60011,15 @@ Scripts/Source/Fragments/Quests/QF_OE_TerrormorphEncounter.psc:210:24:forbidden-
 Scripts/Source/Fragments/Quests/QF_OE_TerrormorphEncounter.psc:215:23:comma-spacing
 Scripts/Source/Fragments/Quests/QF_OE_TerrormorphEncounter.psc:216:1:indentation
 Scripts/Source/Fragments/Quests/QF_OE_TerrormorphEncounter.psc:223:1:unnecessary-function
+Scripts/Source/Fragments/Quests/QF_OE_TerrormorphEncounter.psc:233:1:assignment-overwritten
+Scripts/Source/Fragments/Quests/QF_OE_TerrormorphEncounter.psc:234:1:assignment-overwritten
+Scripts/Source/Fragments/Quests/QF_OE_TerrormorphEncounter.psc:235:1:assignment-overwritten
 Scripts/Source/Fragments/Quests/QF_OE_TerrormorphEncounter.psc:237:1:none-form-usage
 Scripts/Source/Fragments/Quests/QF_OE_TerrormorphEncounter.psc:238:1:none-form-usage
 Scripts/Source/Fragments/Quests/QF_OE_TerrormorphEncounter.psc:239:1:none-form-usage
 Scripts/Source/Fragments/Quests/QF_OE_TerrormorphEncounter.psc:252:4:exclamation-spacing
 Scripts/Source/Fragments/Quests/QF_OE_TerrormorphEncounter.psc:253:1:indentation
+Scripts/Source/Fragments/Quests/QF_OE_TerrormorphEncounter.psc:262:1:assignment-overwritten
 Scripts/Source/Fragments/Quests/QF_OE_TerrormorphEncounter.psc:263:1:none-form-usage
 Scripts/Source/Fragments/Quests/QF_OE_TerrormorphEncounter.psc:269:4:exclamation-spacing
 Scripts/Source/Fragments/Quests/QF_OE_TerrormorphEncounter.psc:270:1:indentation
@@ -61352,6 +61365,7 @@ Scripts/Source/Fragments/Quests/QF_RAD05_002AD3D5.psc:154:1:identifier-casing
 Scripts/Source/Fragments/Quests/QF_RAD05_002AD3D5.psc:154:1:none-form-usage
 Scripts/Source/Fragments/Quests/QF_RAD05_002AD3D5.psc:155:1:none-form-usage
 Scripts/Source/Fragments/Quests/QF_RAD05_002AD3D5.psc:160:14:trailing-whitespace
+Scripts/Source/Fragments/Quests/QF_RAD05_002AD3D5.psc:164:1:assignment-overwritten
 Scripts/Source/Fragments/Quests/QF_RAD05_002AD3D5.psc:164:1:identifier-casing
 Scripts/Source/Fragments/Quests/QF_RAD05_002AD3D5.psc:164:1:unused-local-variable
 Scripts/Source/Fragments/Quests/QF_RAD05_002AD3D5.psc:175:1:none-form-usage
@@ -81735,7 +81749,9 @@ Scripts/Source/HazardBase.psc:80:1:indentation
 Scripts/Source/HazardBase.psc:81:1:indentation
 Scripts/Source/HazardBase.psc:82:1:trailing-whitespace
 Scripts/Source/HazardBase.psc:83:1:identifier-casing
+Scripts/Source/HazardBase.psc:84:1:assignment-overwritten
 Scripts/Source/HazardBase.psc:84:1:identifier-casing
+Scripts/Source/HazardBase.psc:85:1:assignment-overwritten
 Scripts/Source/HazardBase.psc:85:1:identifier-casing
 Scripts/Source/HazardBase.psc:86:17:operator-spacing
 Scripts/Source/HazardBase.psc:88:20:operator-spacing
@@ -88358,6 +88374,7 @@ Scripts/Source/LC165QuestScript.psc:1341:10:forbidden-functions
 Scripts/Source/LC165QuestScript.psc:1341:121:line-length
 Scripts/Source/LC165QuestScript.psc:1345:121:line-length
 Scripts/Source/LC165QuestScript.psc:1350:121:line-length
+Scripts/Source/LC165QuestScript.psc:1351:1:assignment-overwritten
 Scripts/Source/LC165QuestScript.psc:1351:1:function-length
 Scripts/Source/LC165QuestScript.psc:1351:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:1351:1:identifier-casing
@@ -89225,6 +89242,7 @@ Scripts/Source/LC165QuestScript.psc:2991:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:2993:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:2994:1:variable-used-before-assignment
 Scripts/Source/LC165QuestScript.psc:2998:12:forbidden-functions
+Scripts/Source/LC165QuestScript.psc:3009:1:assignment-overwritten
 Scripts/Source/LC165QuestScript.psc:3009:1:function-length
 Scripts/Source/LC165QuestScript.psc:3009:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:3009:1:identifier-casing
@@ -90840,6 +90858,7 @@ Scripts/Source/LoadElevatorFloorScript.psc:78:121:line-length
 Scripts/Source/LoadElevatorFloorScript.psc:83:1:identifier-casing
 Scripts/Source/LoadElevatorFloorScript.psc:98:1:none-form-usage
 Scripts/Source/LoadElevatorFloorScript.psc:101:1:none-form-usage
+Scripts/Source/LoadElevatorFloorScript.psc:109:1:assignment-overwritten
 Scripts/Source/LoadElevatorFloorScript.psc:109:1:identifier-casing
 Scripts/Source/LoadElevatorFloorScript.psc:112:121:line-length
 Scripts/Source/LoadElevatorFloorScript.psc:120:1:identifier-casing
@@ -92732,6 +92751,7 @@ Scripts/Source/MQ204Script.psc:36:1:identifier-casing
 Scripts/Source/MQ204Script.psc:36:18:unused-property
 Scripts/Source/MQ204Script.psc:38:1:function-override
 Scripts/Source/MQ204Script.psc:39:1:indentation
+Scripts/Source/MQ204Script.psc:42:1:assignment-overwritten
 Scripts/Source/MQ204Script.psc:42:1:function-length
 Scripts/Source/MQ204Script.psc:42:1:identifier-casing
 Scripts/Source/MQ204Script.psc:42:1:identifier-casing
@@ -97340,6 +97360,7 @@ Scripts/Source/MS06_QuestScript.psc:114:1:identifier-casing
 Scripts/Source/MS06_QuestScript.psc:114:1:indentation
 Scripts/Source/MS06_QuestScript.psc:115:1:identifier-casing
 Scripts/Source/MS06_QuestScript.psc:115:1:indentation
+Scripts/Source/MS06_QuestScript.psc:116:1:assignment-overwritten
 Scripts/Source/MS06_QuestScript.psc:116:1:indentation
 Scripts/Source/MS06_QuestScript.psc:117:1:indentation
 Scripts/Source/MS06_QuestScript.psc:118:1:indentation
@@ -103688,6 +103709,7 @@ Scripts/Source/OE_ShipsAddonScript.psc:169:1:indentation
 Scripts/Source/OE_ShipsAddonScript.psc:169:26:trailing-whitespace
 Scripts/Source/OE_ShipsAddonScript.psc:170:1:identifier-casing
 Scripts/Source/OE_ShipsAddonScript.psc:170:1:indentation
+Scripts/Source/OE_ShipsAddonScript.psc:171:1:assignment-overwritten
 Scripts/Source/OE_ShipsAddonScript.psc:171:1:identifier-casing
 Scripts/Source/OE_ShipsAddonScript.psc:171:1:indentation
 Scripts/Source/OE_ShipsAddonScript.psc:172:1:identifier-casing
@@ -103852,6 +103874,7 @@ Scripts/Source/OE_ShipsAddonScript.psc:297:1:cyclomatic-complexity
 Scripts/Source/OE_ShipsAddonScript.psc:297:1:function-length
 Scripts/Source/OE_ShipsAddonScript.psc:297:1:nesting-depth
 Scripts/Source/OE_ShipsAddonScript.psc:298:1:indentation
+Scripts/Source/OE_ShipsAddonScript.psc:299:1:assignment-overwritten
 Scripts/Source/OE_ShipsAddonScript.psc:299:1:identifier-casing
 Scripts/Source/OE_ShipsAddonScript.psc:299:1:indentation
 Scripts/Source/OE_ShipsAddonScript.psc:299:43:trailing-whitespace
@@ -103859,8 +103882,10 @@ Scripts/Source/OE_ShipsAddonScript.psc:300:1:identifier-casing
 Scripts/Source/OE_ShipsAddonScript.psc:300:1:indentation
 Scripts/Source/OE_ShipsAddonScript.psc:300:1:unused-local-variable
 Scripts/Source/OE_ShipsAddonScript.psc:300:38:trailing-whitespace
+Scripts/Source/OE_ShipsAddonScript.psc:301:1:assignment-overwritten
 Scripts/Source/OE_ShipsAddonScript.psc:301:1:identifier-casing
 Scripts/Source/OE_ShipsAddonScript.psc:301:1:indentation
+Scripts/Source/OE_ShipsAddonScript.psc:302:1:assignment-overwritten
 Scripts/Source/OE_ShipsAddonScript.psc:302:1:indentation
 Scripts/Source/OE_ShipsAddonScript.psc:303:1:indentation
 Scripts/Source/OE_ShipsAddonScript.psc:304:1:identifier-casing
@@ -104065,10 +104090,13 @@ Scripts/Source/OE_ShipsAddonScript.psc:462:1:identifier-casing
 Scripts/Source/OE_ShipsAddonScript.psc:462:1:nesting-depth
 Scripts/Source/OE_ShipsAddonScript.psc:462:75:trailing-whitespace
 Scripts/Source/OE_ShipsAddonScript.psc:463:1:indentation
+Scripts/Source/OE_ShipsAddonScript.psc:464:1:assignment-overwritten
 Scripts/Source/OE_ShipsAddonScript.psc:464:1:indentation
 Scripts/Source/OE_ShipsAddonScript.psc:464:47:trailing-whitespace
+Scripts/Source/OE_ShipsAddonScript.psc:465:1:assignment-overwritten
 Scripts/Source/OE_ShipsAddonScript.psc:465:1:indentation
 Scripts/Source/OE_ShipsAddonScript.psc:465:44:trailing-whitespace
+Scripts/Source/OE_ShipsAddonScript.psc:466:1:assignment-overwritten
 Scripts/Source/OE_ShipsAddonScript.psc:466:1:indentation
 Scripts/Source/OE_ShipsAddonScript.psc:467:1:indentation
 Scripts/Source/OE_ShipsAddonScript.psc:468:1:indentation
@@ -104077,6 +104105,7 @@ Scripts/Source/OE_ShipsAddonScript.psc:469:1:indentation
 Scripts/Source/OE_ShipsAddonScript.psc:469:34:trailing-whitespace
 Scripts/Source/OE_ShipsAddonScript.psc:470:1:indentation
 Scripts/Source/OE_ShipsAddonScript.psc:470:36:trailing-whitespace
+Scripts/Source/OE_ShipsAddonScript.psc:471:1:assignment-overwritten
 Scripts/Source/OE_ShipsAddonScript.psc:471:1:indentation
 Scripts/Source/OE_ShipsAddonScript.psc:472:1:indentation
 Scripts/Source/OE_ShipsAddonScript.psc:474:1:indentation
@@ -107588,6 +107617,7 @@ Scripts/Source/OutpostTutorialScript.psc:408:121:line-length
 Scripts/Source/OutpostTutorialScript.psc:409:1:identifier-casing
 Scripts/Source/OutpostTutorialScript.psc:411:1:identifier-casing
 Scripts/Source/OutpostTutorialScript.psc:412:1:identifier-casing
+Scripts/Source/OutpostTutorialScript.psc:413:1:assignment-overwritten
 Scripts/Source/OutpostTutorialScript.psc:413:1:identifier-casing
 Scripts/Source/OutpostTutorialScript.psc:414:1:trailing-whitespace
 Scripts/Source/OutpostTutorialScript.psc:426:13:comma-spacing
@@ -117513,6 +117543,7 @@ Scripts/Source/SEScript.psc:185:1:identifier-casing
 Scripts/Source/SEScript.psc:185:58:unresolved-script
 Scripts/Source/SEScript.psc:186:1:identifier-casing
 Scripts/Source/SEScript.psc:186:35:forbidden-functions
+Scripts/Source/SEScript.psc:188:1:assignment-overwritten
 Scripts/Source/SEScript.psc:188:1:identifier-casing
 Scripts/Source/SEScript.psc:196:13:boolean-simplification
 Scripts/Source/SEScript.psc:212:1:identifier-casing
@@ -121938,6 +121969,7 @@ Scripts/Source/SFBGS003/SFBGS003_SQ_BountyMission_AliasScript.psc:78:1:indentati
 Scripts/Source/SFBGS003/SFBGS003_SQ_BountyMission_AliasScript.psc:78:40:comma-spacing
 Scripts/Source/SFBGS003/SFBGS003_SQ_BountyMission_AliasScript.psc:79:1:indentation
 Scripts/Source/SFBGS003/SFBGS003_SQ_BountyMission_AliasScript.psc:80:1:indentation
+Scripts/Source/SFBGS003/SFBGS003_SQ_BountyMission_AliasScript.psc:81:1:assignment-overwritten
 Scripts/Source/SFBGS003/SFBGS003_SQ_BountyMission_AliasScript.psc:81:1:indentation
 Scripts/Source/SFBGS003/SFBGS003_SQ_BountyMission_AliasScript.psc:82:1:identifier-casing
 Scripts/Source/SFBGS003/SFBGS003_SQ_BountyMission_AliasScript.psc:82:1:indentation
@@ -121996,7 +122028,9 @@ Scripts/Source/SFBGS003/SFBGS003_SQ_BountyMission_AliasScript.psc:117:1:function
 Scripts/Source/SFBGS003/SFBGS003_SQ_BountyMission_AliasScript.psc:118:1:indentation
 Scripts/Source/SFBGS003/SFBGS003_SQ_BountyMission_AliasScript.psc:119:1:identifier-casing
 Scripts/Source/SFBGS003/SFBGS003_SQ_BountyMission_AliasScript.psc:119:1:indentation
+Scripts/Source/SFBGS003/SFBGS003_SQ_BountyMission_AliasScript.psc:120:1:assignment-overwritten
 Scripts/Source/SFBGS003/SFBGS003_SQ_BountyMission_AliasScript.psc:120:1:indentation
+Scripts/Source/SFBGS003/SFBGS003_SQ_BountyMission_AliasScript.psc:121:1:assignment-overwritten
 Scripts/Source/SFBGS003/SFBGS003_SQ_BountyMission_AliasScript.psc:121:1:indentation
 Scripts/Source/SFBGS003/SFBGS003_SQ_BountyMission_AliasScript.psc:122:1:indentation
 Scripts/Source/SFBGS003/SFBGS003_SQ_BountyMission_AliasScript.psc:122:29:trailing-whitespace
@@ -122233,6 +122267,7 @@ Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:89:10:trailing-whit
 Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:92:83:trailing-whitespace
 Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:95:31:trailing-whitespace
 Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:96:1:function-length
+Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:97:1:assignment-overwritten
 Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:97:1:indentation
 Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:99:1:indentation
 Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:99:39:comma-spacing
@@ -122973,6 +123008,7 @@ Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:159:1:indentation
 Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:159:40:comma-spacing
 Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:160:1:indentation
 Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:161:1:indentation
+Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:162:1:assignment-overwritten
 Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:162:1:indentation
 Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:163:1:identifier-casing
 Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:163:1:indentation
@@ -123132,7 +123168,9 @@ Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:301:1:function-length
 Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:302:1:indentation
 Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:303:1:identifier-casing
 Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:303:1:indentation
+Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:304:1:assignment-overwritten
 Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:304:1:indentation
+Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:305:1:assignment-overwritten
 Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:305:1:indentation
 Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:306:1:indentation
 Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:306:29:trailing-whitespace
@@ -123407,6 +123445,7 @@ Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:142:31:trailing-whitespace
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:143:1:function-length
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:144:1:indentation
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:144:58:unresolved-script
+Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:145:1:assignment-overwritten
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:145:1:indentation
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:146:1:indentation
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:146:1:none-form-usage
@@ -123509,6 +123548,7 @@ Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:235:65:trailing-whitespace
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:236:42:trailing-whitespace
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:237:49:trailing-whitespace
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:238:1:function-length
+Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:239:1:assignment-overwritten
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:239:1:indentation
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:239:44:unresolved-script
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:239:46:trailing-whitespace
@@ -132162,6 +132202,7 @@ Scripts/Source/SQ_ActorRolesScript.psc:241:1:indentation
 Scripts/Source/SQ_ActorRolesScript.psc:241:121:line-length
 Scripts/Source/SQ_ActorRolesScript.psc:242:1:indentation
 Scripts/Source/SQ_ActorRolesScript.psc:243:1:trailing-whitespace
+Scripts/Source/SQ_ActorRolesScript.psc:244:1:assignment-overwritten
 Scripts/Source/SQ_ActorRolesScript.psc:244:1:identifier-casing
 Scripts/Source/SQ_ActorRolesScript.psc:245:1:trailing-whitespace
 Scripts/Source/SQ_ActorRolesScript.psc:246:1:identifier-casing
@@ -133292,6 +133333,7 @@ Scripts/Source/SQ_CompanionsScript.psc:469:4:empty-body
 Scripts/Source/SQ_CompanionsScript.psc:483:1:function-length
 Scripts/Source/SQ_CompanionsScript.psc:483:1:identifier-casing
 Scripts/Source/SQ_CompanionsScript.psc:483:121:line-length
+Scripts/Source/SQ_CompanionsScript.psc:484:1:assignment-overwritten
 Scripts/Source/SQ_CompanionsScript.psc:484:1:identifier-casing
 Scripts/Source/SQ_CompanionsScript.psc:485:1:identifier-casing
 Scripts/Source/SQ_CompanionsScript.psc:487:121:line-length
@@ -133311,6 +133353,7 @@ Scripts/Source/SQ_CompanionsScript.psc:543:40:unresolved-script
 Scripts/Source/SQ_CompanionsScript.psc:557:1:cyclomatic-complexity
 Scripts/Source/SQ_CompanionsScript.psc:557:1:function-length
 Scripts/Source/SQ_CompanionsScript.psc:566:29:unresolved-script
+Scripts/Source/SQ_CompanionsScript.psc:569:1:assignment-overwritten
 Scripts/Source/SQ_CompanionsScript.psc:569:1:identifier-casing
 Scripts/Source/SQ_CompanionsScript.psc:571:2:strict-boolean
 Scripts/Source/SQ_CompanionsScript.psc:573:28:unresolved-script
@@ -135711,6 +135754,7 @@ Scripts/Source/SQ_GroupScript.psc:216:1:identifier-casing
 Scripts/Source/SQ_GroupScript.psc:216:77:unresolved-script
 Scripts/Source/SQ_GroupScript.psc:217:1:identifier-casing
 Scripts/Source/SQ_GroupScript.psc:217:64:unresolved-script
+Scripts/Source/SQ_GroupScript.psc:226:1:assignment-overwritten
 Scripts/Source/SQ_GroupScript.psc:226:1:cyclomatic-complexity
 Scripts/Source/SQ_GroupScript.psc:226:1:function-length
 Scripts/Source/SQ_GroupScript.psc:226:1:identifier-casing
@@ -135779,6 +135823,7 @@ Scripts/Source/SQ_GroupScript.psc:446:1:function-length
 Scripts/Source/SQ_GroupScript.psc:446:1:identifier-casing
 Scripts/Source/SQ_GroupScript.psc:446:1:identifier-casing
 Scripts/Source/SQ_GroupScript.psc:446:121:line-length
+Scripts/Source/SQ_GroupScript.psc:449:1:assignment-overwritten
 Scripts/Source/SQ_GroupScript.psc:449:1:identifier-casing
 Scripts/Source/SQ_GroupScript.psc:452:1:identifier-casing
 Scripts/Source/SQ_GroupScript.psc:460:1:identifier-casing
@@ -137891,6 +137936,7 @@ Scripts/Source/SQ_ParentScript.psc:742:1:indentation
 Scripts/Source/SQ_ParentScript.psc:743:1:indentation
 Scripts/Source/SQ_ParentScript.psc:744:1:identifier-casing
 Scripts/Source/SQ_ParentScript.psc:744:1:indentation
+Scripts/Source/SQ_ParentScript.psc:745:1:assignment-overwritten
 Scripts/Source/SQ_ParentScript.psc:745:1:identifier-casing
 Scripts/Source/SQ_ParentScript.psc:745:1:indentation
 Scripts/Source/SQ_ParentScript.psc:745:121:line-length
@@ -138891,6 +138937,7 @@ Scripts/Source/SQ_PlayerShipArmillaryScreenScript.psc:27:1:indentation
 Scripts/Source/SQ_PlayerShipArmillaryScreenScript.psc:28:1:indentation
 Scripts/Source/SQ_PlayerShipArmillaryScreenScript.psc:28:1:none-form-usage
 Scripts/Source/SQ_PlayerShipArmillaryScreenScript.psc:29:1:indentation
+Scripts/Source/SQ_PlayerShipArmillaryScreenScript.psc:30:1:assignment-overwritten
 Scripts/Source/SQ_PlayerShipArmillaryScreenScript.psc:30:1:indentation
 Scripts/Source/SQ_PlayerShipArmillaryScreenScript.psc:30:1:none-form-usage
 Scripts/Source/SQ_PlayerShipArmillaryScreenScript.psc:31:1:indentation
@@ -139562,6 +139609,7 @@ Scripts/Source/SQ_PlayerShipScript.psc:1003:24:unresolved-script
 Scripts/Source/SQ_PlayerShipScript.psc:1009:1:identifier-casing
 Scripts/Source/SQ_PlayerShipScript.psc:1010:1:identifier-casing
 Scripts/Source/SQ_PlayerShipScript.psc:1017:1:identifier-casing
+Scripts/Source/SQ_PlayerShipScript.psc:1018:1:assignment-overwritten
 Scripts/Source/SQ_PlayerShipScript.psc:1018:1:identifier-casing
 Scripts/Source/SQ_PlayerShipScript.psc:1019:1:identifier-casing
 Scripts/Source/SQ_PlayerShipScript.psc:1019:1:none-form-usage
@@ -139600,6 +139648,7 @@ Scripts/Source/SQ_PlayerShipScript.psc:1103:1:identifier-casing
 Scripts/Source/SQ_PlayerShipScript.psc:1103:1:none-form-usage
 Scripts/Source/SQ_PlayerShipScript.psc:1110:1:function-length
 Scripts/Source/SQ_PlayerShipScript.psc:1110:1:identifier-casing
+Scripts/Source/SQ_PlayerShipScript.psc:1111:1:assignment-overwritten
 Scripts/Source/SQ_PlayerShipScript.psc:1111:1:identifier-casing
 Scripts/Source/SQ_PlayerShipScript.psc:1112:2:strict-boolean
 Scripts/Source/SQ_PlayerShipScript.psc:1113:1:identifier-casing
@@ -139923,6 +139972,7 @@ Scripts/Source/SQ_ShipRespawnScript.psc:88:1:indentation
 Scripts/Source/SQ_ShipRespawnScript.psc:88:1:none-form-usage
 Scripts/Source/SQ_ShipRespawnScript.psc:89:1:indentation
 Scripts/Source/SQ_ShipRespawnScript.psc:90:1:indentation
+Scripts/Source/SQ_ShipRespawnScript.psc:91:1:assignment-overwritten
 Scripts/Source/SQ_ShipRespawnScript.psc:91:1:identifier-casing
 Scripts/Source/SQ_ShipRespawnScript.psc:91:1:indentation
 Scripts/Source/SQ_ShipRespawnScript.psc:92:1:indentation
@@ -142777,6 +142827,7 @@ Scripts/Source/ShipVendorScript.psc:267:15:forbidden-functions
 Scripts/Source/ShipVendorScript.psc:268:1:indentation
 Scripts/Source/ShipVendorScript.psc:271:1:function-length
 Scripts/Source/ShipVendorScript.psc:271:1:identifier-casing
+Scripts/Source/ShipVendorScript.psc:272:1:assignment-overwritten
 Scripts/Source/ShipVendorScript.psc:272:1:identifier-casing
 Scripts/Source/ShipVendorScript.psc:272:1:indentation
 Scripts/Source/ShipVendorScript.psc:273:1:indentation
@@ -144881,6 +144932,7 @@ Scripts/Source/TargetingSkillPlayerAliasScript.psc:10:1:indentation
 Scripts/Source/TargetingSkillPlayerAliasScript.psc:10:29:forbidden-functions
 Scripts/Source/TargetingSkillPlayerAliasScript.psc:11:1:identifier-casing
 Scripts/Source/TargetingSkillPlayerAliasScript.psc:11:1:indentation
+Scripts/Source/TargetingSkillPlayerAliasScript.psc:12:1:assignment-overwritten
 Scripts/Source/TargetingSkillPlayerAliasScript.psc:12:1:identifier-casing
 Scripts/Source/TargetingSkillPlayerAliasScript.psc:12:1:indentation
 Scripts/Source/TargetingSkillPlayerAliasScript.psc:14:1:indentation
@@ -145718,6 +145770,7 @@ Scripts/Source/TestDynamicTerminalScript.psc:43:1:function-length
 Scripts/Source/TestDynamicTerminalScript.psc:43:1:identifier-casing
 Scripts/Source/TestDynamicTerminalScript.psc:43:1:identifier-casing
 Scripts/Source/TestDynamicTerminalScript.psc:44:1:indentation
+Scripts/Source/TestDynamicTerminalScript.psc:46:1:assignment-overwritten
 Scripts/Source/TestDynamicTerminalScript.psc:46:1:identifier-casing
 Scripts/Source/TestDynamicTerminalScript.psc:46:1:indentation
 Scripts/Source/TestDynamicTerminalScript.psc:48:1:indentation
@@ -147667,6 +147720,7 @@ Scripts/Source/TestMovementAnim.psc:268:1:identifier-casing
 Scripts/Source/TestMovementAnim.psc:277:1:function-length
 Scripts/Source/TestMovementAnim.psc:277:1:identifier-casing
 Scripts/Source/TestMovementAnim.psc:280:1:identifier-casing
+Scripts/Source/TestMovementAnim.psc:281:1:assignment-overwritten
 Scripts/Source/TestMovementAnim.psc:281:1:identifier-casing
 Scripts/Source/TestMovementAnim.psc:282:1:numeric-comparison
 Scripts/Source/TestMovementAnim.psc:295:1:identifier-casing
@@ -147681,6 +147735,7 @@ Scripts/Source/TestMovementAnim.psc:378:1:function-length
 Scripts/Source/TestMovementAnim.psc:378:1:identifier-casing
 Scripts/Source/TestMovementAnim.psc:384:1:identifier-casing
 Scripts/Source/TestMovementAnim.psc:385:1:identifier-casing
+Scripts/Source/TestMovementAnim.psc:386:1:assignment-overwritten
 Scripts/Source/TestMovementAnim.psc:386:1:identifier-casing
 Scripts/Source/TestMovementAnim.psc:415:1:function-length
 Scripts/Source/TestMovementAnim.psc:415:1:identifier-casing
@@ -150603,6 +150658,7 @@ Scripts/Source/TrapElectricalPanelScript.psc:93:30:unresolved-script
 Scripts/Source/TrapElectricalPanelScript.psc:93:31:forbidden-functions
 Scripts/Source/TrapElectricalPanelScript.psc:94:1:indentation
 Scripts/Source/TrapElectricalPanelScript.psc:98:1:indentation
+Scripts/Source/TrapElectricalPanelScript.psc:99:1:assignment-overwritten
 Scripts/Source/TrapElectricalPanelScript.psc:99:1:indentation
 Scripts/Source/TrapElectricalPanelScript.psc:100:1:indentation
 Scripts/Source/TrapElectricalPanelScript.psc:101:1:indentation
@@ -150624,6 +150680,7 @@ Scripts/Source/TrapElectricalPanelScript.psc:119:1:indentation
 Scripts/Source/TrapElectricalPanelScript.psc:119:121:line-length
 Scripts/Source/TrapElectricalPanelScript.psc:120:1:indentation
 Scripts/Source/TrapElectricalPanelScript.psc:120:121:line-length
+Scripts/Source/TrapElectricalPanelScript.psc:121:1:assignment-overwritten
 Scripts/Source/TrapElectricalPanelScript.psc:121:1:identifier-casing
 Scripts/Source/TrapElectricalPanelScript.psc:121:1:indentation
 Scripts/Source/TrapElectricalPanelScript.psc:123:1:indentation
@@ -157412,11 +157469,13 @@ Scripts/Source/Utility.psc:128:1:identifier-casing
 Scripts/Source/Utility.psc:129:1:identifier-casing
 Scripts/Source/Utility.psc:129:30:forbidden-functions
 Scripts/Source/Utility.psc:130:2:strict-boolean
+Scripts/Source/Utility.psc:133:1:assignment-overwritten
 Scripts/Source/Utility.psc:133:1:identifier-casing
 Scripts/Source/Utility.psc:134:2:strict-boolean
 Scripts/Source/Utility.psc:135:121:line-length
 Scripts/Source/Utility.psc:137:1:identifier-casing
 Scripts/Source/Utility.psc:138:1:indentation
+Scripts/Source/Utility.psc:141:1:assignment-overwritten
 Scripts/Source/Utility.psc:141:1:identifier-casing
 Scripts/Source/Utility.psc:149:1:identifier-casing
 Scripts/Source/Utility.psc:151:8:forbidden-functions
@@ -157715,6 +157774,7 @@ Scripts/Source/VendorInfoScript.psc:3:1:identifier-casing
 Scripts/Source/VendorInfoScript.psc:3:1:identifier-casing
 Scripts/Source/VendorInfoScript.psc:4:8:forbidden-functions
 Scripts/Source/VendorInfoScript.psc:5:121:line-length
+Scripts/Source/VendorInfoScript.psc:7:1:assignment-overwritten
 Scripts/Source/VendorInfoScript.psc:7:1:identifier-casing
 Scripts/Source/VendorInfoScript.psc:8:1:identifier-casing
 Scripts/Source/VendorInfoScript.psc:9:27:forbidden-functions

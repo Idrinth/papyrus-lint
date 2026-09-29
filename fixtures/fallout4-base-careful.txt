@@ -311,6 +311,9 @@ Scripts/Source/Base/ArtilleryReferenceScript.psc:157:37:unresolved-script
 Scripts/Source/Base/ArtilleryReferenceScript.psc:161:9:forbidden-functions
 Scripts/Source/Base/ArtilleryReferenceScript.psc:164:9:forbidden-functions
 Scripts/Source/Base/ArtilleryReferenceScript.psc:181:8:forbidden-functions
+Scripts/Source/Base/ArtilleryReferenceScript.psc:191:1:assignment-overwritten
+Scripts/Source/Base/ArtilleryReferenceScript.psc:192:1:assignment-overwritten
+Scripts/Source/Base/ArtilleryReferenceScript.psc:193:1:assignment-overwritten
 Scripts/Source/Base/ArtilleryReferenceScript.psc:211:8:forbidden-functions
 Scripts/Source/Base/ArtilleryReferenceScript.psc:212:8:forbidden-functions
 Scripts/Source/Base/ArtilleryReferenceScript.psc:225:121:line-length
@@ -6428,6 +6431,7 @@ Scripts/Source/Base/DefaultCounterQuestRefColIncOnDestroyC.psc:12:1:unchecked-ca
 Scripts/Source/Base/DefaultCounterQuestRefColIncOnDestroyD.psc:6:1:unchecked-cast
 Scripts/Source/Base/DefaultCounterQuestRefColIncOnDestroyD.psc:8:1:unchecked-cast
 Scripts/Source/Base/DefaultCounterQuestRefColIncOnDestroyD.psc:12:1:unchecked-cast
+Scripts/Source/Base/DefaultCrowdEventManager.psc:76:1:assignment-overwritten
 Scripts/Source/Base/DefaultCrowdEventManager.psc:93:121:line-length
 Scripts/Source/Base/DefaultCrowdEventManager.psc:175:8:forbidden-functions
 Scripts/Source/Base/DefaultCrowdEventManager.psc:177:51:unresolved-script
@@ -6702,6 +6706,7 @@ Scripts/Source/Base/DefaultScriptFunctions.psc:45:6:empty-body
 Scripts/Source/Base/DefaultScriptFunctions.psc:46:121:line-length
 Scripts/Source/Base/DefaultScriptFunctions.psc:47:121:line-length
 Scripts/Source/Base/DefaultScriptFunctions.psc:52:121:line-length
+Scripts/Source/Base/DefaultScriptFunctions.psc:71:1:assignment-overwritten
 Scripts/Source/Base/DefaultScriptFunctions.psc:71:121:line-length
 Scripts/Source/Base/DefaultScriptFunctions.psc:80:25:forbidden-functions
 Scripts/Source/Base/DefaultScriptFunctions.psc:81:121:line-length
@@ -7839,6 +7844,7 @@ Scripts/Source/Base/FollowersScript.psc:532:1:none-form-usage
 Scripts/Source/Base/FollowersScript.psc:533:1:none-form-usage
 Scripts/Source/Base/FollowersScript.psc:542:1:numeric-comparison
 Scripts/Source/Base/FollowersScript.psc:552:8:forbidden-functions
+Scripts/Source/Base/FollowersScript.psc:553:1:assignment-overwritten
 Scripts/Source/Base/FollowersScript.psc:553:1:none-form-usage
 Scripts/Source/Base/FollowersScript.psc:554:1:none-form-usage
 Scripts/Source/Base/FollowersScript.psc:556:8:forbidden-functions
@@ -10689,7 +10695,9 @@ Scripts/Source/Base/Fragments/Quests/QF_BoSM01_000B1D79.psc:1078:1:none-form-usa
 Scripts/Source/Base/Fragments/Quests/QF_BoSM01_000B1D79.psc:1092:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_BoSM01_000B1D79.psc:1120:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_BoSM01_000B1D79.psc:1121:21:forbidden-functions
+Scripts/Source/Base/Fragments/Quests/QF_BoSM01_000B1D79.psc:1122:1:assignment-overwritten
 Scripts/Source/Base/Fragments/Quests/QF_BoSM01_000B1D79.psc:1122:1:none-form-usage
+Scripts/Source/Base/Fragments/Quests/QF_BoSM01_000B1D79.psc:1126:1:assignment-overwritten
 Scripts/Source/Base/Fragments/Quests/QF_BoSM01_000B1D79.psc:1126:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_BoSM01_000B1D79.psc:1130:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_BoSM01_000B1D79.psc:1143:1:none-form-usage
@@ -10718,6 +10726,7 @@ Scripts/Source/Base/Fragments/Quests/QF_BoSM01_000B1D79.psc:1374:1:none-form-usa
 Scripts/Source/Base/Fragments/Quests/QF_BoSM01_000B1D79.psc:1374:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_BoSM01_000B1D79.psc:1378:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_BoSM01_000B1D79.psc:1384:1:none-form-usage
+Scripts/Source/Base/Fragments/Quests/QF_BoSM01_000B1D79.psc:1413:1:assignment-overwritten
 Scripts/Source/Base/Fragments/Quests/QF_BoSM01_000B1D79.psc:1415:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_BoSM01_000B1D79.psc:1417:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_BoSM01_000B1D79.psc:1419:21:forbidden-functions
@@ -10729,6 +10738,7 @@ Scripts/Source/Base/Fragments/Quests/QF_BoSM01_000B1D79.psc:1424:1:none-form-usa
 Scripts/Source/Base/Fragments/Quests/QF_BoSM01_000B1D79.psc:1424:18:argument-types
 Scripts/Source/Base/Fragments/Quests/QF_BoSM01_000B1D79.psc:1425:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_BoSM01_000B1D79.psc:1425:18:argument-types
+Scripts/Source/Base/Fragments/Quests/QF_BoSM01_000B1D79.psc:1438:1:assignment-overwritten
 Scripts/Source/Base/Fragments/Quests/QF_BoSM01_000B1D79.psc:1440:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_BoSM01_000B1D79.psc:1442:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_BoSM01_000B1D79.psc:1444:21:forbidden-functions
@@ -13237,9 +13247,13 @@ Scripts/Source/Base/Fragments/Quests/QF_DN035_0100C868.psc:9:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_DN035_0100C868.psc:10:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_DN035_0100C868.psc:11:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_DN035_0100C868.psc:12:1:none-form-usage
+Scripts/Source/Base/Fragments/Quests/QF_DN035_0100C868.psc:20:1:assignment-overwritten
 Scripts/Source/Base/Fragments/Quests/QF_DN035_0100C868.psc:20:1:none-form-usage
+Scripts/Source/Base/Fragments/Quests/QF_DN035_0100C868.psc:25:1:assignment-overwritten
 Scripts/Source/Base/Fragments/Quests/QF_DN035_0100C868.psc:25:1:none-form-usage
+Scripts/Source/Base/Fragments/Quests/QF_DN035_0100C868.psc:30:1:assignment-overwritten
 Scripts/Source/Base/Fragments/Quests/QF_DN035_0100C868.psc:30:1:none-form-usage
+Scripts/Source/Base/Fragments/Quests/QF_DN035_0100C868.psc:35:1:assignment-overwritten
 Scripts/Source/Base/Fragments/Quests/QF_DN035_0100C868.psc:35:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_DN035_0100C868.psc:40:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_DN035_EasyCityRadioOverri_001FB236.psc:11:1:none-form-usage
@@ -13339,7 +13353,9 @@ Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:163:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:164:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:176:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:177:1:none-form-usage
+Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:178:1:assignment-overwritten
 Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:178:1:none-form-usage
+Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:183:1:assignment-overwritten
 Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:183:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:188:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:195:6:forbidden-functions
@@ -13347,13 +13363,17 @@ Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:198:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:199:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:208:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:217:1:none-form-usage
+Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:218:1:assignment-overwritten
 Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:218:1:none-form-usage
+Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:222:1:assignment-overwritten
 Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:222:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:226:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:232:6:forbidden-functions
 Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:241:1:none-form-usage
+Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:242:1:assignment-overwritten
 Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:242:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:244:1:unchecked-cast
+Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:246:1:assignment-overwritten
 Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:246:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:248:1:unchecked-cast
 Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:250:1:none-form-usage
@@ -13421,15 +13441,18 @@ Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:552:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:553:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:554:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:566:1:none-form-usage
+Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:567:1:assignment-overwritten
 Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:567:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:572:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:579:6:forbidden-functions
 Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:582:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:591:1:none-form-usage
+Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:592:1:assignment-overwritten
 Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:592:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:596:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:602:6:forbidden-functions
 Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:611:1:none-form-usage
+Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:612:1:assignment-overwritten
 Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:612:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:614:1:unchecked-cast
 Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:616:1:none-form-usage
@@ -13467,6 +13490,7 @@ Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:785:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:786:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:798:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:801:1:none-form-usage
+Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:802:1:assignment-overwritten
 Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:802:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:807:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:814:1:none-form-usage
@@ -13474,12 +13498,14 @@ Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:815:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:818:6:forbidden-functions
 Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:821:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:830:1:none-form-usage
+Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:831:1:assignment-overwritten
 Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:831:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:835:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:841:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:842:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:845:6:forbidden-functions
 Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:854:1:none-form-usage
+Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:855:1:assignment-overwritten
 Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:855:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:857:1:unchecked-cast
 Scripts/Source/Base/Fragments/Quests/QF_DN049_0004542B.psc:859:1:none-form-usage
@@ -16412,6 +16438,7 @@ Scripts/Source/Base/Fragments/Quests/QF_FreeformDiamondCity01_0001D727.psc:37:1:
 Scripts/Source/Base/Fragments/Quests/QF_FreeformDiamondCity01_0001D727.psc:56:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_FreeformDiamondCity01_0001D727.psc:64:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_FreeformDiamondCity01_0001D727.psc:65:1:none-form-usage
+Scripts/Source/Base/Fragments/Quests/QF_FreeformDiamondCity01_0001D727.psc:111:1:assignment-overwritten
 Scripts/Source/Base/Fragments/Quests/QF_FreeformDiamondCity01_0001D727.psc:111:24:forbidden-functions
 Scripts/Source/Base/Fragments/Quests/QF_FreeformDiamondCity01_0001D727.psc:145:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_FreeformDiamondCity01_0001D727.psc:146:1:none-form-usage
@@ -20888,6 +20915,7 @@ Scripts/Source/Base/Fragments/Quests/QF_MS13_00022A04.psc:522:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_MS13_00022A04.psc:523:6:forbidden-functions
 Scripts/Source/Base/Fragments/Quests/QF_MS13_00022A04.psc:592:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_MS13_00022A04.psc:608:1:none-form-usage
+Scripts/Source/Base/Fragments/Quests/QF_MS13_00022A04.psc:609:1:assignment-overwritten
 Scripts/Source/Base/Fragments/Quests/QF_MS13_00022A04.psc:609:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_MS13_00022A04.psc:610:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_MS13_00022A04.psc:611:1:none-form-usage
@@ -34396,6 +34424,7 @@ Scripts/Source/Base/Hardcore/HC_ManagerScript.psc:3136:121:line-length
 Scripts/Source/Base/Hardcore/HC_ManagerScript.psc:3137:1:numeric-comparison
 Scripts/Source/Base/Hardcore/HC_ManagerScript.psc:3138:121:line-length
 Scripts/Source/Base/Hardcore/HC_ManagerScript.psc:3142:121:line-length
+Scripts/Source/Base/Hardcore/HC_ManagerScript.psc:3148:1:assignment-overwritten
 Scripts/Source/Base/Hardcore/HC_ManagerScript.psc:3171:121:line-length
 Scripts/Source/Base/Hardcore/HC_ManagerScript.psc:3236:121:line-length
 Scripts/Source/Base/Hardcore/HC_ManagerScript.psc:3241:1:unregistered-remote-event
@@ -34432,6 +34461,8 @@ Scripts/Source/Base/HazardBase.psc:53:121:line-length
 Scripts/Source/Base/HazardBase.psc:54:121:line-length
 Scripts/Source/Base/HazardBase.psc:56:1:none-form-usage
 Scripts/Source/Base/HazardBase.psc:57:1:none-form-usage
+Scripts/Source/Base/HazardBase.psc:84:1:assignment-overwritten
+Scripts/Source/Base/HazardBase.psc:85:1:assignment-overwritten
 Scripts/Source/Base/HeavyActorPushOnImpact.psc:19:1:nesting-depth
 Scripts/Source/Base/HeavyActorPushOnImpact.psc:21:8:forbidden-functions
 Scripts/Source/Base/HeavyActorPushOnImpact.psc:23:5:strict-boolean
@@ -34755,6 +34786,7 @@ Scripts/Source/Base/Inst307FightQuestScript.psc:356:22:unresolved-script
 Scripts/Source/Base/Inst307FightQuestScript.psc:357:20:unresolved-script
 Scripts/Source/Base/Inst307FightQuestScript.psc:358:21:unresolved-script
 Scripts/Source/Base/Inst307FightQuestScript.psc:387:121:line-length
+Scripts/Source/Base/Inst307FightQuestScript.psc:388:1:assignment-overwritten
 Scripts/Source/Base/Inst307FightQuestScript.psc:440:121:line-length
 Scripts/Source/Base/Inst307FightQuestScript.psc:460:121:line-length
 Scripts/Source/Base/Inst307FightQuestScript.psc:468:1:nesting-depth
@@ -36525,6 +36557,8 @@ Scripts/Source/Base/MQ206Script.psc:605:121:line-length
 Scripts/Source/Base/MQ206Script.psc:605:133:unresolved-script
 Scripts/Source/Base/MQ206Script.psc:607:32:unresolved-script
 Scripts/Source/Base/MQ206Script.psc:615:8:forbidden-functions
+Scripts/Source/Base/MQ206Script.psc:619:1:assignment-overwritten
+Scripts/Source/Base/MQ206Script.psc:632:1:assignment-overwritten
 Scripts/Source/Base/MQ206Script.psc:645:121:line-length
 Scripts/Source/Base/MQ206Script.psc:646:22:forbidden-functions
 Scripts/Source/Base/MQ206Script.psc:647:9:forbidden-functions
@@ -38824,6 +38858,7 @@ Scripts/Source/Base/MinutemenCentralScript.psc:526:8:forbidden-functions
 Scripts/Source/Base/MinutemenCentralScript.psc:531:8:forbidden-functions
 Scripts/Source/Base/MinutemenCentralScript.psc:542:8:forbidden-functions
 Scripts/Source/Base/MinutemenCentralScript.psc:544:76:unresolved-script
+Scripts/Source/Base/MinutemenCentralScript.psc:545:1:assignment-overwritten
 Scripts/Source/Base/MinutemenCentralScript.psc:547:1:unchecked-cast
 Scripts/Source/Base/MinutemenCentralScript.psc:548:1:unchecked-cast
 Scripts/Source/Base/MinutemenCentralScript.psc:554:9:forbidden-functions
@@ -39015,6 +39050,7 @@ Scripts/Source/Base/ObjectReference.psc:32:25:forbidden-functions
 Scripts/Source/Base/ObjectReference.psc:43:22:forbidden-functions
 Scripts/Source/Base/ObjectReference.psc:78:121:line-length
 Scripts/Source/Base/ObjectReference.psc:79:121:line-length
+Scripts/Source/Base/ObjectReference.psc:100:1:assignment-overwritten
 Scripts/Source/Base/ObjectReference.psc:105:10:forbidden-functions
 Scripts/Source/Base/ObjectReference.psc:110:29:forbidden-functions
 Scripts/Source/Base/ObjectReference.psc:113:11:forbidden-functions
@@ -39379,6 +39415,7 @@ Scripts/Source/Base/PowerArmorWorkbench.psc:216:2:strict-boolean
 Scripts/Source/Base/PowerLiftMiniCartScript.psc:15:121:line-length
 Scripts/Source/Base/PowerLiftMiniCartScript.psc:18:121:line-length
 Scripts/Source/Base/PowerLiftMiniCartScript.psc:21:121:line-length
+Scripts/Source/Base/PowerLiftMiniCartScript.psc:33:1:assignment-overwritten
 Scripts/Source/Base/PowerLiftMiniCartScript.psc:33:25:forbidden-functions
 Scripts/Source/Base/PowerLiftMiniCartScript.psc:34:31:forbidden-functions
 Scripts/Source/Base/PowerLiftMiniCartScript.psc:35:30:forbidden-functions
@@ -40031,6 +40068,7 @@ Scripts/Source/Base/RR101TourBotManagerScript.psc:46:1:none-form-usage
 Scripts/Source/Base/RR101TourBotManagerScript.psc:52:1:none-form-usage
 Scripts/Source/Base/RR101TourBotManagerScript.psc:53:1:none-form-usage
 Scripts/Source/Base/RR101TourBotManagerScript.psc:58:1:none-form-usage
+Scripts/Source/Base/RR101TourBotManagerScript.psc:62:1:assignment-overwritten
 Scripts/Source/Base/RR101TourBotManagerScript.psc:83:9:forbidden-functions
 Scripts/Source/Base/RR101TourBotManagerScript.psc:88:25:forbidden-functions
 Scripts/Source/Base/RR101TourBotManagerScript.psc:89:1:unchecked-cast
@@ -40935,6 +40973,7 @@ Scripts/Source/Base/SpotlightTriggerScript.psc:348:8:forbidden-functions
 Scripts/Source/Base/SpotlightTriggerScript.psc:356:2:empty-body
 Scripts/Source/Base/SpotlightTriggerScript.psc:386:3:empty-body
 Scripts/Source/Base/SpotlightTriggerScript.psc:396:2:empty-body
+Scripts/Source/Base/SpotlightTriggerScript.psc:403:1:assignment-overwritten
 Scripts/Source/Base/SpotlightTriggerScript.psc:404:32:forbidden-functions
 Scripts/Source/Base/SpotlightTriggerScript.psc:427:121:line-length
 Scripts/Source/Base/SpotlightTriggerScript.psc:436:28:unresolved-script
@@ -41494,7 +41533,9 @@ Scripts/Source/Base/TestMoleratBomb.psc:35:8:forbidden-functions
 Scripts/Source/Base/TestMoleratBomb.psc:37:8:forbidden-functions
 Scripts/Source/Base/TestMoleratBomb.psc:40:10:forbidden-functions
 Scripts/Source/Base/TestMoleratBomb.psc:53:8:forbidden-functions
+Scripts/Source/Base/TestMovementAnim.psc:280:1:assignment-overwritten
 Scripts/Source/Base/TestMovementAnim.psc:281:1:numeric-comparison
+Scripts/Source/Base/TestMovementAnim.psc:385:1:assignment-overwritten
 Scripts/Source/Base/TestMovementAnim.psc:527:1:numeric-comparison
 Scripts/Source/Base/TestNewsStandScript.psc:12:8:forbidden-functions
 Scripts/Source/Base/TestPowerPuzzleActor.psc:8:1:none-form-usage
@@ -41579,8 +41620,10 @@ Scripts/Source/Base/TestWorkshopNPCSpawnerScript.psc:8:28:forbidden-functions
 Scripts/Source/Base/TestWorkshopNPCSpawnerScript.psc:11:35:forbidden-functions
 Scripts/Source/Base/TestWorkshopNPCSpawnerScript.psc:12:1:none-form-usage
 Scripts/Source/Base/TestWorkshopTerminalScript.psc:7:25:forbidden-functions
+Scripts/Source/Base/TestWorkshopTerminalScript.psc:9:1:assignment-overwritten
 Scripts/Source/Base/TestWorkshopTerminalScript.psc:9:1:none-form-usage
 Scripts/Source/Base/TestWorkshopTerminalScript.psc:10:11:forbidden-functions
+Scripts/Source/Base/TestWorkshopTerminalScript.psc:13:1:assignment-overwritten
 Scripts/Source/Base/TestWorkshopTerminalScript.psc:13:1:none-form-usage
 Scripts/Source/Base/TestWorkshopTerminalScript.psc:16:11:forbidden-functions
 Scripts/Source/Base/TestWorkshopTerminalScript.psc:17:1:none-form-usage
@@ -41780,10 +41823,12 @@ Scripts/Source/Base/TrapTrigBase.psc:242:13:forbidden-functions
 Scripts/Source/Base/TrapTrigBase.psc:257:12:forbidden-functions
 Scripts/Source/Base/TrapTrigBase.psc:259:12:forbidden-functions
 Scripts/Source/Base/TrapTrigBase.psc:288:9:forbidden-functions
+Scripts/Source/Base/TrapTrigBase.psc:303:1:assignment-overwritten
 Scripts/Source/Base/TrapTrigBase.psc:303:1:nesting-depth
 Scripts/Source/Base/TrapTrigBase.psc:307:25:forbidden-functions
 Scripts/Source/Base/TrapTrigBase.psc:322:1:unchecked-cast
 Scripts/Source/Base/TrapTrigBase.psc:335:1:unchecked-cast
+Scripts/Source/Base/TrapTrigBase.psc:358:1:assignment-overwritten
 Scripts/Source/Base/TrapTrigBase.psc:361:1:unchecked-cast
 Scripts/Source/Base/TrapTrigBase.psc:363:69:unresolved-script
 Scripts/Source/Base/TrapTrigBase.psc:376:1:unchecked-cast
@@ -43114,6 +43159,7 @@ Scripts/Source/Base/WorkshopParentScript.psc:2078:121:line-length
 Scripts/Source/Base/WorkshopParentScript.psc:2116:2:unused-getter
 Scripts/Source/Base/WorkshopParentScript.psc:2126:121:line-length
 Scripts/Source/Base/WorkshopParentScript.psc:2127:1:nesting-depth
+Scripts/Source/Base/WorkshopParentScript.psc:2133:1:assignment-overwritten
 Scripts/Source/Base/WorkshopParentScript.psc:2136:39:unresolved-script
 Scripts/Source/Base/WorkshopParentScript.psc:2139:32:unresolved-script
 Scripts/Source/Base/WorkshopParentScript.psc:2140:38:unresolved-script
@@ -43250,6 +43296,7 @@ Scripts/Source/Base/WorkshopParentScript.psc:3695:121:line-length
 Scripts/Source/Base/WorkshopParentScript.psc:3696:8:forbidden-functions
 Scripts/Source/Base/WorkshopParentScript.psc:3704:121:line-length
 Scripts/Source/Base/WorkshopParentScript.psc:3705:10:forbidden-functions
+Scripts/Source/Base/WorkshopParentScript.psc:3706:1:assignment-overwritten
 Scripts/Source/Base/WorkshopParentScript.psc:3712:11:forbidden-functions
 Scripts/Source/Base/WorkshopParentScript.psc:3712:121:line-length
 Scripts/Source/Base/WorkshopParentScript.psc:3719:121:line-length
@@ -43734,6 +43781,7 @@ Scripts/Source/Base/WorkshopScript.psc:1427:1:none-form-usage
 Scripts/Source/Base/WorkshopScript.psc:1427:121:line-length
 Scripts/Source/Base/WorkshopScript.psc:1431:1:none-form-usage
 Scripts/Source/Base/WorkshopScript.psc:1432:1:none-form-usage
+Scripts/Source/Base/WorkshopScript.psc:1433:1:assignment-overwritten
 Scripts/Source/Base/WorkshopScript.psc:1440:1:none-form-usage
 Scripts/Source/Base/WorkshopScript.psc:1444:1:none-form-usage
 Scripts/Source/Base/WorkshopScript.psc:1445:1:numeric-comparison
@@ -43835,7 +43883,9 @@ Scripts/Source/Base/WorkshopTutorialScript.psc:381:1:nesting-depth
 Scripts/Source/Base/WorkshopTutorialScript.psc:381:121:line-length
 Scripts/Source/Base/WorkshopTutorialScript.psc:386:8:forbidden-functions
 Scripts/Source/Base/WorkshopTutorialScript.psc:386:121:line-length
+Scripts/Source/Base/WorkshopTutorialScript.psc:387:1:assignment-overwritten
 Scripts/Source/Base/WorkshopTutorialScript.psc:390:121:line-length
+Scripts/Source/Base/WorkshopTutorialScript.psc:394:1:assignment-overwritten
 Scripts/Source/Base/WorkshopTutorialScript.psc:409:10:forbidden-functions
 Scripts/Source/Base/WorkshopTutorialScript.psc:409:121:line-length
 Scripts/Source/Base/WorkshopTutorialScript.psc:433:8:forbidden-functions
@@ -44595,6 +44645,7 @@ Scripts/Source/Base/securityBarScript.psc:160:1:unchecked-cast
 Scripts/Source/Base/securityBarScript.psc:161:11:forbidden-functions
 Scripts/Source/Base/securityBarScript.psc:161:121:line-length
 Scripts/Source/Base/securityBarScript.psc:170:2:empty-body
+Scripts/Source/Base/securityBarScript.psc:179:1:assignment-overwritten
 Scripts/Source/Base/securityBarScript.psc:180:8:forbidden-functions
 Scripts/Source/Base/securityBarScript.psc:180:65:forbidden-functions
 Scripts/Source/Base/securityBarScript.psc:182:36:forbidden-functions
@@ -45092,6 +45143,7 @@ Scripts/Source/DLC01/DLC01/DLC01CompanionUnlockScript.psc:116:1:none-form-usage
 Scripts/Source/DLC01/DLC01/DLC01CompanionUnlockScript.psc:117:1:none-form-usage
 Scripts/Source/DLC01/DLC01/DLC01CompanionUnlockScript.psc:119:1:none-form-usage
 Scripts/Source/DLC01/DLC01/DLC01CompanionUnlockScript.psc:120:1:none-form-usage
+Scripts/Source/DLC01/DLC01/DLC01CompanionUnlockScript.psc:126:1:assignment-overwritten
 Scripts/Source/DLC01/DLC01/DLC01CompanionUnlockScript.psc:126:1:none-form-usage
 Scripts/Source/DLC01/DLC01/DLC01CompanionUnlockScript.psc:127:1:none-form-usage
 Scripts/Source/DLC01/DLC01/DLC01CompanionUnlockScript.psc:142:1:none-form-usage
@@ -46009,6 +46061,7 @@ Scripts/Source/DLC01/DLC01/DLC01_TrackSystemTrack.psc:466:1:unchecked-cast
 Scripts/Source/DLC01/DLC01/DLC01_TrackSystemTrack.psc:468:1:unchecked-cast
 Scripts/Source/DLC01/DLC01/DLC01_TrackSystemTrack.psc:470:1:unchecked-cast
 Scripts/Source/DLC01/DLC01/DLC01_TrackSystemTrack.psc:476:39:unresolved-script
+Scripts/Source/DLC01/DLC01/DLC01_TrackSystemTrack.psc:503:1:assignment-overwritten
 Scripts/Source/DLC01/DLC01/DLC01_TrackSystemTrack.psc:503:1:nesting-depth
 Scripts/Source/DLC01/DLC01/DLC01_TrackSystemTrack.psc:506:24:unresolved-script
 Scripts/Source/DLC01/DLC01/DLC01_TrackSystemTrack.psc:514:29:unresolved-script
@@ -48505,6 +48558,7 @@ Scripts/Source/DLC01/DLC01/WorkshopResourceScannerScript.psc:1:12:script-filenam
 Scripts/Source/DLC01/DLC01/WorkshopResourceScannerScript.psc:10:1:none-form-usage
 Scripts/Source/DLC01/DLC01/WorkshopResourceScannerScript.psc:14:1:argument-naming
 Scripts/Source/DLC01/DLC01/WorkshopResourceScannerScript.psc:16:1:none-form-usage
+Scripts/Source/DLC01/DLC01/WorkshopResourceScannerScript.psc:21:1:assignment-overwritten
 Scripts/Source/DLC01/DLC01/WorkshopResourceScannerScript.psc:38:1:none-form-usage
 Scripts/Source/DLC01/DLC01/WorkshopResourceTargetParentScript.psc:1:12:script-filename-mismatch
 Scripts/Source/DLC01/DLC01/WorkshopRobotScript.psc:1:12:script-filename-mismatch
@@ -55056,6 +55110,7 @@ Scripts/Source/DLC03/DLC03/TrapBear.psc:154:1:none-form-usage
 Scripts/Source/DLC03/DLC03/TrapBear.psc:165:1:none-form-usage
 Scripts/Source/DLC03/DLC03/TrapBear.psc:177:1:argument-naming
 Scripts/Source/DLC03/DLC03/TrapBear.psc:182:1:argument-naming
+Scripts/Source/DLC03/DLC03/TrapBear.psc:187:1:assignment-overwritten
 Scripts/Source/DLC03/DLC03/TrapBear.psc:190:1:unchecked-cast
 Scripts/Source/DLC03/DLC03/TrapBear.psc:192:1:none-form-usage
 Scripts/Source/DLC03/DLC03/V118ValuablesTriggerScript.psc:1:12:script-filename-mismatch
@@ -55455,7 +55510,9 @@ Scripts/Source/DLC04/DLC04/DLC04ArcadeController.psc:192:10:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04ArcadeController.psc:260:121:line-length
 Scripts/Source/DLC04/DLC04/DLC04ArcadeController.psc:263:1:unchecked-cast
 Scripts/Source/DLC04/DLC04/DLC04ArcadeController.psc:275:121:line-length
+Scripts/Source/DLC04/DLC04/DLC04ArcadeController.psc:287:1:assignment-overwritten
 Scripts/Source/DLC04/DLC04/DLC04ArcadeController.psc:292:121:line-length
+Scripts/Source/DLC04/DLC04/DLC04ArcadeController.psc:305:1:assignment-overwritten
 Scripts/Source/DLC04/DLC04/DLC04ArcadeController.psc:309:121:line-length
 Scripts/Source/DLC04/DLC04/DLC04ArcadeController.psc:333:9:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04ArcadeController.psc:343:8:forbidden-functions
@@ -55466,6 +55523,7 @@ Scripts/Source/DLC04/DLC04/DLC04ArcadeController.psc:374:8:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04ArcadeController.psc:380:8:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04ArcadeController.psc:416:49:unresolved-script
 Scripts/Source/DLC04/DLC04/DLC04ArcadeController.psc:425:8:forbidden-functions
+Scripts/Source/DLC04/DLC04/DLC04ArcadeController.psc:431:1:assignment-overwritten
 Scripts/Source/DLC04/DLC04/DLC04ArcadeController.psc:442:3:empty-body
 Scripts/Source/DLC04/DLC04/DLC04ArcadeController.psc:452:8:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04ArcadeController.psc:460:9:forbidden-functions
@@ -56130,10 +56188,12 @@ Scripts/Source/DLC04/DLC04/DLC04BottlingPlantStarterScript.psc:13:1:none-form-us
 Scripts/Source/DLC04/DLC04/DLC04BottlingPlantStarterScript.psc:14:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04ChaseOffDisableQuestScript.psc:1:12:script-filename-mismatch
 Scripts/Source/DLC04/DLC04/DLC04ChaseOffDisableQuestScript.psc:31:1:nesting-depth
+Scripts/Source/DLC04/DLC04/DLC04ChaseOffDisableQuestScript.psc:33:1:assignment-overwritten
 Scripts/Source/DLC04/DLC04/DLC04ChaseOffDisableQuestScript.psc:34:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04ChaseOffDisableQuestScript.psc:43:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04ChaseOffDisableQuestScript.psc:44:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04ChaseOffDisableQuestScript.psc:45:12:forbidden-functions
+Scripts/Source/DLC04/DLC04/DLC04ChaseOffDisableQuestScript.psc:58:1:assignment-overwritten
 Scripts/Source/DLC04/DLC04/DLC04ChaseOffDisableQuestScript.psc:59:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04ChaseOffDisableQuestScript.psc:60:9:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04ChaseOffDisableQuestScript.psc:61:1:none-form-usage
@@ -56754,6 +56814,7 @@ Scripts/Source/DLC04/DLC04/DLC04KiddieKingdomMainQuestScript.psc:722:1:unchecked
 Scripts/Source/DLC04/DLC04/DLC04KiddieKingdomMainQuestScript.psc:723:1:unchecked-cast
 Scripts/Source/DLC04/DLC04/DLC04KiddieKingdomMainQuestScript.psc:723:48:unresolved-script
 Scripts/Source/DLC04/DLC04/DLC04KiddieKingdomMainQuestScript.psc:733:8:forbidden-functions
+Scripts/Source/DLC04/DLC04/DLC04KiddieKingdomMainQuestScript.psc:735:1:assignment-overwritten
 Scripts/Source/DLC04/DLC04/DLC04KiddieKingdomMainQuestScript.psc:737:8:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04KiddieKingdomMainQuestScript.psc:740:1:setvalue-in-loop
 Scripts/Source/DLC04/DLC04/DLC04KiddieKingdomMainQuestScript.psc:744:9:forbidden-functions
@@ -56761,6 +56822,7 @@ Scripts/Source/DLC04/DLC04/DLC04KiddieKingdomMainQuestScript.psc:747:1:none-form
 Scripts/Source/DLC04/DLC04/DLC04KiddieKingdomMainQuestScript.psc:747:46:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04KiddieKingdomMainQuestScript.psc:757:40:unresolved-script
 Scripts/Source/DLC04/DLC04/DLC04KiddieKingdomMainQuestScript.psc:758:40:unresolved-script
+Scripts/Source/DLC04/DLC04/DLC04KiddieKingdomMainQuestScript.psc:759:1:assignment-overwritten
 Scripts/Source/DLC04/DLC04/DLC04KiddieKingdomMainQuestScript.psc:759:52:unresolved-script
 Scripts/Source/DLC04/DLC04/DLC04KiddieKingdomMainQuestScript.psc:761:32:unresolved-script
 Scripts/Source/DLC04/DLC04/DLC04KiddieKingdomMainQuestScript.psc:763:48:unresolved-script
@@ -56992,6 +57054,7 @@ Scripts/Source/DLC04/DLC04/DLC04MQ03QuestScript.psc:41:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04MQ03QuestScript.psc:42:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04MQ04AssignKeywordQuestScript.psc:1:12:script-filename-mismatch
 Scripts/Source/DLC04/DLC04/DLC04MQ04AssignKeywordQuestScript.psc:19:121:line-length
+Scripts/Source/DLC04/DLC04/DLC04MQ04AssignKeywordQuestScript.psc:54:1:assignment-overwritten
 Scripts/Source/DLC04/DLC04/DLC04MQ04AssignKeywordQuestScript.psc:57:121:line-length
 Scripts/Source/DLC04/DLC04/DLC04MQ04AssignKeywordQuestScript.psc:58:9:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04MQ04AssignKeywordQuestScript.psc:60:121:line-length
@@ -57014,6 +57077,7 @@ Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:235:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:238:10:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:247:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:251:1:none-form-usage
+Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:252:1:assignment-overwritten
 Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:253:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:254:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:257:10:forbidden-functions
@@ -57034,6 +57098,7 @@ Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:275:10:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:283:121:line-length
 Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:285:8:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:285:121:line-length
+Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:291:1:assignment-overwritten
 Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:292:35:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:296:121:line-length
 Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:299:121:line-length
@@ -57049,6 +57114,7 @@ Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:326:9:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:340:121:line-length
 Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:342:8:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:342:121:line-length
+Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:344:1:assignment-overwritten
 Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:345:35:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:348:121:line-length
 Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:349:121:line-length
@@ -57169,6 +57235,8 @@ Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:863:1:numeric-comparison
 Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:866:12:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:871:12:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:879:12:forbidden-functions
+Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:907:1:assignment-overwritten
+Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:908:1:assignment-overwritten
 Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:909:35:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:911:121:line-length
 Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:912:8:forbidden-functions
@@ -58010,6 +58078,7 @@ Scripts/Source/DLC04/DLC04/DLC04PackScentGrenadeQuestScript.psc:101:12:forbidden
 Scripts/Source/DLC04/DLC04/DLC04PackScentGrenadeQuestScript.psc:101:99:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04PackScentGrenadeQuestScript.psc:105:12:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04PackScentGrenadeQuestScript.psc:105:96:forbidden-functions
+Scripts/Source/DLC04/DLC04/DLC04PackScentGrenadeQuestScript.psc:111:1:assignment-overwritten
 Scripts/Source/DLC04/DLC04/DLC04PackScentGrenadeQuestScript.psc:120:10:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04PackScentGrenadeQuestScript.psc:123:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04PackScentGrenadeQuestScript.psc:126:1:none-form-usage
@@ -58543,6 +58612,8 @@ Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:237:75:unresolved-script
 Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:245:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:249:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:256:1:nesting-depth
+Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:269:1:assignment-overwritten
+Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:270:1:assignment-overwritten
 Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:272:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:273:12:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:275:12:forbidden-functions
@@ -60475,10 +60546,12 @@ Scripts/Source/DLC04/DLC04/DLC04_MonorailScript.psc:409:138:unresolved-script
 Scripts/Source/DLC04/DLC04/DLC04_MonorailScript.psc:410:21:unresolved-script
 Scripts/Source/DLC04/DLC04/DLC04_MonorailScript.psc:429:8:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04_MonorailScript.psc:436:18:unresolved-script
+Scripts/Source/DLC04/DLC04/DLC04_MonorailScript.psc:450:1:assignment-overwritten
 Scripts/Source/DLC04/DLC04/DLC04_MonorailScript.psc:450:33:unresolved-script
 Scripts/Source/DLC04/DLC04/DLC04_MonorailScript.psc:452:9:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04_MonorailScript.psc:457:34:unresolved-script
 Scripts/Source/DLC04/DLC04/DLC04_MonorailScript.psc:459:9:forbidden-functions
+Scripts/Source/DLC04/DLC04/DLC04_MonorailScript.psc:465:1:assignment-overwritten
 Scripts/Source/DLC04/DLC04/DLC04_MonorailScript.psc:465:33:unresolved-script
 Scripts/Source/DLC04/DLC04/DLC04_MonorailScript.psc:469:26:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04_MonorailScript.psc:470:10:forbidden-functions
@@ -60539,6 +60612,7 @@ Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:194:121:line
 Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:202:1:unchecked-cast
 Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:203:1:unchecked-cast
 Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:209:121:line-length
+Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:211:1:assignment-overwritten
 Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:213:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:229:121:line-length
 Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:230:121:line-length
@@ -60705,6 +60779,7 @@ Scripts/Source/DLC04/DLC04/DLC04_NukaCadeQuestScript.psc:51:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04_NukaCadeQuestScript.psc:51:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04_NukaCadeQuestScript.psc:54:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04_NukaCadeQuestScript.psc:55:1:none-form-usage
+Scripts/Source/DLC04/DLC04/DLC04_NukaCadeQuestScript.psc:95:1:assignment-overwritten
 Scripts/Source/DLC04/DLC04/DLC04_NukaCadeQuestScript.psc:98:9:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04_NukaCadeQuestScript.psc:99:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04_NukaCadeQuestScript.psc:100:9:forbidden-functions
@@ -65257,6 +65332,7 @@ Scripts/Source/DLC05/DLC05/PowerArmorDisplayScript.psc:82:11:forbidden-functions
 Scripts/Source/DLC05/DLC05/PowerArmorDisplayScript.psc:92:8:forbidden-functions
 Scripts/Source/DLC05/DLC05/PowerArmorDisplayScript.psc:94:2:unused-getter
 Scripts/Source/DLC05/DLC05/PowerArmorDisplayScript.psc:112:9:forbidden-functions
+Scripts/Source/DLC05/DLC05/PowerArmorDisplayScript.psc:121:1:assignment-overwritten
 Scripts/Source/DLC05/DLC05/PowerArmorDisplayScript.psc:123:8:forbidden-functions
 Scripts/Source/DLC05/DLC05/PowerArmorDisplayScript.psc:129:121:line-length
 Scripts/Source/DLC05/DLC05/PowerArmorDisplayScript.psc:132:8:forbidden-functions
@@ -65376,6 +65452,7 @@ Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:364:66:unresolved-script
 Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:365:9:forbidden-functions
 Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:366:3:strict-boolean
 Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:371:12:forbidden-functions
+Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:385:1:assignment-overwritten
 Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:387:8:forbidden-functions
 Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:394:1:numeric-comparison
 Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:398:9:forbidden-functions
@@ -65589,6 +65666,7 @@ Scripts/Source/DLC06/DLC06/DLC06OverseerHandlerScript.psc:259:121:line-length
 Scripts/Source/DLC06/DLC06/DLC06OverseerHandlerScript.psc:309:8:forbidden-functions
 Scripts/Source/DLC06/DLC06/DLC06OverseerHandlerScript.psc:331:8:forbidden-functions
 Scripts/Source/DLC06/DLC06/DLC06OverseerHandlerScript.psc:338:8:forbidden-functions
+Scripts/Source/DLC06/DLC06/DLC06OverseerHandlerScript.psc:373:1:assignment-overwritten
 Scripts/Source/DLC06/DLC06/DLC06OverseerHandlerScript.psc:377:1:array-used-before-new
 Scripts/Source/DLC06/DLC06/DLC06OverseerHandlerScript.psc:380:1:array-used-before-new
 Scripts/Source/DLC06/DLC06/DLC06OverseerHandlerScript.psc:384:8:forbidden-functions

@@ -102,6 +102,7 @@ Source/Scripts/ArenaEntranceTriggerScript.psc:4:1:argument-naming
 Source/Scripts/ArenaEntranceTriggerScript.psc:6:11:forbidden-functions
 Source/Scripts/ArenaEntranceTriggerScript.psc:8:1:unchecked-cast
 Source/Scripts/ArenaEntranceTriggerScript.psc:9:1:unchecked-cast
+Source/Scripts/ArenaEntranceTriggerScript.psc:10:1:assignment-overwritten
 Source/Scripts/ArenaEntranceTriggerScript.psc:11:1:unchecked-cast
 Source/Scripts/ArenaEntranceTriggerScript.psc:12:1:unchecked-cast
 Source/Scripts/ArenaEntranceTriggerScript.psc:14:1:unchecked-cast
@@ -144,6 +145,10 @@ Source/Scripts/ArenaScript.psc:340:8:forbidden-functions
 Source/Scripts/ArenaScript.psc:341:8:forbidden-functions
 Source/Scripts/ArenaScript.psc:346:1:none-form-usage
 Source/Scripts/ArenaScript.psc:348:1:none-form-usage
+Source/Scripts/ArenaScript.psc:352:1:assignment-overwritten
+Source/Scripts/ArenaScript.psc:353:1:assignment-overwritten
+Source/Scripts/ArenaScript.psc:354:1:assignment-overwritten
+Source/Scripts/ArenaScript.psc:355:1:assignment-overwritten
 Source/Scripts/ArenaScript.psc:355:24:forbidden-functions
 Source/Scripts/ArenaScript.psc:430:1:none-form-usage
 Source/Scripts/ArenaScript.psc:431:1:none-form-usage
@@ -2447,6 +2452,7 @@ Source/Scripts/BardSongsScript.psc:234:1:none-form-usage
 Source/Scripts/BardSongsScript.psc:240:1:none-form-usage
 Source/Scripts/BardSongsScript.psc:246:1:none-form-usage
 Source/Scripts/BardSongsScript.psc:254:121:line-length
+Source/Scripts/BardSongsScript.psc:278:1:assignment-overwritten
 Source/Scripts/BardSongsScript.psc:278:1:cyclomatic-complexity
 Source/Scripts/BardSongsScript.psc:278:121:line-length
 Source/Scripts/BardSongsScript.psc:285:12:forbidden-functions
@@ -2477,6 +2483,7 @@ Source/Scripts/BardSongsScript.psc:446:1:none-form-usage
 Source/Scripts/BardSongsScript.psc:448:1:none-form-usage
 Source/Scripts/BardSongsScript.psc:449:1:none-form-usage
 Source/Scripts/BardSongsScript.psc:493:1:none-form-usage
+Source/Scripts/BardSongsScript.psc:502:1:assignment-overwritten
 Source/Scripts/BardSongsScript.psc:502:121:line-length
 Source/Scripts/BardSongsScript.psc:509:1:none-form-usage
 Source/Scripts/BardSongsScript.psc:510:1:none-form-usage
@@ -2679,6 +2686,7 @@ Source/Scripts/C01ObserverKeyHintTrigger.psc:10:4:forbidden-functions
 Source/Scripts/C01ObserverKeyHintTrigger.psc:22:1:none-form-usage
 Source/Scripts/C01ObserverKeyHintTrigger.psc:22:32:forbidden-functions
 Source/Scripts/C01ObserverKeyHintTrigger.psc:27:1:none-form-usage
+Source/Scripts/C01QuestScript.psc:59:1:assignment-overwritten
 Source/Scripts/C01QuestScript.psc:59:1:unchecked-cast
 Source/Scripts/C01QuestScript.psc:62:1:unchecked-cast
 Source/Scripts/C01QuestScript.psc:64:1:none-form-usage
@@ -3089,6 +3097,7 @@ Source/Scripts/CCHorseArmorChangeScript.psc:48:1:nesting-depth
 Source/Scripts/CCHorseArmorChangeScript.psc:49:121:line-length
 Source/Scripts/CCHorseArmorChangeScript.psc:67:4:strict-boolean
 Source/Scripts/CCHorseArmorChangeScript.psc:71:1:none-form-usage
+Source/Scripts/CCHorseArmorChangeScript.psc:76:1:assignment-overwritten
 Source/Scripts/CCHorseArmorChangeScript.psc:81:1:none-form-usage
 Source/Scripts/CCHorseArmorChangeScript.psc:82:1:none-form-usage
 Source/Scripts/CCHorseArmorChangeScript.psc:82:43:slow-functions
@@ -3254,6 +3263,7 @@ Source/Scripts/CR12QuestScript.psc:22:30:unresolved-script
 Source/Scripts/CR12QuestScript.psc:23:30:unresolved-script
 Source/Scripts/CR12QuestScript.psc:24:1:none-form-usage
 Source/Scripts/CR12QuestScript.psc:24:60:unresolved-script
+Source/Scripts/CR12QuestScript.psc:26:1:assignment-overwritten
 Source/Scripts/CR12QuestScript.psc:28:1:unchecked-cast
 Source/Scripts/CR12QuestScript.psc:29:1:none-form-usage
 Source/Scripts/CR12QuestScript.psc:30:1:unchecked-cast
@@ -3836,6 +3846,7 @@ Source/Scripts/CWCampaignScript.psc:1174:121:line-length
 Source/Scripts/CWCampaignScript.psc:1179:1:unchecked-cast
 Source/Scripts/CWCampaignScript.psc:1183:121:line-length
 Source/Scripts/CWCampaignScript.psc:1190:121:line-length
+Source/Scripts/CWCampaignScript.psc:1197:1:assignment-overwritten
 Source/Scripts/CWCampaignScript.psc:1200:121:line-length
 Source/Scripts/CWCampaignScript.psc:1202:121:line-length
 Source/Scripts/CWCampaignScript.psc:1215:1:none-form-usage
@@ -4895,6 +4906,7 @@ Source/Scripts/CWMissionScript.psc:261:1:none-form-usage
 Source/Scripts/CWMissionScript.psc:262:121:line-length
 Source/Scripts/CWMissionScript.psc:264:2:empty-body
 Source/Scripts/CWMissionScript.psc:265:121:line-length
+Source/Scripts/CWMissionScript.psc:270:1:assignment-overwritten
 Source/Scripts/CWMissionScript.psc:270:121:line-length
 Source/Scripts/CWMissionScript.psc:271:121:line-length
 Source/Scripts/CWMissionScript.psc:274:1:none-form-usage
@@ -4904,6 +4916,7 @@ Source/Scripts/CWMissionScript.psc:280:1:none-form-usage
 Source/Scripts/CWMissionScript.psc:280:121:line-length
 Source/Scripts/CWMissionScript.psc:282:1:none-form-usage
 Source/Scripts/CWMissionScript.psc:282:121:line-length
+Source/Scripts/CWMissionScript.psc:288:1:assignment-overwritten
 Source/Scripts/CWMissionScript.psc:288:121:line-length
 Source/Scripts/CWMissionScript.psc:289:121:line-length
 Source/Scripts/CWMissionScript.psc:292:1:none-form-usage
@@ -5760,6 +5773,7 @@ Source/Scripts/CWScript.psc:2260:1:cyclomatic-complexity
 Source/Scripts/CWScript.psc:2313:121:line-length
 Source/Scripts/CWScript.psc:2323:1:cyclomatic-complexity
 Source/Scripts/CWScript.psc:2376:121:line-length
+Source/Scripts/CWScript.psc:2388:1:assignment-overwritten
 Source/Scripts/CWScript.psc:2409:121:line-length
 Source/Scripts/CWScript.psc:2443:121:line-length
 Source/Scripts/CWScript.psc:2474:121:line-length
@@ -6109,6 +6123,7 @@ Source/Scripts/CWScript.psc:4716:1:none-form-usage
 Source/Scripts/CWScript.psc:4722:121:line-length
 Source/Scripts/CWScript.psc:4743:121:line-length
 Source/Scripts/CWScript.psc:4794:121:line-length
+Source/Scripts/CWScript.psc:4796:1:assignment-overwritten
 Source/Scripts/CWScript.psc:4812:1:none-form-usage
 Source/Scripts/CWScript.psc:4812:121:line-length
 Source/Scripts/CWScript.psc:4820:121:line-length
@@ -6307,9 +6322,11 @@ Source/Scripts/CWSiegeScript.psc:222:121:line-length
 Source/Scripts/CWSiegeScript.psc:254:121:line-length
 Source/Scripts/CWSiegeScript.psc:306:1:parameter-count
 Source/Scripts/CWSiegeScript.psc:306:121:line-length
+Source/Scripts/CWSiegeScript.psc:345:1:assignment-overwritten
 Source/Scripts/CWSiegeScript.psc:349:121:line-length
 Source/Scripts/CWSiegeScript.psc:356:1:none-form-usage
 Source/Scripts/CWSiegeScript.psc:358:1:none-form-usage
+Source/Scripts/CWSiegeScript.psc:389:1:assignment-overwritten
 Source/Scripts/CWSiegeScript.psc:393:121:line-length
 Source/Scripts/CWSiegeScript.psc:419:121:line-length
 Source/Scripts/CWSiegeScript.psc:432:121:line-length
@@ -7203,6 +7220,7 @@ Source/Scripts/CritterSpawn.psc:159:1:none-form-usage
 Source/Scripts/CritterSpawn.psc:167:1:unchecked-cast
 Source/Scripts/CritterSpawn.psc:167:121:line-length
 Source/Scripts/CritterSpawn.psc:172:14:forbidden-functions
+Source/Scripts/CritterSpawn.psc:194:1:assignment-overwritten
 Source/Scripts/CritterSpawn.psc:196:1:none-form-usage
 Source/Scripts/CritterSpawn.psc:196:1:none-form-usage
 Source/Scripts/CritterSpawn.psc:198:1:none-form-usage
@@ -9177,6 +9195,7 @@ Source/Scripts/DLC1CritterFollowSCRIPT.psc:105:1:nesting-depth
 Source/Scripts/DLC1CritterFollowSCRIPT.psc:108:13:forbidden-functions
 Source/Scripts/DLC1CritterFollowSCRIPT.psc:113:121:line-length
 Source/Scripts/DLC1CritterFollowSCRIPT.psc:124:29:unresolved-script
+Source/Scripts/DLC1CritterFollowSCRIPT.psc:129:1:assignment-overwritten
 Source/Scripts/DLC1CritterFollowSCRIPT.psc:136:121:line-length
 Source/Scripts/DLC1CritterFollowSCRIPT.psc:143:121:line-length
 Source/Scripts/DLC1CritterFollowSCRIPT.psc:151:13:forbidden-functions
@@ -10689,6 +10708,7 @@ Source/Scripts/DLC1TrapPoisonBloom.psc:208:3:strict-boolean
 Source/Scripts/DLC1TrapPoisonBloom.psc:213:3:strict-boolean
 Source/Scripts/DLC1TrapPoisonBloom.psc:216:1:unchecked-cast
 Source/Scripts/DLC1TrapPoisonBloom.psc:239:121:line-length
+Source/Scripts/DLC1TrapPoisonBloom.psc:241:1:assignment-overwritten
 Source/Scripts/DLC1TrapPoisonBloom.psc:241:1:nesting-depth
 Source/Scripts/DLC1TrapPoisonBloom.psc:245:25:forbidden-functions
 Source/Scripts/DLC1TrapPoisonBloom.psc:262:1:unchecked-cast
@@ -11582,6 +11602,7 @@ Source/Scripts/DLC1VampireFeedBystanderScript.psc:37:2:empty-body
 Source/Scripts/DLC1VampireFeedBystanderScript.psc:38:121:line-length
 Source/Scripts/DLC1VampireFeedBystanderScript.psc:49:25:forbidden-functions
 Source/Scripts/DLC1VampireFeedBystanderScript.psc:55:3:strict-boolean
+Source/Scripts/DLC1VampireFeedBystanderScript.psc:59:1:assignment-overwritten
 Source/Scripts/DLC1VampireFeedBystanderScript.psc:60:12:forbidden-functions
 Source/Scripts/DLC1VampireIntroBloodspringScript.psc:7:1:argument-naming
 Source/Scripts/DLC1VampireIntroBloodspringScript.psc:10:23:forbidden-functions
@@ -12130,6 +12151,7 @@ Source/Scripts/DLC1_NPCMentalModelScript.psc:549:1:none-form-usage
 Source/Scripts/DLC1_NPCMentalModelScript.psc:550:1:unchecked-cast
 Source/Scripts/DLC1_NPCMentalModelScript.psc:552:1:none-form-usage
 Source/Scripts/DLC1_NPCMentalModelScript.psc:631:1:none-form-usage
+Source/Scripts/DLC1_NPCMentalModelScript.psc:633:1:assignment-overwritten
 Source/Scripts/DLC1_NPCMentalModelScript.psc:637:1:none-form-usage
 Source/Scripts/DLC1_NPCMentalModelScript.psc:638:1:none-form-usage
 Source/Scripts/DLC1_PF_DLC1VQ02HarkonBanishS_0101A420.psc:8:1:none-form-usage
@@ -16206,6 +16228,7 @@ Source/Scripts/DLC2ExpSpiderPackmuleSCRIPT.psc:27:1:unchecked-cast
 Source/Scripts/DLC2ExpSpiderZombieAbSelfSCRIPT.psc:9:1:argument-naming
 Source/Scripts/DLC2ExpSpiderZombieAbSelfSCRIPT.psc:9:1:argument-naming
 Source/Scripts/DLC2ExpSpiderZombieAbSelfSCRIPT.psc:12:1:none-form-usage
+Source/Scripts/DLC2ExpSpiderZombieOnHumanSCRIPT.psc:16:1:assignment-overwritten
 Source/Scripts/DLC2ExpSpiderZombieOnHumanSCRIPT.psc:20:1:none-form-usage
 Source/Scripts/DLC2ExpSpiderZombieOnHumanSCRIPT.psc:21:1:none-form-usage
 Source/Scripts/DLC2ExpSpiderZombieOnHumanSCRIPT.psc:22:1:unchecked-cast
@@ -17225,6 +17248,7 @@ Source/Scripts/DLC2MiraakAltarScript.psc:101:22:forbidden-functions
 Source/Scripts/DLC2MiraakAltarScript.psc:106:1:none-form-usage
 Source/Scripts/DLC2MiraakAltarScript.psc:109:1:none-form-usage
 Source/Scripts/DLC2MiraakAltarScript.psc:112:1:none-form-usage
+Source/Scripts/DLC2MiraakAltarScript.psc:117:1:assignment-overwritten
 Source/Scripts/DLC2MiraakAltarScript.psc:119:1:none-form-usage
 Source/Scripts/DLC2MiraakAltarScript.psc:119:1:unchecked-cast
 Source/Scripts/DLC2MiraakAltarScript.psc:121:1:none-form-usage
@@ -18085,12 +18109,14 @@ Source/Scripts/DLC2TrapApoTentacle.psc:160:4:empty-body
 Source/Scripts/DLC2TrapApoTentacle.psc:176:21:unresolved-script
 Source/Scripts/DLC2TrapApoTentacle.psc:197:4:strict-boolean
 Source/Scripts/DLC2TrapApoTentacle.psc:235:4:strict-boolean
+Source/Scripts/DLC2TrapApoTentacle.psc:283:1:assignment-overwritten
 Source/Scripts/DLC2TrapApoTentacle.psc:283:1:nesting-depth
 Source/Scripts/DLC2TrapApoTentacle.psc:287:25:forbidden-functions
 Source/Scripts/DLC2TrapApoTentacle.psc:301:3:strict-boolean
 Source/Scripts/DLC2TrapApoTentacle.psc:302:1:unchecked-cast
 Source/Scripts/DLC2TrapApoTentacle.psc:314:4:strict-boolean
 Source/Scripts/DLC2TrapApoTentacle.psc:315:1:unchecked-cast
+Source/Scripts/DLC2TrapApoTentacle.psc:338:1:assignment-overwritten
 Source/Scripts/DLC2TrapApoTentacle.psc:341:1:unchecked-cast
 Source/Scripts/DLC2TrapApoTentacle.psc:343:1:none-form-usage
 Source/Scripts/DLC2TrapApoTentacle.psc:356:1:unchecked-cast
@@ -20667,21 +20693,36 @@ Source/Scripts/DLC2dunKolbjornCataLeverPuzzle.psc:136:1:none-form-usage
 Source/Scripts/DLC2dunKolbjornCataLeverPuzzle.psc:139:1:none-form-usage
 Source/Scripts/DLC2dunKolbjornCataLeverPuzzle.psc:141:12:forbidden-functions
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:40:1:cyclomatic-complexity
+Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:43:1:assignment-overwritten
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:43:1:none-form-usage
+Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:50:1:assignment-overwritten
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:50:1:none-form-usage
+Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:57:1:assignment-overwritten
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:57:1:none-form-usage
+Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:64:1:assignment-overwritten
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:64:1:none-form-usage
+Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:71:1:assignment-overwritten
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:71:1:none-form-usage
+Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:78:1:assignment-overwritten
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:78:1:none-form-usage
+Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:85:1:assignment-overwritten
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:85:1:none-form-usage
+Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:92:1:assignment-overwritten
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:92:1:none-form-usage
+Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:99:1:assignment-overwritten
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:99:1:none-form-usage
+Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:106:1:assignment-overwritten
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:106:1:none-form-usage
+Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:113:1:assignment-overwritten
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:113:1:none-form-usage
+Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:120:1:assignment-overwritten
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:120:1:none-form-usage
+Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:127:1:assignment-overwritten
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:127:1:none-form-usage
+Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:134:1:assignment-overwritten
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:134:1:none-form-usage
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:141:1:none-form-usage
+Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:149:1:assignment-overwritten
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:156:1:none-form-usage
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:167:1:none-form-usage
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:172:121:line-length
@@ -22576,6 +22617,7 @@ Source/Scripts/FireFly.psc:76:1:short-wait-interval
 Source/Scripts/FireFly.psc:87:1:nesting-depth
 Source/Scripts/FireFly.psc:90:12:forbidden-functions
 Source/Scripts/FireFly.psc:102:29:unresolved-script
+Source/Scripts/FireFly.psc:107:1:assignment-overwritten
 Source/Scripts/FireFly.psc:114:121:line-length
 Source/Scripts/FireFly.psc:134:12:forbidden-functions
 Source/Scripts/FireFly.psc:141:1:short-wait-interval
@@ -22755,6 +22797,8 @@ Source/Scripts/HazardBase.psc:62:121:line-length
 Source/Scripts/HazardBase.psc:63:121:line-length
 Source/Scripts/HazardBase.psc:65:1:none-form-usage
 Source/Scripts/HazardBase.psc:66:1:none-form-usage
+Source/Scripts/HazardBase.psc:93:1:assignment-overwritten
+Source/Scripts/HazardBase.psc:94:1:assignment-overwritten
 Source/Scripts/HeadChopBlock2ManHookupScript.psc:40:3:forbidden-functions
 Source/Scripts/HeadChopBlock2ManHookupScript.psc:66:28:forbidden-functions
 Source/Scripts/HeadChopBlock2ManHookupScript.psc:70:1:unchecked-cast
@@ -25091,6 +25135,7 @@ Source/Scripts/MS11QuestScript.psc:72:1:none-form-usage
 Source/Scripts/MS11QuestScript.psc:73:1:unchecked-cast
 Source/Scripts/MS11QuestScript.psc:74:1:unchecked-cast
 Source/Scripts/MS11QuestScript.psc:75:1:none-form-usage
+Source/Scripts/MS11QuestScript.psc:89:1:assignment-overwritten
 Source/Scripts/MS11QuestScript.psc:90:1:none-form-usage
 Source/Scripts/MS11QuestScript.psc:100:1:none-form-usage
 Source/Scripts/MS11QuestScript.psc:104:1:none-form-usage
@@ -25341,6 +25386,7 @@ Source/Scripts/MagicTrap.psc:360:33:forbidden-functions
 Source/Scripts/MagicTrap.psc:367:4:empty-body
 Source/Scripts/MagicTrap.psc:370:3:empty-body
 Source/Scripts/MagicTrap.psc:373:2:empty-body
+Source/Scripts/MagicTrap.psc:399:1:assignment-overwritten
 Source/Scripts/MagicTrap.psc:448:2:empty-body
 Source/Scripts/MagicTrap.psc:519:2:empty-body
 Source/Scripts/MagicTrap.psc:587:121:line-length
@@ -25353,6 +25399,7 @@ Source/Scripts/MannequinActivatorSCRIPT.psc:118:2:strict-boolean
 Source/Scripts/MannequinActivatorSCRIPT.psc:121:2:empty-body
 Source/Scripts/MannequinActivatorSCRIPT.psc:151:10:forbidden-functions
 Source/Scripts/MannequinActivatorSCRIPT.psc:224:1:cyclomatic-complexity
+Source/Scripts/MannequinActivatorSCRIPT.psc:227:1:assignment-overwritten
 Source/Scripts/MannequinActivatorSCRIPT.psc:292:1:cyclomatic-complexity
 Source/Scripts/MarkarthDoorScript.psc:9:1:unchecked-cast
 Source/Scripts/MarkarthDoorScript.psc:9:25:forbidden-functions
@@ -26620,6 +26667,7 @@ Source/Scripts/PlayerWerewolfCureSconceScript.psc:13:1:none-form-usage
 Source/Scripts/PlayerWerewolfCureSconceScript.psc:17:12:forbidden-functions
 Source/Scripts/PlayerWerewolfCureSconceScript.psc:18:1:none-form-usage
 Source/Scripts/PlayerWerewolfCureSconceScript.psc:18:40:forbidden-functions
+Source/Scripts/PlayerWerewolfCureSconceScript.psc:19:1:assignment-overwritten
 Source/Scripts/PlayerWerewolfCureSconceScript.psc:20:1:none-form-usage
 Source/Scripts/PlayerWerewolfCureSconceScript.psc:23:11:forbidden-functions
 Source/Scripts/PlayerWerewolfCureSconceScript.psc:24:1:none-form-usage
@@ -40596,11 +40644,13 @@ Source/Scripts/RPDefault_LLInjectionAdv_Potion.psc:2:121:line-length
 Source/Scripts/RPDefault_LLInjectionAdv_Scroll.psc:2:121:line-length
 Source/Scripts/RPDefault_LLInjectionAdv_Weapon.psc:2:121:line-length
 Source/Scripts/RPDefault_LLInjectionAdvanced.psc:7:1:undefined-event
+Source/Scripts/RPDefault_Math.psc:30:1:assignment-overwritten
 Source/Scripts/RPDefault_Math.psc:31:1:numeric-comparison
 Source/Scripts/RPDefault_Math.psc:33:1:numeric-comparison
 Source/Scripts/RPDefault_Math.psc:34:1:numeric-comparison
 Source/Scripts/RPDefault_Math.psc:39:1:numeric-comparison
 Source/Scripts/RPDefault_Math.psc:41:1:numeric-comparison
+Source/Scripts/RPDefault_Math.psc:50:1:assignment-overwritten
 Source/Scripts/RPDefault_Math.psc:51:1:numeric-comparison
 Source/Scripts/RPDefault_Math.psc:53:1:numeric-comparison
 Source/Scripts/RPDefault_Math.psc:54:1:numeric-comparison
@@ -40647,6 +40697,7 @@ Source/Scripts/RPDefault_OnHit.psc:44:1:cyclomatic-complexity
 Source/Scripts/RPDefault_OnHit.psc:44:121:line-length
 Source/Scripts/RPDefault_OnHit.psc:45:121:line-length
 Source/Scripts/RPDefault_OnHit.psc:49:40:forbidden-functions
+Source/Scripts/RPDefault_OnHit.psc:54:1:assignment-overwritten
 Source/Scripts/RPDefault_OnHit.psc:55:121:line-length
 Source/Scripts/RPDefault_OnHit.psc:149:121:line-length
 Source/Scripts/RPDefault_OnHit.psc:158:121:line-length
@@ -40661,6 +40712,7 @@ Source/Scripts/RPDefault_OnHitAlias.psc:43:1:cyclomatic-complexity
 Source/Scripts/RPDefault_OnHitAlias.psc:43:121:line-length
 Source/Scripts/RPDefault_OnHitAlias.psc:44:121:line-length
 Source/Scripts/RPDefault_OnHitAlias.psc:48:40:forbidden-functions
+Source/Scripts/RPDefault_OnHitAlias.psc:53:1:assignment-overwritten
 Source/Scripts/RPDefault_OnHitAlias.psc:54:121:line-length
 Source/Scripts/RPDefault_OnHitAlias.psc:148:121:line-length
 Source/Scripts/RPDefault_OnHitAlias.psc:157:121:line-length
@@ -40744,6 +40796,7 @@ Source/Scripts/RPDefault_Utility.psc:115:121:line-length
 Source/Scripts/RPDefault_Utility.psc:134:121:line-length
 Source/Scripts/RPDefault_Utility.psc:139:121:line-length
 Source/Scripts/RPDefault_Utility.psc:141:2:strict-boolean
+Source/Scripts/RPDefault_Utility.psc:166:1:assignment-overwritten
 Source/Scripts/RPDefault_Utility.psc:166:121:line-length
 Source/Scripts/RPDefault_Utility.psc:169:121:line-length
 Source/Scripts/RPDefault_Utility.psc:175:121:line-length
@@ -48604,6 +48657,7 @@ Source/Scripts/TestMoth.psc:85:1:short-wait-interval
 Source/Scripts/TestMoth.psc:96:1:nesting-depth
 Source/Scripts/TestMoth.psc:99:12:forbidden-functions
 Source/Scripts/TestMoth.psc:111:29:unresolved-script
+Source/Scripts/TestMoth.psc:116:1:assignment-overwritten
 Source/Scripts/TestMoth.psc:123:121:line-length
 Source/Scripts/TestMoth.psc:130:121:line-length
 Source/Scripts/TestMoth.psc:138:12:forbidden-functions
@@ -48652,6 +48706,7 @@ Source/Scripts/TrapBear.psc:48:1:undefined-event
 Source/Scripts/TrapBear.psc:76:1:undefined-event
 Source/Scripts/TrapBear.psc:81:1:argument-naming
 Source/Scripts/TrapBear.psc:86:1:argument-naming
+Source/Scripts/TrapBear.psc:91:1:assignment-overwritten
 Source/Scripts/TrapBear.psc:94:1:unchecked-cast
 Source/Scripts/TrapBear.psc:96:1:none-form-usage
 Source/Scripts/TrapBreakAwayBase.psc:17:1:none-form-usage
@@ -48817,12 +48872,14 @@ Source/Scripts/TrapTriggerBase.psc:219:13:forbidden-functions
 Source/Scripts/TrapTriggerBase.psc:229:1:undefined-event
 Source/Scripts/TrapTriggerBase.psc:234:12:forbidden-functions
 Source/Scripts/TrapTriggerBase.psc:236:12:forbidden-functions
+Source/Scripts/TrapTriggerBase.psc:275:1:assignment-overwritten
 Source/Scripts/TrapTriggerBase.psc:275:1:nesting-depth
 Source/Scripts/TrapTriggerBase.psc:279:25:forbidden-functions
 Source/Scripts/TrapTriggerBase.psc:293:3:strict-boolean
 Source/Scripts/TrapTriggerBase.psc:294:1:unchecked-cast
 Source/Scripts/TrapTriggerBase.psc:306:4:strict-boolean
 Source/Scripts/TrapTriggerBase.psc:307:1:unchecked-cast
+Source/Scripts/TrapTriggerBase.psc:330:1:assignment-overwritten
 Source/Scripts/TrapTriggerBase.psc:333:1:unchecked-cast
 Source/Scripts/TrapTriggerBase.psc:335:1:none-form-usage
 Source/Scripts/TrapTriggerBase.psc:348:1:unchecked-cast
@@ -49073,6 +49130,7 @@ Source/Scripts/WETriggerScript.psc:148:12:goto-state
 Source/Scripts/WETriggerScript.psc:152:1:none-form-usage
 Source/Scripts/WETriggerScript.psc:153:1:none-form-usage
 Source/Scripts/WETriggerScript.psc:154:1:none-form-usage
+Source/Scripts/WETriggerScript.psc:157:1:assignment-overwritten
 Source/Scripts/WETriggerScript.psc:159:121:line-length
 Source/Scripts/WETriggerScript.psc:165:1:none-form-usage
 Source/Scripts/WETriggerScript.psc:168:1:none-form-usage
@@ -49572,6 +49630,7 @@ Source/Scripts/WitchlightActorScript.psc:46:1:argument-naming
 Source/Scripts/WitchlightActorScript.psc:54:1:unchecked-cast
 Source/Scripts/WitchlightActorScript.psc:66:1:argument-naming
 Source/Scripts/WitchlightActorScript.psc:79:12:forbidden-functions
+Source/Scripts/WitchlightActorScript.psc:89:1:assignment-overwritten
 Source/Scripts/WitchlightActorScript.psc:91:2:empty-body
 Source/Scripts/WitchlightActorScript.psc:95:1:unchecked-cast
 Source/Scripts/WitchlightActorScript.psc:99:1:unchecked-cast
@@ -50159,6 +50218,7 @@ Source/Scripts/ccBGSSSE001_FishingSystemScript.psc:384:4:strict-boolean
 Source/Scripts/ccBGSSSE001_FishingSystemScript.psc:418:1:none-form-usage
 Source/Scripts/ccBGSSSE001_FishingSystemScript.psc:473:1:short-wait-interval
 Source/Scripts/ccBGSSSE001_FishingSystemScript.psc:529:1:none-form-usage
+Source/Scripts/ccBGSSSE001_FishingSystemScript.psc:540:1:assignment-overwritten
 Source/Scripts/ccBGSSSE001_FishingSystemScript.psc:562:121:line-length
 Source/Scripts/ccBGSSSE001_FishingSystemScript.psc:569:1:none-form-usage
 Source/Scripts/ccBGSSSE001_FishingSystemScript.psc:618:1:none-form-usage
@@ -50676,6 +50736,7 @@ Source/Scripts/critterBird.psc:265:1:explicit-return
 Source/Scripts/critterDragonFly.psc:45:11:forbidden-functions
 Source/Scripts/critterDragonFly.psc:68:1:short-wait-interval
 Source/Scripts/critterDragonFly.psc:79:11:forbidden-functions
+Source/Scripts/critterDragonFly.psc:87:1:assignment-overwritten
 Source/Scripts/critterDragonFly.psc:97:121:line-length
 Source/Scripts/critterDragonFly.psc:108:11:forbidden-functions
 Source/Scripts/critterDragonFly.psc:115:1:short-wait-interval
@@ -50688,6 +50749,7 @@ Source/Scripts/critterDragonFly.psc:212:121:line-length
 Source/Scripts/critterFish.psc:50:12:forbidden-functions
 Source/Scripts/critterFish.psc:73:1:short-wait-interval
 Source/Scripts/critterFish.psc:85:13:forbidden-functions
+Source/Scripts/critterFish.psc:93:1:assignment-overwritten
 Source/Scripts/critterFish.psc:100:121:line-length
 Source/Scripts/critterFish.psc:120:13:forbidden-functions
 Source/Scripts/critterFish.psc:126:1:short-wait-interval
@@ -50714,6 +50776,7 @@ Source/Scripts/critterMoth.psc:103:1:nesting-depth
 Source/Scripts/critterMoth.psc:106:13:forbidden-functions
 Source/Scripts/critterMoth.psc:111:121:line-length
 Source/Scripts/critterMoth.psc:122:29:unresolved-script
+Source/Scripts/critterMoth.psc:127:1:assignment-overwritten
 Source/Scripts/critterMoth.psc:134:121:line-length
 Source/Scripts/critterMoth.psc:141:121:line-length
 Source/Scripts/critterMoth.psc:149:13:forbidden-functions
@@ -53386,6 +53449,7 @@ Source/Scripts/dunMiddenAtronachForgeSCRIPT.psc:41:1:undefined-event
 Source/Scripts/dunMiddenAtronachForgeSCRIPT.psc:51:1:undefined-event
 Source/Scripts/dunMiddenAtronachForgeSCRIPT.psc:54:1:none-form-usage
 Source/Scripts/dunMiddenAtronachForgeSCRIPT.psc:61:11:forbidden-functions
+Source/Scripts/dunMiddenAtronachForgeSCRIPT.psc:63:1:assignment-overwritten
 Source/Scripts/dunMiddenAtronachForgeSCRIPT.psc:64:1:none-form-usage
 Source/Scripts/dunMiddenAtronachForgeSCRIPT.psc:68:1:none-form-usage
 Source/Scripts/dunMiddenAtronachForgeSCRIPT.psc:72:1:none-form-usage
@@ -54089,6 +54153,7 @@ Source/Scripts/dunRiftenJailOpenCellDoor.psc:6:34:forbidden-functions
 Source/Scripts/dunRiftenJailSetStageOnOpen.psc:22:1:nesting-depth
 Source/Scripts/dunRiftenJailSetStageOnOpen.psc:25:1:none-form-usage
 Source/Scripts/dunRiftenJailSetStageOnOpen.psc:27:26:forbidden-functions
+Source/Scripts/dunRiftenJailSetStageOnOpen.psc:28:1:assignment-overwritten
 Source/Scripts/dunRiftenJailSetStageOnOpen.psc:30:15:forbidden-functions
 Source/Scripts/dunRiftenJailSetStageOnOpen.psc:31:1:none-form-usage
 Source/Scripts/dunRobbersGorgeReset.psc:11:1:none-form-usage
@@ -55257,6 +55322,7 @@ Source/Scripts/testPhilDwarvenForgeInputBoxSCRIPT.psc:53:121:line-length
 Source/Scripts/testPhilDwarvenForgeInputBoxSCRIPT.psc:54:121:line-length
 Source/Scripts/testPhilDwarvenForgeInputBoxSCRIPT.psc:55:121:line-length
 Source/Scripts/testPhilDwarvenForgeInputBoxSCRIPT.psc:56:121:line-length
+Source/Scripts/testPhilDwarvenForgeInputBoxSCRIPT.psc:67:1:assignment-overwritten
 Source/Scripts/testPhilDwarvenForgeInputBoxSCRIPT.psc:67:1:nesting-depth
 Source/Scripts/testPhilDwarvenForgeInputBoxSCRIPT.psc:77:121:line-length
 Source/Scripts/testPhilDwarvenForgeLeverSCRIPT.psc:12:1:argument-naming

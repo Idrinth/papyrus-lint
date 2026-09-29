@@ -1430,6 +1430,7 @@ Scripts/Source/City_Neon_DrugGameScript.psc:140:11:forbidden-functions
 Scripts/Source/City_Neon_DrugGameScript.psc:148:15:forbidden-functions
 Scripts/Source/City_Neon_DrugGameScript.psc:150:19:forbidden-functions
 Scripts/Source/City_Neon_DrugGameScript.psc:161:11:forbidden-functions
+Scripts/Source/City_Neon_DrugGameScript.psc:165:1:assignment-overwritten
 Scripts/Source/City_Neon_DrugGameScript.psc:167:1:none-form-usage
 Scripts/Source/City_Neon_DrugGameScript.psc:168:121:line-length
 Scripts/Source/City_Neon_DrugGameScript.psc:169:15:forbidden-functions
@@ -1443,6 +1444,7 @@ Scripts/Source/City_Neon_DrugGameScript.psc:195:11:forbidden-functions
 Scripts/Source/City_Neon_DrugGameScript.psc:198:1:none-form-usage
 Scripts/Source/City_Neon_DrugGameScript.psc:200:13:forbidden-functions
 Scripts/Source/City_Neon_DrugGameScript.psc:203:1:none-form-usage
+Scripts/Source/City_Neon_DrugGameScript.psc:206:1:assignment-overwritten
 Scripts/Source/City_Neon_DrugGameScript.psc:206:1:none-form-usage
 Scripts/Source/City_Neon_DrugGameScript.psc:206:55:slow-functions
 Scripts/Source/City_Neon_DrugGameScript.psc:211:1:none-form-usage
@@ -2626,6 +2628,7 @@ Scripts/Source/DefaultAliasOnOpen.psc:11:121:line-length
 Scripts/Source/DefaultAliasOnRead.psc:8:121:line-length
 Scripts/Source/DefaultAliasOnRead.psc:9:121:line-length
 Scripts/Source/DefaultAliasOnShipDock.psc:21:121:line-length
+Scripts/Source/DefaultAliasOnShipDock.psc:25:1:assignment-overwritten
 Scripts/Source/DefaultAliasOnShipDock.psc:34:121:line-length
 Scripts/Source/DefaultAliasOnShipDock.psc:35:121:line-length
 Scripts/Source/DefaultAliasOnShipDock.psc:41:121:line-length
@@ -2670,6 +2673,7 @@ Scripts/Source/DefaultAliasOnShipTakeOff.psc:22:121:line-length
 Scripts/Source/DefaultAliasOnShipTakeOff.psc:47:121:line-length
 Scripts/Source/DefaultAliasOnShipTakeOff.psc:48:121:line-length
 Scripts/Source/DefaultAliasOnShipUndock.psc:21:121:line-length
+Scripts/Source/DefaultAliasOnShipUndock.psc:25:1:assignment-overwritten
 Scripts/Source/DefaultAliasOnShipUndock.psc:34:121:line-length
 Scripts/Source/DefaultAliasOnShipUndock.psc:35:121:line-length
 Scripts/Source/DefaultAliasOnShipUndock.psc:41:121:line-length
@@ -2951,6 +2955,7 @@ Scripts/Source/DefaultCounterQuestRefColIncOnDestroyC.psc:12:1:unchecked-cast
 Scripts/Source/DefaultCounterQuestRefColIncOnDestroyD.psc:6:1:unchecked-cast
 Scripts/Source/DefaultCounterQuestRefColIncOnDestroyD.psc:8:1:unchecked-cast
 Scripts/Source/DefaultCounterQuestRefColIncOnDestroyD.psc:12:1:unchecked-cast
+Scripts/Source/DefaultCrowdEventManager.psc:76:1:assignment-overwritten
 Scripts/Source/DefaultCrowdEventManager.psc:93:121:line-length
 Scripts/Source/DefaultCrowdEventManager.psc:175:8:forbidden-functions
 Scripts/Source/DefaultCrowdEventManager.psc:177:51:unresolved-script
@@ -3491,6 +3496,7 @@ Scripts/Source/DefaultScriptFunctions.psc:93:3:strict-boolean
 Scripts/Source/DefaultScriptFunctions.psc:102:121:line-length
 Scripts/Source/DefaultScriptFunctions.psc:107:1:parameter-count
 Scripts/Source/DefaultScriptFunctions.psc:133:121:line-length
+Scripts/Source/DefaultScriptFunctions.psc:135:1:assignment-overwritten
 Scripts/Source/DefaultScriptFunctions.psc:137:121:line-length
 Scripts/Source/DefaultScriptFunctions.psc:140:121:line-length
 Scripts/Source/DefaultScriptFunctions.psc:144:121:line-length
@@ -17137,6 +17143,7 @@ Scripts/Source/Fragments/Quests/QF_MQ204_002C6D74.psc:23:43:forbidden-functions
 Scripts/Source/Fragments/Quests/QF_MQ204_002C6D74.psc:24:1:none-form-usage
 Scripts/Source/Fragments/Quests/QF_MQ204_002C6D74.psc:24:1:unchecked-cast
 Scripts/Source/Fragments/Quests/QF_MQ204_002C6D74.psc:24:43:forbidden-functions
+Scripts/Source/Fragments/Quests/QF_MQ204_002C6D74.psc:27:1:assignment-overwritten
 Scripts/Source/Fragments/Quests/QF_MQ204_002C6D74.psc:27:1:none-form-usage
 Scripts/Source/Fragments/Quests/QF_MQ204_002C6D74.psc:38:9:forbidden-functions
 Scripts/Source/Fragments/Quests/QF_MQ204_002C6D74.psc:40:1:none-form-usage
@@ -21059,6 +21066,7 @@ Scripts/Source/Fragments/Quests/QF_OE_MP_HuntedHomesteaders_000F3D39.psc:20:1:no
 Scripts/Source/Fragments/Quests/QF_OE_MP_HuntedHomesteaders_000F3D39.psc:30:1:none-form-usage
 Scripts/Source/Fragments/Quests/QF_OE_MP_HuntedHomesteaders_000F3D39.psc:31:1:none-form-usage
 Scripts/Source/Fragments/Quests/QF_OE_MP_HuntedHomesteaders_000F3D39.psc:32:24:forbidden-functions
+Scripts/Source/Fragments/Quests/QF_OE_MP_HuntedHomesteaders_000F3D39.psc:33:1:assignment-overwritten
 Scripts/Source/Fragments/Quests/QF_OE_MP_HuntedHomesteaders_000F3D39.psc:49:1:none-form-usage
 Scripts/Source/Fragments/Quests/QF_OE_MP_HuntedHomesteaders_000F3D39.psc:50:1:none-form-usage
 Scripts/Source/Fragments/Quests/QF_OE_MP_HuntedHomesteaders_000F3D39.psc:68:1:none-form-usage
@@ -21195,6 +21203,7 @@ Scripts/Source/Fragments/Quests/QF_OE_TerrormorphEncounter.psc:30:1:none-form-us
 Scripts/Source/Fragments/Quests/QF_OE_TerrormorphEncounter.psc:42:1:none-form-usage
 Scripts/Source/Fragments/Quests/QF_OE_TerrormorphEncounter.psc:59:9:forbidden-functions
 Scripts/Source/Fragments/Quests/QF_OE_TerrormorphEncounter.psc:60:10:forbidden-functions
+Scripts/Source/Fragments/Quests/QF_OE_TerrormorphEncounter.psc:71:1:assignment-overwritten
 Scripts/Source/Fragments/Quests/QF_OE_TerrormorphEncounter.psc:72:1:none-form-usage
 Scripts/Source/Fragments/Quests/QF_OE_TerrormorphEncounter.psc:74:1:strict-boolean
 Scripts/Source/Fragments/Quests/QF_OE_TerrormorphEncounter.psc:75:1:none-form-usage
@@ -21220,9 +21229,13 @@ Scripts/Source/Fragments/Quests/QF_OE_TerrormorphEncounter.psc:187:1:none-form-u
 Scripts/Source/Fragments/Quests/QF_OE_TerrormorphEncounter.psc:191:9:forbidden-functions
 Scripts/Source/Fragments/Quests/QF_OE_TerrormorphEncounter.psc:201:1:none-form-usage
 Scripts/Source/Fragments/Quests/QF_OE_TerrormorphEncounter.psc:210:24:forbidden-functions
+Scripts/Source/Fragments/Quests/QF_OE_TerrormorphEncounter.psc:233:1:assignment-overwritten
+Scripts/Source/Fragments/Quests/QF_OE_TerrormorphEncounter.psc:234:1:assignment-overwritten
+Scripts/Source/Fragments/Quests/QF_OE_TerrormorphEncounter.psc:235:1:assignment-overwritten
 Scripts/Source/Fragments/Quests/QF_OE_TerrormorphEncounter.psc:237:1:none-form-usage
 Scripts/Source/Fragments/Quests/QF_OE_TerrormorphEncounter.psc:238:1:none-form-usage
 Scripts/Source/Fragments/Quests/QF_OE_TerrormorphEncounter.psc:239:1:none-form-usage
+Scripts/Source/Fragments/Quests/QF_OE_TerrormorphEncounter.psc:262:1:assignment-overwritten
 Scripts/Source/Fragments/Quests/QF_OE_TerrormorphEncounter.psc:263:1:none-form-usage
 Scripts/Source/Fragments/Quests/QF_OE_TerrormorphEncounter.psc:301:1:none-form-usage
 Scripts/Source/Fragments/Quests/QF_OE_TerrormorphEncounter.psc:302:1:none-form-usage
@@ -21815,6 +21828,7 @@ Scripts/Source/Fragments/Quests/QF_RAD05_002AD3D5.psc:131:6:forbidden-functions
 Scripts/Source/Fragments/Quests/QF_RAD05_002AD3D5.psc:143:6:forbidden-functions
 Scripts/Source/Fragments/Quests/QF_RAD05_002AD3D5.psc:154:1:none-form-usage
 Scripts/Source/Fragments/Quests/QF_RAD05_002AD3D5.psc:155:1:none-form-usage
+Scripts/Source/Fragments/Quests/QF_RAD05_002AD3D5.psc:164:1:assignment-overwritten
 Scripts/Source/Fragments/Quests/QF_RAD05_002AD3D5.psc:175:1:none-form-usage
 Scripts/Source/Fragments/Quests/QF_RAD05_002AD3D5.psc:175:1:none-form-usage
 Scripts/Source/Fragments/Quests/QF_RAD05_002AD3D5.psc:178:1:none-form-usage
@@ -30551,6 +30565,8 @@ Scripts/Source/HazardBase.psc:53:121:line-length
 Scripts/Source/HazardBase.psc:54:121:line-length
 Scripts/Source/HazardBase.psc:56:1:none-form-usage
 Scripts/Source/HazardBase.psc:57:1:none-form-usage
+Scripts/Source/HazardBase.psc:84:1:assignment-overwritten
+Scripts/Source/HazardBase.psc:85:1:assignment-overwritten
 Scripts/Source/HazardTriggerScript.psc:14:1:argument-naming
 Scripts/Source/HazardTriggerScript.psc:19:1:none-form-usage
 Scripts/Source/HeavyActorPushOnImpact.psc:19:1:nesting-depth
@@ -32047,6 +32063,7 @@ Scripts/Source/LC165QuestScript.psc:1341:10:forbidden-functions
 Scripts/Source/LC165QuestScript.psc:1341:121:line-length
 Scripts/Source/LC165QuestScript.psc:1345:121:line-length
 Scripts/Source/LC165QuestScript.psc:1350:121:line-length
+Scripts/Source/LC165QuestScript.psc:1351:1:assignment-overwritten
 Scripts/Source/LC165QuestScript.psc:1351:1:nesting-depth
 Scripts/Source/LC165QuestScript.psc:1351:121:line-length
 Scripts/Source/LC165QuestScript.psc:1357:121:line-length
@@ -32360,6 +32377,7 @@ Scripts/Source/LC165QuestScript.psc:2975:1:nesting-depth
 Scripts/Source/LC165QuestScript.psc:2982:11:forbidden-functions
 Scripts/Source/LC165QuestScript.psc:2994:1:variable-used-before-assignment
 Scripts/Source/LC165QuestScript.psc:2998:12:forbidden-functions
+Scripts/Source/LC165QuestScript.psc:3009:1:assignment-overwritten
 Scripts/Source/LC165QuestScript.psc:3029:10:forbidden-functions
 Scripts/Source/LC165QuestScript.psc:3029:121:line-length
 Scripts/Source/LC165QuestScript.psc:3031:10:forbidden-functions
@@ -32801,6 +32819,7 @@ Scripts/Source/LoadElevatorFloorScript.psc:75:121:line-length
 Scripts/Source/LoadElevatorFloorScript.psc:78:121:line-length
 Scripts/Source/LoadElevatorFloorScript.psc:98:1:none-form-usage
 Scripts/Source/LoadElevatorFloorScript.psc:101:1:none-form-usage
+Scripts/Source/LoadElevatorFloorScript.psc:109:1:assignment-overwritten
 Scripts/Source/LoadElevatorFloorScript.psc:112:121:line-length
 Scripts/Source/LoadElevatorFloorScript.psc:123:121:line-length
 Scripts/Source/LoadElevatorFloorScript.psc:126:46:unresolved-script
@@ -33146,6 +33165,7 @@ Scripts/Source/MQ204HunterWarpsTriggerScript.psc:18:1:unchecked-cast
 Scripts/Source/MQ204HunterWarpsTriggerScript.psc:18:61:forbidden-functions
 Scripts/Source/MQ204PlayerScript.psc:21:1:none-form-usage
 Scripts/Source/MQ204SarahScript.psc:9:28:forbidden-functions
+Scripts/Source/MQ204Script.psc:42:1:assignment-overwritten
 Scripts/Source/MQ204Script.psc:43:1:none-form-usage
 Scripts/Source/MQ204Script.psc:44:1:none-form-usage
 Scripts/Source/MQ204Script.psc:45:1:none-form-usage
@@ -34041,6 +34061,7 @@ Scripts/Source/MS06_QuestScript.psc:84:121:line-length
 Scripts/Source/MS06_QuestScript.psc:91:43:forbidden-functions
 Scripts/Source/MS06_QuestScript.psc:93:1:setvalue-in-loop
 Scripts/Source/MS06_QuestScript.psc:112:121:line-length
+Scripts/Source/MS06_QuestScript.psc:116:1:assignment-overwritten
 Scripts/Source/MS06_QuestScript.psc:118:15:forbidden-functions
 Scripts/Source/MS06_QuestScript.psc:118:121:line-length
 Scripts/Source/MS06_QuestScript.psc:129:11:forbidden-functions
@@ -35245,6 +35266,7 @@ Scripts/Source/OE_ShipsAddonScript.psc:128:22:forbidden-functions
 Scripts/Source/OE_ShipsAddonScript.psc:131:121:line-length
 Scripts/Source/OE_ShipsAddonScript.psc:133:121:line-length
 Scripts/Source/OE_ShipsAddonScript.psc:166:121:line-length
+Scripts/Source/OE_ShipsAddonScript.psc:171:1:assignment-overwritten
 Scripts/Source/OE_ShipsAddonScript.psc:176:121:line-length
 Scripts/Source/OE_ShipsAddonScript.psc:181:24:unresolved-script
 Scripts/Source/OE_ShipsAddonScript.psc:185:24:unresolved-script
@@ -35262,6 +35284,9 @@ Scripts/Source/OE_ShipsAddonScript.psc:269:121:line-length
 Scripts/Source/OE_ShipsAddonScript.psc:290:121:line-length
 Scripts/Source/OE_ShipsAddonScript.psc:296:121:line-length
 Scripts/Source/OE_ShipsAddonScript.psc:297:1:nesting-depth
+Scripts/Source/OE_ShipsAddonScript.psc:299:1:assignment-overwritten
+Scripts/Source/OE_ShipsAddonScript.psc:301:1:assignment-overwritten
+Scripts/Source/OE_ShipsAddonScript.psc:302:1:assignment-overwritten
 Scripts/Source/OE_ShipsAddonScript.psc:336:121:line-length
 Scripts/Source/OE_ShipsAddonScript.psc:343:121:line-length
 Scripts/Source/OE_ShipsAddonScript.psc:346:121:line-length
@@ -35282,6 +35307,10 @@ Scripts/Source/OE_ShipsAddonScript.psc:431:121:line-length
 Scripts/Source/OE_ShipsAddonScript.psc:461:121:line-length
 Scripts/Source/OE_ShipsAddonScript.psc:462:1:cyclomatic-complexity
 Scripts/Source/OE_ShipsAddonScript.psc:462:1:nesting-depth
+Scripts/Source/OE_ShipsAddonScript.psc:464:1:assignment-overwritten
+Scripts/Source/OE_ShipsAddonScript.psc:465:1:assignment-overwritten
+Scripts/Source/OE_ShipsAddonScript.psc:466:1:assignment-overwritten
+Scripts/Source/OE_ShipsAddonScript.psc:471:1:assignment-overwritten
 Scripts/Source/OE_ShipsAddonScript.psc:482:39:forbidden-functions
 Scripts/Source/OE_ShipsAddonScript.psc:484:121:line-length
 Scripts/Source/OE_ShipsAddonScript.psc:489:121:line-length
@@ -35759,6 +35788,7 @@ Scripts/Source/OutpostTutorialScript.psc:350:121:line-length
 Scripts/Source/OutpostTutorialScript.psc:403:1:nesting-depth
 Scripts/Source/OutpostTutorialScript.psc:403:121:line-length
 Scripts/Source/OutpostTutorialScript.psc:408:121:line-length
+Scripts/Source/OutpostTutorialScript.psc:413:1:assignment-overwritten
 Scripts/Source/OutpostTutorialScript.psc:447:121:line-length
 Scripts/Source/OutpostTutorialScript.psc:449:2:strict-boolean
 Scripts/Source/OutpostTutorialScript.psc:452:121:line-length
@@ -37560,6 +37590,7 @@ Scripts/Source/SEScript.psc:168:10:forbidden-functions
 Scripts/Source/SEScript.psc:184:121:line-length
 Scripts/Source/SEScript.psc:185:58:unresolved-script
 Scripts/Source/SEScript.psc:186:35:forbidden-functions
+Scripts/Source/SEScript.psc:188:1:assignment-overwritten
 Scripts/Source/SEScript.psc:223:47:unresolved-script
 Scripts/Source/SEScript.psc:225:8:forbidden-functions
 Scripts/Source/SEScript.psc:225:75:unresolved-script
@@ -38586,6 +38617,7 @@ Scripts/Source/SFBGS003/SFBGS003_AddBountyScannerCrimes.psc:82:121:line-length
 Scripts/Source/SFBGS003/SFBGS003_RotateCarouselScript.psc:16:46:unresolved-script
 Scripts/Source/SFBGS003/SFBGS003_RotateCarouselScript.psc:18:46:unresolved-script
 Scripts/Source/SFBGS003/SFBGS003_SQ_BountyMission_AliasScript.psc:20:121:line-length
+Scripts/Source/SFBGS003/SFBGS003_SQ_BountyMission_AliasScript.psc:81:1:assignment-overwritten
 Scripts/Source/SFBGS003/SFBGS003_SQ_BountyMission_AliasScript.psc:90:73:unresolved-script
 Scripts/Source/SFBGS003/SFBGS003_SQ_BountyMission_AliasScript.psc:94:77:unresolved-script
 Scripts/Source/SFBGS003/SFBGS003_SQ_BountyMission_AliasScript.psc:98:75:unresolved-script
@@ -38594,6 +38626,8 @@ Scripts/Source/SFBGS003/SFBGS003_SQ_BountyMission_AliasScript.psc:106:106:unreso
 Scripts/Source/SFBGS003/SFBGS003_SQ_BountyMission_AliasScript.psc:107:100:unresolved-script
 Scripts/Source/SFBGS003/SFBGS003_SQ_BountyMission_AliasScript.psc:110:52:slow-functions
 Scripts/Source/SFBGS003/SFBGS003_SQ_BountyMission_AliasScript.psc:110:63:unresolved-script
+Scripts/Source/SFBGS003/SFBGS003_SQ_BountyMission_AliasScript.psc:120:1:assignment-overwritten
+Scripts/Source/SFBGS003/SFBGS003_SQ_BountyMission_AliasScript.psc:121:1:assignment-overwritten
 Scripts/Source/SFBGS003/SFBGS003_SQ_BountyMission_AliasScript.psc:153:41:unresolved-script
 Scripts/Source/SFBGS003/SFBGS003_SQ_BountyMission_AliasScript.psc:197:121:line-length
 Scripts/Source/SFBGS003/SFBGS003_SQ_BountyMission_AliasScript.psc:198:121:line-length
@@ -38602,6 +38636,7 @@ Scripts/Source/SFBGS003/SFBGS003_SQ_BountyMission_AliasScript.psc:202:121:line-l
 Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:53:52:unresolved-script
 Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:57:22:forbidden-functions
 Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:59:45:unresolved-script
+Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:97:1:assignment-overwritten
 Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:103:52:unresolved-script
 Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:144:121:line-length
 Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:163:1:unchecked-cast
@@ -38702,6 +38737,7 @@ Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:135:121:line-length
 Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:138:1:none-form-usage
 Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:139:53:unresolved-script
 Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:149:1:unregistered-remote-event
+Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:162:1:assignment-overwritten
 Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:171:1:none-form-usage
 Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:175:1:none-form-usage
 Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:179:1:none-form-usage
@@ -38710,6 +38746,8 @@ Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:187:1:none-form-usage
 Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:188:1:none-form-usage
 Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:292:44:unresolved-script
 Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:294:121:line-length
+Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:304:1:assignment-overwritten
+Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:305:1:assignment-overwritten
 Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:353:121:line-length
 Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:364:121:line-length
 Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:365:121:line-length
@@ -38724,6 +38762,7 @@ Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:93:28:forbidden-functions
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:95:51:unresolved-script
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:109:58:unresolved-script
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:144:58:unresolved-script
+Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:145:1:assignment-overwritten
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:146:1:none-form-usage
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:162:56:unresolved-script
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:163:99:unresolved-script
@@ -38734,6 +38773,7 @@ Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:192:58:unresolved-script
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:211:31:unresolved-script
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:218:58:unresolved-script
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:231:38:forbidden-functions
+Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:239:1:assignment-overwritten
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:239:44:unresolved-script
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:240:58:unresolved-script
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:243:27:unresolved-script
@@ -41529,6 +41569,7 @@ Scripts/Source/SQ_ActorRolesScript.psc:236:121:line-length
 Scripts/Source/SQ_ActorRolesScript.psc:237:121:line-length
 Scripts/Source/SQ_ActorRolesScript.psc:239:121:line-length
 Scripts/Source/SQ_ActorRolesScript.psc:241:121:line-length
+Scripts/Source/SQ_ActorRolesScript.psc:244:1:assignment-overwritten
 Scripts/Source/SQ_ActorRolesScript.psc:247:5:strict-boolean
 Scripts/Source/SQ_ActorRolesScript.psc:265:1:unchecked-cast
 Scripts/Source/SQ_ActorRolesScript.psc:267:1:unchecked-cast
@@ -41747,12 +41788,14 @@ Scripts/Source/SQ_CompanionsScript.psc:452:2:strict-boolean
 Scripts/Source/SQ_CompanionsScript.psc:462:40:unresolved-script
 Scripts/Source/SQ_CompanionsScript.psc:469:4:empty-body
 Scripts/Source/SQ_CompanionsScript.psc:483:121:line-length
+Scripts/Source/SQ_CompanionsScript.psc:484:1:assignment-overwritten
 Scripts/Source/SQ_CompanionsScript.psc:487:121:line-length
 Scripts/Source/SQ_CompanionsScript.psc:532:121:line-length
 Scripts/Source/SQ_CompanionsScript.psc:534:2:strict-boolean
 Scripts/Source/SQ_CompanionsScript.psc:542:1:explicit-return
 Scripts/Source/SQ_CompanionsScript.psc:543:40:unresolved-script
 Scripts/Source/SQ_CompanionsScript.psc:566:29:unresolved-script
+Scripts/Source/SQ_CompanionsScript.psc:569:1:assignment-overwritten
 Scripts/Source/SQ_CompanionsScript.psc:571:2:strict-boolean
 Scripts/Source/SQ_CompanionsScript.psc:573:28:unresolved-script
 Scripts/Source/SQ_CompanionsScript.psc:576:37:unresolved-script
@@ -42181,6 +42224,7 @@ Scripts/Source/SQ_GroupScript.psc:200:121:line-length
 Scripts/Source/SQ_GroupScript.psc:215:121:line-length
 Scripts/Source/SQ_GroupScript.psc:216:77:unresolved-script
 Scripts/Source/SQ_GroupScript.psc:217:64:unresolved-script
+Scripts/Source/SQ_GroupScript.psc:226:1:assignment-overwritten
 Scripts/Source/SQ_GroupScript.psc:226:1:cyclomatic-complexity
 Scripts/Source/SQ_GroupScript.psc:226:1:nesting-depth
 Scripts/Source/SQ_GroupScript.psc:226:121:line-length
@@ -42205,6 +42249,7 @@ Scripts/Source/SQ_GroupScript.psc:430:1:unchecked-cast
 Scripts/Source/SQ_GroupScript.psc:432:121:line-length
 Scripts/Source/SQ_GroupScript.psc:443:121:line-length
 Scripts/Source/SQ_GroupScript.psc:446:121:line-length
+Scripts/Source/SQ_GroupScript.psc:449:1:assignment-overwritten
 Scripts/Source/SQ_GroupScript.psc:475:2:strict-boolean
 Scripts/Source/SQ_GroupScript.psc:476:50:unresolved-script
 Scripts/Source/SQ_GroupScript.psc:512:121:line-length
@@ -42633,6 +42678,7 @@ Scripts/Source/SQ_ParentScript.psc:727:1:nesting-depth
 Scripts/Source/SQ_ParentScript.psc:728:8:forbidden-functions
 Scripts/Source/SQ_ParentScript.psc:731:8:forbidden-functions
 Scripts/Source/SQ_ParentScript.psc:740:9:forbidden-functions
+Scripts/Source/SQ_ParentScript.psc:745:1:assignment-overwritten
 Scripts/Source/SQ_ParentScript.psc:745:121:line-length
 Scripts/Source/SQ_ParentScript.psc:749:1:numeric-comparison
 Scripts/Source/SQ_ParentScript.psc:759:10:forbidden-functions
@@ -42861,6 +42907,7 @@ Scripts/Source/SQ_PlayerIncreaseLevelScript.psc:23:23:slow-functions
 Scripts/Source/SQ_PlayerIncreaseLevelScript.psc:39:25:forbidden-functions
 Scripts/Source/SQ_PlayerIncreaseLevelScript.psc:45:23:forbidden-functions
 Scripts/Source/SQ_PlayerShipArmillaryScreenScript.psc:28:1:none-form-usage
+Scripts/Source/SQ_PlayerShipArmillaryScreenScript.psc:30:1:assignment-overwritten
 Scripts/Source/SQ_PlayerShipArmillaryScreenScript.psc:30:1:none-form-usage
 Scripts/Source/SQ_PlayerShipArmillaryScreenScript.psc:31:13:forbidden-functions
 Scripts/Source/SQ_PlayerShipArmillaryScreenScript.psc:38:1:none-form-usage
@@ -43093,6 +43140,7 @@ Scripts/Source/SQ_PlayerShipScript.psc:981:1:none-form-usage
 Scripts/Source/SQ_PlayerShipScript.psc:999:30:unresolved-script
 Scripts/Source/SQ_PlayerShipScript.psc:1001:1:none-form-usage
 Scripts/Source/SQ_PlayerShipScript.psc:1003:24:unresolved-script
+Scripts/Source/SQ_PlayerShipScript.psc:1018:1:assignment-overwritten
 Scripts/Source/SQ_PlayerShipScript.psc:1019:1:none-form-usage
 Scripts/Source/SQ_PlayerShipScript.psc:1020:2:strict-boolean
 Scripts/Source/SQ_PlayerShipScript.psc:1033:54:unresolved-script
@@ -43116,6 +43164,7 @@ Scripts/Source/SQ_PlayerShipScript.psc:1078:33:unresolved-script
 Scripts/Source/SQ_PlayerShipScript.psc:1090:44:forbidden-functions
 Scripts/Source/SQ_PlayerShipScript.psc:1092:2:strict-boolean
 Scripts/Source/SQ_PlayerShipScript.psc:1103:1:none-form-usage
+Scripts/Source/SQ_PlayerShipScript.psc:1111:1:assignment-overwritten
 Scripts/Source/SQ_PlayerShipScript.psc:1112:2:strict-boolean
 Scripts/Source/SQ_PlayerShipScript.psc:1113:63:unresolved-script
 Scripts/Source/SQ_PlayerShipScript.psc:1117:1:none-form-usage
@@ -43185,6 +43234,7 @@ Scripts/Source/SQ_ShipRespawnScript.psc:82:9:strict-boolean
 Scripts/Source/SQ_ShipRespawnScript.psc:84:13:strict-boolean
 Scripts/Source/SQ_ShipRespawnScript.psc:87:1:none-form-usage
 Scripts/Source/SQ_ShipRespawnScript.psc:88:1:none-form-usage
+Scripts/Source/SQ_ShipRespawnScript.psc:91:1:assignment-overwritten
 Scripts/Source/SQ_ShipRespawnScript.psc:109:11:forbidden-functions
 Scripts/Source/SQ_ShipRespawnScript.psc:120:11:forbidden-functions
 Scripts/Source/SQ_ShipRespawnScript.psc:130:1:nesting-depth
@@ -43606,6 +43656,7 @@ Scripts/Source/ShipVendorScript.psc:253:121:line-length
 Scripts/Source/ShipVendorScript.psc:254:5:strict-boolean
 Scripts/Source/ShipVendorScript.psc:265:15:forbidden-functions
 Scripts/Source/ShipVendorScript.psc:267:15:forbidden-functions
+Scripts/Source/ShipVendorScript.psc:272:1:assignment-overwritten
 Scripts/Source/ShipVendorScript.psc:284:11:forbidden-functions
 Scripts/Source/ShipVendorScript.psc:289:1:none-form-usage
 Scripts/Source/ShipVendorScript.psc:298:15:forbidden-functions
@@ -44065,6 +44116,7 @@ Scripts/Source/TargetingEffectScript.psc:21:121:line-length
 Scripts/Source/TargetingEffectScript.psc:23:1:none-form-usage
 Scripts/Source/TargetingEffectScript.psc:24:1:none-form-usage
 Scripts/Source/TargetingSkillPlayerAliasScript.psc:10:29:forbidden-functions
+Scripts/Source/TargetingSkillPlayerAliasScript.psc:12:1:assignment-overwritten
 Scripts/Source/TargetingSkillPlayerAliasScript.psc:15:1:numeric-comparison
 Scripts/Source/TargetingSkillPlayerAliasScript.psc:17:1:numeric-comparison
 Scripts/Source/TeleportPlayerToLinkedRefScript.psc:4:35:forbidden-functions
@@ -44241,6 +44293,7 @@ Scripts/Source/TestDisplayCaseScript.psc:16:11:forbidden-functions
 Scripts/Source/TestDropScript.psc:5:8:forbidden-functions
 Scripts/Source/TestDynamicTerminalScript.psc:35:11:forbidden-functions
 Scripts/Source/TestDynamicTerminalScript.psc:38:1:none-form-usage
+Scripts/Source/TestDynamicTerminalScript.psc:46:1:assignment-overwritten
 Scripts/Source/TestDynamicTerminalScript.psc:49:9:strict-boolean
 Scripts/Source/TestDynamicTerminalScript.psc:58:9:strict-boolean
 Scripts/Source/TestDynamicTerminalScript.psc:68:11:forbidden-functions
@@ -44604,7 +44657,9 @@ Scripts/Source/TestMiningPrototype02Script.psc:49:1:none-form-usage
 Scripts/Source/TestMiningPrototype02Script.psc:54:121:line-length
 Scripts/Source/TestMiningPrototype02Script.psc:56:25:forbidden-functions
 Scripts/Source/TestMiningPrototype02Script.psc:57:1:none-form-usage
+Scripts/Source/TestMovementAnim.psc:281:1:assignment-overwritten
 Scripts/Source/TestMovementAnim.psc:282:1:numeric-comparison
+Scripts/Source/TestMovementAnim.psc:386:1:assignment-overwritten
 Scripts/Source/TestMovementAnim.psc:528:1:numeric-comparison
 Scripts/Source/TestMultiActorChairScript.psc:14:28:forbidden-functions
 Scripts/Source/TestMultiActorChairScript.psc:15:1:none-form-usage
@@ -45253,10 +45308,12 @@ Scripts/Source/TrapElectricalPanelScript.psc:91:11:forbidden-functions
 Scripts/Source/TrapElectricalPanelScript.psc:92:5:strict-boolean
 Scripts/Source/TrapElectricalPanelScript.psc:93:30:unresolved-script
 Scripts/Source/TrapElectricalPanelScript.psc:93:31:forbidden-functions
+Scripts/Source/TrapElectricalPanelScript.psc:99:1:assignment-overwritten
 Scripts/Source/TrapElectricalPanelScript.psc:107:11:forbidden-functions
 Scripts/Source/TrapElectricalPanelScript.psc:113:121:line-length
 Scripts/Source/TrapElectricalPanelScript.psc:119:121:line-length
 Scripts/Source/TrapElectricalPanelScript.psc:120:121:line-length
+Scripts/Source/TrapElectricalPanelScript.psc:121:1:assignment-overwritten
 Scripts/Source/TrapElectricalPanelScript.psc:129:5:strict-boolean
 Scripts/Source/TrapElectricalPanelScript.psc:131:5:strict-boolean
 Scripts/Source/TrapElectricalPanelScript.psc:139:121:line-length
@@ -46372,8 +46429,10 @@ Scripts/Source/Utility.psc:106:2:strict-boolean
 Scripts/Source/Utility.psc:112:1:numeric-comparison
 Scripts/Source/Utility.psc:129:30:forbidden-functions
 Scripts/Source/Utility.psc:130:2:strict-boolean
+Scripts/Source/Utility.psc:133:1:assignment-overwritten
 Scripts/Source/Utility.psc:134:2:strict-boolean
 Scripts/Source/Utility.psc:135:121:line-length
+Scripts/Source/Utility.psc:141:1:assignment-overwritten
 Scripts/Source/Utility.psc:151:8:forbidden-functions
 Scripts/Source/Utility.psc:152:8:forbidden-functions
 Scripts/Source/Utility.psc:158:121:line-length
@@ -46410,6 +46469,7 @@ Scripts/Source/VendorEnhanceScript.psc:20:1:none-form-usage
 Scripts/Source/VendorEnhanceScript.psc:27:10:forbidden-functions
 Scripts/Source/VendorInfoScript.psc:4:8:forbidden-functions
 Scripts/Source/VendorInfoScript.psc:5:121:line-length
+Scripts/Source/VendorInfoScript.psc:7:1:assignment-overwritten
 Scripts/Source/VendorInfoScript.psc:9:27:forbidden-functions
 Scripts/Source/VendorInfoScript.psc:10:1:unchecked-cast
 Scripts/Source/VendorInfoScript.psc:17:3:strict-boolean
