@@ -24,9 +24,9 @@ fn generated_rules_have_one_field_per_known_id() {
 
 #[test]
 fn rule_applies_to_game_treats_empty_allow_list_as_all_games() {
-    assert!(super::rule_applies_to_game(crate::Game::Skyrim, &[]));
-    assert!(super::rule_applies_to_game(crate::Game::Fallout4, &[]));
-    assert!(super::rule_applies_to_game(crate::Game::Starfield, &[]));
+    for game in crate::Game::ALL {
+        assert!(super::rule_applies_to_game(game, &[]));
+    }
 }
 
 #[test]
@@ -44,4 +44,8 @@ fn rule_applies_to_game_respects_allow_list() {
         crate::Game::Starfield,
         &skyrim_only
     ));
+    assert!(
+        super::rule_applies_to_game(crate::Game::Legacy, &skyrim_only),
+        "Legacy Edition uses Skyrim SE rule coverage"
+    );
 }

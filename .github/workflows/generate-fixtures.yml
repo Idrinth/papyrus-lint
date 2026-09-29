@@ -14,7 +14,7 @@ on:
       game:
         description: Game whose snapshot fixtures to regenerate
         type: choice
-        options: [all, skyrim, fallout4, starfield]
+        options: [all, skyrim, legacy, fallout4, starfield]
         default: all
       preset:
         description: Preset whose snapshot fixtures to regenerate

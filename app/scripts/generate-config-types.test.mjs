@@ -234,7 +234,7 @@ describe("generate-config-types", () => {
     expect(rendered).toContain('"id":"semicolon-style"');
     expect(rendered).toContain("assume_auto_properties_filled: boolean;");
     expect(rendered).toContain(
-      'export const SELECTABLE_GAMES = ["skyrim","fallout4","starfield"] as const;',
+      'export const SELECTABLE_GAMES = ["skyrim","legacy","fallout4","starfield"] as const;',
     );
   });
 

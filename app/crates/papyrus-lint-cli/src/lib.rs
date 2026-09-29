@@ -4,7 +4,7 @@
 //! PapyrusLinterCLI lint [--format <plain|json|ai>] [--hash-source] [--quiet-warnings] [--quiet-info] [--tag <kind>] <path-to-achlist-or-ppj-or-psc-or-directory>
 //! PapyrusLinterCLI lint [--format <plain|json|ai>] [--hash-source] [--quiet-warnings] [--quiet-info] [--config <path>] [--tag <kind>] --blob <source>
 //! PapyrusLinterCLI fix [--format <plain|json|ai>] [--hash-source] [--quiet-warnings] [--quiet-info] [--type <rule-id> | --tag <kind>] [--line <n>] <path-to-achlist-or-ppj-or-psc-or-directory>
-//! PapyrusLinterCLI init --game <skyrim|fallout4|starfield> [--preset <strict|standard|careful|custom-name>]
+//! PapyrusLinterCLI init --game <skyrim|legacy|fallout4|starfield> [--preset <strict|standard|careful|custom-name>]
 //! PapyrusLinterCLI preset add <name> <path-to-papyrus-lint.yaml> [--yes]
 //! PapyrusLinterCLI preset list
 //! PapyrusLinterCLI doctor [--format <plain|json>] [--config <path>] [--script-root <path>]... <path-to-achlist-or-ppj-or-psc-or-directory>
@@ -300,7 +300,7 @@ pub const USAGE: &str = concat!(
     "Usage: PapyrusLinterCLI lint [--format <plain|json|ai>] [--hash-source] [--quiet-warnings] [--quiet-info] [--short-paths] [--config <path>] [--script-root <path>]... [--output <path>] [--progress] [--threads <n>] [--tag <kind>] <path-to-achlist-or-ppj-or-psc-or-directory>\n       ",
     "PapyrusLinterCLI lint [--format <plain|json|ai>] [--hash-source] [--quiet-warnings] [--quiet-info] [--config <path>] [--output <path>] [--color <when>] [--tag <kind>] --blob <source>\n       ",
     "PapyrusLinterCLI fix [--format <plain|json|ai>] [--hash-source] [--quiet-warnings] [--quiet-info] [--short-paths] [--config <path>] [--script-root <path>]... [--output <path>] [--progress] [--threads <n>] [--type <rule-id> | --tag <kind>] [--line <n>] [--dry-run] <path-to-achlist-or-ppj-or-psc-or-directory>\n\n",
-    "PapyrusLinterCLI init --game <skyrim|fallout4|starfield> [--preset <strict|standard|careful|custom-name>]\n\n",
+    "PapyrusLinterCLI init --game <skyrim|legacy|fallout4|starfield> [--preset <strict|standard|careful|custom-name>]\n\n",
     "PapyrusLinterCLI preset add <name> <path-to-papyrus-lint.yaml> [--yes]\n\n",
     "PapyrusLinterCLI preset list\n\n",
     "PapyrusLinterCLI doctor [--format <plain|json>] [--config <path>] [--script-root <path>]... <path-to-achlist-or-ppj-or-psc-or-directory>\n\n",
