@@ -34,6 +34,52 @@ pub fn inferred_script_search_root(script_path: &Path, project_root: &Path) -> P
     parent.to_path_buf()
 }
 
+/// Path of `script_path` relative to a conventional `scripts/source` or
+/// `source/scripts` ancestor.
+///
+/// Used when configured search roots fail to strip (Windows case mismatch
+/// against `scripts/source`) so a namespaced ScriptName is not compared to
+/// the leaf filename alone.
+pub fn relative_path_from_inferred_root(
+    script_path: &Path,
+    project_root: &Path,
+) -> Option<PathBuf> {
+    let inferred = inferred_script_search_root(script_path, project_root);
+    if !is_conventional_script_root(&inferred) {
+        return None;
+    }
+    strip_prefix_ignore_ascii_case(script_path, &inferred)
+}
+
+/// `path` with `prefix` removed, comparing each normal component
+/// case-insensitively. `None` when `path` is not under `prefix`.
+pub(crate) fn strip_prefix_ignore_ascii_case(path: &Path, prefix: &Path) -> Option<PathBuf> {
+    let path_components: Vec<_> = path.components().collect();
+    let prefix_components: Vec<_> = prefix.components().collect();
+    if path_components.len() < prefix_components.len() {
+        return None;
+    }
+    for (actual, expected) in path_components.iter().zip(&prefix_components) {
+        match (actual, expected) {
+            (std::path::Component::Normal(actual), std::path::Component::Normal(expected)) => {
+                if !actual.to_str()?.eq_ignore_ascii_case(expected.to_str()?) {
+                    return None;
+                }
+            }
+            _ if actual == expected => {}
+            _ => return None,
+        }
+    }
+    let rest = path_components[prefix_components.len()..]
+        .iter()
+        .collect::<PathBuf>();
+    if rest.as_os_str().is_empty() {
+        None
+    } else {
+        Some(rest)
+    }
+}
+
 fn is_conventional_script_root(path: &Path) -> bool {
     let Some(name) = path.file_name().and_then(|name| name.to_str()) else {
         return false;
