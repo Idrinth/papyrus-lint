@@ -3,7 +3,7 @@
 Lint/fix behavior is configured via an optional `papyrus-lint.yaml` (or
 `papyrus-lint.yml`) at the project root. Any omitted setting uses its default.
 The complete, annotated default file is generated from
-[`shared/configuration/lint-settings.json`](../shared/configuration/lint-settings.json)
+[`shared/configuration/lint-settings.yaml`](../shared/configuration/lint-settings.yaml)
 and [`shared/rules/`](../shared/rules/); it is the reference for the available
 keys, accepted values, and rule switches. Regenerate the git-ignored artifact
 with `python3 .github/scripts/generate_default_config.py`.
@@ -16,7 +16,7 @@ single `.psc`, the CLI looks for a nearby config and the conventional
 [Resolving a project](cli.md#resolving-a-project) for the exact search order.
 
 A JSON Schema for editors that support YAML schema association is generated
-from [`shared/configuration/lint-settings.json`](../shared/configuration/lint-settings.json)
+from [`shared/configuration/lint-settings.yaml`](../shared/configuration/lint-settings.yaml)
 and [`shared/rules/`](../shared/rules/) (`python3 .github/scripts/generate_config_schema.py`)
 and published at
 `https://papyrus-lint.idrinth.de/schema/papyrus-lint.schema.json`. The generated
