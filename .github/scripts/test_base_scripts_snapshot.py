@@ -28,7 +28,7 @@ def _write_fake_cli(directory: Path, output: str, exit_code: int = 1) -> Path:
         "    Path('papyrus-lint.yaml').write_text('generated', encoding='utf-8')\n"
         "    sys.exit(0)\n"
         "assert args[0] == 'lint'\n"
-        "assert '--format' in args and args[args.index('--format') + 1] == 'plain'\n"
+        "assert '--format' in args and args[args.index('--format') + 1] == 'short'\n"
         "assert '--json' not in args\n"
         "output_path = args[args.index('--output') + 1]\n"
         "from pathlib import Path\n"
@@ -141,7 +141,7 @@ class RenderAndMainTests(unittest.TestCase):
                 args_log.read_text(encoding="utf-8").splitlines()[:3],
             )
 
-    def test_render_output_runs_cli_in_plain_text_mode(self) -> None:
+    def test_render_output_runs_cli_in_short_text_mode(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             base = Path(directory)
             root = _write_repo(base)
