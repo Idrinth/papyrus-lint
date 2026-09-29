@@ -41,6 +41,23 @@ struct DefaultTokenVisitor;
 
 impl TokenVisitor for DefaultTokenVisitor {}
 
+#[derive(Default)]
+struct StarfieldNodeCounter {
+    guards: usize,
+    statements: usize,
+}
+
+impl Visitor for StarfieldNodeCounter {
+    fn visit_guard(&mut self, _: &GuardDecl) {
+        self.guards += 1;
+    }
+
+    fn visit_stmt(&mut self, statement: &Stmt) {
+        self.statements += 1;
+        walk_stmt(self, statement);
+    }
+}
+
 #[test]
 fn default_visitors_walk_complete_inputs() {
     let script = crate::parse_with_mode(
@@ -81,6 +98,30 @@ fn ast_visitor_walks_fallout4_structs_groups_and_new_struct() {
     // value, and the `new Coordinates` struct instantiation: one visited
     // expression each.
     assert_eq!(counter.count, 3);
+}
+
+#[test]
+fn ast_visitor_walks_starfield_guards_and_both_lock_guard_paths() {
+    let script = crate::parse_with_mode(
+        "ScriptName StarfieldVisit\n\n\
+         Guard WorkGuard\n\n\
+         Function Test()\n\
+             TryLockGuard WorkGuard\n\
+                 Int acquired = 1\n\
+             ElseTryLockGuard\n\
+                 Float unavailable = 1.0\n\
+             EndTryLockGuard\n\
+         EndFunction\n",
+        crate::parser::GameEdition::Starfield,
+    )
+    .unwrap();
+    let mut counter = StarfieldNodeCounter::default();
+
+    counter.visit_script(&script);
+    DefaultVisitor.visit_script(&script);
+
+    assert_eq!(counter.guards, 1);
+    assert_eq!(counter.statements, 3); // LockGuard and one declaration per path.
 }
 
 #[test]
