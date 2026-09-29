@@ -15,10 +15,13 @@ single `.psc`, the CLI looks for a nearby config and the conventional
 `Scripts/Source` or `Source/Scripts` layout. See
 [Resolving a project](cli.md#resolving-a-project) for the exact search order.
 
-A JSON Schema is available both at
-[`schema/papyrus-lint.schema.json`](../schema/papyrus-lint.schema.json) and at
-`https://papyrus-lint.idrinth.de/schema/papyrus-lint.schema.json` for editors
-that support YAML schema association.
+A JSON Schema for editors that support YAML schema association is generated
+from [`shared/configuration/lint-settings.json`](../shared/configuration/lint-settings.json)
+and [`shared/rules/`](../shared/rules/) (`python3 .github/scripts/generate_config_schema.py`)
+and published at
+`https://papyrus-lint.idrinth.de/schema/papyrus-lint.schema.json`. The generated
+file is git-ignored (like the default YAML); Pages and CI jobs produce it before
+publishing or testing the site.
 
 Papyrus Lint supports `skyrim` (Skyrim Special Edition/Anniversary Edition),
 `fallout4`, and `starfield`. Skyrim is the default for configurations that omit
@@ -76,13 +79,13 @@ passed.
   `Papyrus Compiler` directory in the game's install root).
 - `additional_script_roots`: extra directories, besides the conventional
   `scripts/source` and `source/scripts` under the project root, to search
-  for `.psc` files — set via the app's Settings tab, one per line. Each
+  for `.psc` files - set via the app's Settings tab, one per line. Each
   entry is resolved relative to the project root unless it's already an
   absolute path. Searched (after the two conventional directories, in the
   order listed) when resolving cross-script lookups for the "Argument type
   check"/"Return type check"/"Function override" lints and autocompletion,
   and appended to the compiler's `-i` argument (see
-  [Compiling a script](compiling-scripts.md)) — useful when a script
+  [Compiling a script](compiling-scripts.md)) - useful when a script
   imports from a shared library location outside the project. The CLI also
   accepts one or more `--script-root <path>` flags on top of this setting
   (see the [CLI reference](cli.md)), and, for a `.ppj` (Papyrus Project XML)
@@ -91,8 +94,8 @@ passed.
   initializes, if that config has none of its own yet (see the
   [CLI reference](cli.md)'s "Initializing a project" section).
 - `lookup_script_roots`: extra directories searched only as a last-resort
-  fallback when resolving a script by name for analysis — argument/return
-  types, `Extends`, autocompletion — set via the app's Settings tab, one
+  fallback when resolving a script by name for analysis - argument/return
+  types, `Extends`, autocompletion - set via the app's Settings tab, one
   per line. Each entry is resolved relative to the project root unless
   it's already an absolute path. They are searched only after the two
   conventional directories and `additional_script_roots` above, are never
@@ -102,17 +105,17 @@ passed.
   them as part of the project. Base-game scripts do not need to be added here:
   their pre-parsed ASTs are bundled with Papyrus Lint.
 - `compile_check`: whether the desktop app and the CLI also run
-  PapyrusCompiler.exe against a `.psc` as part of linting it — set via the
+  PapyrusCompiler.exe against a `.psc` as part of linting it - set via the
   app's Settings tab, alongside `compiler_path`. `false` by default, since
   it's slower than the lint engine's own, dependency-free checks and
-  requires a compiler path — configured or auto-detected (see
+  requires a compiler path - configured or auto-detected (see
   `compiler_path` above). When enabled, PapyrusCompiler.exe's
   own reported errors (e.g. a syntax mistake the lint engine's more
   forgiving parser lets through) are added to the results as `[error]`
   diagnostics, the same way the app's other lints are. Compiles into a
   throwaway temporary directory rather than the project's real output
   directory, so enabling this never touches (or requires write access to)
-  the project's actual compiled `.pex` output — see
+  the project's actual compiled `.pex` output - see
   [Compiling a script](compiling-scripts.md).
 - `fail_on_warning` and `fail_on_info` affect only the CLI exit status. The
   diagnostics are still printed, and the desktop app always displays every

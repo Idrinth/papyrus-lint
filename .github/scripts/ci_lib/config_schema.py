@@ -1,4 +1,8 @@
-"""Generate schema/papyrus-lint.schema.json from lint-settings + rules."""
+"""Generate schema/papyrus-lint.schema.json from lint-settings + rules.
+
+The written file is a git-ignored Pages/docs artifact; lint-settings + rules
+are the source of truth.
+"""
 
 from __future__ import annotations
 
@@ -47,8 +51,7 @@ def render_schema(settings: dict, rules: list[dict]) -> dict:
         rule = by_key[key]
         enabled = rule.get("enabled_by_default", True)
         rule_props[key] = {
-            # Prefer the short display name so the generated schema stays a
-            # manageable size for API-based commits; rule docs live in
+            # Prefer the short display name; rule docs live in
             # shared/rules/<id>.json and the website.
             "description": rule.get("name") or key,
             "type": "boolean",
