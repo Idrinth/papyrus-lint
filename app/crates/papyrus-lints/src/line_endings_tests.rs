@@ -1,8 +1,10 @@
 use super::*;
 
 fn check_with(source: &str, mode: LineEndingsMode) -> Vec<Diagnostic> {
-    let mut config = crate::config::Config::default();
-    config.line_endings_mode = mode;
+    let config = crate::config::Config {
+        line_endings_mode: mode,
+        ..Default::default()
+    };
     let ast = papyrus_parser::parse(source).ok();
     let tokens = papyrus_parser::tokenize(source).ok();
     super::check(
@@ -63,8 +65,10 @@ fn disable_file_comment_suppresses_the_diagnostic() {
 }
 
 fn repair_with(source: &str, mode: LineEndingsMode) -> String {
-    let mut config = crate::config::Config::default();
-    config.line_endings_mode = mode;
+    let config = crate::config::Config {
+        line_endings_mode: mode,
+        ..Default::default()
+    };
     let ast = papyrus_parser::parse(source).ok();
     let tokens = papyrus_parser::tokenize(source).ok();
     super::repair(source, ast.as_ref(), tokens.as_deref(), &config)
