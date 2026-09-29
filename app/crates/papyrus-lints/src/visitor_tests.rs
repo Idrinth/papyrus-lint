@@ -29,6 +29,7 @@ fn ast_rules_return_an_ast_visitor() {
     assert_ast(crate::default_property_value::visitor());
     assert_ast(crate::division_by_zero::visitor());
     assert_ast(crate::duplicate_conditional_body::visitor());
+    assert_ast(crate::duplicate_import::visitor());
     assert_ast(crate::empty_body::visitor());
     assert_ast(crate::event_signature::visitor());
     assert_ast(crate::explicit_return::visitor());
