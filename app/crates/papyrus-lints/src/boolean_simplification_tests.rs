@@ -12,6 +12,22 @@ fn check(source: &str) -> Vec<Diagnostic> {
     )
 }
 
+fn check_for_game(source: &str, game: papyrus_lint_globals::Game) -> Vec<Diagnostic> {
+    let ast = papyrus_parser::parse_for_game(source, game).ok();
+    let tokens = papyrus_parser::tokenize(source).ok();
+    let config = crate::config::Config {
+        game,
+        ..Default::default()
+    };
+    super::check(
+        source,
+        ast.as_ref(),
+        tokens.as_deref(),
+        &config,
+        &mut crate::external_signatures::NoExternalSignatures,
+    )
+}
+
 fn repair(source: &str) -> String {
     let ast = papyrus_parser::parse(source).ok();
     let tokens = papyrus_parser::tokenize(source).ok();
@@ -247,4 +263,92 @@ fn invalid_source_returns_no_diagnostics() {
     let diagnostics = check("ScriptName Example\n\nFunction Test(Bool ready)\n    If ready == true\nEndFunction\n");
 
     assert!(diagnostics.is_empty());
+}
+
+#[test]
+fn checks_declaration_initializers_and_state_functions() {
+    let source = "\
+ScriptName Example
+
+Bool Property Ready Auto
+Bool Property Initial = Ready == true Auto
+Bool Cached = Ready != false
+
+Struct Options
+    Bool Enabled = true == false
+EndStruct
+
+Group Settings
+    Bool Property Grouped = Ready == false Auto
+EndGroup
+
+State Waiting
+    Function Test(Bool fallback = true == false)
+        Return fallback != true
+    EndFunction
+EndState
+";
+
+    let diagnostics = check_for_game(source, papyrus_lint_globals::Game::Fallout4);
+
+    assert_eq!(
+        diagnostics
+            .iter()
+            .map(|diagnostic| diagnostic.line)
+            .collect::<Vec<_>>(),
+        vec![4, 5, 8, 12, 16, 17]
+    );
+}
+
+#[test]
+fn checks_comparisons_in_each_statement_container() {
+    let source = "\
+ScriptName Example
+
+Guard MainGuard
+
+Function Test(Bool ready, Bool other)
+    Bool local = ready == true
+    local = other != false
+    Consume(ready == false)
+    If ready == true
+        Return other == false
+    ElseIf other != true
+        local = ready != false
+    Else
+        local = other == true
+    EndIf
+    While ready == false
+        local = other != false
+    EndWhile
+    LockGuard MainGuard
+        local = ready == true
+    EndLockGuard
+    TryLockGuard MainGuard
+        local = ready != true
+    ElseTryLockGuard
+        local = other == false
+    EndTryLockGuard
+EndFunction
+";
+
+    let diagnostics = check_for_game(source, papyrus_lint_globals::Game::Starfield);
+
+    assert_eq!(diagnostics.len(), 13, "{diagnostics:?}");
+    assert_eq!(diagnostics.first().map(|diagnostic| diagnostic.line), Some(6));
+    assert_eq!(diagnostics.last().map(|diagnostic| diagnostic.line), Some(25));
+}
+
+#[test]
+fn repair_handles_parenthesized_and_unary_operands() {
+    let source = function(
+        "    If ((ready)) == true\n    EndIf\n    If (ready && other) != true\n    EndIf\n    If ! (ready && other) == false\n    EndIf\n",
+    );
+
+    assert_eq!(
+        repair(&source),
+        function(
+            "    If ready\n    EndIf\n    If ! (ready && other)\n    EndIf\n    If (ready && other)\n    EndIf\n",
+        )
+    );
 }
