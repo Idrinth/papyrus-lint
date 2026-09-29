@@ -233,6 +233,7 @@ describe("wired DOM interactions", () => {
       "#semicolon-style",
       "#indentation-width",
       "#identifier-casing-style",
+      "#hungarian-style",
       "#named-arguments-style",
       "#cyclomatic-complexity-warning",
       "#cyclomatic-complexity-error",

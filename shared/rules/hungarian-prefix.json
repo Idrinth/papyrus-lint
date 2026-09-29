@@ -1,0 +1,15 @@
+{
+  "id": "hungarian-prefix",
+  "name": "Hungarian prefix",
+  "category": "Formatting",
+  "visitor": "ast",
+  "tags": [
+    "style"
+  ],
+  "severity": "info",
+  "importance": "low",
+  "enabled_by_default": false,
+  "fixable": false,
+  "description": "Flags a parameter or local/script variable that does not follow the configured Hungarian type prefix (allow requires b/i/f/s/k, with a leading a on arguments; forbid rejects those prefixes). Disabled by default.",
+  "definition": "Flags, as an `[info]`, a parameter or a local/script variable whose name does not follow the Hungarian type-prefix style selected by the `hungarian` setting. Disabled by default; opt in with `rules.hungarian_prefix`. `allow` (the default) requires the prefix: `b`/`i`/`f`/`s` for Bool/Int/Float/String and `k` for every other type, including arrays of those types (an array does not get its own letter). Arguments always add a leading `a`, so a parameter is `ab`/`ai`/`af`/`as`/`ak` — `ai` means argument integer, not an engine-only prefix, and the same letters apply to every parameter, not only stock events. `forbid` flags a name that already uses one of those prefixes. A prefix is those letters alone or followed by a digit or an uppercase letter (`iCount`, `aiItemCount`, `i2`); a word that only happens to start with the same letter (`index`, `ready`) is not a prefix. `forbid` does not flag `Event` parameters, because stock event signatures (`akActionRef`, `aiItemCount`) cannot be renamed; a non-event override whose parent fixes the name can suppress the line with `@disable hungarian-prefix`. Properties, functions, states, and `ScriptName` are not checked. This rule does not replace `identifier-casing`: a required prefix is lowercase, so `allow` usually wants `identifier_casing: camelCase` (or that rule turned off). CreationKit fragment-wrapper lines outside `;BEGIN CODE`/`;END CODE` are left alone. Not automatically fixable — adding or removing the prefix renames the identifier."
+}

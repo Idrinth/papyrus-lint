@@ -1,0 +1,39 @@
+{
+  "key": "hungarian",
+  "rust": {
+    "type": "Hungarian",
+    "default": "Hungarian::default()"
+  },
+  "yaml": {
+    "default": "allow",
+    "comment": "allow, forbid"
+  },
+  "ts_type": "HungarianStyle",
+  "ts_alias": "HungarianStyle",
+  "doc": "Whether the \"Hungarian prefix\" lint requires type prefixes on\nparameters and local/script variables (`allow`) or flags those\nprefixes (`forbid`). The lint itself is off unless\n`rules.hungarian_prefix` is set; this only selects which way it\npoints. See [`Hungarian`]. Arguments always take a leading `a`\n(`ab`/`ai`/`af`/`as`/`ak`); `ai` is argument integer, not an\nengine-only prefix.",
+  "ui": {
+    "mount": "lint-config-settings",
+    "id": "hungarian-style",
+    "widget": "select",
+    "label": "Hungarian prefixes",
+    "options": [
+      {
+        "value": "allow",
+        "label": "Allow (require type prefixes)"
+      },
+      {
+        "value": "forbid",
+        "label": "Forbid type prefixes"
+      }
+    ]
+  },
+  "schema": {
+    "description": "Whether the Hungarian-prefix lint requires type prefixes (allow) or flags them (forbid). The rule itself stays off unless rules.hungarian_prefix is enabled.",
+    "type": "string",
+    "enum": [
+      "allow",
+      "forbid"
+    ],
+    "default": "allow"
+  }
+}

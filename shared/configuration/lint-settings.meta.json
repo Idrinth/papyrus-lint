@@ -15,6 +15,7 @@
     "max_line_length",
     "type_casing",
     "identifier_casing",
+    "hungarian",
     "named_arguments",
     "magic_numbers",
     "cyclomatic_complexity_warning",

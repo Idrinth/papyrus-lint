@@ -76,6 +76,7 @@ fn defaults_match_documented_default() {
     assert_eq!(config.indentation_width, 4);
     assert_eq!(config.max_line_length, 120);
     assert_eq!(config.identifier_casing, IdentifierCasing::PascalCase);
+    assert_eq!(config.hungarian, Hungarian::Allow);
     assert_eq!(config.cyclomatic_complexity_warning, 10);
     assert_eq!(config.cyclomatic_complexity_error, 20);
     assert_eq!(config.type_casing, crate::type_casing::Style::PascalCase);
@@ -444,6 +445,35 @@ fn magic_numbers_round_trips_through_yaml() {
     ] {
         let config = Config {
             magic_numbers: mode,
+            ..Config::default()
+        };
+        let yaml = to_yaml(&config).unwrap();
+        assert_eq!(parse(&yaml).unwrap(), config);
+    }
+}
+
+#[test]
+fn parses_hungarian_style() {
+    assert_eq!(
+        parse("hungarian: allow\n").unwrap().hungarian,
+        Hungarian::Allow
+    );
+    assert_eq!(
+        parse("hungarian: forbid\n").unwrap().hungarian,
+        Hungarian::Forbid
+    );
+}
+
+#[test]
+fn rejects_unknown_hungarian_value() {
+    assert!(parse("hungarian: require\n").is_err());
+}
+
+#[test]
+fn hungarian_round_trips_through_yaml() {
+    for style in [Hungarian::Allow, Hungarian::Forbid] {
+        let config = Config {
+            hungarian: style,
             ..Config::default()
         };
         let yaml = to_yaml(&config).unwrap();
