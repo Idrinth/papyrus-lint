@@ -19,9 +19,9 @@
     "id": "function-length-max-lines",
     "widget": "number",
     "label": "Maximum lines",
-    "min": 1,
-    "clamp_min": 1,
-    "treat_zero_as_empty": true
+    "min": 0,
+    "clamp_min": 0,
+    "treat_zero_as_empty": false
   },
   "schema": {
     "description": "Maximum number of physical body lines a function or event may have before the function-length lint reports a warning.",
