@@ -44,31 +44,28 @@ pub fn repair(
 }
 
 fn first_offending_terminator(source: &str, mode: LineEndingsMode) -> Option<(usize, usize)> {
-    let bytes = source.as_bytes();
     let mut line = 1usize;
     let mut column = 1usize;
-    let mut i = 0usize;
-    while i < bytes.len() {
-        if bytes[i] == b'\r' && bytes.get(i + 1) == Some(&b'\n') {
+    let mut chars = source.chars().peekable();
+    while let Some(ch) = chars.next() {
+        if ch == '\r' && chars.peek() == Some(&'\n') {
+            let _ = chars.next();
             if mode != LineEndingsMode::Crlf {
                 return Some((line, column));
             }
             line += 1;
             column = 1;
-            i += 2;
             continue;
         }
-        if bytes[i] == b'\n' || bytes[i] == b'\r' {
+        if ch == '\n' || ch == '\r' {
             if mode != LineEndingsMode::Lf {
                 return Some((line, column));
             }
             line += 1;
             column = 1;
-            i += 1;
             continue;
         }
         column += 1;
-        i += 1;
     }
     None
 }
@@ -79,21 +76,18 @@ fn rewrite(source: &str, mode: LineEndingsMode) -> String {
         LineEndingsMode::Crlf => "\r\n",
     };
     let mut out = String::with_capacity(source.len());
-    let bytes = source.as_bytes();
-    let mut i = 0usize;
-    while i < bytes.len() {
-        if bytes[i] == b'\r' && bytes.get(i + 1) == Some(&b'\n') {
+    let mut chars = source.chars().peekable();
+    while let Some(ch) = chars.next() {
+        if ch == '\r' && chars.peek() == Some(&'\n') {
+            let _ = chars.next();
             out.push_str(replacement);
-            i += 2;
             continue;
         }
-        if bytes[i] == b'\n' || bytes[i] == b'\r' {
+        if ch == '\n' || ch == '\r' {
             out.push_str(replacement);
-            i += 1;
             continue;
         }
-        out.push(bytes[i] as char);
-        i += 1;
+        out.push(ch);
     }
     out
 }
