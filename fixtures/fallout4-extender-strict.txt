@@ -1371,6 +1371,7 @@ Scripts/Source/F4SE/ObjectMod.psc:182:1:identifier-casing
 Scripts/Source/F4SE/ObjectMod.psc:185:41:final-newline
 Scripts/Source/F4SE/ObjectReference.psc:4:1:identifier-casing
 Scripts/Source/F4SE/ObjectReference.psc:4:1:unnecessary-function
+Scripts/Source/F4SE/ObjectReference.psc:8:1:function-length
 Scripts/Source/F4SE/ObjectReference.psc:8:1:identifier-casing
 Scripts/Source/F4SE/ObjectReference.psc:8:1:identifier-casing
 Scripts/Source/F4SE/ObjectReference.psc:8:1:identifier-casing
@@ -1387,6 +1388,7 @@ Scripts/Source/F4SE/ObjectReference.psc:26:1:numeric-comparison
 Scripts/Source/F4SE/ObjectReference.psc:28:1:indentation
 Scripts/Source/F4SE/ObjectReference.psc:32:25:forbidden-functions
 Scripts/Source/F4SE/ObjectReference.psc:36:1:indentation
+Scripts/Source/F4SE/ObjectReference.psc:42:1:function-length
 Scripts/Source/F4SE/ObjectReference.psc:43:1:identifier-casing
 Scripts/Source/F4SE/ObjectReference.psc:43:22:forbidden-functions
 Scripts/Source/F4SE/ObjectReference.psc:44:1:identifier-casing
@@ -1406,6 +1408,7 @@ Scripts/Source/F4SE/ObjectReference.psc:79:121:line-length
 Scripts/Source/F4SE/ObjectReference.psc:80:5:exclamation-spacing
 Scripts/Source/F4SE/ObjectReference.psc:89:1:identifier-casing
 Scripts/Source/F4SE/ObjectReference.psc:89:1:unnecessary-function
+Scripts/Source/F4SE/ObjectReference.psc:94:1:function-length
 Scripts/Source/F4SE/ObjectReference.psc:94:1:identifier-casing
 Scripts/Source/F4SE/ObjectReference.psc:94:1:identifier-casing
 Scripts/Source/F4SE/ObjectReference.psc:100:1:identifier-casing
@@ -1744,6 +1747,7 @@ Scripts/Source/F4SE/ObjectReference.psc:791:1:identifier-casing
 Scripts/Source/F4SE/ObjectReference.psc:791:1:identifier-casing
 Scripts/Source/F4SE/ObjectReference.psc:791:1:identifier-casing
 Scripts/Source/F4SE/ObjectReference.psc:791:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:801:1:function-length
 Scripts/Source/F4SE/ObjectReference.psc:801:1:identifier-casing
 Scripts/Source/F4SE/ObjectReference.psc:801:1:identifier-casing
 Scripts/Source/F4SE/ObjectReference.psc:801:1:identifier-casing
