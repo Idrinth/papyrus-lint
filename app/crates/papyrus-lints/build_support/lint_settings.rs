@@ -134,7 +134,10 @@ fn render(settings: &[LintSetting]) -> String {
                     out.line(format_args!("/// {line}"));
                 }
             }
-            out.line(format_args!("pub {}: {},", setting.key, setting.rust.type_name));
+            out.line(format_args!(
+                "pub {}: {},",
+                setting.key, setting.rust.type_name
+            ));
         }
         out.line("/// Per-ruleset enable/disable switches. Every ruleset is enabled by");
         out.line("/// default unless `shared/rules.json` sets `enabled_by_default: false`;");
