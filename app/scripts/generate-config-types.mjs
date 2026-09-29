@@ -120,7 +120,8 @@ export function parseDefaultYaml(source) {
     if (sep < 0) {
       throw new Error(`default YAML rules line is not key: value: ${JSON.stringify(line)}`);
     }
-    rules.push([stripped.slice(0, sep).trim(), stripped.slice(sep + 1).trim() === "true"]);
+    const value = stripped.slice(sep + 1).split("#", 1)[0].trim();
+    rules.push([stripped.slice(0, sep).trim(), value === "true"]);
   }
   if (rules.length === 0) {
     throw new Error("default YAML has no rules: entries");

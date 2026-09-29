@@ -177,7 +177,10 @@ describe("generate-config-types", () => {
         { id: "comma-spacing", name: "Space after comma", description: "Requires whitespace after commas.", enabled_by_default: true },
         { id: "property-sorting", name: "Property sorting", description: "Flags unsorted properties.", enabled_by_default: false },
       ],
-      yamlFor("comma_spacing: true", "property_sorting: false"),
+      yamlFor(
+        "comma_spacing: true # Requires whitespace after commas.",
+        "property_sorting: false # Flags unsorted properties.",
+      ),
     );
 
     expect(rendered).toContain(
