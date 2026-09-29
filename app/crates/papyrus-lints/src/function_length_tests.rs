@@ -144,9 +144,11 @@ fn does_not_flag_when_the_rule_is_disabled() {
 #[test]
 fn honors_disable_line_comments_through_lint() {
     let source = "ScriptName Example\n\nFunction Test() ; @disable function-length\n    Int a = 1\n    Int b = 2\n    Int c = 3\nEndFunction\n";
-    let mut config = crate::config::Config::default();
-    config.function_length_max_code_lines = 1;
-    config.function_length_max_lines = 1;
+    let config = crate::config::Config {
+        function_length_max_code_lines: 1,
+        function_length_max_lines: 1,
+        ..Default::default()
+    };
     assert!(!crate::lint(source, &config)
         .iter()
         .any(|diagnostic| diagnostic.rule == RULE));
