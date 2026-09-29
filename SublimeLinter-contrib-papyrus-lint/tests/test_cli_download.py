@@ -62,16 +62,15 @@ class CliDownloadTests(unittest.TestCase):
             text=True,
         )
 
-    def test_accepts_a_manually_configured_gui_binary(self):
+    def test_accepts_a_manually_configured_cli_binary(self):
         cli_body = b'official CLI'
-        gui_body = b'desktop app'
         completed = unittest.mock.Mock(
             stdout='PapyrusLinterCLI 0.1.0\n', stderr=''
         )
         with tempfile.TemporaryDirectory() as raw:
-            executable = Path(raw) / 'PapyrusLinter'
-            executable.write_bytes(gui_body)
-            _trust('PapyrusLinterCLI-linux', cli_body, extra=(gui_body,))
+            executable = Path(raw) / 'PapyrusLinterCLI'
+            executable.write_bytes(cli_body)
+            _trust('PapyrusLinterCLI-linux', cli_body)
             with (
                 patch.object(cli_download.platform, 'system', return_value='Linux'),
                 patch.object(cli_download.subprocess, 'run', return_value=completed),
@@ -82,7 +81,7 @@ class CliDownloadTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as raw:
             executable = Path(raw) / 'stranger'
             executable.write_bytes(b'not a release binary')
-            _trust('PapyrusLinterCLI-linux', b'official CLI', extra=(b'desktop app',))
+            _trust('PapyrusLinterCLI-linux', b'official CLI')
             with (
                 patch.object(cli_download.platform, 'system', return_value='Linux'),
                 self.assertRaisesRegex(OSError, 'configured executable SHA-256 mismatch'),
@@ -432,10 +431,10 @@ class CliDownloadTests(unittest.TestCase):
         self.assertEqual(cli_download.expected_sha256('PapyrusLinterCLI-linux'), 'aaa')
         self.assertEqual(cli_download.accepted_sha256s('PapyrusLinterCLI-linux'), ['aaa'])
 
-    def test_accepted_hashes_include_cli_and_gui_digests(self):
-        cli_download.CLI_SHA256['PapyrusLinterCLI-linux'] = ['aaa', 'bbb']
+    def test_accepted_hashes_are_the_cli_digest(self):
+        cli_download.CLI_SHA256['PapyrusLinterCLI-linux'] = ['aaa']
         self.assertEqual(cli_download.expected_sha256('PapyrusLinterCLI-linux'), 'aaa')
-        self.assertEqual(cli_download.accepted_sha256s('PapyrusLinterCLI-linux'), ['aaa', 'bbb'])
+        self.assertEqual(cli_download.accepted_sha256s('PapyrusLinterCLI-linux'), ['aaa'])
 
 
 if __name__ == '__main__':

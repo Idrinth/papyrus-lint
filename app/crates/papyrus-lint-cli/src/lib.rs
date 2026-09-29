@@ -114,8 +114,7 @@
 //! unaffected by this flag existing at all. Any other name is looked up as
 //! a user preset: a `<name>.yaml`/`.yml` file (matched case-insensitively)
 //! under a `presets` directory next to the running executable (the CLI
-//! binary itself, or the desktop app's binary when it delegates to CLI
-//! mode) — see [`papyrus_lint_config::presets::USER_PRESETS_DIR_NAME`]. An
+//! binary itself) — see [`papyrus_lint_config::presets::USER_PRESETS_DIR_NAME`]. An
 //! executable-adjacent base config file (see
 //! [`papyrus_lint_config::presets::initialize_default_config`]) still layers
 //! on top of whichever preset is selected the same way it layers over the

@@ -1,13 +1,10 @@
 # Command-line interface reference
 
 Besides its GUI, Papyrus Lint can lint non-interactively from the
-command line two ways: by passing an `.achlist` (or a `.ppj`, a single
-`.psc`, or a directory) path to the desktop app's own executable
-(`PapyrusLinter`), or
-via the standalone `PapyrusLinterCLI` binary (`app/crates/papyrus-lint-cli`)
-built and shipped separately for use cases — e.g. a CI pipeline — that
-shouldn't need the desktop app's binary (and its GUI dependencies) at all.
-Both accept the same argument and behave identically:
+command line via the standalone `PapyrusLinterCLI` binary
+(`app/crates/papyrus-lint-cli`) built and shipped separately for use
+cases — e.g. a CI pipeline — that shouldn't need the desktop app's
+binary (and its GUI dependencies) at all.
 
 [See the docs](papyrus-cli-usage.txt) for a list of possible arguments
 and options or read on for explanations.
@@ -47,8 +44,7 @@ that already sets some is left untouched), and never fails `init` itself:
 a `.ppj` that fails to parse is reported as a warning, not an error.
 
 If a `papyrus-lint.yaml`/`.yml` file exists next to the running executable
-(the CLI binary itself, or the desktop app's binary when it delegates to CLI
-mode), `init` merges it in as the base instead of the selected preset's own
+(the CLI binary itself), `init` merges it in as the base instead of the selected preset's own
 settings: any key it sets overrides the preset, and any key it omits still
 falls back to the preset. This lets you define your own baseline settings
 once, next to wherever you keep the binary, and reuse it across every
@@ -363,13 +359,10 @@ Run it with `--version`/`-V` to print its version (`PapyrusLinterCLI
 <version>`) and exit `0` instead of linting; the desktop app shows its own
 version next to its title.
 
-Launched with no arguments, the desktop app's own executable starts its
-GUI as normal; launched with any arguments, including an `.achlist` or `.psc`
-path (or `-h`/`--help`), it routes all of them through the same CLI
-implementation described above. Windows release builds use the console
-subsystem so shells wait for CLI-mode completion and can reliably capture
-plain-text or JSON stdout and stderr; when launched without arguments, the
-executable detaches that console before starting the GUI.
+The desktop app's own executable (`PapyrusLinter`) is GUI-only and does
+not accept CLI arguments. Use `PapyrusLinterCLI` for non-interactive
+linting. Windows release builds of the desktop app use the Windows
+subsystem so launching it does not attach a console.
 
 ## Getting the binary
 

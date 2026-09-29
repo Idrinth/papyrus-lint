@@ -1,4 +1,4 @@
-"""Unit tests for the CLI/GUI release hash generation logic."""
+"""Unit tests for the CLI release hash generation logic."""
 
 from __future__ import annotations
 
@@ -14,7 +14,6 @@ from unittest import mock
 
 from ci_lib.cli_release_hashes import (
     ASSETS,
-    GUI_ASSETS,
     collect_hashes,
     render_py,
     render_ts,
@@ -43,20 +42,17 @@ class WriteCliHashesTests(unittest.TestCase):
             self.assertEqual(collect_hashes(directory), expected)
             self.assertEqual(sha256_file(directory / ASSETS[0]), expected[ASSETS[0]][0])
 
-    def test_appends_gui_hashes_when_those_binaries_are_present(self):
+    def test_ignores_desktop_app_binaries_when_those_files_are_present(self):
         with tempfile.TemporaryDirectory() as raw:
             directory = Path(raw)
             expected = {}
             for asset in ASSETS:
                 body = f"{asset} bytes".encode()
                 (directory / asset).write_bytes(body)
-                gui = GUI_ASSETS[asset]
-                gui_body = f"{gui} bytes".encode()
-                (directory / gui).write_bytes(gui_body)
-                expected[asset] = [
-                    hashlib.sha256(body).hexdigest(),
-                    hashlib.sha256(gui_body).hexdigest(),
-                ]
+                (directory / asset.replace("PapyrusLinterCLI", "PapyrusLinter")).write_bytes(
+                    b"desktop app"
+                )
+                expected[asset] = [hashlib.sha256(body).hexdigest()]
 
             self.assertEqual(collect_hashes(directory), expected)
 
@@ -84,15 +80,12 @@ class WriteCliHashesTests(unittest.TestCase):
                 self.assertIn(f"'{asset}': ['{digests[0]}']", ts)
                 self.assertIn(f"'{asset}': ['{digests[0]}']", py)
 
-    def test_rendered_modules_list_cli_and_gui_digests(self):
-        hashes = {
-            asset: [f"{index:064x}", f"{index + 10:064x}"]
-            for index, asset in enumerate(ASSETS, start=1)
-        }
+    def test_rendered_modules_list_cli_digests(self):
+        hashes = {asset: [f"{index:064x}"] for index, asset in enumerate(ASSETS, start=1)}
         ts = render_ts(hashes)
         py = render_py(hashes)
         for asset, digests in hashes.items():
-            expected = f"'{asset}': ['{digests[0]}', '{digests[1]}']"
+            expected = f"'{asset}': ['{digests[0]}']"
             self.assertIn(expected, ts)
             self.assertIn(expected, py)
 
@@ -129,7 +122,7 @@ class MainTests(unittest.TestCase):
         write.assert_called_once_with(hashes, ts_path, py_path)
         self.assertEqual(
             output.getvalue(),
-            f"Wrote CLI/GUI SHA-256 digests to {ts_path} and {py_path}.\n",
+            f"Wrote CLI SHA-256 digests to {ts_path} and {py_path}.\n",
         )
 
 

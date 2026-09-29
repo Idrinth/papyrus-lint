@@ -221,22 +221,20 @@ describe('ensureReleaseCli', () => {
 
   it('treats the first baked digest as the official CLI hash', () => {
     const { cliDownload } = loadCliDownload();
-    cliDownload.CLI_SHA256['PapyrusLinterCLI-linux'] = ['aaa', 'bbb'];
+    cliDownload.CLI_SHA256['PapyrusLinterCLI-linux'] = ['aaa'];
     assert.equal(cliDownload.expectedSha256('PapyrusLinterCLI-linux'), 'aaa');
-    assert.deepEqual(cliDownload.acceptedSha256s('PapyrusLinterCLI-linux'), ['aaa', 'bbb']);
+    assert.deepEqual(cliDownload.acceptedSha256s('PapyrusLinterCLI-linux'), ['aaa']);
     assert.equal(cliDownload.isAcceptedSha256('PapyrusLinterCLI-linux', 'aaa'), true);
-    assert.equal(cliDownload.isAcceptedSha256('PapyrusLinterCLI-linux', 'bbb'), true);
-    assert.equal(cliDownload.isAcceptedSha256('PapyrusLinterCLI-linux', 'ccc'), false);
+    assert.equal(cliDownload.isAcceptedSha256('PapyrusLinterCLI-linux', 'bbb'), false);
   });
 
-  it('accepts a user-supplied executable whose hash matches the CLI or GUI digest', async () => {
+  it('accepts a user-supplied executable whose hash matches the CLI digest', async () => {
     const storage = await temporaryDirectory();
     const cliBody = 'official CLI';
-    const guiBody = 'desktop app';
-    const executable = path.join(storage, 'PapyrusLinter');
-    await fs.writeFile(executable, guiBody, { mode: 0o700 });
+    const executable = path.join(storage, 'PapyrusLinterCLI');
+    await fs.writeFile(executable, cliBody, { mode: 0o700 });
     const { cliDownload } = loadCliDownload();
-    trust(cliDownload, 'PapyrusLinterCLI-linux', cliBody, [guiBody]);
+    trust(cliDownload, 'PapyrusLinterCLI-linux', cliBody);
 
     await cliDownload.verifyConfiguredExecutable(executable, 'linux');
   });
@@ -246,7 +244,7 @@ describe('ensureReleaseCli', () => {
     const executable = path.join(storage, 'stranger');
     await fs.writeFile(executable, 'not a release binary', { mode: 0o700 });
     const { cliDownload } = loadCliDownload();
-    trust(cliDownload, 'PapyrusLinterCLI-linux', 'official CLI', ['desktop app']);
+    trust(cliDownload, 'PapyrusLinterCLI-linux', 'official CLI');
 
     await assert.rejects(
       cliDownload.verifyConfiguredExecutable(executable, 'linux'),
