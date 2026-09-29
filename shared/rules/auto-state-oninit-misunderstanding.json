@@ -1,0 +1,14 @@
+{
+  "id": "auto-state-oninit-misunderstanding",
+  "name": "OnInit inside non-Auto state",
+  "category": "Reliability",
+  "visitor": "ast",
+  "tags": [
+    "correctness"
+  ],
+  "severity": "warning",
+  "importance": "medium",
+  "fixable": false,
+  "description": "Flags OnInit declared inside a non-Auto named State, where it never runs at attach time.",
+  "definition": "Flags, as a `[warning]`, an `Event OnInit()` declared inside a named `State` that is not marked `Auto`. Papyrus fires `OnInit` when the script attaches — before any later `GoToState` — so a state-nested `OnInit` only runs if that state is the auto/entry state. Nested under a non-`Auto` state it is effectively dead. Prefer putting `OnInit` in the empty state or the `Auto` state, and use `OnBeginState` for per-state entry work. `Auto State …` (and scripts whose only named state is `Auto`) stay quiet. An empty-state `OnInit` paired with a state's `OnBeginState` is fine and is not flagged. Related but different: `multiple-auto-states` (too many `Auto`), `function-override` / `missing-override` (inheritance markers), and `state-function-signature` (signature match when an empty-state declaration exists)."
+}
