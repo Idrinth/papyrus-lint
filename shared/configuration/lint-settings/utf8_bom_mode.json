@@ -1,0 +1,31 @@
+{
+  "key": "utf8_bom_mode",
+  "rust": {
+    "type": "Utf8BomMode",
+    "default": "Utf8BomMode::default()"
+  },
+  "yaml": {
+    "default": "forbidden",
+    "comment": "required, allowed, forbidden"
+  },
+  "ts_type": "Utf8BomMode",
+  "ts_alias": "Utf8BomMode",
+  "doc": "Whether a leading UTF-8 BOM is required, allowed, or forbidden. Ignored while `rules.utf8_bom` is off.",
+  "ui": {
+    "mount": "lint-config-settings",
+    "id": "utf8-bom-mode",
+    "widget": "select",
+    "label": "UTF-8 BOM",
+    "options": [
+      { "value": "required", "label": "Required" },
+      { "value": "allowed", "label": "Allowed" },
+      { "value": "forbidden", "label": "Forbidden" }
+    ]
+  },
+  "schema": {
+    "description": "UTF-8 BOM policy when the utf8-bom rule is enabled.",
+    "type": "string",
+    "enum": ["required", "allowed", "forbidden"],
+    "default": "forbidden"
+  }
+}

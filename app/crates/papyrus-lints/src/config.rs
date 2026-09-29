@@ -81,6 +81,16 @@ impl IdentifierCasing {
     }
 }
 
+/// Leading UTF-8 BOM policy for the "UTF-8 BOM" lint.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum Utf8BomMode {
+    Required,
+    Allowed,
+    #[default]
+    Forbidden,
+}
+
 /// File encoding required by the "Forced encoding" lint.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
@@ -100,8 +110,8 @@ impl EncodingEnforced {
             EncodingEnforced::Utf8 => "utf8",
             EncodingEnforced::Windows1252 => "windows-1252",
             EncodingEnforced::Iso88591 => "iso-8859-1",
-      }
-  }
+        }
+    }
 }
 
 /// Line terminator required by the "Line endings" lint.
