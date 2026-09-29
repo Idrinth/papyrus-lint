@@ -14,11 +14,7 @@ pub(crate) use papyrus_lint_output::{
 pub use papyrus_lint_output::{JsonDiagnostic, JsonFileReport, JsonParserError, JsonReport};
 
 fn game_edition(game: papyrus_lints::Game) -> papyrus_parser::parser::GameEdition {
-    match game {
-        papyrus_lints::Game::Skyrim => papyrus_parser::parser::GameEdition::Skyrim,
-        papyrus_lints::Game::Fallout4 => papyrus_parser::parser::GameEdition::Fallout4,
-        papyrus_lints::Game::Starfield => papyrus_parser::parser::GameEdition::Starfield,
-    }
+    papyrus_parser::parser::GameEdition::from(game)
 }
 
 /// Collects the lexer/parser errors raised while handling `source`. Empty

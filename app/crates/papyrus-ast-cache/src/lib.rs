@@ -119,7 +119,10 @@ mod version;
 static CACHE_LOCK: Mutex<()> = Mutex::new(());
 
 fn has_bundled_blob(game: Game) -> bool {
-    matches!(game, Game::Skyrim | Game::Fallout4 | Game::Starfield)
+    matches!(
+        game,
+        Game::Skyrim | Game::Legacy | Game::Fallout4 | Game::Starfield
+    )
 }
 
 /// Returns the cached AST for `source_path` if `game`'s bundled-script cache

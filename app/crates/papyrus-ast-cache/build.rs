@@ -1,15 +1,9 @@
 //! Compiles each supported game's vanilla/extender script archives under
-//! `shared/scripts/` (Skyrim: `skyrim-scripts.zip` +
-//! `skyrim-extender-scripts.zip`; Fallout 4: `fallout4-scripts.zip` +
-//! `fallout4-extender-scripts.zip`; Starfield: `starfield-scripts.zip`)
-//! into a gzip-compressed AST/token blob per game
+//! `shared/scripts/` into a gzip-compressed AST/token blob per game
 //! (`{game}-ast-cache.bin.gz` in `OUT_DIR`) that [`bundled`] embeds at
-//! compile time. Keyed by MD5 of decoded source *and* by lowercased
-//! `ScriptName`, so a known script hits regardless of extract path, and a
-//! vanilla type can resolve when no matching `.psc` is on disk. Scripts
-//! the parser cannot currently lex are skipped (a `cargo:warning`); an
-//! empty blob is a hard error. A missing archive (no Starfield extender
-//! zip yet) is skipped.
+//! compile time. Archive names and parser dialects come from
+//! [`papyrus_lint_globals::Game`] so Skyrim SE and Skyrim LE share
+//! `GameEdition::Skyrim` without listing the dialect twice.
 
 use std::collections::HashMap;
 use std::env;
@@ -20,6 +14,7 @@ use std::time::Instant;
 
 use flate2::write::GzEncoder;
 use flate2::Compression;
+use papyrus_lint_globals::Game;
 use papyrus_parser::parser::GameEdition;
 use serde::Deserialize;
 
@@ -47,27 +42,34 @@ struct GameArchives {
     out_file: &'static str,
 }
 
-const GAMES: [GameArchives; 3] = [
+const GAMES: [GameArchives; 4] = [
     GameArchives {
-        display_name: "Skyrim",
-        archives: &["skyrim-scripts.zip", "skyrim-extender-scripts.zip"],
-        deprecated_data: Some("skyrim/deprecated-functions.yaml"),
+        display_name: Game::Skyrim.display_name(),
+        archives: Game::Skyrim.bundled_script_archives(),
+        deprecated_data: Game::Skyrim.deprecated_functions_data(),
         mode: GameEdition::Skyrim,
-        out_file: "skyrim-ast-cache.bin.gz",
+        out_file: Game::Skyrim.ast_cache_blob_file(),
     },
     GameArchives {
-        display_name: "Fallout 4",
-        archives: &["fallout4-scripts.zip", "fallout4-extender-scripts.zip"],
-        deprecated_data: Some("fallout4/deprecated-functions.yaml"),
+        display_name: Game::Legacy.display_name(),
+        archives: Game::Legacy.bundled_script_archives(),
+        deprecated_data: Game::Legacy.deprecated_functions_data(),
+        mode: GameEdition::Skyrim,
+        out_file: Game::Legacy.ast_cache_blob_file(),
+    },
+    GameArchives {
+        display_name: Game::Fallout4.display_name(),
+        archives: Game::Fallout4.bundled_script_archives(),
+        deprecated_data: Game::Fallout4.deprecated_functions_data(),
         mode: GameEdition::Fallout4,
-        out_file: "fallout4-ast-cache.bin.gz",
+        out_file: Game::Fallout4.ast_cache_blob_file(),
     },
     GameArchives {
-        display_name: "Starfield",
-        archives: &["starfield-scripts.zip"],
-        deprecated_data: None,
+        display_name: Game::Starfield.display_name(),
+        archives: Game::Starfield.bundled_script_archives(),
+        deprecated_data: Game::Starfield.deprecated_functions_data(),
         mode: GameEdition::Starfield,
-        out_file: "starfield-ast-cache.bin.gz",
+        out_file: Game::Starfield.ast_cache_blob_file(),
     },
 ];
 

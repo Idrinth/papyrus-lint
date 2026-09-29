@@ -11,7 +11,7 @@ interface InitPresetQuickPickItem extends vscode.QuickPickItem {
 
 interface InitGameQuickPickItem extends vscode.QuickPickItem {
   /** The `--game` value. */
-  game: 'skyrim' | 'fallout4' | 'starfield';
+  game: 'skyrim' | 'legacy' | 'fallout4' | 'starfield';
 }
 
 function initPresetQuickPickItems(): InitPresetQuickPickItem[] {
@@ -25,7 +25,8 @@ function initPresetQuickPickItems(): InitPresetQuickPickItem[] {
 
 function initGameQuickPickItems(): InitGameQuickPickItem[] {
   return [
-    { label: 'Skyrim (default)', game: 'skyrim', description: 'Skyrim Special Edition / Anniversary Edition' },
+    { label: 'Skyrim SE/AE (default)', game: 'skyrim', description: 'Skyrim Special Edition / Anniversary Edition' },
+    { label: 'Skyrim LE', game: 'legacy', description: 'Skyrim Legendary Edition (same dialect as SE, LE base scripts)' },
     { label: 'Fallout 4', game: 'fallout4', description: 'Fallout 4' },
     { label: 'Starfield', game: 'starfield', description: 'Starfield' },
   ];
