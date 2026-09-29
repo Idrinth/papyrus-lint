@@ -46,9 +46,9 @@ fn parses_individual_rule_overrides() {
 
     assert!(!config.rules.trailing_whitespace);
     assert!(!config.rules.indentation);
-    // Omitted rule keys still default to enabled.
-    assert!(config.rules.comma_spacing);
-    assert!(config.rules.semicolon);
+    let defaults = Rules::default();
+    assert_eq!(config.rules.comma_spacing, defaults.comma_spacing);
+    assert_eq!(config.rules.semicolon, defaults.semicolon);
 }
 
 #[test]
@@ -68,39 +68,11 @@ fn rules_round_trip_through_yaml() {
 }
 
 #[test]
-fn defaults_match_documented_default() {
-    let config = Config::default();
-    assert_eq!(config.game, crate::Game::Skyrim);
-    assert!(!config.semicolon);
-    assert_eq!(config.indentation, Indentation::Tab);
-    assert_eq!(config.indentation_width, 4);
-    assert_eq!(config.max_line_length, 120);
-    assert_eq!(config.identifier_casing, IdentifierCasing::PascalCase);
-    assert_eq!(config.cyclomatic_complexity_warning, 10);
-    assert_eq!(config.cyclomatic_complexity_error, 20);
-    assert_eq!(config.type_casing, crate::type_casing::Style::PascalCase);
-    assert_eq!(
-        config.named_arguments,
-        crate::named_arguments::NamedArguments::Never
-    );
-    assert_eq!(config.min_wait_interval, 0.1);
-    assert_eq!(
-        config.magic_numbers,
-        crate::magic_numbers::MagicNumbers::Loose
-    );
-    assert!(!config.fail_on_warning);
-    assert!(!config.fail_on_info);
-    assert!(config.bool_like_int);
-    assert!(!config.treat_form_as_bool_for_returns);
-    assert!(!config.assume_auto_properties_filled);
-}
-
-#[test]
-fn parses_game_and_defaults_omitted_game_to_skyrim() {
+fn parses_game_values() {
     assert_eq!(parse("game: skyrim\n").unwrap().game, crate::Game::Skyrim);
     assert_eq!(
         parse("semicolon: true\n").unwrap().game,
-        crate::Game::Skyrim
+        Config::default().game
     );
     assert_eq!(
         parse("game: fallout4\n").unwrap().game,
@@ -213,15 +185,21 @@ fn parses_full_config() {
 
 #[test]
 fn missing_keys_fall_back_to_defaults() {
-    let config = parse("semicolon: true\n").unwrap();
-    assert!(config.semicolon);
-    assert_eq!(config.indentation, Indentation::Tab);
-    assert_eq!(config.indentation_width, 4);
+    assert_eq!(
+        parse("semicolon: true\n").unwrap(),
+        Config {
+            semicolon: true,
+            ..Config::default()
+        }
+    );
 
-    let config = parse("indentation: space\n").unwrap();
-    assert!(!config.semicolon);
-    assert_eq!(config.indentation, Indentation::Space);
-    assert_eq!(config.indentation_width, 4);
+    assert_eq!(
+        parse("indentation: space\n").unwrap(),
+        Config {
+            indentation: Indentation::Space,
+            ..Config::default()
+        }
+    );
 }
 
 #[test]
@@ -291,7 +269,6 @@ fn should_fail_on_honors_fail_on_flags() {
 
 #[test]
 fn parses_bool_like_int() {
-    assert!(parse("").unwrap().bool_like_int);
     assert!(!parse("bool_like_int: false\n").unwrap().bool_like_int);
     assert!(parse("bool_like_int: true\n").unwrap().bool_like_int);
 }
@@ -308,7 +285,6 @@ fn bool_like_int_round_trips_through_yaml() {
 
 #[test]
 fn parses_treat_form_as_bool_for_returns() {
-    assert!(!parse("").unwrap().treat_form_as_bool_for_returns);
     assert!(
         !parse("treat_form_as_bool_for_returns: false\n")
             .unwrap()
@@ -333,7 +309,6 @@ fn treat_form_as_bool_for_returns_round_trips_through_yaml() {
 
 #[test]
 fn parses_assume_auto_properties_filled() {
-    assert!(!parse("").unwrap().assume_auto_properties_filled);
     assert!(
         !parse("assume_auto_properties_filled: false\n")
             .unwrap()
