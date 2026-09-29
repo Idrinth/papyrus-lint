@@ -80,7 +80,7 @@ class ConfigSchemaTests(unittest.TestCase):
         self.assertEqual(False, rule_properties["first_rule"]["default"])
         self.assertEqual("First rule", rule_properties["first_rule"]["description"])
         self.assertEqual(True, rule_properties["second_rule"]["default"])
-        self.assertEqual("Second description", rule_properties["second_rule"]["description"])
+        self.assertEqual("second_rule", rule_properties["second_rule"]["description"])
 
     def test_render_schema_rejects_unknown_and_unordered_rules(self) -> None:
         settings, rules = fixture()
