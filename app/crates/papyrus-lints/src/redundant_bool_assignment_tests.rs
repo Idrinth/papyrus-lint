@@ -232,3 +232,116 @@ fn leaves_non_bool_literals_alone() {
 
     assert!(check(&source).is_empty());
 }
+
+#[test]
+fn repairs_every_inverted_comparison_operator() {
+    for (condition, inverted) in [
+        ("x == 5", "x != 5"),
+        ("x != 5", "x == 5"),
+        ("x > 5", "x <= 5"),
+        ("x < 5", "x >= 5"),
+        ("x >= 5", "x < 5"),
+        ("x <= 5", "x > 5"),
+    ] {
+        let source = function(&format!(
+            "    Bool bResult = false\n    If {condition}\n        bResult = false\n    Else\n        bResult = true\n    EndIf\n"
+        ));
+
+        assert_eq!(
+            repair(&source),
+            function(&format!(
+                "    Bool bResult = false\n    bResult = {inverted}\n"
+            )),
+            "failed to invert {condition}"
+        );
+    }
+}
+
+#[test]
+fn parenthesizes_an_inverted_compound_condition() {
+    let source = function(
+        "    Bool bResult = false\n    If ready && x > 5\n        bResult = false\n    Else\n        bResult = true\n    EndIf\n",
+    );
+
+    assert_eq!(
+        repair(&source),
+        function("    Bool bResult = false\n    bResult = ! (ready && x > 5)\n")
+    );
+}
+
+#[test]
+fn repairs_indexed_targets_and_nested_control_flow() {
+    let source = "\
+ScriptName Example
+
+Function Test(Int x, Bool ready, Bool[] flags)
+    While ready
+        If x > 5
+            flags[x] = true
+        Else
+            FLAGS[x] = false
+        EndIf
+    EndWhile
+EndFunction
+";
+
+    assert_eq!(check(source).len(), 1);
+    assert_eq!(
+        repair(source),
+        "\
+ScriptName Example
+
+Function Test(Int x, Bool ready, Bool[] flags)
+    While ready
+        flags[x] = x > 5
+    EndWhile
+EndFunction
+"
+    );
+}
+
+#[test]
+fn repair_helpers_cover_malformed_and_boundary_inputs() {
+    assert_eq!(strip_outer_parens(" ((ready)) "), "(ready)");
+    assert_eq!(strip_outer_parens("(ready) || other"), "(ready) || other");
+    assert_eq!(strip_outer_parens("(ready"), "(ready");
+    assert_eq!(strip_one_not(" != ready"), None);
+    assert_eq!(strip_one_not("! (ready)"), Some(" (ready)"));
+
+    assert!(!needs_parens("flags[index]"));
+    assert!(needs_parens("ready != false"));
+    assert!(needs_parens("x + 1"));
+
+    assert_eq!(lexeme_end("\"a\\\"b\" tail", 0), 6);
+    assert_eq!(lexeme_end("\"unterminated", 0), 13);
+    assert_eq!(lexeme_end("123abc", 0), 3);
+    assert_eq!(lexeme_end("name_12 tail", 0), 7);
+    assert_eq!(lexeme_end("!= value", 0), 2);
+    assert_eq!(lexeme_end("&& value", 0), 2);
+    assert_eq!(lexeme_end(".value", 0), 1);
+    assert_eq!(lexeme_end("short", 20), 20);
+
+    let hits = vec![
+        Hit {
+            if_line: 1,
+            start: 3,
+            end: 6,
+            replacement: "XYZ".to_string(),
+        },
+        Hit {
+            if_line: 1,
+            start: 0,
+            end: 2,
+            replacement: "AB".to_string(),
+        },
+    ];
+    assert_eq!(apply_edits("012345", &hits), "AB2XYZ");
+
+    let invalid_hits = vec![Hit {
+        if_line: 1,
+        start: 4,
+        end: 3,
+        replacement: "ignored".to_string(),
+    }];
+    assert_eq!(apply_edits("012345", &invalid_hits), "012345");
+}
