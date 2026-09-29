@@ -97,12 +97,13 @@ EndStruct
 }
 
 #[test]
-fn parses_struct_member_named_parent() {
+fn parses_struct_members_named_parent_and_self() {
     let script = parse_with_mode(
         r#"ScriptName ObjectReference
 
 Struct ConnectPoint
     string parent
+    string self
     string name
     float roll
     float pitch
@@ -110,15 +111,16 @@ EndStruct
 "#,
         GameEdition::Fallout4,
     )
-    .expect("FO4 struct member named parent should parse");
+    .expect("FO4 struct members named parent and self should parse");
 
     assert_eq!(script.structs.len(), 1);
     let connect = &script.structs[0];
     assert_eq!(connect.name, "ConnectPoint");
-    assert_eq!(connect.members.len(), 4);
+    assert_eq!(connect.members.len(), 5);
     assert_eq!(connect.members[0].name, "parent");
     assert_eq!(connect.members[0].type_name.name, "string");
-    assert_eq!(connect.members[1].name, "name");
+    assert_eq!(connect.members[1].name, "self");
+    assert_eq!(connect.members[2].name, "name");
 }
 
 #[test]

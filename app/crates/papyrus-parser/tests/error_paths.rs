@@ -1,7 +1,8 @@
 use papyrus_parser::lexer::Lexer;
+use papyrus_parser::parser::GameEdition;
 use papyrus_parser::parser::Parser;
 use papyrus_parser::token::{Keyword, Token, TokenKind};
-use papyrus_parser::{parse, PapyrusError};
+use papyrus_parser::{parse, parse_with_mode, PapyrusError};
 
 #[test]
 fn reports_missing_identifiers_in_declarations() {
@@ -152,4 +153,19 @@ fn parser_errors_use_the_current_token_location_and_display_format() {
     assert_eq!((error.line, error.col), (7, 13));
     assert_eq!(error.message, "unexpected token Keyword(Return)");
     assert_eq!(error.to_string(), "7:13: unexpected token Keyword(Return)");
+}
+
+#[test]
+fn reports_a_malformed_qualified_local_type_without_lookahead_panicking() {
+    let error = parse_with_mode(
+        "ScriptName Broken\nFunction Run()\nNamespace: = value\nEndFunction\n",
+        GameEdition::Fallout4,
+    )
+    .expect_err("a qualified type segment must have a name");
+
+    let PapyrusError::Parse(error) = error else {
+        panic!("expected a parser error");
+    };
+    assert_eq!((error.line, error.col), (3, 12));
+    assert_eq!(error.message, "expected identifier, found Assign");
 }
