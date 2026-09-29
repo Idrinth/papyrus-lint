@@ -1168,6 +1168,7 @@ Scripts/Source/Base/ArtilleryReferenceScript.psc:81:8:forbidden-functions
 Scripts/Source/Base/ArtilleryReferenceScript.psc:94:8:forbidden-functions
 Scripts/Source/Base/ArtilleryReferenceScript.psc:95:8:forbidden-functions
 Scripts/Source/Base/ArtilleryReferenceScript.psc:100:1:trailing-whitespace
+Scripts/Source/Base/ArtilleryReferenceScript.psc:102:1:redundant-bool-assignment
 Scripts/Source/Base/ArtilleryReferenceScript.psc:108:14:boolean-simplification
 Scripts/Source/Base/ArtilleryReferenceScript.psc:116:16:boolean-simplification
 Scripts/Source/Base/ArtilleryReferenceScript.psc:129:1:identifier-casing
@@ -3898,6 +3899,7 @@ Scripts/Source/Base/BoSM01QuestScript.psc:74:26:exclamation-spacing
 Scripts/Source/Base/BoSM01QuestScript.psc:82:1:unnecessary-function
 Scripts/Source/Base/BoSM01QuestScript.psc:98:121:line-length
 Scripts/Source/Base/BoSM01QuestScript.psc:99:1:unnecessary-function
+Scripts/Source/Base/BoSM01QuestScript.psc:100:1:redundant-bool-assignment
 Scripts/Source/Base/BoSM01QuestScript.psc:100:27:exclamation-spacing
 Scripts/Source/Base/BoSM01QuestScript.psc:101:24:exclamation-spacing
 Scripts/Source/Base/BoSM01QuestScript.psc:102:24:exclamation-spacing
@@ -12996,6 +12998,7 @@ Scripts/Source/Base/DN009_ShutterScript.psc:17:17:boolean-simplification
 Scripts/Source/Base/DN009_ShutterScript.psc:17:36:boolean-simplification
 Scripts/Source/Base/DN009_ShutterScript.psc:26:1:identifier-casing
 Scripts/Source/Base/DN009_ShutterScript.psc:29:1:indentation
+Scripts/Source/Base/DN009_ShutterScript.psc:29:1:redundant-bool-assignment
 Scripts/Source/Base/DN009_ShutterScript.psc:29:16:boolean-simplification
 Scripts/Source/Base/DN009_ShutterScript.psc:30:1:indentation
 Scripts/Source/Base/DN009_ShutterScript.psc:31:1:indentation
@@ -13133,6 +13136,7 @@ Scripts/Source/Base/DN011OverdueBookVendingMachineSCRIPT.psc:98:121:line-length
 Scripts/Source/Base/DN011OverdueBookVendingMachineSCRIPT.psc:101:1:indentation
 Scripts/Source/Base/DN011OverdueBookVendingMachineSCRIPT.psc:102:29:slow-functions
 Scripts/Source/Base/DN011OverdueBookVendingMachineSCRIPT.psc:104:1:indentation
+Scripts/Source/Base/DN011OverdueBookVendingMachineSCRIPT.psc:105:1:redundant-bool-assignment
 Scripts/Source/Base/DN011OverdueBookVendingMachineSCRIPT.psc:105:13:forbidden-functions
 Scripts/Source/Base/DN011OverdueBookVendingMachineSCRIPT.psc:105:93:slow-functions
 Scripts/Source/Base/DN011OverdueBookVendingMachineSCRIPT.psc:115:1:indentation
@@ -20794,6 +20798,7 @@ Scripts/Source/Base/DN151_MovableWater.psc:164:1:parameter-reassignment
 Scripts/Source/Base/DN151_MovableWater.psc:166:9:forbidden-functions
 Scripts/Source/Base/DN151_MovableWater.psc:167:1:indentation
 Scripts/Source/Base/DN151_MovableWater.psc:167:1:parameter-reassignment
+Scripts/Source/Base/DN151_MovableWater.psc:170:1:redundant-bool-assignment
 Scripts/Source/Base/DN151_MovableWater.psc:179:1:indentation
 Scripts/Source/Base/DN151_MovableWater.psc:182:121:line-length
 Scripts/Source/Base/DN151_MovableWater.psc:183:1:unnecessary-function
@@ -21702,6 +21707,7 @@ Scripts/Source/Base/DN158_MovableWaterScript.psc:163:1:parameter-reassignment
 Scripts/Source/Base/DN158_MovableWaterScript.psc:165:9:forbidden-functions
 Scripts/Source/Base/DN158_MovableWaterScript.psc:166:1:indentation
 Scripts/Source/Base/DN158_MovableWaterScript.psc:166:1:parameter-reassignment
+Scripts/Source/Base/DN158_MovableWaterScript.psc:169:1:redundant-bool-assignment
 Scripts/Source/Base/DN158_MovableWaterScript.psc:178:1:indentation
 Scripts/Source/Base/DN158_MovableWaterScript.psc:181:121:line-length
 Scripts/Source/Base/DN158_MovableWaterScript.psc:182:1:unnecessary-function
@@ -24899,6 +24905,7 @@ Scripts/Source/Base/DefaultOnEnterMultiActor.psc:123:1:indentation
 Scripts/Source/Base/DefaultOnEnterMultiActor.psc:123:7:exclamation-spacing
 Scripts/Source/Base/DefaultOnEnterMultiActor.psc:124:1:indentation
 Scripts/Source/Base/DefaultOnEnterMultiActor.psc:125:1:indentation
+Scripts/Source/Base/DefaultOnEnterMultiActor.psc:125:1:redundant-bool-assignment
 Scripts/Source/Base/DefaultOnEnterMultiActor.psc:126:1:indentation
 Scripts/Source/Base/DefaultOnEnterMultiActor.psc:127:1:indentation
 Scripts/Source/Base/DefaultOnEnterMultiActor.psc:128:1:indentation
@@ -90819,6 +90826,7 @@ Scripts/Source/Base/Hardcore/HC_WaterBottleScript.psc:112:1:numeric-comparison
 Scripts/Source/Base/Hardcore/HC_WaterBottleScript.psc:113:1:parameter-reassignment
 Scripts/Source/Base/Hardcore/HC_WaterBottleScript.psc:116:1:identifier-casing
 Scripts/Source/Base/Hardcore/HC_WaterBottleScript.psc:118:1:identifier-casing
+Scripts/Source/Base/Hardcore/HC_WaterBottleScript.psc:120:1:redundant-bool-assignment
 Scripts/Source/Base/Hardcore/HC_WaterBottleScript.psc:120:1:unchecked-cast
 Scripts/Source/Base/Hardcore/HC_WaterBottleScript.psc:126:1:identifier-casing
 Scripts/Source/Base/Hardcore/HC_WaterBottleScript.psc:130:7:trailing-whitespace
@@ -101389,6 +101397,7 @@ Scripts/Source/Base/MinDefendCastleAttackScript.psc:328:5:semicolon
 Scripts/Source/Base/MinDefendCastleAttackScript.psc:329:1:indentation
 Scripts/Source/Base/MinDefendCastleAttackScript.psc:329:121:line-length
 Scripts/Source/Base/MinDefendCastleAttackScript.psc:330:1:indentation
+Scripts/Source/Base/MinDefendCastleAttackScript.psc:330:1:redundant-bool-assignment
 Scripts/Source/Base/MinDefendCastleAttackScript.psc:330:43:unresolved-script
 Scripts/Source/Base/MinDefendCastleAttackScript.psc:331:1:indentation
 Scripts/Source/Base/MinDefendCastleAttackScript.psc:332:1:indentation
@@ -111919,6 +111928,7 @@ Scripts/Source/Base/StimBoxScript.psc:221:7:trailing-whitespace
 Scripts/Source/Base/StimBoxScript.psc:222:1:trailing-whitespace
 Scripts/Source/Base/StimBoxScript.psc:226:8:forbidden-functions
 Scripts/Source/Base/StimBoxScript.psc:228:1:identifier-casing
+Scripts/Source/Base/StimBoxScript.psc:230:1:redundant-bool-assignment
 Scripts/Source/Base/StimBoxScript.psc:238:7:trailing-whitespace
 Scripts/Source/Base/StimBoxScript.psc:240:8:forbidden-functions
 Scripts/Source/Base/StimBoxScript.psc:247:8:forbidden-functions
@@ -119359,6 +119369,7 @@ Scripts/Source/Base/WorkshopNPCScript.psc:169:1:none-form-usage
 Scripts/Source/Base/WorkshopNPCScript.psc:176:1:identifier-casing
 Scripts/Source/Base/WorkshopNPCScript.psc:180:1:none-form-usage
 Scripts/Source/Base/WorkshopNPCScript.psc:180:1:none-form-usage
+Scripts/Source/Base/WorkshopNPCScript.psc:180:1:redundant-bool-assignment
 Scripts/Source/Base/WorkshopNPCScript.psc:186:5:exclamation-spacing
 Scripts/Source/Base/WorkshopNPCScript.psc:192:1:identifier-casing
 Scripts/Source/Base/WorkshopNPCScript.psc:192:1:unnecessary-function
@@ -122592,6 +122603,7 @@ Scripts/Source/Base/WorkshopTutorialScript.psc:393:1:identifier-casing
 Scripts/Source/Base/WorkshopTutorialScript.psc:394:1:identifier-casing
 Scripts/Source/Base/WorkshopTutorialScript.psc:409:10:forbidden-functions
 Scripts/Source/Base/WorkshopTutorialScript.psc:409:121:line-length
+Scripts/Source/Base/WorkshopTutorialScript.psc:423:1:redundant-bool-assignment
 Scripts/Source/Base/WorkshopTutorialScript.psc:428:1:indentation
 Scripts/Source/Base/WorkshopTutorialScript.psc:433:8:forbidden-functions
 Scripts/Source/Base/WorkshopTutorialScript.psc:437:1:identifier-casing
@@ -125915,6 +125927,7 @@ Scripts/Source/Base/testJoelminigunThingScript.psc:35:1:indentation
 Scripts/Source/Base/testJoelminigunThingScript.psc:35:12:forbidden-functions
 Scripts/Source/Base/testJoelminigunThingScript.psc:36:1:indentation
 Scripts/Source/Base/testJoelminigunThingScript.psc:38:1:indentation
+Scripts/Source/Base/testJoelminigunThingScript.psc:38:1:redundant-bool-assignment
 Scripts/Source/Base/testJoelminigunThingScript.psc:39:1:indentation
 Scripts/Source/Base/testJoelminigunThingScript.psc:40:1:indentation
 Scripts/Source/Base/testJoelminigunThingScript.psc:41:1:indentation
@@ -139582,6 +139595,7 @@ Scripts/Source/DLC03/DLC03/DLC03CoA_DialogueNucleusScript.psc:33:1:function-over
 Scripts/Source/DLC03/DLC03/DLC03CoA_DialogueNucleusScript.psc:33:1:identifier-casing
 Scripts/Source/DLC03/DLC03/DLC03CoA_DialogueNucleusScript.psc:40:1:unnecessary-function
 Scripts/Source/DLC03/DLC03/DLC03CoA_DialogueNucleusScript.psc:41:1:indentation
+Scripts/Source/DLC03/DLC03/DLC03CoA_DialogueNucleusScript.psc:48:1:redundant-bool-assignment
 Scripts/Source/DLC03/DLC03/DLC03CoA_DialogueNucleusScript.psc:57:1:unnecessary-function
 Scripts/Source/DLC03/DLC03/DLC03CoA_DialogueNucleusScript.psc:58:76:trailing-whitespace
 Scripts/Source/DLC03/DLC03/DLC03CoA_DialogueNucleusScript.psc:63:5:exclamation-spacing
@@ -160642,6 +160656,7 @@ Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:321:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:324:121:line-length
 Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:325:121:line-length
 Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:326:9:forbidden-functions
+Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:333:1:redundant-bool-assignment
 Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:336:30:trailing-whitespace
 Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:340:1:identifier-casing
 Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:340:1:identifier-casing

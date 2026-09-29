@@ -14867,6 +14867,7 @@ Scripts/Source/DefaultOnEnterMultiActor.psc:125:1:indentation
 Scripts/Source/DefaultOnEnterMultiActor.psc:125:7:exclamation-spacing
 Scripts/Source/DefaultOnEnterMultiActor.psc:126:1:indentation
 Scripts/Source/DefaultOnEnterMultiActor.psc:127:1:indentation
+Scripts/Source/DefaultOnEnterMultiActor.psc:127:1:redundant-bool-assignment
 Scripts/Source/DefaultOnEnterMultiActor.psc:128:1:indentation
 Scripts/Source/DefaultOnEnterMultiActor.psc:129:1:indentation
 Scripts/Source/DefaultOnEnterMultiActor.psc:130:1:indentation
@@ -96843,16 +96844,19 @@ Scripts/Source/MechanicalTurretScript.psc:86:1:indentation
 Scripts/Source/MechanicalTurretScript.psc:87:1:indentation
 Scripts/Source/MechanicalTurretScript.psc:88:1:indentation
 Scripts/Source/MechanicalTurretScript.psc:90:1:indentation
+Scripts/Source/MechanicalTurretScript.psc:90:1:redundant-bool-assignment
 Scripts/Source/MechanicalTurretScript.psc:91:1:indentation
 Scripts/Source/MechanicalTurretScript.psc:92:1:indentation
 Scripts/Source/MechanicalTurretScript.psc:93:1:indentation
 Scripts/Source/MechanicalTurretScript.psc:94:1:indentation
 Scripts/Source/MechanicalTurretScript.psc:96:1:indentation
+Scripts/Source/MechanicalTurretScript.psc:96:1:redundant-bool-assignment
 Scripts/Source/MechanicalTurretScript.psc:97:1:indentation
 Scripts/Source/MechanicalTurretScript.psc:98:1:indentation
 Scripts/Source/MechanicalTurretScript.psc:99:1:indentation
 Scripts/Source/MechanicalTurretScript.psc:100:1:indentation
 Scripts/Source/MechanicalTurretScript.psc:102:1:indentation
+Scripts/Source/MechanicalTurretScript.psc:102:1:redundant-bool-assignment
 Scripts/Source/MechanicalTurretScript.psc:103:1:indentation
 Scripts/Source/MechanicalTurretScript.psc:104:1:indentation
 Scripts/Source/MechanicalTurretScript.psc:105:1:indentation
@@ -141662,10 +141666,12 @@ Scripts/Source/SpaceCloudManagerScript.psc:47:1:identifier-casing
 Scripts/Source/SpaceCloudManagerScript.psc:47:1:identifier-casing
 Scripts/Source/SpaceCloudManagerScript.psc:47:1:identifier-casing
 Scripts/Source/SpaceCloudManagerScript.psc:47:121:line-length
+Scripts/Source/SpaceCloudManagerScript.psc:48:1:redundant-bool-assignment
 Scripts/Source/SpaceCloudManagerScript.psc:55:1:identifier-casing
 Scripts/Source/SpaceCloudManagerScript.psc:55:1:identifier-casing
 Scripts/Source/SpaceCloudManagerScript.psc:55:1:identifier-casing
 Scripts/Source/SpaceCloudManagerScript.psc:55:1:identifier-casing
+Scripts/Source/SpaceCloudManagerScript.psc:56:1:redundant-bool-assignment
 Scripts/Source/SpaceCloudManagerScript.psc:64:1:argument-naming
 Scripts/Source/SpaceCloudManagerScript.psc:64:1:function-override
 Scripts/Source/SpaceCloudManagerScript.psc:64:1:identifier-casing
@@ -145038,6 +145044,7 @@ Scripts/Source/TestJeffBLookScript.psc:11:16:forbidden-functions
 Scripts/Source/TestJeffBLookScript.psc:14:1:function-override
 Scripts/Source/TestJeffBLookScript.psc:14:1:identifier-casing
 Scripts/Source/TestJeffBLookScript.psc:14:1:identifier-casing
+Scripts/Source/TestJeffBLookScript.psc:16:1:redundant-bool-assignment
 Scripts/Source/TestJeffBLookScript.psc:21:1:trailing-whitespace
 Scripts/Source/TestJeffBLookScript.psc:22:13:boolean-simplification
 Scripts/Source/TestJeffBLookScript.psc:26:35:forbidden-functions
@@ -145046,6 +145053,7 @@ Scripts/Source/TestJeffBLookScript.psc:29:1:identifier-casing
 Scripts/Source/TestJeffBLookScript.psc:29:1:identifier-casing
 Scripts/Source/TestJeffBLookScript.psc:30:1:indentation
 Scripts/Source/TestJeffBLookScript.psc:31:1:indentation
+Scripts/Source/TestJeffBLookScript.psc:31:1:redundant-bool-assignment
 Scripts/Source/TestJeffBLookScript.psc:36:1:trailing-whitespace
 Scripts/Source/TestJeffBLookScript.psc:37:13:boolean-simplification
 Scripts/Source/TestJeffBLookScript.psc:41:35:forbidden-functions

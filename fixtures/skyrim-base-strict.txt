@@ -777,6 +777,7 @@ Source/Scripts/ArenaScript.psc:224:1:indentation
 Source/Scripts/ArenaScript.psc:225:1:identifier-casing
 Source/Scripts/ArenaScript.psc:225:1:unchecked-cast
 Source/Scripts/ArenaScript.psc:226:1:none-form-usage
+Source/Scripts/ArenaScript.psc:228:1:redundant-bool-assignment
 Source/Scripts/ArenaScript.psc:230:1:indentation
 Source/Scripts/ArenaScript.psc:233:1:indentation
 Source/Scripts/ArenaScript.psc:240:1:indentation
@@ -1217,6 +1218,7 @@ Source/Scripts/BFBPuzzle01Control.psc:41:1:unnecessary-function
 Source/Scripts/BFBPuzzle01Control.psc:47:1:none-form-usage
 Source/Scripts/BFBPuzzle01Control.psc:48:1:identifier-casing
 Source/Scripts/BFBPuzzle01Control.psc:48:1:none-form-usage
+Source/Scripts/BFBPuzzle01Control.psc:49:1:redundant-bool-assignment
 Source/Scripts/BFBPuzzle01Control.psc:57:1:none-form-usage
 Source/Scripts/BFBPuzzle01Control.psc:57:1:useless-downcast
 Source/Scripts/BFBPuzzle01Control.psc:58:1:none-form-usage
@@ -3851,6 +3853,7 @@ Source/Scripts/BYOHRelationshipAdoptionScript.psc:340:1:identifier-casing
 Source/Scripts/BYOHRelationshipAdoptionScript.psc:340:1:identifier-casing
 Source/Scripts/BYOHRelationshipAdoptionScript.psc:343:1:none-form-usage
 Source/Scripts/BYOHRelationshipAdoptionScript.psc:344:30:trailing-whitespace
+Source/Scripts/BYOHRelationshipAdoptionScript.psc:346:1:redundant-bool-assignment
 Source/Scripts/BYOHRelationshipAdoptionScript.psc:346:32:exclamation-spacing
 Source/Scripts/BYOHRelationshipAdoptionScript.psc:348:1:indentation
 Source/Scripts/BYOHRelationshipAdoptionScript.psc:351:1:indentation
@@ -8308,6 +8311,7 @@ Source/Scripts/CCHouseQuestScript.psc:149:1:indentation
 Source/Scripts/CCHouseQuestScript.psc:151:1:indentation
 Source/Scripts/CCHouseQuestScript.psc:154:1:cyclomatic-complexity
 Source/Scripts/CCHouseQuestScript.psc:154:1:unnecessary-function
+Source/Scripts/CCHouseQuestScript.psc:157:1:redundant-bool-assignment
 Source/Scripts/CCHouseQuestScript.psc:158:1:indentation
 Source/Scripts/CCHouseQuestScript.psc:159:1:indentation
 Source/Scripts/CCHouseQuestScript.psc:160:1:indentation
@@ -9201,37 +9205,46 @@ Source/Scripts/CWAlliesScript.psc:349:1:cyclomatic-complexity
 Source/Scripts/CWAlliesScript.psc:350:1:trailing-whitespace
 Source/Scripts/CWAlliesScript.psc:352:1:trailing-whitespace
 Source/Scripts/CWAlliesScript.psc:353:49:trailing-whitespace
+Source/Scripts/CWAlliesScript.psc:354:1:redundant-bool-assignment
 Source/Scripts/CWAlliesScript.psc:357:1:indentation
 Source/Scripts/CWAlliesScript.psc:357:121:line-length
 Source/Scripts/CWAlliesScript.psc:360:1:trailing-whitespace
 Source/Scripts/CWAlliesScript.psc:361:49:trailing-whitespace
+Source/Scripts/CWAlliesScript.psc:362:1:redundant-bool-assignment
 Source/Scripts/CWAlliesScript.psc:365:1:indentation
 Source/Scripts/CWAlliesScript.psc:365:121:line-length
 Source/Scripts/CWAlliesScript.psc:368:1:trailing-whitespace
 Source/Scripts/CWAlliesScript.psc:369:54:trailing-whitespace
+Source/Scripts/CWAlliesScript.psc:370:1:redundant-bool-assignment
 Source/Scripts/CWAlliesScript.psc:373:1:indentation
 Source/Scripts/CWAlliesScript.psc:373:121:line-length
 Source/Scripts/CWAlliesScript.psc:376:1:trailing-whitespace
+Source/Scripts/CWAlliesScript.psc:378:1:redundant-bool-assignment
 Source/Scripts/CWAlliesScript.psc:381:1:indentation
 Source/Scripts/CWAlliesScript.psc:381:121:line-length
 Source/Scripts/CWAlliesScript.psc:384:1:trailing-whitespace
 Source/Scripts/CWAlliesScript.psc:385:53:trailing-whitespace
+Source/Scripts/CWAlliesScript.psc:386:1:redundant-bool-assignment
 Source/Scripts/CWAlliesScript.psc:389:1:indentation
 Source/Scripts/CWAlliesScript.psc:389:121:line-length
 Source/Scripts/CWAlliesScript.psc:392:1:trailing-whitespace
 Source/Scripts/CWAlliesScript.psc:393:48:trailing-whitespace
+Source/Scripts/CWAlliesScript.psc:394:1:redundant-bool-assignment
 Source/Scripts/CWAlliesScript.psc:397:1:indentation
 Source/Scripts/CWAlliesScript.psc:397:121:line-length
 Source/Scripts/CWAlliesScript.psc:400:1:trailing-whitespace
 Source/Scripts/CWAlliesScript.psc:401:54:trailing-whitespace
+Source/Scripts/CWAlliesScript.psc:402:1:redundant-bool-assignment
 Source/Scripts/CWAlliesScript.psc:405:1:indentation
 Source/Scripts/CWAlliesScript.psc:405:121:line-length
 Source/Scripts/CWAlliesScript.psc:408:1:trailing-whitespace
 Source/Scripts/CWAlliesScript.psc:409:53:trailing-whitespace
+Source/Scripts/CWAlliesScript.psc:410:1:redundant-bool-assignment
 Source/Scripts/CWAlliesScript.psc:413:1:indentation
 Source/Scripts/CWAlliesScript.psc:413:121:line-length
 Source/Scripts/CWAlliesScript.psc:416:1:trailing-whitespace
 Source/Scripts/CWAlliesScript.psc:417:48:trailing-whitespace
+Source/Scripts/CWAlliesScript.psc:418:1:redundant-bool-assignment
 Source/Scripts/CWAlliesScript.psc:421:1:indentation
 Source/Scripts/CWAlliesScript.psc:421:121:line-length
 Source/Scripts/CWAlliesScript.psc:424:1:trailing-whitespace
@@ -16521,6 +16534,7 @@ Source/Scripts/CWScript.psc:2446:1:trailing-whitespace
 Source/Scripts/CWScript.psc:2448:1:trailing-whitespace
 Source/Scripts/CWScript.psc:2453:1:identifier-casing
 Source/Scripts/CWScript.psc:2454:1:trailing-whitespace
+Source/Scripts/CWScript.psc:2455:1:redundant-bool-assignment
 Source/Scripts/CWScript.psc:2457:1:trailing-whitespace
 Source/Scripts/CWScript.psc:2460:1:trailing-whitespace
 Source/Scripts/CWScript.psc:2470:1:unnecessary-function
@@ -21877,6 +21891,7 @@ Source/Scripts/DA02Script.psc:398:1:unchecked-cast
 Source/Scripts/DA02Script.psc:398:121:line-length
 Source/Scripts/DA02Script.psc:399:1:trailing-whitespace
 Source/Scripts/DA02Script.psc:401:1:trailing-whitespace
+Source/Scripts/DA02Script.psc:402:1:redundant-bool-assignment
 Source/Scripts/DA02Script.psc:402:4:strict-boolean
 Source/Scripts/DA02Script.psc:404:1:indentation
 Source/Scripts/DA02Script.psc:404:121:line-length
@@ -24301,6 +24316,7 @@ Source/Scripts/DA15WabbajackEffectSCRIPT.psc:305:1:place-at-me
 Source/Scripts/DA15WabbajackEffectSCRIPT.psc:310:1:identifier-casing
 Source/Scripts/DA15WabbajackEffectSCRIPT.psc:317:1:unchecked-cast
 Source/Scripts/DA15WabbajackEffectSCRIPT.psc:318:1:trailing-whitespace
+Source/Scripts/DA15WabbajackEffectSCRIPT.psc:319:1:redundant-bool-assignment
 Source/Scripts/DA15WabbajackEffectSCRIPT.psc:327:20:boolean-simplification
 Source/Scripts/DA15WabbajackEffectSCRIPT.psc:328:1:indentation
 Source/Scripts/DA15WabbajackEffectSCRIPT.psc:330:1:trailing-whitespace
@@ -33978,6 +33994,7 @@ Source/Scripts/DLC1VCEmberToggleScript.psc:71:1:argument-naming
 Source/Scripts/DLC1VCEmberToggleScript.psc:71:1:function-override
 Source/Scripts/DLC1VCEmberToggleScript.psc:71:1:identifier-casing
 Source/Scripts/DLC1VCEmberToggleScript.psc:71:1:identifier-casing
+Source/Scripts/DLC1VCEmberToggleScript.psc:72:1:redundant-bool-assignment
 Source/Scripts/DLC1VCEmberToggleScript.psc:80:1:final-newline
 Source/Scripts/DLC1VCGargoyleKilledScript.psc:5:1:identifier-casing
 Source/Scripts/DLC1VCGargoyleKilledScript.psc:7:1:identifier-casing
@@ -36605,6 +36622,7 @@ Source/Scripts/DLC1VampireShrineScript.psc:97:39:trailing-whitespace
 Source/Scripts/DLC1VampireSleepScript.psc:1:48:trailing-whitespace
 Source/Scripts/DLC1VampireSleepScript.psc:7:15:unused-property
 Source/Scripts/DLC1VampireSleepScript.psc:10:1:unnecessary-function
+Source/Scripts/DLC1VampireSleepScript.psc:11:1:redundant-bool-assignment
 Source/Scripts/DLC1VampireSleepScript.psc:16:1:indentation
 Source/Scripts/DLC1VampireSleepScript.psc:19:1:function-override
 Source/Scripts/DLC1VampireSleepScript.psc:19:1:identifier-casing
@@ -37242,6 +37260,7 @@ Source/Scripts/DLC1_2StateActivatorWithGlobal.psc:119:1:identifier-casing
 Source/Scripts/DLC1_2StateActivatorWithGlobal.psc:119:1:identifier-casing
 Source/Scripts/DLC1_2StateActivatorWithGlobal.psc:120:5:exclamation-spacing
 Source/Scripts/DLC1_2StateActivatorWithGlobal.psc:120:30:boolean-simplification
+Source/Scripts/DLC1_2StateActivatorWithGlobal.psc:122:1:redundant-bool-assignment
 Source/Scripts/DLC1_2StateActivatorWithGlobal.psc:133:1:function-override
 Source/Scripts/DLC1_2StateActivatorWithGlobal.psc:133:1:identifier-casing
 Source/Scripts/DLC1_2StateActivatorWithGlobal.psc:134:1:indentation
@@ -38002,6 +38021,7 @@ Source/Scripts/DLC1_NPCMentalModelScript.psc:633:1:identifier-casing
 Source/Scripts/DLC1_NPCMentalModelScript.psc:637:1:identifier-casing
 Source/Scripts/DLC1_NPCMentalModelScript.psc:637:1:none-form-usage
 Source/Scripts/DLC1_NPCMentalModelScript.psc:638:1:none-form-usage
+Source/Scripts/DLC1_NPCMentalModelScript.psc:638:1:redundant-bool-assignment
 Source/Scripts/DLC1_NPCMentalModelScript.psc:646:6:exclamation-spacing
 Source/Scripts/DLC1_NPCMentalModelScript.psc:648:1:indentation
 Source/Scripts/DLC1_NPCMentalModelScript.psc:653:42:exclamation-spacing
@@ -46521,6 +46541,7 @@ Source/Scripts/DLC1nVampireBloodPlagueSCRIPT.psc:35:1:trailing-whitespace
 Source/Scripts/DLC1nVampireBloodPlagueSCRIPT.psc:38:1:identifier-casing
 Source/Scripts/DLC1nVampireBloodPlagueSCRIPT.psc:45:1:unchecked-cast
 Source/Scripts/DLC1nVampireBloodPlagueSCRIPT.psc:46:1:trailing-whitespace
+Source/Scripts/DLC1nVampireBloodPlagueSCRIPT.psc:47:1:redundant-bool-assignment
 Source/Scripts/DLC1nVampireBloodPlagueSCRIPT.psc:55:20:boolean-simplification
 Source/Scripts/DLC1nVampireBloodPlagueSCRIPT.psc:56:1:indentation
 Source/Scripts/DLC1nVampireBloodPlagueSCRIPT.psc:58:1:trailing-whitespace
@@ -46572,6 +46593,7 @@ Source/Scripts/DLC1nVampireCorruptedShadeSCRIPT.psc:45:10:forbidden-functions
 Source/Scripts/DLC1nVampireCorruptedShadeSCRIPT.psc:50:1:identifier-casing
 Source/Scripts/DLC1nVampireCorruptedShadeSCRIPT.psc:57:1:unchecked-cast
 Source/Scripts/DLC1nVampireCorruptedShadeSCRIPT.psc:58:1:trailing-whitespace
+Source/Scripts/DLC1nVampireCorruptedShadeSCRIPT.psc:59:1:redundant-bool-assignment
 Source/Scripts/DLC1nVampireCorruptedShadeSCRIPT.psc:67:20:boolean-simplification
 Source/Scripts/DLC1nVampireCorruptedShadeSCRIPT.psc:68:1:trailing-whitespace
 Source/Scripts/DLC1nVampireCorruptedShadeSCRIPT.psc:69:20:forbidden-functions
@@ -46611,6 +46633,7 @@ Source/Scripts/DLC1nVampireDrainShadeSCRIPT.psc:39:1:trailing-whitespace
 Source/Scripts/DLC1nVampireDrainShadeSCRIPT.psc:42:1:identifier-casing
 Source/Scripts/DLC1nVampireDrainShadeSCRIPT.psc:49:1:unchecked-cast
 Source/Scripts/DLC1nVampireDrainShadeSCRIPT.psc:50:1:trailing-whitespace
+Source/Scripts/DLC1nVampireDrainShadeSCRIPT.psc:51:1:redundant-bool-assignment
 Source/Scripts/DLC1nVampireDrainShadeSCRIPT.psc:59:20:boolean-simplification
 Source/Scripts/DLC1nVampireDrainShadeSCRIPT.psc:60:1:indentation
 Source/Scripts/DLC1nVampireDrainShadeSCRIPT.psc:62:1:trailing-whitespace
@@ -47318,10 +47341,12 @@ Source/Scripts/DLC2AudioRepeaterActivator01Script.psc:11:1:identifier-casing
 Source/Scripts/DLC2AudioRepeaterActivator01Script.psc:12:1:identifier-casing
 Source/Scripts/DLC2AudioRepeaterActivator01Script.psc:14:1:function-override
 Source/Scripts/DLC2AudioRepeaterActivator01Script.psc:15:1:indentation
+Source/Scripts/DLC2AudioRepeaterActivator01Script.psc:16:1:redundant-bool-assignment
 Source/Scripts/DLC2AudioRepeaterActivator01Script.psc:22:1:indentation
 Source/Scripts/DLC2AudioRepeaterActivator01Script.psc:23:1:none-form-usage
 Source/Scripts/DLC2AudioRepeaterActivator01Script.psc:24:1:indentation
 Source/Scripts/DLC2AudioRepeaterActivator01Script.psc:25:30:comma-spacing
+Source/Scripts/DLC2AudioRepeaterActivator01Script.psc:26:1:redundant-bool-assignment
 Source/Scripts/DLC2AudioRepeaterActivator01Script.psc:34:1:function-override
 Source/Scripts/DLC2AudioRepeaterActivator01Script.psc:36:1:indentation
 Source/Scripts/DLC2AudioRepeaterActivator01Script.psc:38:1:trailing-whitespace
@@ -62060,6 +62085,7 @@ Source/Scripts/DLC2dunFahlbtharzTowerComplexScript.psc:47:63:semicolon
 Source/Scripts/DLC2dunFahlbtharzTowerComplexScript.psc:49:1:cyclomatic-complexity
 Source/Scripts/DLC2dunFahlbtharzTowerComplexScript.psc:49:1:identifier-casing
 Source/Scripts/DLC2dunFahlbtharzTowerComplexScript.psc:52:1:indentation
+Source/Scripts/DLC2dunFahlbtharzTowerComplexScript.psc:55:1:redundant-bool-assignment
 Source/Scripts/DLC2dunFahlbtharzTowerComplexScript.psc:60:6:forbidden-functions
 Source/Scripts/DLC2dunFahlbtharzTowerComplexScript.psc:65:7:forbidden-functions
 Source/Scripts/DLC2dunFahlbtharzTowerComplexScript.psc:68:7:forbidden-functions
@@ -63879,6 +63905,7 @@ Source/Scripts/DLC2dunNchardakTrackingScript.psc:268:6:exclamation-spacing
 Source/Scripts/DLC2dunNchardakTrackingScript.psc:268:27:exclamation-spacing
 Source/Scripts/DLC2dunNchardakTrackingScript.psc:268:70:forbidden-functions
 Source/Scripts/DLC2dunNchardakTrackingScript.psc:278:1:unnecessary-function
+Source/Scripts/DLC2dunNchardakTrackingScript.psc:279:1:redundant-bool-assignment
 Source/Scripts/DLC2dunNchardakTrackingScript.psc:286:1:cyclomatic-complexity
 Source/Scripts/DLC2dunNchardakTrackingScript.psc:286:1:identifier-casing
 Source/Scripts/DLC2dunNchardakTrackingScript.psc:286:1:identifier-casing
@@ -64016,6 +64043,7 @@ Source/Scripts/DLC2dunNchardakWaterPlane.psc:120:3:empty-body
 Source/Scripts/DLC2dunNchardakWaterPlane.psc:121:1:indentation
 Source/Scripts/DLC2dunNchardakWaterPlane.psc:122:3:empty-body
 Source/Scripts/DLC2dunNchardakWaterPlane.psc:123:1:indentation
+Source/Scripts/DLC2dunNchardakWaterPlane.psc:126:1:redundant-bool-assignment
 Source/Scripts/DLC2dunNchardakWaterPlane.psc:133:1:unchecked-cast
 Source/Scripts/DLC2dunNchardakWaterPlane.psc:133:121:line-length
 Source/Scripts/DLC2dunNchardakWaterPlane.psc:134:1:indentation
@@ -85674,6 +85702,7 @@ Source/Scripts/PressureReleasePlate.psc:44:1:function-override
 Source/Scripts/PressureReleasePlate.psc:44:1:identifier-casing
 Source/Scripts/PressureReleasePlate.psc:45:1:indentation
 Source/Scripts/PressureReleasePlate.psc:46:1:useless-downcast
+Source/Scripts/PressureReleasePlate.psc:48:1:redundant-bool-assignment
 Source/Scripts/PressureReleasePlate.psc:60:1:identifier-casing
 Source/Scripts/PressureReleasePlate.psc:62:1:indentation
 Source/Scripts/PressureReleasePlate.psc:63:1:trailing-whitespace
@@ -120872,6 +120901,7 @@ Source/Scripts/ReanimateAshPile.psc:87:1:argument-naming
 Source/Scripts/ReanimateAshPile.psc:87:1:argument-naming
 Source/Scripts/ReanimateAshPile.psc:87:1:function-override
 Source/Scripts/ReanimateAshPile.psc:89:1:indentation
+Source/Scripts/ReanimateAshPile.psc:91:1:redundant-bool-assignment
 Source/Scripts/ReanimateAshPile.psc:100:1:argument-naming
 Source/Scripts/ReanimateAshPile.psc:100:1:function-override
 Source/Scripts/ReanimateAshPile.psc:102:1:indentation
@@ -125802,6 +125832,7 @@ Source/Scripts/Survival_BeastTransformWatcherScript.psc:7:1:function-override
 Source/Scripts/Survival_BeastTransformWatcherScript.psc:10:10:forbidden-functions
 Source/Scripts/Survival_BeastTransformWatcherScript.psc:12:1:identifier-casing
 Source/Scripts/Survival_BeastTransformWatcherScript.psc:14:1:none-form-usage
+Source/Scripts/Survival_BeastTransformWatcherScript.psc:14:1:redundant-bool-assignment
 Source/Scripts/Survival_BeastTransformWatcherScript.psc:15:1:none-form-usage
 Source/Scripts/Survival_BeastTransformWatcherScript.psc:17:1:none-form-usage
 Source/Scripts/Survival_BeastTransformWatcherScript.psc:20:1:none-form-usage
@@ -144688,6 +144719,7 @@ Source/Scripts/TrapPoisonGas.psc:236:2:strict-boolean
 Source/Scripts/TrapPoisonGas.psc:239:4:empty-body
 Source/Scripts/TrapPoisonGas.psc:241:1:trailing-whitespace
 Source/Scripts/TrapPoisonGas.psc:249:1:trailing-whitespace
+Source/Scripts/TrapPoisonGas.psc:250:1:redundant-bool-assignment
 Source/Scripts/TrapPoisonGas.psc:255:1:trailing-whitespace
 Source/Scripts/TrapPoisonGas.psc:283:4:empty-body
 Source/Scripts/TrapPoisonGas.psc:298:4:empty-body
@@ -148771,6 +148803,7 @@ Source/Scripts/bwcNightingaleGhostSCRIPT.psc:62:1:indentation
 Source/Scripts/bwcNightingaleGhostSCRIPT.psc:62:1:unchecked-cast
 Source/Scripts/bwcNightingaleGhostSCRIPT.psc:63:1:trailing-whitespace
 Source/Scripts/bwcNightingaleGhostSCRIPT.psc:64:1:indentation
+Source/Scripts/bwcNightingaleGhostSCRIPT.psc:64:1:redundant-bool-assignment
 Source/Scripts/bwcNightingaleGhostSCRIPT.psc:65:1:indentation
 Source/Scripts/bwcNightingaleGhostSCRIPT.psc:66:1:indentation
 Source/Scripts/bwcNightingaleGhostSCRIPT.psc:67:1:indentation
@@ -150660,6 +150693,7 @@ Source/Scripts/ccBGSSSE001_FishingSystemScript.psc:1529:1:indentation
 Source/Scripts/ccBGSSSE001_FishingSystemScript.psc:1530:1:indentation
 Source/Scripts/ccBGSSSE001_FishingSystemScript.psc:1532:1:unnecessary-function
 Source/Scripts/ccBGSSSE001_FishingSystemScript.psc:1533:1:none-form-usage
+Source/Scripts/ccBGSSSE001_FishingSystemScript.psc:1533:1:redundant-bool-assignment
 Source/Scripts/ccBGSSSE001_FishingSystemScript.psc:1533:37:slow-functions
 Source/Scripts/ccBGSSSE001_FishingSystemScript.psc:1540:1:identifier-casing
 Source/Scripts/ccBGSSSE001_FishingSystemScript.psc:1540:1:unnecessary-function
@@ -153730,6 +153764,7 @@ Source/Scripts/defaultGhostScript.psc:112:1:trailing-whitespace
 Source/Scripts/defaultGhostScript.psc:117:1:trailing-whitespace
 Source/Scripts/defaultGhostScript.psc:123:1:unchecked-cast
 Source/Scripts/defaultGhostScript.psc:124:1:trailing-whitespace
+Source/Scripts/defaultGhostScript.psc:125:1:redundant-bool-assignment
 Source/Scripts/defaultGhostScript.psc:133:21:boolean-simplification
 Source/Scripts/defaultGhostScript.psc:134:1:indentation
 Source/Scripts/defaultGhostScript.psc:139:34:comma-spacing
@@ -154025,6 +154060,7 @@ Source/Scripts/defaultOnEnter.psc:72:1:identifier-casing
 Source/Scripts/defaultOnEnter.psc:81:1:identifier-casing
 Source/Scripts/defaultOnEnter.psc:85:1:identifier-casing
 Source/Scripts/defaultOnEnter.psc:85:1:identifier-casing
+Source/Scripts/defaultOnEnter.psc:92:1:redundant-bool-assignment
 Source/Scripts/defaultOnEnter.psc:111:1:identifier-casing
 Source/Scripts/defaultOnEnter.psc:112:1:indentation
 Source/Scripts/defaultOnEnter.psc:113:1:identifier-casing
@@ -154221,6 +154257,7 @@ Source/Scripts/defaultPillarPuzzleLever.psc:38:1:unnecessary-function
 Source/Scripts/defaultPillarPuzzleLever.psc:45:1:none-form-usage
 Source/Scripts/defaultPillarPuzzleLever.psc:46:1:identifier-casing
 Source/Scripts/defaultPillarPuzzleLever.psc:46:1:none-form-usage
+Source/Scripts/defaultPillarPuzzleLever.psc:47:1:redundant-bool-assignment
 Source/Scripts/defaultPillarPuzzleLever.psc:54:1:none-form-usage
 Source/Scripts/defaultPillarPuzzleLever.psc:54:1:useless-downcast
 Source/Scripts/defaultPillarPuzzleLever.psc:55:1:none-form-usage
@@ -154262,6 +154299,7 @@ Source/Scripts/defaultPillarPuzzleLeverNoFurn.psc:38:1:unnecessary-function
 Source/Scripts/defaultPillarPuzzleLeverNoFurn.psc:45:1:none-form-usage
 Source/Scripts/defaultPillarPuzzleLeverNoFurn.psc:46:1:identifier-casing
 Source/Scripts/defaultPillarPuzzleLeverNoFurn.psc:46:1:none-form-usage
+Source/Scripts/defaultPillarPuzzleLeverNoFurn.psc:47:1:redundant-bool-assignment
 Source/Scripts/defaultPillarPuzzleLeverNoFurn.psc:54:1:none-form-usage
 Source/Scripts/defaultPillarPuzzleLeverNoFurn.psc:54:1:useless-downcast
 Source/Scripts/defaultPillarPuzzleLeverNoFurn.psc:55:1:none-form-usage
@@ -154306,6 +154344,7 @@ Source/Scripts/defaultPillarPuzzlePullBarNoFurn.psc:38:1:unnecessary-function
 Source/Scripts/defaultPillarPuzzlePullBarNoFurn.psc:45:1:none-form-usage
 Source/Scripts/defaultPillarPuzzlePullBarNoFurn.psc:46:1:identifier-casing
 Source/Scripts/defaultPillarPuzzlePullBarNoFurn.psc:46:1:none-form-usage
+Source/Scripts/defaultPillarPuzzlePullBarNoFurn.psc:47:1:redundant-bool-assignment
 Source/Scripts/defaultPillarPuzzlePullBarNoFurn.psc:54:1:none-form-usage
 Source/Scripts/defaultPillarPuzzlePullBarNoFurn.psc:54:1:useless-downcast
 Source/Scripts/defaultPillarPuzzlePullBarNoFurn.psc:55:1:none-form-usage
@@ -164909,9 +164948,11 @@ Source/Scripts/dunSkuldafnPuzzleControlSCRIPT.psc:41:1:trailing-whitespace
 Source/Scripts/dunSkuldafnPuzzleControlSCRIPT.psc:43:1:none-form-usage
 Source/Scripts/dunSkuldafnPuzzleControlSCRIPT.psc:44:1:identifier-casing
 Source/Scripts/dunSkuldafnPuzzleControlSCRIPT.psc:44:1:none-form-usage
+Source/Scripts/dunSkuldafnPuzzleControlSCRIPT.psc:45:1:redundant-bool-assignment
 Source/Scripts/dunSkuldafnPuzzleControlSCRIPT.psc:51:1:none-form-usage
 Source/Scripts/dunSkuldafnPuzzleControlSCRIPT.psc:52:1:identifier-casing
 Source/Scripts/dunSkuldafnPuzzleControlSCRIPT.psc:52:1:none-form-usage
+Source/Scripts/dunSkuldafnPuzzleControlSCRIPT.psc:53:1:redundant-bool-assignment
 Source/Scripts/dunSkuldafnPuzzleControlSCRIPT.psc:61:1:none-form-usage
 Source/Scripts/dunSkuldafnPuzzleControlSCRIPT.psc:61:1:useless-downcast
 Source/Scripts/dunSkuldafnPuzzleControlSCRIPT.psc:62:1:none-form-usage
