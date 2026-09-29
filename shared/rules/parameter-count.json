@@ -1,0 +1,14 @@
+{
+  "id": "parameter-count",
+  "name": "Parameter count",
+  "category": "Other",
+  "visitor": "ast",
+  "tags": [
+    "maintainability"
+  ],
+  "severity": "info",
+  "importance": "medium",
+  "fixable": false,
+  "description": "Flags author-defined functions whose parameter list is longer than a configurable maximum.",
+  "definition": "Flags, as an `[info]`, an author-defined `Function` whose parameter list is longer than `parameter_count_max` (default 5 on the built-in/`strict` preset, 7 on `standard`, and 10 on `careful`). Optional / defaulted parameters count toward the total. Engine `Event` signatures are never flagged, because their arity is fixed by the runtime."
+}

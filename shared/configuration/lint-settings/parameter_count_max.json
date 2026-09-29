@@ -1,0 +1,32 @@
+{
+  "key": "parameter_count_max",
+  "rust": {
+    "type": "usize",
+    "default": "5"
+  },
+  "yaml": {
+    "default": "5",
+    "comment": "Non-negative integer"
+  },
+  "ts_type": "number",
+  "doc": "The number of parameters an author-defined function can have before the\n\"Parameter count\" lint flags it as an `[info]`. Engine events are never\ncompared against this limit. Defaults are 5 (`strict`), 7 (`standard`),\nand 10 (`careful`).",
+  "ui": {
+    "mount": "lint-config-settings",
+    "group": "parameter-count",
+    "group_kind": "fieldset",
+    "group_legend": "Parameter count threshold",
+    "row": true,
+    "id": "parameter-count-max",
+    "widget": "number",
+    "label": "Maximum parameters",
+    "min": 0,
+    "clamp_min": 0,
+    "treat_zero_as_empty": false
+  },
+  "schema": {
+    "description": "Maximum number of parameters an author-defined function may have before the parameter-count lint reports an info finding.",
+    "type": "integer",
+    "minimum": 0,
+    "default": 5
+  }
+}

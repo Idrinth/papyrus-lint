@@ -24,10 +24,13 @@
 # (today's built-in default, and `init`'s own default) and
 # shared/configuration/presets/papyrus-lint.careful.yaml for the other two presets.
 #
-# This preset has no overrides of its own to list: every "low" importance
-# rule is turned off here, except the ones `shared/rules.json` marks
-# `kept_in_standard` (the free formatting rules named above) — see
-# `papyrus-lint-config/build.rs`, which derives this preset's `rules:`
-# section from that file and `shared/configuration/papyrus-lint.default.yaml` rather than
-# from anything checked in here.
+# The only numeric override listed here is `parameter_count_max`. Every
+# "low" importance rule is turned off here, except the ones
+# `shared/rules.json` marks `kept_in_standard` (the free formatting rules
+# named above) — see `papyrus-lint-config/build.rs`, which derives this
+# preset's `rules:` section from that file and
+# `shared/configuration/papyrus-lint.default.yaml` rather than from
+# anything checked in here.
 # ===============================================================================
+
+parameter_count_max: 7  # was 5: a middle ground between strict (5) and careful (10)

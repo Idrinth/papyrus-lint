@@ -19,6 +19,7 @@
     "magic_numbers",
     "cyclomatic_complexity_warning",
     "cyclomatic_complexity_error",
+    "parameter_count_max",
     "min_wait_interval",
     "fail_on_warning",
     "fail_on_info",
