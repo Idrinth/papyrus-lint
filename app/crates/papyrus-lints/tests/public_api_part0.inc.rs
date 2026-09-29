@@ -1,4 +1,4 @@
-//! Black-box tests for the crate-level lint and repair entry points.
+// Black-box tests for the crate-level lint and repair entry points.
 
 use papyrus_lints::{
     lint, lint_with_external_arguments, repair, repair_filtered, repair_filtered_by_tag,
