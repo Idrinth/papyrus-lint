@@ -55,6 +55,7 @@ fn ast_rules_return_an_ast_visitor() {
     assert_ast(crate::non_global_function_call::visitor());
     assert_ast(crate::none_form_usage::visitor());
     assert_ast(crate::numeric_comparison::visitor());
+    assert_ast(crate::parameter_count::visitor());
     assert_ast(crate::parameter_reassignment::visitor());
     assert_ast(crate::property_sorting::visitor());
     assert_ast(crate::readonly_property_write::visitor());
