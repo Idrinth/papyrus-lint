@@ -14,7 +14,6 @@ from pathlib import Path
 from unittest import mock
 
 import yaml
-
 from ci_lib.config_schema import SCHEMA_ID, render_schema, write_schema
 
 SCRIPT = Path(__file__).with_name("generate_config_schema.py")

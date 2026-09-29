@@ -9,7 +9,6 @@ import unittest
 from pathlib import Path
 
 import yaml
-
 from ci_lib.config_schema import render_schema
 from ci_lib.default_config import (
     alphabetical_rule_keys,
