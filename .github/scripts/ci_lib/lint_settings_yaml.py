@@ -1,17 +1,17 @@
 """Assembles shared/configuration/lint-settings.yaml from per-setting JSON.
 
-shared/configuration/lint-settings.yaml grew too large to review as one
-file, so each project setting now lives in
-shared/configuration/project-settings/<key>.json and each lint setting in
-shared/configuration/lint-settings/<key>.json. Declaration order (the
-Settings tab order) and the rules-section comment live in
-shared/configuration/lint-settings.meta.json.
+Each project setting lives in shared/configuration/project-settings/<key>.json
+and each lint setting in shared/configuration/lint-settings/<key>.json.
+Declaration order (the Settings tab order) and the rules-section comment
+live in shared/configuration/lint-settings.meta.json.
 
-This module reassembles the combined YAML that the Rust build scripts,
+The combined YAML is git-ignored. Rust build scripts,
 app/scripts/generate-config-types.mjs, and the default-config/schema
-generators still read, so none of those consumers needed to change. The
-combined file stays checked in; regenerate it with
-.github/scripts/build_lint_settings_yaml.py after editing a JSON file.
+generators still read that one file, so none of them parse the JSON
+directories themselves. Regenerate it with
+.github/scripts/build_lint_settings_yaml.py, or by running
+generate_default_config.py / generate_config_schema.py, which refresh it
+before they read.
 """
 
 from __future__ import annotations

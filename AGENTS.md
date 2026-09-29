@@ -158,9 +158,9 @@ Minimum touch list (see also [`CONTRIBUTING.md`](CONTRIBUTING.md)):
    order). The object needs `key` (matching the file name), `yaml.comment`,
    `yaml.default`, `schema`, and for Config fields `rust.type` /
    `rust.default`. Then run
-   `python3 .github/scripts/build_lint_settings_yaml.py` so the checked-in
-   `shared/configuration/lint-settings.yaml` stays in sync — consumers still
-   read that file — and regenerate
+   `python3 .github/scripts/build_lint_settings_yaml.py` so the git-ignored
+   `shared/configuration/lint-settings.yaml` is refreshed — consumers still
+   read that file, they just no longer find it in git — and regenerate
    `schema/papyrus-lint.schema.json`
    (`python3 .github/scripts/generate_config_schema.py`) and the git-ignored
    default YAML (`python3 .github/scripts/generate_default_config.py`).

@@ -115,7 +115,7 @@ DOCS = [
         "filename": "papyrus-lint.default.yaml",
         "source_dir": CONFIGURATION_DIR,
         "repo_dir": "configuration",
-        "source_url": f"{GITHUB_BLOB_BASE}/shared/configuration/lint-settings.yaml",
+        "source_url": "https://github.com/idrinth/papyrus-lint/tree/the-one/shared/configuration/lint-settings",
         "slug": "papyrus-lint-default-yaml",
         "kind": "yaml",
         "title": "Default configuration (papyrus-lint.yaml)",

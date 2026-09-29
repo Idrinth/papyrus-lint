@@ -199,7 +199,9 @@ class RenderLintSettingsYamlTests(unittest.TestCase):
             rendered,
         )
 
-    def test_checked_in_yaml_matches_the_json_sources(self) -> None:
+    def test_repo_sources_round_trip_through_yaml(self) -> None:
+        import yaml
+
         configuration = REPO_ROOT / "shared" / "configuration"
         document = assemble_lint_settings(
             configuration / "project-settings",
@@ -207,10 +209,9 @@ class RenderLintSettingsYamlTests(unittest.TestCase):
             configuration / "lint-settings.meta.json",
         )
 
-        rendered = render_lint_settings_yaml(document)
-        checked_in = (configuration / "lint-settings.yaml").read_text(encoding="utf-8")
+        loaded = yaml.safe_load(render_lint_settings_yaml(document))
 
-        self.assertEqual(checked_in, rendered)
+        self.assertEqual(document, loaded)
 
 
 if __name__ == "__main__":

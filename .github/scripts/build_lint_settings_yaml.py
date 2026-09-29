@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""Build shared/configuration/lint-settings.yaml from per-setting JSON files.
+"""Build the git-ignored shared/configuration/lint-settings.yaml.
 
 The assembly lives in ci_lib/lint_settings_yaml.py; this is just the CLI
 entrypoint. Run it after editing a file under
 shared/configuration/project-settings/, shared/configuration/lint-settings/,
-or shared/configuration/lint-settings.meta.json. The combined YAML stays
-checked in so existing readers do not have to change.
+or shared/configuration/lint-settings.meta.json, and before a Rust build
+that does not already run generate_default_config.py (that script refreshes
+this file itself).
 """
 
 from __future__ import annotations

@@ -124,12 +124,12 @@ read - do this before building or testing anything below. Setting metadata
 works the same way: edit `shared/configuration/project-settings/<key>.json`
 or `shared/configuration/lint-settings/<key>.json` (and the order list in
 `shared/configuration/lint-settings.meta.json`), then run `python3
-.github/scripts/build_lint_settings_yaml.py` so the checked-in
-`shared/configuration/lint-settings.yaml` stays in sync. Then run `python3
+.github/scripts/build_lint_settings_yaml.py` so the git-ignored
+`shared/configuration/lint-settings.yaml` is refreshed. Then run `python3
 .github/scripts/generate_default_config.py` so the git-ignored
 `shared/configuration/papyrus-lint.default.yaml` and
-`schema/papyrus-lint.schema.json` match the rules and
-`shared/configuration/lint-settings.yaml` (Pages and CI already run the
+`schema/papyrus-lint.schema.json` match the rules and settings (that script
+also refreshes `lint-settings.yaml`; Pages and CI already run the
 default-config and schema steps). Use `python3
 .github/scripts/generate_config_schema.py` alone if you only need the schema.
 
