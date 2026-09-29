@@ -1,0 +1,15 @@
+{
+  "id": "contradictory-condition",
+  "name": "Contradictory condition",
+  "category": "Bugprone",
+  "visitor": "ast",
+  "tags": [
+    "correctness",
+    "maintainability"
+  ],
+  "severity": "warning",
+  "importance": "medium",
+  "fixable": false,
+  "description": "Flags a compound && condition whose clauses on the same identifier cannot all be true.",
+  "definition": "Flags, as a `[warning]`, an impossible pair of clauses under `&&` on the same local or property identifier with constant numeric thresholds (e.g. `x > 10 && x < 5`, `x == 1 && x == 2`). Only direct relational comparisons (`==`, `<`, `<=`, `>`, `>=`) against a numeric literal are checked; calls, aliases, `||` chains, and mixed identifiers are left unflagged rather than guessed at."
+}

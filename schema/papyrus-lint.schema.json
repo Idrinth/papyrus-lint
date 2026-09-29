@@ -169,477 +169,497 @@
       "additionalProperties": false,
       "properties": {
         "line_length": {
-          "description": "Flags lines that exceed the configured maximum character count.",
+          "description": "Line length",
           "type": "boolean",
           "default": true
         },
         "trailing_whitespace": {
-          "description": "Flags lines that end with trailing spaces or tabs.",
+          "description": "Trailing whitespace",
           "type": "boolean",
           "default": true
         },
         "final_newline": {
-          "description": "Requires non-empty files to end with exactly one newline.",
+          "description": "Final newline",
           "type": "boolean",
           "default": true
         },
         "comma_spacing": {
-          "description": "Requires whitespace after commas in argument lists.",
+          "description": "Space after comma",
           "type": "boolean",
           "default": true
         },
         "forbidden_functions": {
-          "description": "Flags calls to functions that are usually unintentional performance bottlenecks. `Debug.*` already behind a simple debug-flag If (e.g. `If IsDebugMode`) is left unflagged.",
+          "description": "Forbidden/discouraged function usage",
           "type": "boolean",
           "default": true
         },
         "deprecated_functions": {
-          "description": "Flags calls to compiled-in deprecated functions or project functions marked `; @deprecated`, and recommends supported alternatives where available.",
+          "description": "Deprecated function usage",
           "type": "boolean",
           "default": true
         },
         "formid_hex_notation": {
-          "description": "Flags a FormID literal compared against GetFormID() or passed to Game.GetFormFromFile that isn't written in hexadecimal.",
+          "description": "FormID hex notation",
           "type": "boolean",
           "default": true
         },
         "get_form_from_file_skyrim_esm": {
-          "description": "Flags Game.GetFormFromFile(id, \"Skyrim.esm\"), which is exactly what Game.GetForm(id) already does.",
+          "description": "Game.GetFormFromFile(\"Skyrim.esm\") simplification",
           "type": "boolean",
           "default": true
         },
         "get_form_from_file_load_index": {
-          "description": "Flags a hex FormID literal passed to Game.GetFormFromFile that carries a non-zero load index, or leading zero digits, neither of which Game.GetFormFromFile ever uses.",
+          "description": "Game.GetFormFromFile load index",
           "type": "boolean",
           "default": true
         },
         "slow_functions": {
-          "description": "Flags calls to functions that have a faster equivalent available; the fix applies the supplied replacement.",
+          "description": "Slow function usage",
           "type": "boolean",
           "default": true
         },
         "unused_getter": {
-          "description": "Flags standalone calls to functions whose names begin with Get if the returned value is unused.",
+          "description": "Getter usage without saving result",
           "type": "boolean",
           "default": true
         },
         "unused_nodiscard": {
-          "description": "Flags discarded results of functions marked ; @nodiscard.",
+          "description": "Discarded nodiscard result",
           "type": "boolean",
           "default": true
         },
         "unused_property": {
-          "description": "Flags Property declarations whose name is never referenced anywhere else in the script.",
+          "description": "Unused script properties",
           "type": "boolean",
           "default": true
         },
         "semicolon": {
-          "description": "Requires a trailing semicolon on each non-empty line or forbids terminal semicolons, according to the selected setting.",
+          "description": "Semicolon at end of line",
           "type": "boolean",
           "default": true
         },
         "float_int_conversion": {
-          "description": "Flags a Float value declared, assigned, returned, or passed as an argument into an Int-typed slot without an explicit as Int cast.",
+          "description": "Implicit Float-to-Int conversion",
           "type": "boolean",
           "default": true
         },
         "int_division_to_float": {
-          "description": "Flags an Int/Int division declared, assigned, returned, or passed as an argument into a Float-typed slot, since Papyrus truncates the division before it ever widens into the Float (e.g. Float f = 1 / 2 yields 0.0, not 0.5). A constant division that divides evenly (e.g. 72 / 8) isn't flagged.",
+          "description": "Int/Int division widened to Float",
           "type": "boolean",
           "default": true
         },
         "strict_boolean": {
-          "description": "Flags conditions that rely on Papyrus treating a none-boolean as a boolean. Allows the literal 1/0 as bool-like by default (configurable).",
+          "description": "Strict boolean check",
           "type": "boolean",
           "default": true
         },
         "argument_types": {
-          "description": "Flags call-site arguments whose type doesn't match the callee's declared parameter type.",
+          "description": "Argument type check",
           "type": "boolean",
           "default": true
         },
         "return_types": {
-          "description": "Flags statements whose value's type doesn't match the enclosing function's declared return type.",
+          "description": "Return type check",
           "type": "boolean",
           "default": true
         },
         "function_override": {
-          "description": "Informs about a function declared on this script that shares its name with a function declared on the script it extends.",
+          "description": "Inherited function override",
           "type": "boolean",
           "default": true
         },
         "argument_naming": {
-          "description": "Flag a function declared on this script whose parameter name doesn't match (case-insensitively) the corresponding parameter of the same-named function declared on the script it Extends.",
+          "description": "Argument naming consistency",
           "type": "boolean",
           "default": true
         },
         "argument_override_types": {
-          "description": "Flags a function or event whose parameter count or types don't match the same-named function declared on the script it Extends.",
+          "description": "Argument override type check",
           "type": "boolean",
           "default": true
         },
         "numeric_comparison": {
-          "description": "Flags implicit comparisons between ints and floats that rely on Papyrus doing type conversions.",
+          "description": "Strict numeric type check",
           "type": "boolean",
           "default": true
         },
         "indentation": {
-          "description": "Flags lines whose indentation doesn't match the configured style/width.",
+          "description": "Formatting checks",
           "type": "boolean",
           "default": true
         },
         "cyclomatic_complexity": {
-          "description": "Flags functions/events whose cyclomatic complexity exceeds a configurable threshold. A configured error threshold below the warning one is treated as equal to it.",
+          "description": "Cyclomatic complexity",
           "type": "boolean",
           "default": true
         },
         "unreachable_statement": {
-          "description": "Flags statements that follow a Return.",
+          "description": "Unreachable statement",
           "type": "boolean",
           "default": true
         },
         "static_condition": {
-          "description": "Flags conditions that resolve the same every time due to this likely being a mistake.",
+          "description": "Static condition",
+          "type": "boolean",
+          "default": true
+        },
+        "contradictory_condition": {
+          "description": "Contradictory condition",
           "type": "boolean",
           "default": true
         },
         "unreachable_elseif": {
-          "description": "Flags an ElseIf whose condition can never be true because an earlier branch already covers it.",
+          "description": "Unreachable elseif",
           "type": "boolean",
           "default": true
         },
         "division_by_zero": {
-          "description": "Flags divisions by zero where they are likely to happen.",
+          "description": "Division by zero",
           "type": "boolean",
           "default": true
         },
         "empty_body": {
-          "description": "Flags seemingly useless loops and conditional bodies, since they are likely a mistake.",
+          "description": "Empty loop/conditional body",
+          "type": "boolean",
+          "default": true
+        },
+        "empty_event_handler": {
+          "description": "Empty event handler",
           "type": "boolean",
           "default": true
         },
         "duplicate_conditional_body": {
-          "description": "Flags consecutive If/ElseIf/Else branches whose bodies are the same, since that usually means a branch was copied and left unchanged.",
+          "description": "Duplicate adjacent If/ElseIf/Else body",
           "type": "boolean",
           "default": true
         },
         "unused_local_variable": {
-          "description": "Flags a local variable inside a function/event whose value is never read: either it's never referenced again at all or only written to.",
+          "description": "Unused or write-only local variables",
           "type": "boolean",
           "default": true
         },
         "variable_used_before_assignment": {
-          "description": "Flags a local variable declared without an initial value that's read before it's ever assigned one, since it then still holds its default value. A comparison against that same default (None, 0, 0.0, False, or \"\") is treated as a deliberate gate, not a flagged read, even when joined by && or || to a further operand that only runs once the gate rules out the default.",
+          "description": "Local variable used before assignment",
           "type": "boolean",
           "default": true
         },
         "none_form_usage": {
-          "description": "Flags a member/method access on a local variable or script-level property that's still known to be None. Set assume_auto_properties_filled to stop assuming an unset Auto/AutoReadOnly property starts out None; it's still tracked once code assigns it None directly.",
+          "description": "None used as an existing Form",
           "type": "boolean",
           "default": true
         },
         "member_chain_none_usage": {
-          "description": "Flags a member/method access whose receiver is itself a member or call (e.g. a.GetLinkTo(...).Kill()), which none-form-usage skips. Opt-in: intermediate results are not proven None, so this is noisier than none-form-usage.",
+          "description": "Chained member access may dereference None",
           "type": "boolean",
           "default": false
         },
         "local_variable_shadowing": {
-          "description": "Flags a local variable whose name matches (case-insensitively) a Property or a plain script-level variable declared on the same script.",
+          "description": "Local variable shadowing",
           "type": "boolean",
           "default": true
         },
         "parameter_reassignment": {
-          "description": "Flags a function/event parameter assigned a new value anywhere in its own body.",
+          "description": "Parameter reassignment",
           "type": "boolean",
           "default": true
         },
         "chain_whitespace": {
-          "description": "Flags a space or tab immediately before or after a member/method access.",
+          "description": "Whitespace interrupting property/method chaining",
           "type": "boolean",
           "default": true
         },
         "exclamation_spacing": {
-          "description": "Flags a negation operator not followed by exactly one space. In a chained negation such as !!bReady, only the final ! requires a trailing space.",
+          "description": "Exclamation mark spacing",
           "type": "boolean",
           "default": true
         },
         "identifier_casing": {
-          "description": "Flags a declared function/event, property, state, parameter, or local/script variable whose name doesn't match the configured style.",
+          "description": "Identifier casing",
           "type": "boolean",
           "default": true
         },
         "type_casing": {
-          "description": "Flags a script's declared type name if it doesn't follow the configured convention. Ignores a leading acronym prefix (e.g. CreationKit's own fragment names or a mod's acronym prefix), which can't be renamed.",
+          "description": "Type name casing",
           "type": "boolean",
           "default": true
         },
         "named_arguments": {
-          "description": "Flags a positional call argument that the configured setting prefers to see passed by Papyrus's named-argument syntax instead; the fix inserts the matching parameter name ahead of it.",
+          "description": "Prefer named arguments",
           "type": "boolean",
           "default": true
         },
         "operator_spacing": {
-          "description": "Requires exactly one space on either side of logical operators.",
+          "description": "Spacing around logical/comparison operators",
           "type": "boolean",
           "default": true
         },
         "assignment_operator_spacing": {
-          "description": "Requires exactly one space on either side of =, +=, -=, *=, /=, and %=.",
+          "description": "Spacing around assignment operators",
           "type": "boolean",
           "default": true
         },
         "property_sorting": {
-          "description": "Flag declaration that isn't sorted by type and then alphabetically by name, or that isn't declared immediately after the ScriptName line, before any variable, function, or state declaration.",
+          "description": "Property sorting",
           "type": "boolean",
           "default": false
         },
         "explicit_return": {
-          "description": "Flags a typed function/event with a code path that falls off the end of its body without a Return.",
+          "description": "Explicit return on every path",
           "type": "boolean",
           "default": true
         },
         "unchecked_form_parameter": {
-          "description": "Flags a member/method access on a Form-typed function parameter that hasn't yet been confirmed non-None in that path.",
+          "description": "Form parameter used without a None check",
           "type": "boolean",
           "default": false
         },
         "unchecked_array_element": {
-          "description": "Flags a member/method access on a constant-indexed array element (e.g. act[2].Kill()) that hasn't yet been confirmed non-None in that path. Disabled by default, same as the Form parameter check above.",
+          "description": "Array element used without a None check",
           "type": "boolean",
           "default": false
         },
         "unchecked_cast": {
-          "description": "Flags a member/method access on the result of an As cast before that result has been checked against None. Never flags CreationKit's own fragment boilerplate cast (e.g. Actor akSpeaker = akSpeakerRef as Actor).",
+          "description": "Unchecked cast",
           "type": "boolean",
           "default": true
         },
         "useless_downcast": {
-          "description": "Flags a cast to a parent type that has no actual value and just makes reading a bit harder.",
+          "description": "Useless downcast",
           "type": "boolean",
           "default": true
         },
         "impossible_cast": {
-          "description": "Flags an As cast proven to never succeed, e.g. Weapon b = a as Weapon where a is an Armor, since Armor and Weapon are unrelated types. Only flagged once both types are confirmed to resolve to a known root.",
+          "description": "Impossible cast",
           "type": "boolean",
           "default": true
         },
         "unresolved_script": {
-          "description": "Flags script name references that can't be resolved against the configured source directories.",
+          "description": "Unresolved script reference",
           "type": "boolean",
           "default": true
         },
         "non_global_function_call": {
-          "description": "Flags a ScriptName.Function() call whose target function resolves but isn't declared Global, since Papyrus's static call syntax can only reach Global functions.",
+          "description": "Non-static function call",
           "type": "boolean",
           "default": true
         },
         "member_access": {
-          "description": "Flags access to a function or property whose @private or @protected visibility does not permit access from the current script.",
+          "description": "Member access control",
           "type": "boolean",
           "default": true
         },
         "register_for_update_in_on_update": {
-          "description": "Flags RegisterForUpdate / RegisterForUpdateGameTime called inside OnUpdate / OnUpdateGameTime, which stacks another repeating timer every tick; use RegisterForSingleUpdate (or the GameTime variant) instead.",
+          "description": "Periodic RegisterForUpdate inside OnUpdate",
           "type": "boolean",
           "default": true
         },
         "static_function_call_via_instance": {
-          "description": "Flags a Global function called through an object reference (e.g. akRef.MyGlobalHelper()) instead of ScriptName.MyGlobalHelper(); Papyrus allows it, but it can read as a mistake. Self/Parent are never flagged.",
+          "description": "Static function called via instance",
           "type": "boolean",
           "default": true
         },
         "short_wait_interval": {
-          "description": "Flags Waits and RegisterFor(Single)Update(GameTime) if the time is smaller than a configured amount.",
+          "description": "Short wait/update interval",
           "type": "boolean",
           "default": true
         },
         "state_function_signature": {
-          "description": "Flags a function or event in a State whose parameters or return type don't match its empty-state declaration.",
+          "description": "State function signature mismatch",
           "type": "boolean",
           "default": true
         },
         "goto_state": {
-          "description": "Flags states that are undefined, likely because of typos.",
+          "description": "GoToState state reference",
           "type": "boolean",
           "default": true
         },
         "get_state_comparison": {
-          "description": "Flags a GetState() == \"Name\"/!= \"Name\" comparison against an undefined state, since it then always evaluates to the same result instead of raising an error.",
+          "description": "GetState() comparison",
           "type": "boolean",
           "default": true
         },
         "unused_state": {
-          "description": "Flags named states that are neither Auto nor targeted by a GoToState call.",
+          "description": "Unused states",
           "type": "boolean",
           "default": true
         },
         "too_many_states": {
-          "description": "Flags a file if the number of states exceeds the possible 128.",
+          "description": "Total named state count",
           "type": "boolean",
           "default": true
         },
         "multiple_auto_states": {
-          "description": "Reports multiple Auto states in one script as an error, or multiple across its ancestry as a warning.",
+          "description": "Multiple Auto states",
           "type": "boolean",
           "default": true
         },
         "conflicting_script_versions": {
-          "description": "Flags byte-different copies of the same script in separate source directories. Identity is the path under the script root, so User/Foo.psc does not conflict with Other/Foo.psc.",
+          "description": "Conflicting script versions",
           "type": "boolean",
           "default": true
         },
         "stale_compiled_output": {
-          "description": "Flags a .psc file whose compiled .pex is older than the script itself, usually meaning it was edited and never recompiled.",
+          "description": "Stale compiled output",
           "type": "boolean",
           "default": true
         },
         "script_filename_mismatch": {
-          "description": "Flags a .psc file whose declared ScriptName doesn't match its path under the script root, aside from casing. An unqualified name is the file stem; Fallout 4 / Starfield A:B:C must end in A/B/C.psc after any layout folders the name does not include.",
+          "description": "ScriptName/filename mismatch",
           "type": "boolean",
           "default": true
         },
         "unused_disable": {
-          "description": "Flags unknown @disable/@disable-file rule ids and directives that suppress no diagnostic. Disabled by default.",
+          "description": "Unused disable directive",
           "type": "boolean",
           "default": false
         },
         "magic_numbers": {
-          "description": "Flags numeric literals used directly instead of through a named constant, property, or local variable. -1, 0 and 1 are never flagged. Loose mode (default) exempts Wait/RegisterFor(Single)Update(GameTime) intervals, Strict checks them too. Disabled by default.",
+          "description": "Magic numbers",
           "type": "boolean",
           "default": false
         },
         "native_function_usage": {
-          "description": "Flags a Native function/event whose name isn't one of the base game's own, a sign it needs SKSE/F4SE or another native extension. Disabled by default.",
+          "description": "Non-base-game native function usage",
           "type": "boolean",
           "default": false
         },
         "repeated_getvalue": {
-          "description": "Flags GetValue() called on the same global more than once across an If/ElseIf chain's conditions, since it can be cached in a local variable instead. Disabled by default.",
+          "description": "Repeated GlobalVariable.GetValue() calls",
           "type": "boolean",
           "default": false
         },
         "global_variable_setvalue": {
-          "description": "Flags a SetValue/SetValueInt call that doesn't provably change the value: a branch writing back the exact value its own GetValue() == literal condition just confirmed, or an Else branch writing a literal with no check ruling out that value already being current. Disabled by default.",
+          "description": "GlobalVariable no-op write",
           "type": "boolean",
           "default": false
         },
         "global_variable_increment": {
-          "description": "Flags gv.SetValue(gv.GetValue() + x), since GlobalVariable's native Mod(x) call does the same thing in one call instead of two; the fix rewrites the call to gv.Mod(x).",
+          "description": "GlobalVariable increment via SetValue(GetValue() + x)",
           "type": "boolean",
           "default": true
         },
         "setvalue_in_loop": {
-          "description": "Flags a SetValue/SetValueInt call inside a While loop's body, since it then runs on every iteration; not flagged if the loop also calls Utility.Wait/RegisterForUpdate.",
+          "description": "Repeated GlobalVariable.SetValue() calls in a loop",
           "type": "boolean",
           "default": true
         },
         "invariant_loop_condition": {
-          "description": "Flags a While loop whose condition depends on a local variable/parameter that's never assigned anywhere in its own body, since it can then never stop or never run.",
+          "description": "Invariant loop condition",
           "type": "boolean",
           "default": true
         },
         "script_name_collision": {
-          "description": "Flags a script-level Property or variable whose name matches the script it's declared in, since Papyrus fails to compile it.",
+          "description": "Property/variable named as script",
           "type": "boolean",
           "default": true
         },
         "array_bounds": {
-          "description": "Flags a literal index into a local array that falls outside the constant size it was declared with (e.g. new Float[3] followed by a[5]), since Papyrus silently no-ops the access instead of raising an error.",
+          "description": "Array bounds",
           "type": "boolean",
           "default": true
         },
         "array_size_range": {
-          "description": "Flags, as an error, a new array whose own literal size falls outside 0 to 128, since Papyrus hard-caps a script-created array at 128 elements and a negative size makes no sense; doesn't apply to array Properties or natively-returned arrays, so those aren't checked against it.",
+          "description": "Array size range",
           "type": "boolean",
           "default": true
         },
         "array_used_before_new": {
-          "description": "Flags indexing or member access (.Length, Find, Add, \u2026) on a local array that is still known to be None because it was never created with New (or assigned another array).",
+          "description": "Array used before New",
           "type": "boolean",
           "default": true
         },
         "readonly_property_write": {
-          "description": "Flags an assignment to a property declared AutoReadOnly, since Papyrus rejects that at compile time. Matches the property's bare name or Self.PropertyName; a bare name shadowed by a same-named local/parameter is left alone.",
+          "description": "Read-only (AutoReadOnly) property write",
           "type": "boolean",
           "default": true
         },
         "default_property_value": {
-          "description": "Flags a Bool/Int/Float/String Auto/AutoReadOnly property with no explicit default value, since it then silently falls back to Papyrus's own implicit per-type default instead of a value the author chose. Disabled by default.",
+          "description": "Default property value",
           "type": "boolean",
           "default": false
         },
         "unguarded_self_recursion": {
-          "description": "Flags a function/event that calls itself with nothing that could ever skip the recursive call, since it then recurses unconditionally until the call stack is exhausted. Conservative: a self-call nested inside an If/While is always left alone, a top-level While always disqualifies the function, and a top-level If only counts as a guard when it actually contains a Return somewhere within it \u2014 an If with no Return does nothing to stop the call and is still flagged. A GoToState to a different state that declares its own handler for the same function/event, before the self-call, counts as a guard too, covering the vanilla save-compatibility idiom. Exception: if every branch of an If/Elseif/Else covering every path directly calls itself, it's flagged anyway, since it recurses no matter which branch runs.",
+          "description": "Unguarded self-recursion",
           "type": "boolean",
           "default": true
         },
         "self_assignment": {
-          "description": "Flags a plain = assignment whose right side is the exact same reference as its own target (e.g. a = a, Self.Foo = Self.Foo), since it can never change the value and is almost always a mistake. Only a bare name or a chain of member accesses is compared this way; calls, indexes, and compound assignments (+=, ...) are never flagged.",
+          "description": "Self-assignment",
           "type": "boolean",
           "default": true
         },
         "debug_side_effects": {
-          "description": "Flags a call to a side-effecting function nested inside any Debug.* argument list, since that call only runs when the debug output itself runs.",
+          "description": "Side-effecting call inside Debug.*",
           "type": "boolean",
           "default": true
         },
         "unnecessary_function": {
-          "description": "Flags a Function whose body is empty or just a single statement. An empty body does nothing, and a single statement is usually simple enough to inline at its call site instead. Events are never flagged, since they may deliberately forward to shared logic. A Native function is never flagged either, since it has no Papyrus body \u2014 the engine supplies the implementation. A Function named Fragment_<digits> (matched case-insensitively; a CreationKit-generated fragment entry point) is never flagged either, since the engine calls it directly and it isn't something the script's own author could inline away. A parameterless Function returning Int, Float, Bool, or String whose body is exactly one statement is never flagged either, since that shape is how a script exposes a named constant to the outside world without baking it into every instance as a Property/Variable; an empty body of that shape is still flagged, because it doesn't return a constant. The fix only handles a pure forwarding wrapper (its one statement is itself a call passing every one of its own parameters straight through, unchanged, to it), rewriting call sites to call the wrapped function directly; the wrapper's own declaration is left in place. An empty function is reported but not rewritten.",
+          "description": "Unnecessary function",
           "type": "boolean",
           "default": true
         },
         "unknown_actor_value": {
-          "description": "Flags a call to an Actor Value function (GetActorValue, SetActorValue, ModActorValue, DamageActorValue, ...) whose Actor Value name isn't one of the target game's built-in ones, a strong sign of a typo. Only a plain string literal argument is checked. Disabled by default, since a project's own plugin can define custom Actor Values.",
+          "description": "Unknown Actor Value",
           "type": "boolean",
           "default": false
         },
         "repeated_setoutfit": {
-          "description": "Flags a second SetOutfit(...) call passing the exact same outfit (and other arguments) as an earlier call on the same receiver, with nothing in between guaranteed to have changed what they're wearing, since a redundant repeated SetOutfit call is known to sometimes leave the actor with no visible equipment. Matches by the SetOutfit method name alone, case-insensitively, without resolving the receiver to an Actor.",
+          "description": "Repeated Actor.SetOutfit() calls",
           "type": "boolean",
           "default": true
         },
         "place_at_me": {
-          "description": "Flags PlaceAtMe/PlaceActorAtMe calls whose returned reference is not stored, and PlaceAtMe calls that create multiple objects at once, because either pattern prevents reliable cleanup of every created object.",
+          "description": "Unsafe ObjectReference.PlaceAtMe() calls",
           "type": "boolean",
           "default": true
         },
         "missing_doc_comment": {
-          "description": "Flags a ScriptName, Property, or Function/Event declaration with no {...} documentation comment on the line right after it. Disabled by default.",
+          "description": "Missing documentation comment",
           "type": "boolean",
           "default": false
         },
         "invalid_random_range": {
-          "description": "Flags, as an error, a Utility.RandomInt/RandomFloat call whose first argument isn't smaller than its second, since that never produces any actual randomness.",
+          "description": "Invalid random range",
           "type": "boolean",
           "default": true
         },
         "float_equality": {
-          "description": "Flags a direct == or != between two floats, since rounding error can make them compare unequal even when conceptually the same. Disabled by default.",
+          "description": "Float equality comparison",
           "type": "boolean",
           "default": false
         },
         "missing_update_handler": {
-          "description": "Flags, as a warning, a RegisterForUpdate/RegisterForSingleUpdate/RegisterForUpdateGameTime/RegisterForSingleUpdateGameTime call with no matching OnUpdate/OnUpdateGameTime Event declared anywhere in the script, since the registration then has no effect. Disabled by default, since a matching Event declared on a script it Extends would otherwise be misreported as missing.",
+          "description": "Missing update event handler",
           "type": "boolean",
           "default": false
         },
         "unused_import": {
-          "description": "Flags an Import statement whose script never has one of its Global functions called unqualified anywhere in this script. Only checked (and fixed) with project context.",
+          "description": "Unused import",
           "type": "boolean",
           "default": true
         },
         "event_signature_mismatch": {
-          "description": "Flags, as a warning, an Event declaration whose name matches one of the engine's own native events but whose parameter count/types don't match the signature it's actually called with, since a mismatched declaration still compiles but the engine then never invokes it correctly. Disabled by default, since the known-event list is a curated subset and matches by name alone.",
+          "description": "Event signature mismatch",
           "type": "boolean",
           "default": false
         },
         "circular_dependency": {
-          "description": "Flags a Property whose declared type, followed through that script's own Property declarations, eventually leads back to the script being linted (e.g. script A declaring a B Property while script B declares an A Property). A property typed as its own script isn't flagged. Disabled by default, since two scripts intentionally referencing each other for two-way communication is a common, legitimate design.",
+          "description": "Circular script dependency",
           "type": "boolean",
           "default": false
         },
         "undefined_event": {
-          "description": "Warns about event handlers whose names are not defined anywhere in the script's ancestry, excluding engine-handled scripts and remote events.",
+          "description": "Undefined event",
+          "type": "boolean",
+          "default": true
+        },
+        "boolean_simplification": {
+          "description": "Boolean simplification",
+          "type": "boolean",
+          "default": true
+        },
+        "redundant_condition": {
+          "description": "Redundant condition",
           "type": "boolean",
           "default": true
         }
