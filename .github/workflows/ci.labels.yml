@@ -1,8 +1,6 @@
 name: CI / Labels
 
 on:
-  push:
-    branches: [the-one]
   pull_request:
     types: [opened, synchronize, reopened, labeled, unlabeled]
 
@@ -19,7 +17,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Require component and type labels
-        if: github.event_name == 'pull_request'
         uses: actions/github-script@v9
         with:
           script: |
