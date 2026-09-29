@@ -1,0 +1,16 @@
+{
+  "id": "utf8-bom",
+  "name": "UTF-8 BOM",
+  "category": "Formatting",
+  "visitor": "none",
+  "tags": [
+    "style"
+  ],
+  "severity": "warning",
+  "importance": "low",
+  "kept_in_standard": true,
+  "fixable": true,
+  "repair_order": 26,
+  "description": "Requires, allows, or forbids a leading UTF-8 BOM.",
+  "definition": "Requires, as a `[warning]`, a leading UTF-8 BOM (`EF BB BF` / U+FEFF) to match `utf8_bom_mode`: `forbidden` flags a BOM, `required` flags a missing BOM, `allowed` never flags. Finding is at line 1. Automatically fixable: the fix strips or inserts the BOM."
+}
