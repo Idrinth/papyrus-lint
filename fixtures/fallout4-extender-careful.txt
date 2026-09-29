@@ -1,164 +1,163 @@
-Scripts/Source/F4SE/Actor.psc:21:2: [empty-body] [warning] Empty Else body; this looks like an oversight rather than something intentional (https://papyrus-lint.idrinth.de/rules.html#rule-empty-body)
-Scripts/Source/F4SE/Actor.psc:28:35: [slow-functions] [info] GlobalVariable.GetValueInt is slower than necessary; use `GetValue() As Int` instead (https://papyrus-lint.idrinth.de/rules.html#rule-slow-functions)
-Scripts/Source/F4SE/Actor.psc:35:31: [forbidden-functions] [error] Game.GetPlayer: A call to this function leads to significant performance drops and is likely easier handled with an `Actor Property PlayerRef Auto` addition without any drawbacks (https://papyrus-lint.idrinth.de/rules.html#rule-forbidden-functions)
-Scripts/Source/F4SE/Actor.psc:37:29: [forbidden-functions] [error] Game.GetPlayer: A call to this function leads to significant performance drops and is likely easier handled with an `Actor Property PlayerRef Auto` addition without any drawbacks (https://papyrus-lint.idrinth.de/rules.html#rule-forbidden-functions)
-Scripts/Source/F4SE/Actor.psc:38:3: [empty-body] [warning] Empty Else body; this looks like an oversight rather than something intentional (https://papyrus-lint.idrinth.de/rules.html#rule-empty-body)
-Scripts/Source/F4SE/Actor.psc:41:2: [empty-body] [warning] Empty Else body; this looks like an oversight rather than something intentional (https://papyrus-lint.idrinth.de/rules.html#rule-empty-body)
-Scripts/Source/F4SE/Actor.psc:128:35: [forbidden-functions] [warning] Game.GetFormFromFile: Resolving a form by file name and FormID is comparatively expensive and does not change at runtime; resolve it once and store it in a Property or cached variable instead of calling this repeatedly (https://papyrus-lint.idrinth.de/rules.html#rule-forbidden-functions)
-Scripts/Source/F4SE/Actor.psc:130:1: [unchecked-cast] [warning] 'Followers' holds an unchecked cast result and may be None here; accessing '.FollowerWait' on it will crash the script (https://papyrus-lint.idrinth.de/rules.html#rule-unchecked-cast)
-Scripts/Source/F4SE/Actor.psc:134:35: [forbidden-functions] [warning] Game.GetFormFromFile: Resolving a form by file name and FormID is comparatively expensive and does not change at runtime; resolve it once and store it in a Property or cached variable instead of calling this repeatedly (https://papyrus-lint.idrinth.de/rules.html#rule-forbidden-functions)
-Scripts/Source/F4SE/Actor.psc:136:1: [unchecked-cast] [warning] 'Followers' holds an unchecked cast result and may be None here; accessing '.FollowerFollow' on it will crash the script (https://papyrus-lint.idrinth.de/rules.html#rule-unchecked-cast)
-Scripts/Source/F4SE/Actor.psc:140:35: [forbidden-functions] [warning] Game.GetFormFromFile: Resolving a form by file name and FormID is comparatively expensive and does not change at runtime; resolve it once and store it in a Property or cached variable instead of calling this repeatedly (https://papyrus-lint.idrinth.de/rules.html#rule-forbidden-functions)
-Scripts/Source/F4SE/Actor.psc:142:1: [unchecked-cast] [warning] 'Followers' holds an unchecked cast result and may be None here; accessing '.FollowerSetDistanceNear' on it will crash the script (https://papyrus-lint.idrinth.de/rules.html#rule-unchecked-cast)
-Scripts/Source/F4SE/Actor.psc:146:35: [forbidden-functions] [warning] Game.GetFormFromFile: Resolving a form by file name and FormID is comparatively expensive and does not change at runtime; resolve it once and store it in a Property or cached variable instead of calling this repeatedly (https://papyrus-lint.idrinth.de/rules.html#rule-forbidden-functions)
-Scripts/Source/F4SE/Actor.psc:148:1: [unchecked-cast] [warning] 'Followers' holds an unchecked cast result and may be None here; accessing '.FollowerSetDistanceMedium' on it will crash the script (https://papyrus-lint.idrinth.de/rules.html#rule-unchecked-cast)
-Scripts/Source/F4SE/Actor.psc:152:35: [forbidden-functions] [warning] Game.GetFormFromFile: Resolving a form by file name and FormID is comparatively expensive and does not change at runtime; resolve it once and store it in a Property or cached variable instead of calling this repeatedly (https://papyrus-lint.idrinth.de/rules.html#rule-forbidden-functions)
-Scripts/Source/F4SE/Actor.psc:154:1: [unchecked-cast] [warning] 'Followers' holds an unchecked cast result and may be None here; accessing '.FollowerSetDistanceFar' on it will crash the script (https://papyrus-lint.idrinth.de/rules.html#rule-unchecked-cast)
-Scripts/Source/F4SE/Actor.psc:393:22: [forbidden-functions] [warning] Game.GetFormFromFile: Resolving a form by file name and FormID is comparatively expensive and does not change at runtime; resolve it once and store it in a Property or cached variable instead of calling this repeatedly (https://papyrus-lint.idrinth.de/rules.html#rule-forbidden-functions)
-Scripts/Source/F4SE/Actor.psc:496:121: [line-length] [warning] Line is 138 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/Actor.psc:612:121: [line-length] [warning] Line is 154 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/Actor.psc:615:121: [line-length] [warning] Line is 140 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/Actor.psc:630:35: [forbidden-functions] [warning] Game.GetFormFromFile: Resolving a form by file name and FormID is comparatively expensive and does not change at runtime; resolve it once and store it in a Property or cached variable instead of calling this repeatedly (https://papyrus-lint.idrinth.de/rules.html#rule-forbidden-functions)
-Scripts/Source/F4SE/Actor.psc:632:1: [unchecked-cast] [warning] 'Followers' holds an unchecked cast result and may be None here; accessing '.SetCompanion' on it will crash the script (https://papyrus-lint.idrinth.de/rules.html#rule-unchecked-cast)
-Scripts/Source/F4SE/Actor.psc:637:35: [forbidden-functions] [warning] Game.GetFormFromFile: Resolving a form by file name and FormID is comparatively expensive and does not change at runtime; resolve it once and store it in a Property or cached variable instead of calling this repeatedly (https://papyrus-lint.idrinth.de/rules.html#rule-forbidden-functions)
-Scripts/Source/F4SE/Actor.psc:639:1: [unchecked-cast] [warning] 'Followers' holds an unchecked cast result and may be None here; accessing '.SetAvailableToBeCompanion' on it will crash the script (https://papyrus-lint.idrinth.de/rules.html#rule-unchecked-cast)
-Scripts/Source/F4SE/Actor.psc:643:35: [forbidden-functions] [warning] Game.GetFormFromFile: Resolving a form by file name and FormID is comparatively expensive and does not change at runtime; resolve it once and store it in a Property or cached variable instead of calling this repeatedly (https://papyrus-lint.idrinth.de/rules.html#rule-forbidden-functions)
-Scripts/Source/F4SE/Actor.psc:645:1: [unchecked-cast] [warning] 'Followers' holds an unchecked cast result and may be None here; accessing '.DisallowCompanion' on it will crash the script (https://papyrus-lint.idrinth.de/rules.html#rule-unchecked-cast)
-Scripts/Source/F4SE/Actor.psc:650:35: [forbidden-functions] [warning] Game.GetFormFromFile: Resolving a form by file name and FormID is comparatively expensive and does not change at runtime; resolve it once and store it in a Property or cached variable instead of calling this repeatedly (https://papyrus-lint.idrinth.de/rules.html#rule-forbidden-functions)
-Scripts/Source/F4SE/Actor.psc:652:1: [unchecked-cast] [warning] 'Followers' holds an unchecked cast result and may be None here; accessing '.AllowCompanion' on it will crash the script (https://papyrus-lint.idrinth.de/rules.html#rule-unchecked-cast)
-Scripts/Source/F4SE/Actor.psc:756:121: [line-length] [warning] Line is 126 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/Actor.psc:971:121: [line-length] [warning] Line is 152 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/Actor.psc:1062:121: [line-length] [warning] Line is 142 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/Actor.psc:1078:121: [line-length] [warning] Line is 143 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/EncounterZone.psc:4:121: [line-length] [warning] Line is 175 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/EncounterZone.psc:10:121: [line-length] [warning] Line is 175 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/Game.psc:25:121: [line-length] [warning] Line is 142 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/Game.psc:31:121: [line-length] [warning] Line is 133 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/Game.psc:34:121: [line-length] [warning] Line is 132 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/Game.psc:37:121: [line-length] [warning] Line is 147 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/Game.psc:40:121: [line-length] [warning] Line is 146 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/Game.psc:43:121: [line-length] [warning] Line is 126 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/Game.psc:48:121: [line-length] [warning] Line is 125 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/Game.psc:53:121: [line-length] [warning] Line is 140 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/Game.psc:58:121: [line-length] [warning] Line is 139 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/Game.psc:78:121: [line-length] [warning] Line is 139 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/Game.psc:79:121: [line-length] [warning] Line is 121 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/Game.psc:112:14: [forbidden-functions] [warning] Game.GetFormFromFile: Resolving a form by file name and FormID is comparatively expensive and does not change at runtime; resolve it once and store it in a Property or cached variable instead of calling this repeatedly (https://papyrus-lint.idrinth.de/rules.html#rule-forbidden-functions)
-Scripts/Source/F4SE/Game.psc:166:1: [unchecked-cast] [warning] cast to 'ActorBase' may be None; accessing '.GetLevelExact' on it without a None check first will crash the script (https://papyrus-lint.idrinth.de/rules.html#rule-unchecked-cast)
-Scripts/Source/F4SE/Game.psc:293:121: [line-length] [warning] Line is 123 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/Game.psc:330:121: [line-length] [warning] Line is 124 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/Game.psc:342:121: [line-length] [warning] Line is 207 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/Location.psc:40:121: [line-length] [warning] Line is 263 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:12:1: [numeric-comparison] [warning] Comparison between Int and Float without an explicit cast; floating-point precision may make this inexact (https://papyrus-lint.idrinth.de/rules.html#rule-numeric-comparison)
-Scripts/Source/F4SE/ObjectReference.psc:12:2: [empty-body] [warning] Empty If/ElseIf body; this looks like an oversight rather than something intentional (https://papyrus-lint.idrinth.de/rules.html#rule-empty-body)
-Scripts/Source/F4SE/ObjectReference.psc:13:121: [line-length] [warning] Line is 128 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:16:26: [forbidden-functions] [error] Game.GetPlayer: A call to this function leads to significant performance drops and is likely easier handled with an `Actor Property PlayerRef Auto` addition without any drawbacks (https://papyrus-lint.idrinth.de/rules.html#rule-forbidden-functions)
-Scripts/Source/F4SE/ObjectReference.psc:26:1: [numeric-comparison] [warning] Comparison between Int and Float without an explicit cast; floating-point precision may make this inexact (https://papyrus-lint.idrinth.de/rules.html#rule-numeric-comparison)
-Scripts/Source/F4SE/ObjectReference.psc:32:25: [forbidden-functions] [error] Game.GetPlayer: A call to this function leads to significant performance drops and is likely easier handled with an `Actor Property PlayerRef Auto` addition without any drawbacks (https://papyrus-lint.idrinth.de/rules.html#rule-forbidden-functions)
-Scripts/Source/F4SE/ObjectReference.psc:43:22: [forbidden-functions] [error] Game.GetPlayer: A call to this function leads to significant performance drops and is likely easier handled with an `Actor Property PlayerRef Auto` addition without any drawbacks (https://papyrus-lint.idrinth.de/rules.html#rule-forbidden-functions)
-Scripts/Source/F4SE/ObjectReference.psc:78:121: [line-length] [warning] Line is 125 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:79:121: [line-length] [warning] Line is 167 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:105:10: [forbidden-functions] [warning] ObjectReference.GetLinkedRef: Calling GetLinkedRef without a keyword filter walks every linked reference on the base object; pass the specific keyword you need or cache the result instead of calling it repeatedly (https://papyrus-lint.idrinth.de/rules.html#rule-forbidden-functions)
-Scripts/Source/F4SE/ObjectReference.psc:110:29: [forbidden-functions] [warning] ObjectReference.GetLinkedRef: Calling GetLinkedRef without a keyword filter walks every linked reference on the base object; pass the specific keyword you need or cache the result instead of calling it repeatedly (https://papyrus-lint.idrinth.de/rules.html#rule-forbidden-functions)
-Scripts/Source/F4SE/ObjectReference.psc:113:11: [forbidden-functions] [warning] ObjectReference.GetLinkedRef: Calling GetLinkedRef without a keyword filter walks every linked reference on the base object; pass the specific keyword you need or cache the result instead of calling it repeatedly (https://papyrus-lint.idrinth.de/rules.html#rule-forbidden-functions)
-Scripts/Source/F4SE/ObjectReference.psc:116:20: [forbidden-functions] [warning] ObjectReference.GetLinkedRef: Calling GetLinkedRef without a keyword filter walks every linked reference on the base object; pass the specific keyword you need or cache the result instead of calling it repeatedly (https://papyrus-lint.idrinth.de/rules.html#rule-forbidden-functions)
-Scripts/Source/F4SE/ObjectReference.psc:119:31: [forbidden-functions] [warning] ObjectReference.GetLinkedRef: Calling GetLinkedRef without a keyword filter walks every linked reference on the base object; pass the specific keyword you need or cache the result instead of calling it repeatedly (https://papyrus-lint.idrinth.de/rules.html#rule-forbidden-functions)
-Scripts/Source/F4SE/ObjectReference.psc:135:10: [forbidden-functions] [error] ObjectReference.MoveToWhenUnloaded: MoveToWhenUnloaded is marked DEPRECATED and must not be used; it busy-waits with Utility.Wait until both locations unload and can stall quest stage fragments. Call MoveTo() (or MoveToIfUnloaded() when the caller is already unloaded) instead (https://papyrus-lint.idrinth.de/rules.html#rule-forbidden-functions)
-Scripts/Source/F4SE/ObjectReference.psc:135:121: [line-length] [warning] Line is 122 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:136:121: [line-length] [warning] Line is 151 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:139:121: [line-length] [warning] Line is 344 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:140:11: [forbidden-functions] [warning] Utility.Wait: Waiting inside a script that is called often can lead to significant numbers of waiting executions. If your code is likely to be called often it might be worthwhile to look at StartTimer/OnTimer for example (https://papyrus-lint.idrinth.de/rules.html#rule-forbidden-functions)
-Scripts/Source/F4SE/ObjectReference.psc:140:121: [line-length] [warning] Line is 257 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:150:121: [line-length] [warning] Line is 322 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:151:11: [forbidden-functions] [warning] Utility.Wait: Waiting inside a script that is called often can lead to significant numbers of waiting executions. If your code is likely to be called often it might be worthwhile to look at StartTimer/OnTimer for example (https://papyrus-lint.idrinth.de/rules.html#rule-forbidden-functions)
-Scripts/Source/F4SE/ObjectReference.psc:151:121: [line-length] [warning] Line is 257 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:160:121: [line-length] [warning] Line is 213 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:197:121: [line-length] [warning] Line is 162 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:215:121: [line-length] [warning] Line is 141 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:266:121: [line-length] [warning] Line is 144 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:267:121: [line-length] [warning] Line is 129 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:270:121: [line-length] [warning] Line is 168 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:276:121: [line-length] [warning] Line is 142 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:277:121: [line-length] [warning] Line is 127 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:347:121: [line-length] [warning] Line is 144 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:383:121: [line-length] [warning] Line is 123 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:425:26: [forbidden-functions] [warning] ObjectReference.GetLinkedRef: Calling GetLinkedRef without a keyword filter walks every linked reference on the base object; pass the specific keyword you need or cache the result instead of calling it repeatedly (https://papyrus-lint.idrinth.de/rules.html#rule-forbidden-functions)
-Scripts/Source/F4SE/ObjectReference.psc:476:121: [line-length] [warning] Line is 131 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:481:121: [line-length] [warning] Line is 142 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:491:121: [line-length] [warning] Line is 180 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:540:1: [argument-naming] [warning] Parameter 1 of 'HasKeyword' is named 'apKeyword' but the inherited declaration on 'Form' names it 'akKeyword' (https://papyrus-lint.idrinth.de/rules.html#rule-argument-naming)
-Scripts/Source/F4SE/ObjectReference.psc:557:121: [line-length] [warning] Line is 179 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:644:121: [line-length] [warning] Line is 132 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:648:121: [line-length] [warning] Line is 131 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:650:121: [line-length] [warning] Line is 156 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:653:121: [line-length] [warning] Line is 151 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:659:121: [line-length] [warning] Line is 146 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:667:121: [line-length] [warning] Line is 153 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:670:121: [line-length] [warning] Line is 133 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:672:121: [line-length] [warning] Line is 132 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:674:121: [line-length] [warning] Line is 133 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:676:121: [line-length] [warning] Line is 399 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:678:121: [line-length] [warning] Line is 143 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:680:121: [line-length] [warning] Line is 386 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:682:121: [line-length] [warning] Line is 142 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:683:121: [line-length] [warning] Line is 171 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:693:121: [line-length] [warning] Line is 160 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:694:121: [line-length] [warning] Line is 215 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:706:121: [line-length] [warning] Line is 263 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:712:121: [line-length] [warning] Line is 149 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:727:121: [line-length] [warning] Line is 205 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:738:121: [line-length] [warning] Line is 125 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:742:121: [line-length] [warning] Line is 128 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:745:121: [line-length] [warning] Line is 144 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:750:121: [line-length] [warning] Line is 132 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:753:121: [line-length] [warning] Line is 151 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:763:121: [line-length] [warning] Line is 162 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:787:121: [line-length] [warning] Line is 138 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:791:121: [line-length] [warning] Line is 148 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:801:121: [line-length] [warning] Line is 153 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:816:9: [forbidden-functions] [warning] Debug.TraceStack: TraceStack walks and prints the full script call stack, which is a heavy diagnostic operation; only use it temporarily while debugging and remove it before shipping (https://papyrus-lint.idrinth.de/rules.html#rule-forbidden-functions)
-Scripts/Source/F4SE/ObjectReference.psc:821:22: [forbidden-functions] [warning] Game.GetFormFromFile: Resolving a form by file name and FormID is comparatively expensive and does not change at runtime; resolve it once and store it in a Property or cached variable instead of calling this repeatedly (https://papyrus-lint.idrinth.de/rules.html#rule-forbidden-functions)
-Scripts/Source/F4SE/ObjectReference.psc:940:121: [line-length] [warning] Line is 155 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:943:121: [line-length] [warning] Line is 187 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:946:121: [line-length] [warning] Line is 158 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:959:121: [line-length] [warning] Line is 143 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:963:121: [line-length] [warning] Line is 128 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:964:121: [line-length] [warning] Line is 169 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:973:121: [line-length] [warning] Line is 126 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:977:121: [line-length] [warning] Line is 121 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:983:121: [line-length] [warning] Line is 138 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:1040:121: [line-length] [warning] Line is 126 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:1045:121: [line-length] [warning] Line is 125 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:1098:121: [line-length] [warning] Line is 149 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:1111:121: [line-length] [warning] Line is 132 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:1174:121: [line-length] [warning] Line is 143 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ObjectReference.psc:1190:2: [strict-boolean] [warning] Condition must be a boolean value or expression, found 'ObjectReference' (https://papyrus-lint.idrinth.de/rules.html#rule-strict-boolean)
-Scripts/Source/F4SE/ScriptObject.psc:4:121: [line-length] [warning] Line is 142 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ScriptObject.psc:77:121: [line-length] [warning] Line is 144 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ScriptObject.psc:81:121: [line-length] [warning] Line is 144 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ScriptObject.psc:83:121: [line-length] [warning] Line is 124 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ScriptObject.psc:84:121: [line-length] [warning] Line is 128 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ScriptObject.psc:87:121: [line-length] [warning] Line is 125 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ScriptObject.psc:88:121: [line-length] [warning] Line is 128 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ScriptObject.psc:91:121: [line-length] [warning] Line is 130 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ScriptObject.psc:92:121: [line-length] [warning] Line is 124 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ScriptObject.psc:97:121: [line-length] [warning] Line is 152 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ScriptObject.psc:98:121: [line-length] [warning] Line is 123 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ScriptObject.psc:100:121: [line-length] [warning] Line is 126 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ScriptObject.psc:101:121: [line-length] [warning] Line is 124 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ScriptObject.psc:106:121: [line-length] [warning] Line is 156 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ScriptObject.psc:179:121: [line-length] [warning] Line is 124 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ScriptObject.psc:213:121: [line-length] [warning] Line is 154 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ScriptObject.psc:214:121: [line-length] [warning] Line is 123 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ScriptObject.psc:220:121: [line-length] [warning] Line is 158 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/ScriptObject.psc:282:121: [line-length] [warning] Line is 148 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/UI.psc:56:121: [line-length] [warning] Line is 133 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/UI.psc:64:121: [line-length] [warning] Line is 126 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/UI.psc:66:121: [line-length] [warning] Line is 147 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/UI.psc:70:121: [line-length] [warning] Line is 127 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/UI.psc:75:121: [line-length] [warning] Line is 240 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/UI.psc:91:121: [line-length] [warning] Line is 215 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/UI.psc:97:121: [line-length] [warning] Line is 232 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/Utility.psc:62:121: [line-length] [warning] Line is 157 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-Scripts/Source/F4SE/Utility.psc:76:121: [line-length] [warning] Line is 138 characters long (maximum is 120) (https://papyrus-lint.idrinth.de/rules.html#rule-line-length)
-PapyrusLinterCLI: 163 problem(s) found in 8 of 29 script(s).
+Scripts/Source/F4SE/Actor.psc:21:2:empty-body
+Scripts/Source/F4SE/Actor.psc:28:35:slow-functions
+Scripts/Source/F4SE/Actor.psc:35:31:forbidden-functions
+Scripts/Source/F4SE/Actor.psc:37:29:forbidden-functions
+Scripts/Source/F4SE/Actor.psc:38:3:empty-body
+Scripts/Source/F4SE/Actor.psc:41:2:empty-body
+Scripts/Source/F4SE/Actor.psc:128:35:forbidden-functions
+Scripts/Source/F4SE/Actor.psc:130:1:unchecked-cast
+Scripts/Source/F4SE/Actor.psc:134:35:forbidden-functions
+Scripts/Source/F4SE/Actor.psc:136:1:unchecked-cast
+Scripts/Source/F4SE/Actor.psc:140:35:forbidden-functions
+Scripts/Source/F4SE/Actor.psc:142:1:unchecked-cast
+Scripts/Source/F4SE/Actor.psc:146:35:forbidden-functions
+Scripts/Source/F4SE/Actor.psc:148:1:unchecked-cast
+Scripts/Source/F4SE/Actor.psc:152:35:forbidden-functions
+Scripts/Source/F4SE/Actor.psc:154:1:unchecked-cast
+Scripts/Source/F4SE/Actor.psc:393:22:forbidden-functions
+Scripts/Source/F4SE/Actor.psc:496:121:line-length
+Scripts/Source/F4SE/Actor.psc:612:121:line-length
+Scripts/Source/F4SE/Actor.psc:615:121:line-length
+Scripts/Source/F4SE/Actor.psc:630:35:forbidden-functions
+Scripts/Source/F4SE/Actor.psc:632:1:unchecked-cast
+Scripts/Source/F4SE/Actor.psc:637:35:forbidden-functions
+Scripts/Source/F4SE/Actor.psc:639:1:unchecked-cast
+Scripts/Source/F4SE/Actor.psc:643:35:forbidden-functions
+Scripts/Source/F4SE/Actor.psc:645:1:unchecked-cast
+Scripts/Source/F4SE/Actor.psc:650:35:forbidden-functions
+Scripts/Source/F4SE/Actor.psc:652:1:unchecked-cast
+Scripts/Source/F4SE/Actor.psc:756:121:line-length
+Scripts/Source/F4SE/Actor.psc:971:121:line-length
+Scripts/Source/F4SE/Actor.psc:1062:121:line-length
+Scripts/Source/F4SE/Actor.psc:1078:121:line-length
+Scripts/Source/F4SE/EncounterZone.psc:4:121:line-length
+Scripts/Source/F4SE/EncounterZone.psc:10:121:line-length
+Scripts/Source/F4SE/Game.psc:25:121:line-length
+Scripts/Source/F4SE/Game.psc:31:121:line-length
+Scripts/Source/F4SE/Game.psc:34:121:line-length
+Scripts/Source/F4SE/Game.psc:37:121:line-length
+Scripts/Source/F4SE/Game.psc:40:121:line-length
+Scripts/Source/F4SE/Game.psc:43:121:line-length
+Scripts/Source/F4SE/Game.psc:48:121:line-length
+Scripts/Source/F4SE/Game.psc:53:121:line-length
+Scripts/Source/F4SE/Game.psc:58:121:line-length
+Scripts/Source/F4SE/Game.psc:78:121:line-length
+Scripts/Source/F4SE/Game.psc:79:121:line-length
+Scripts/Source/F4SE/Game.psc:112:14:forbidden-functions
+Scripts/Source/F4SE/Game.psc:166:1:unchecked-cast
+Scripts/Source/F4SE/Game.psc:293:121:line-length
+Scripts/Source/F4SE/Game.psc:330:121:line-length
+Scripts/Source/F4SE/Game.psc:342:121:line-length
+Scripts/Source/F4SE/Location.psc:40:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:12:1:numeric-comparison
+Scripts/Source/F4SE/ObjectReference.psc:12:2:empty-body
+Scripts/Source/F4SE/ObjectReference.psc:13:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:16:26:forbidden-functions
+Scripts/Source/F4SE/ObjectReference.psc:26:1:numeric-comparison
+Scripts/Source/F4SE/ObjectReference.psc:32:25:forbidden-functions
+Scripts/Source/F4SE/ObjectReference.psc:43:22:forbidden-functions
+Scripts/Source/F4SE/ObjectReference.psc:78:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:79:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:105:10:forbidden-functions
+Scripts/Source/F4SE/ObjectReference.psc:110:29:forbidden-functions
+Scripts/Source/F4SE/ObjectReference.psc:113:11:forbidden-functions
+Scripts/Source/F4SE/ObjectReference.psc:116:20:forbidden-functions
+Scripts/Source/F4SE/ObjectReference.psc:119:31:forbidden-functions
+Scripts/Source/F4SE/ObjectReference.psc:135:10:forbidden-functions
+Scripts/Source/F4SE/ObjectReference.psc:135:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:136:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:139:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:140:11:forbidden-functions
+Scripts/Source/F4SE/ObjectReference.psc:140:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:150:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:151:11:forbidden-functions
+Scripts/Source/F4SE/ObjectReference.psc:151:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:160:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:197:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:215:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:266:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:267:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:270:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:276:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:277:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:347:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:383:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:425:26:forbidden-functions
+Scripts/Source/F4SE/ObjectReference.psc:476:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:481:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:491:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:540:1:argument-naming
+Scripts/Source/F4SE/ObjectReference.psc:557:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:644:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:648:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:650:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:653:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:659:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:667:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:670:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:672:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:674:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:676:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:678:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:680:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:682:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:683:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:693:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:694:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:706:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:712:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:727:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:738:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:742:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:745:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:750:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:753:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:763:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:787:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:791:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:801:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:816:9:forbidden-functions
+Scripts/Source/F4SE/ObjectReference.psc:821:22:forbidden-functions
+Scripts/Source/F4SE/ObjectReference.psc:940:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:943:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:946:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:959:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:963:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:964:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:973:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:977:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:983:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:1040:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:1045:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:1098:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:1111:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:1174:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:1190:2:strict-boolean
+Scripts/Source/F4SE/ScriptObject.psc:4:121:line-length
+Scripts/Source/F4SE/ScriptObject.psc:77:121:line-length
+Scripts/Source/F4SE/ScriptObject.psc:81:121:line-length
+Scripts/Source/F4SE/ScriptObject.psc:83:121:line-length
+Scripts/Source/F4SE/ScriptObject.psc:84:121:line-length
+Scripts/Source/F4SE/ScriptObject.psc:87:121:line-length
+Scripts/Source/F4SE/ScriptObject.psc:88:121:line-length
+Scripts/Source/F4SE/ScriptObject.psc:91:121:line-length
+Scripts/Source/F4SE/ScriptObject.psc:92:121:line-length
+Scripts/Source/F4SE/ScriptObject.psc:97:121:line-length
+Scripts/Source/F4SE/ScriptObject.psc:98:121:line-length
+Scripts/Source/F4SE/ScriptObject.psc:100:121:line-length
+Scripts/Source/F4SE/ScriptObject.psc:101:121:line-length
+Scripts/Source/F4SE/ScriptObject.psc:106:121:line-length
+Scripts/Source/F4SE/ScriptObject.psc:179:121:line-length
+Scripts/Source/F4SE/ScriptObject.psc:213:121:line-length
+Scripts/Source/F4SE/ScriptObject.psc:214:121:line-length
+Scripts/Source/F4SE/ScriptObject.psc:220:121:line-length
+Scripts/Source/F4SE/ScriptObject.psc:282:121:line-length
+Scripts/Source/F4SE/UI.psc:56:121:line-length
+Scripts/Source/F4SE/UI.psc:64:121:line-length
+Scripts/Source/F4SE/UI.psc:66:121:line-length
+Scripts/Source/F4SE/UI.psc:70:121:line-length
+Scripts/Source/F4SE/UI.psc:75:121:line-length
+Scripts/Source/F4SE/UI.psc:91:121:line-length
+Scripts/Source/F4SE/UI.psc:97:121:line-length
+Scripts/Source/F4SE/Utility.psc:62:121:line-length
+Scripts/Source/F4SE/Utility.psc:76:121:line-length
