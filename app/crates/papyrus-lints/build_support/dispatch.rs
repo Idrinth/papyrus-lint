@@ -212,6 +212,7 @@ fn games_slice(games: &[String]) -> String {
         .iter()
         .map(|game| match game.as_str() {
             "skyrim" => "crate::Game::Skyrim".to_string(),
+            "legacy" => "crate::Game::Legacy".to_string(),
             "fallout4" => "crate::Game::Fallout4".to_string(),
             "starfield" => "crate::Game::Starfield".to_string(),
             other => panic!("shared/rules.json: unknown game `{other}`"),

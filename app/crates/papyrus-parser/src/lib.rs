@@ -74,6 +74,19 @@ pub fn parse_with_mode(
     Ok(parser::Parser::new_with_mode(tokens, mode).parse_script()?)
 }
 
+/// Parses `game`'s Papyrus dialect. [`papyrus_lint_globals::Game::Legacy`]
+/// uses Skyrim's dialect (and the memoized [`parse`] path). Fallout 4 and
+/// Starfield use [`parse_with_mode`].
+pub fn parse_for_game(
+    source: &str,
+    game: papyrus_lint_globals::Game,
+) -> Result<ast::Script, PapyrusError> {
+    match parser::GameEdition::from(game) {
+        parser::GameEdition::Skyrim => parse(source),
+        mode => parse_with_mode(source, mode),
+    }
+}
+
 /// Lexes Papyrus source text into tokens, the same as
 /// [`lexer::Lexer::new(source).tokenize()`](lexer::Lexer::tokenize).
 /// Memoized against the most recently seen `source` -- see [`cache`] --

@@ -2,6 +2,7 @@ use super::BuildContext;
 use serde::Deserialize;
 use std::collections::{HashMap, HashSet};
 use std::fmt;
+use std::str::FromStr;
 
 #[derive(Debug, Deserialize)]
 pub struct RuleMetadata {
@@ -20,8 +21,9 @@ pub struct RuleMetadata {
     #[serde(default = "enabled_by_default")]
     pub enabled_by_default: bool,
     /// Optional allow-list of `Game::as_str()` values this rule runs for.
-    /// Empty (the default when the field is omitted) means every game —
-    /// matching `papyrus_lint_globals::Game::{Skyrim,Fallout4,Starfield}`.
+    /// Empty (the default when the field is omitted) means every game.
+    /// [`papyrus_lint_globals::Game::Legacy`] also matches rules listed for
+    /// `skyrim` at runtime.
     #[serde(default)]
     pub games: Vec<String>,
 }
@@ -104,9 +106,9 @@ pub fn validate(rules: &[RuleMetadata]) -> Result<(), ValidationError> {
             ));
         }
         for game in &rule.games {
-            if !matches!(game.as_str(), "skyrim" | "fallout4" | "starfield") {
+            if papyrus_lint_globals::Game::from_str(game).is_err() {
                 return fail(format!(
-                    "shared/rules.json: unknown game `{game}` for {} (expected skyrim, fallout4, or starfield)",
+                    "shared/rules.json: unknown game `{game}` for {} (expected skyrim, legacy, fallout4, or starfield)",
                     rule.id
                 ));
             }

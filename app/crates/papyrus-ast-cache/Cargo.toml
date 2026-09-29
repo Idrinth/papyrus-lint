@@ -16,6 +16,7 @@ papyrus-lint-globals = { path = "../papyrus-lint-globals" }
 
 [build-dependencies]
 papyrus-parser = { path = "../papyrus-parser" }
+papyrus-lint-globals = { path = "../papyrus-lint-globals" }
 serde = { version = "1", features = ["derive"] }
 serde_norway = "0.9"
 md5 = "0.7"

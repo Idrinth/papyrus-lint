@@ -16,7 +16,7 @@ use std::path::Path;
 
 use papyrus_lint_globals::Game;
 
-pub const GAMES: &[Game] = &[Game::Skyrim, Game::Fallout4, Game::Starfield];
+pub const GAMES: &[Game] = &Game::ALL;
 
 /// Forms whose event declarations win when the same event name appears on
 /// more than one script in a single game archive. Lower index is walked
@@ -64,19 +64,11 @@ struct ScriptHeader {
 }
 
 fn base_archive(game: Game) -> &'static str {
-    match game {
-        Game::Fallout4 => "fallout4-scripts.zip",
-        Game::Skyrim => "skyrim-scripts.zip",
-        Game::Starfield => "starfield-scripts.zip",
-    }
+    game.base_scripts_archive()
 }
 
 fn extender_archive(game: Game) -> &'static str {
-    match game {
-        Game::Fallout4 => "fallout4-extender-scripts.zip",
-        Game::Skyrim => "skyrim-extender-scripts.zip",
-        Game::Starfield => "starfield-extender-scripts.zip",
-    }
+    game.extender_scripts_archive()
 }
 
 /// Lowercased singleton script names (`Game`, `Utility`, F4SE `UI`, …)

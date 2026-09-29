@@ -27,8 +27,10 @@ file is git-ignored (like the default YAML); Pages and CI jobs produce it before
 publishing or testing the site.
 
 Papyrus Lint supports `skyrim` (Skyrim Special Edition/Anniversary Edition),
-`fallout4`, and `starfield`. Skyrim is the default for configurations that omit
-`game`. The desktop app's new-project picker offers all three games.
+`legacy` (Skyrim Legendary Edition — same Papyrus dialect and lint rules as
+`skyrim`, different Creation Kit / SKSE base scripts), `fallout4`, and
+`starfield`. Skyrim SE/AE is the default for configurations that omit
+`game`. The desktop app's new-project picker offers all four targets.
 
 ## Suppressing one diagnostic
 
@@ -72,7 +74,7 @@ The name cannot be blank or one of the built-in names (`strict`, `standard`,
 passed.
 
 - `game`: the game whose Papyrus dialect and runtime APIs the project
-  targets. Accepts `skyrim`, `fallout4`, or `starfield`; omitted keys
+  targets. Accepts `skyrim`, `legacy`, `fallout4`, or `starfield`; omitted keys
   default to `skyrim` for compatibility with existing configuration files.
 - `compiler_path`: an explicit path to `PapyrusCompiler.exe`, set via the
   app's Settings tab. When unset (or blank), the app auto-detects it at
