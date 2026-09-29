@@ -15,6 +15,9 @@
 //! identifier_casing: PascalCase
 //! cyclomatic_complexity_warning: 10
 //! cyclomatic_complexity_error: 20
+//! nesting_depth_info: 4
+//! nesting_depth_warning: 6
+//! nesting_depth_error: 9
 //! type_casing: PascalCase
 //! named_arguments: never
 //! hungarian: allow

@@ -552,6 +552,7 @@ Scripts/Source/Base/BoS100FightMonitor.psc:287:1:none-form-usage
 Scripts/Source/Base/BoS100FightMonitor.psc:289:1:none-form-usage
 Scripts/Source/Base/BoS100FightMonitor.psc:302:1:argument-naming
 Scripts/Source/Base/BoS100FightMonitor.psc:302:1:cyclomatic-complexity
+Scripts/Source/Base/BoS100FightMonitor.psc:302:1:nesting-depth
 Scripts/Source/Base/BoS100FightMonitor.psc:331:121:line-length
 Scripts/Source/Base/BoS100FightMonitor.psc:335:1:none-form-usage
 Scripts/Source/Base/BoS100FightMonitor.psc:335:1:none-form-usage
@@ -755,6 +756,7 @@ Scripts/Source/Base/BoS303WarningScript.psc:16:30:forbidden-functions
 Scripts/Source/Base/BoS303WarningScript.psc:18:1:none-form-usage
 Scripts/Source/Base/BoS303WarningScript.psc:21:1:none-form-usage
 Scripts/Source/Base/BoS303WarningScript.psc:22:1:none-form-usage
+Scripts/Source/Base/BoS303WarningScript.psc:28:1:nesting-depth
 Scripts/Source/Base/BoS303WarningScript.psc:29:7:forbidden-functions
 Scripts/Source/Base/BoS303WarningScript.psc:32:25:forbidden-functions
 Scripts/Source/Base/BoS303WarningScript.psc:33:1:none-form-usage
@@ -1145,6 +1147,7 @@ Scripts/Source/Base/BoSM01QuestScript.psc:64:17:unresolved-script
 Scripts/Source/Base/BoSM01QuestScript.psc:67:121:line-length
 Scripts/Source/Base/BoSM01QuestScript.psc:98:121:line-length
 Scripts/Source/Base/BoSM01QuestScript.psc:136:1:argument-naming
+Scripts/Source/Base/BoSM01QuestScript.psc:140:1:nesting-depth
 Scripts/Source/Base/BoSM01QuestScript.psc:142:22:forbidden-functions
 Scripts/Source/Base/BoSM01QuestScript.psc:160:121:line-length
 Scripts/Source/Base/BoSM01QuestScript.psc:196:1:unchecked-cast
@@ -1224,6 +1227,7 @@ Scripts/Source/Base/BoSR05NotMurderFaction.psc:15:1:none-form-usage
 Scripts/Source/Base/BoSR05NotMurderFaction.psc:16:1:none-form-usage
 Scripts/Source/Base/BoSR05NotMurderFaction.psc:16:1:none-form-usage
 Scripts/Source/Base/BoSR05NotMurderFaction.psc:17:1:none-form-usage
+Scripts/Source/Base/BoSVBAliasBoardingScript.psc:10:1:nesting-depth
 Scripts/Source/Base/BoSVBAliasBoardingScript.psc:12:25:forbidden-functions
 Scripts/Source/Base/BoSVBAliasBoardingScript.psc:13:8:forbidden-functions
 Scripts/Source/Base/BoSVBAliasBoardingScript.psc:14:1:none-form-usage
@@ -1589,6 +1593,7 @@ Scripts/Source/Base/COMCurieScript.psc:10:30:forbidden-functions
 Scripts/Source/Base/COMCurieScript.psc:20:1:none-form-usage
 Scripts/Source/Base/COMCurieScript.psc:21:33:forbidden-functions
 Scripts/Source/Base/COMDeaconScript.psc:18:1:cyclomatic-complexity
+Scripts/Source/Base/COMDeaconScript.psc:18:1:nesting-depth
 Scripts/Source/Base/COMDeaconScript.psc:20:22:forbidden-functions
 Scripts/Source/Base/COMDeaconScript.psc:22:9:forbidden-functions
 Scripts/Source/Base/COMDeaconScript.psc:35:1:none-form-usage
@@ -1728,6 +1733,7 @@ Scripts/Source/Base/CZStageControllerScript.psc:226:8:forbidden-functions
 Scripts/Source/Base/CZStageControllerScript.psc:229:30:unresolved-script
 Scripts/Source/Base/CZStageControllerScript.psc:251:30:unresolved-script
 Scripts/Source/Base/CZStageControllerScript.psc:296:1:cyclomatic-complexity
+Scripts/Source/Base/CZStageControllerScript.psc:296:1:nesting-depth
 Scripts/Source/Base/CZStageControllerScript.psc:306:9:forbidden-functions
 Scripts/Source/Base/CZStageControllerScript.psc:320:1:short-wait-interval
 Scripts/Source/Base/CZStageControllerScript.psc:320:12:forbidden-functions
@@ -1744,6 +1750,7 @@ Scripts/Source/Base/CZStageControllerScript.psc:446:8:forbidden-functions
 Scripts/Source/Base/CZStageControllerScript.psc:452:8:forbidden-functions
 Scripts/Source/Base/CZStageControllerScript.psc:458:9:forbidden-functions
 Scripts/Source/Base/CZStageControllerScript.psc:462:9:forbidden-functions
+Scripts/Source/Base/CZStageControllerScript.psc:598:1:nesting-depth
 Scripts/Source/Base/CZStageControllerScript.psc:599:8:forbidden-functions
 Scripts/Source/Base/CZStageControllerScript.psc:601:8:forbidden-functions
 Scripts/Source/Base/CZStageControllerScript.psc:605:10:forbidden-functions
@@ -1815,6 +1822,7 @@ Scripts/Source/Base/CastleArmoryTriggerScript.psc:31:40:forbidden-functions
 Scripts/Source/Base/CastleArmoryTriggerScript.psc:39:1:none-form-usage
 Scripts/Source/Base/CastleArmoryTriggerScript.psc:47:1:none-form-usage
 Scripts/Source/Base/ChainedDoor.psc:19:12:forbidden-functions
+Scripts/Source/Base/ChainedDoor.psc:24:1:nesting-depth
 Scripts/Source/Base/ChainedDoor.psc:25:46:forbidden-functions
 Scripts/Source/Base/ChainedDoor.psc:30:5:empty-body
 Scripts/Source/Base/ChainedDoor.psc:33:50:forbidden-functions
@@ -1842,6 +1850,7 @@ Scripts/Source/Base/CircuitBreakerMasterScript.psc:45:11:forbidden-functions
 Scripts/Source/Base/CircuitBreakerMasterScript.psc:46:17:forbidden-functions
 Scripts/Source/Base/CircuitBreakerMasterScript.psc:47:18:forbidden-functions
 Scripts/Source/Base/CircuitBreakerMasterScript.psc:110:10:forbidden-functions
+Scripts/Source/Base/CircuitBreakerMasterScript.psc:135:1:nesting-depth
 Scripts/Source/Base/CircuitBreakerMasterScript.psc:136:2:empty-body
 Scripts/Source/Base/CircuitBreakerMasterScript.psc:145:14:forbidden-functions
 Scripts/Source/Base/CircuitBreakerMasterScript.psc:149:15:forbidden-functions
@@ -1916,6 +1925,7 @@ Scripts/Source/Base/CommonArrayFunctions.psc:270:121:line-length
 Scripts/Source/Base/CommonArrayFunctions.psc:275:121:line-length
 Scripts/Source/Base/CommonArrayFunctions.psc:278:121:line-length
 Scripts/Source/Base/CommonArrayFunctions.psc:292:121:line-length
+Scripts/Source/Base/CommonArrayFunctions.psc:307:1:nesting-depth
 Scripts/Source/Base/CommonArrayFunctions.psc:307:121:line-length
 Scripts/Source/Base/CommonArrayFunctions.psc:311:121:line-length
 Scripts/Source/Base/CommonArrayFunctions.psc:317:121:line-length
@@ -1980,6 +1990,7 @@ Scripts/Source/Base/CompanionActorScript.psc:478:8:forbidden-functions
 Scripts/Source/Base/CompanionActorScript.psc:512:9:forbidden-functions
 Scripts/Source/Base/CompanionActorScript.psc:512:121:line-length
 Scripts/Source/Base/CompanionActorScript.psc:522:11:forbidden-functions
+Scripts/Source/Base/CompanionActorScript.psc:539:1:nesting-depth
 Scripts/Source/Base/CompanionActorScript.psc:542:9:forbidden-functions
 Scripts/Source/Base/CompanionActorScript.psc:547:9:forbidden-functions
 Scripts/Source/Base/CompanionActorScript.psc:556:25:forbidden-functions
@@ -1999,6 +2010,7 @@ Scripts/Source/Base/CompanionActorScript.psc:623:8:forbidden-functions
 Scripts/Source/Base/CompanionActorScript.psc:645:8:forbidden-functions
 Scripts/Source/Base/CompanionActorScript.psc:660:36:forbidden-functions
 Scripts/Source/Base/CompanionActorScript.psc:662:8:forbidden-functions
+Scripts/Source/Base/CompanionActorScript.psc:669:1:nesting-depth
 Scripts/Source/Base/CompanionActorScript.psc:670:25:forbidden-functions
 Scripts/Source/Base/CompanionActorScript.psc:686:1:numeric-comparison
 Scripts/Source/Base/CompanionActorScript.psc:693:29:forbidden-functions
@@ -2006,6 +2018,7 @@ Scripts/Source/Base/CompanionActorScript.psc:698:2:empty-body
 Scripts/Source/Base/CompanionActorScript.psc:699:121:line-length
 Scripts/Source/Base/CompanionActorScript.psc:700:121:line-length
 Scripts/Source/Base/CompanionActorScript.psc:705:1:explicit-return
+Scripts/Source/Base/CompanionActorScript.psc:705:1:nesting-depth
 Scripts/Source/Base/CompanionActorScript.psc:738:8:forbidden-functions
 Scripts/Source/Base/CompanionActorScript.psc:747:1:numeric-comparison
 Scripts/Source/Base/CompanionActorScript.psc:748:9:forbidden-functions
@@ -2082,6 +2095,7 @@ Scripts/Source/Base/CompanionActorScript.psc:1062:121:line-length
 Scripts/Source/Base/CompanionActorScript.psc:1081:8:forbidden-functions
 Scripts/Source/Base/CompanionActorScript.psc:1081:121:line-length
 Scripts/Source/Base/CompanionActorScript.psc:1089:121:line-length
+Scripts/Source/Base/CompanionActorScript.psc:1105:1:nesting-depth
 Scripts/Source/Base/CompanionActorScript.psc:1107:9:forbidden-functions
 Scripts/Source/Base/CompanionActorScript.psc:1107:121:line-length
 Scripts/Source/Base/CompanionActorScript.psc:1121:12:forbidden-functions
@@ -2093,6 +2107,7 @@ Scripts/Source/Base/CompanionActorScript.psc:1135:12:forbidden-functions
 Scripts/Source/Base/CompanionActorScript.psc:1145:11:forbidden-functions
 Scripts/Source/Base/CompanionActorScript.psc:1145:121:line-length
 Scripts/Source/Base/CompanionActorScript.psc:1147:11:forbidden-functions
+Scripts/Source/Base/CompanionActorScript.psc:1162:1:nesting-depth
 Scripts/Source/Base/CompanionActorScript.psc:1165:1:numeric-comparison
 Scripts/Source/Base/CompanionActorScript.psc:1168:1:variable-used-before-assignment
 Scripts/Source/Base/CompanionActorScript.psc:1175:1:numeric-comparison
@@ -2715,6 +2730,7 @@ Scripts/Source/Base/CreationClub/VRWorkshops/VRWorkshopLoungerTravelScript.psc:3
 Scripts/Source/Base/CreationClub/VRWorkshops/VRWorkshopLoungerTravelScript.psc:348:40:unresolved-script
 Scripts/Source/Base/CreationClub/VRWorkshops/VRWorkshopLoungerTravelScript.psc:349:31:unresolved-script
 Scripts/Source/Base/CreationClub/VRWorkshops/VRWorkshopLoungerTravelScript.psc:349:37:forbidden-functions
+Scripts/Source/Base/CreationClub/VRWorkshops/VRWorkshopLoungerTravelScript.psc:353:1:nesting-depth
 Scripts/Source/Base/CreationClub/VRWorkshops/VRWorkshopLoungerTravelScript.psc:360:9:forbidden-functions
 Scripts/Source/Base/CreationClub/VRWorkshops/VRWorkshopLoungerTravelScript.psc:365:4:strict-boolean
 Scripts/Source/Base/CreationClub/VRWorkshops/VRWorkshopLoungerTravelScript.psc:366:11:forbidden-functions
@@ -2969,6 +2985,7 @@ Scripts/Source/Base/DN008GateButtonScript.psc:84:14:forbidden-functions
 Scripts/Source/Base/DN008GateButtonScript.psc:85:6:forbidden-functions
 Scripts/Source/Base/DN008GateButtonScript.psc:86:6:forbidden-functions
 Scripts/Source/Base/DN009_FireWeapScript.psc:26:17:forbidden-functions
+Scripts/Source/Base/DN009_FireWeapScript.psc:43:1:nesting-depth
 Scripts/Source/Base/DN009_FireWeapScript.psc:52:1:none-form-usage
 Scripts/Source/Base/DN009_FireWeapScript.psc:53:1:none-form-usage
 Scripts/Source/Base/DN009_FireWeapScript.psc:59:12:forbidden-functions
@@ -3316,6 +3333,7 @@ Scripts/Source/Base/DN017QuestScript.psc:451:42:unresolved-script
 Scripts/Source/Base/DN017QuestScript.psc:460:11:forbidden-functions
 Scripts/Source/Base/DN017QuestScript.psc:488:121:line-length
 Scripts/Source/Base/DN017QuestScript.psc:501:121:line-length
+Scripts/Source/Base/DN017QuestScript.psc:509:1:nesting-depth
 Scripts/Source/Base/DN017QuestScript.psc:537:43:unresolved-script
 Scripts/Source/Base/DN017QuestScript.psc:551:11:forbidden-functions
 Scripts/Source/Base/DN017QuestScript.psc:552:30:unresolved-script
@@ -3447,6 +3465,7 @@ Scripts/Source/Base/DN029SecondWaveAScript.psc:41:13:forbidden-functions
 Scripts/Source/Base/DN029SecondWaveAScript.psc:41:121:line-length
 Scripts/Source/Base/DN029SecondWaveBScript.psc:17:1:none-form-usage
 Scripts/Source/Base/DN029SecondWaveBScript.psc:25:1:none-form-usage
+Scripts/Source/Base/DN029SecondWaveBScript.psc:33:1:nesting-depth
 Scripts/Source/Base/DN029SecondWaveBScript.psc:48:1:none-form-usage
 Scripts/Source/Base/DN029SecondWaveBScript.psc:49:1:none-form-usage
 Scripts/Source/Base/DN029SecondWaveBScript.psc:51:1:unchecked-cast
@@ -3513,6 +3532,7 @@ Scripts/Source/Base/DN031Script.psc:20:3:strict-boolean
 Scripts/Source/Base/DN031Script.psc:27:1:none-form-usage
 Scripts/Source/Base/DN033_CircuitBreakerScript.psc:39:15:forbidden-functions
 Scripts/Source/Base/DN033_CircuitBreakerScript.psc:40:20:forbidden-functions
+Scripts/Source/Base/DN033_CircuitBreakerScript.psc:61:1:nesting-depth
 Scripts/Source/Base/DN033_CircuitBreakerScript.psc:72:8:strict-boolean
 Scripts/Source/Base/DN033_CircuitBreakerScript.psc:75:21:unresolved-script
 Scripts/Source/Base/DN033_CircuitBreakerScript.psc:75:40:forbidden-functions
@@ -3782,6 +3802,7 @@ Scripts/Source/Base/DN049_ChampOnHitAliasScript.psc:31:1:none-form-usage
 Scripts/Source/Base/DN049_ChampOnHitAliasScript.psc:31:1:none-form-usage
 Scripts/Source/Base/DN049_ChampOnHitAliasScript.psc:31:121:line-length
 Scripts/Source/Base/DN049_ChampOnHitAliasScript.psc:32:1:none-form-usage
+Scripts/Source/Base/DN049_ChampOnHitAliasScript.psc:36:1:nesting-depth
 Scripts/Source/Base/DN049_ChampOnHitAliasScript.psc:36:121:line-length
 Scripts/Source/Base/DN049_ChampOnHitAliasScript.psc:37:1:none-form-usage
 Scripts/Source/Base/DN049_ChampOnHitAliasScript.psc:38:1:none-form-usage
@@ -3944,6 +3965,7 @@ Scripts/Source/Base/DN070_TrapTripwire.psc:30:121:line-length
 Scripts/Source/Base/DN070_TreasureDoorScript.psc:2:121:line-length
 Scripts/Source/Base/DN070_TreasureDoorScript.psc:33:1:none-form-usage
 Scripts/Source/Base/DN070_TreasureDoorScript.psc:35:1:none-form-usage
+Scripts/Source/Base/DN070_TurretHallIDCardReaderScript.psc:17:1:nesting-depth
 Scripts/Source/Base/DN070_TurretHallIDCardReaderScript.psc:18:23:forbidden-functions
 Scripts/Source/Base/DN070_TurretHallIDCardReaderScript.psc:27:45:forbidden-functions
 Scripts/Source/Base/DN070_TurretHallIDCardReaderScript.psc:35:22:unresolved-script
@@ -4069,6 +4091,7 @@ Scripts/Source/Base/DN080_SirenActivator.psc:45:20:forbidden-functions
 Scripts/Source/Base/DN080_SirenActivator.psc:46:19:forbidden-functions
 Scripts/Source/Base/DN080_SirenActivator.psc:47:24:forbidden-functions
 Scripts/Source/Base/DN080_SirenActivator.psc:62:27:unresolved-script
+Scripts/Source/Base/DN080_SirenActivator.psc:83:1:nesting-depth
 Scripts/Source/Base/DN080_SirenActivator.psc:91:23:unresolved-script
 Scripts/Source/Base/DN080_SirenActivator.psc:98:9:strict-boolean
 Scripts/Source/Base/DN080_SirenActivator.psc:102:34:unresolved-script
@@ -4093,6 +4116,7 @@ Scripts/Source/Base/DN081ElevatorMasterScript.psc:138:5:forbidden-functions
 Scripts/Source/Base/DN081ElevatorMasterScript.psc:138:32:forbidden-functions
 Scripts/Source/Base/DN081ElevatorMasterScript.psc:139:3:forbidden-functions
 Scripts/Source/Base/DN081ElevatorMasterScript.psc:139:30:forbidden-functions
+Scripts/Source/Base/DN081ElevatorMasterScript.psc:153:1:nesting-depth
 Scripts/Source/Base/DN081ElevatorMasterScript.psc:159:23:unresolved-script
 Scripts/Source/Base/DN081ElevatorMasterScript.psc:160:28:unresolved-script
 Scripts/Source/Base/DN081ElevatorMasterScript.psc:165:8:forbidden-functions
@@ -4302,6 +4326,7 @@ Scripts/Source/Base/DN084_GlassElevatorScript.psc:107:121:line-length
 Scripts/Source/Base/DN084_GlassElevatorScript.psc:108:121:line-length
 Scripts/Source/Base/DN084_GlassElevatorScript.psc:110:121:line-length
 Scripts/Source/Base/DN084_GlassElevatorScript.psc:147:1:cyclomatic-complexity
+Scripts/Source/Base/DN084_GlassElevatorScript.psc:147:1:nesting-depth
 Scripts/Source/Base/DN084_GlassElevatorScript.psc:148:8:forbidden-functions
 Scripts/Source/Base/DN084_GlassElevatorScript.psc:152:11:forbidden-functions
 Scripts/Source/Base/DN084_GlassElevatorScript.psc:156:9:forbidden-functions
@@ -4375,6 +4400,7 @@ Scripts/Source/Base/DN084_GlassElevatorScript.psc:346:10:forbidden-functions
 Scripts/Source/Base/DN084_GlassElevatorScript.psc:347:10:forbidden-functions
 Scripts/Source/Base/DN084_GlassElevatorScript.psc:350:10:forbidden-functions
 Scripts/Source/Base/DN084_GlassElevatorScript.psc:351:36:unresolved-script
+Scripts/Source/Base/DN084_GlassElevatorScript.psc:367:1:nesting-depth
 Scripts/Source/Base/DN084_GlassElevatorScript.psc:368:9:forbidden-functions
 Scripts/Source/Base/DN084_GlassElevatorScript.psc:369:9:forbidden-functions
 Scripts/Source/Base/DN084_GlassElevatorScript.psc:371:10:forbidden-functions
@@ -4515,6 +4541,7 @@ Scripts/Source/Base/DN084_OverridesQuestScript.psc:142:23:unresolved-script
 Scripts/Source/Base/DN084_OverridesQuestScript.psc:143:21:unresolved-script
 Scripts/Source/Base/DN084_OverridesQuestScript.psc:158:121:line-length
 Scripts/Source/Base/DN084_QuestScript.psc:8:121:line-length
+Scripts/Source/Base/DN084_QuestScript.psc:30:1:nesting-depth
 Scripts/Source/Base/DN084_QuestScript.psc:38:30:unresolved-script
 Scripts/Source/Base/DN084_QuestScript.psc:45:43:unresolved-script
 Scripts/Source/Base/DN084_QuestScript.psc:46:65:unresolved-script
@@ -4912,6 +4939,7 @@ Scripts/Source/Base/DN131_RETriggerManagerScript.psc:19:1:explicit-return
 Scripts/Source/Base/DN131_RETriggerManagerScript.psc:21:1:none-form-usage
 Scripts/Source/Base/DN131_SwanAliasScript.psc:39:17:forbidden-functions
 Scripts/Source/Base/DN131_SwanAliasScript.psc:73:1:argument-naming
+Scripts/Source/Base/DN131_SwanAliasScript.psc:73:1:nesting-depth
 Scripts/Source/Base/DN131_SwanAliasScript.psc:79:121:line-length
 Scripts/Source/Base/DN131_SwanAliasScript.psc:80:121:line-length
 Scripts/Source/Base/DN131_SwanAliasScript.psc:85:1:none-form-usage
@@ -5016,6 +5044,7 @@ Scripts/Source/Base/DN136_AliasDeathCounter.psc:13:1:none-form-usage
 Scripts/Source/Base/DN136_AttackKlaxonDestScript.psc:25:19:forbidden-functions
 Scripts/Source/Base/DN136_AttackKlaxonDestScript.psc:26:19:forbidden-functions
 Scripts/Source/Base/DN136_AttackKlaxonDestScript.psc:26:34:forbidden-functions
+Scripts/Source/Base/DN136_AttackKlaxonDestScript.psc:30:1:nesting-depth
 Scripts/Source/Base/DN136_AttackKlaxonDestScript.psc:38:21:forbidden-functions
 Scripts/Source/Base/DN136_AttackKlaxonDestScript.psc:39:21:forbidden-functions
 Scripts/Source/Base/DN136_AttackKlaxonDestScript.psc:39:36:forbidden-functions
@@ -5043,6 +5072,7 @@ Scripts/Source/Base/DN136_ElevatorNewScript.psc:111:38:unresolved-script
 Scripts/Source/Base/DN136_ElevatorNewScript.psc:115:43:unresolved-script
 Scripts/Source/Base/DN136_ElevatorNewScript.psc:116:38:unresolved-script
 Scripts/Source/Base/DN136_ElevatorNewScript.psc:125:1:cyclomatic-complexity
+Scripts/Source/Base/DN136_ElevatorNewScript.psc:125:1:nesting-depth
 Scripts/Source/Base/DN136_ElevatorNewScript.psc:127:19:unresolved-script
 Scripts/Source/Base/DN136_ElevatorNewScript.psc:135:14:forbidden-functions
 Scripts/Source/Base/DN136_ElevatorNewScript.psc:145:14:forbidden-functions
@@ -5202,6 +5232,7 @@ Scripts/Source/Base/DN136_PrivateElevatorNEWScript.psc:176:31:forbidden-function
 Scripts/Source/Base/DN136_PrivateElevatorNEWScript.psc:189:34:forbidden-functions
 Scripts/Source/Base/DN136_PrivateElevatorNEWScript.psc:190:31:forbidden-functions
 Scripts/Source/Base/DN136_PrivateElevatorNEWScript.psc:202:1:cyclomatic-complexity
+Scripts/Source/Base/DN136_PrivateElevatorNEWScript.psc:202:1:nesting-depth
 Scripts/Source/Base/DN136_PrivateElevatorNEWScript.psc:203:25:forbidden-functions
 Scripts/Source/Base/DN136_PrivateElevatorNEWScript.psc:205:33:forbidden-functions
 Scripts/Source/Base/DN136_PrivateElevatorNEWScript.psc:206:33:forbidden-functions
@@ -5419,6 +5450,7 @@ Scripts/Source/Base/DN151_CircuitBreakerScript.psc:50:7:forbidden-functions
 Scripts/Source/Base/DN151_DoorSeal.psc:14:121:line-length
 Scripts/Source/Base/DN151_DoorSeal.psc:17:121:line-length
 Scripts/Source/Base/DN151_DoorSeal.psc:26:121:line-length
+Scripts/Source/Base/DN151_DoorSeal.psc:68:1:nesting-depth
 Scripts/Source/Base/DN151_DoorSeal.psc:75:1:none-form-usage
 Scripts/Source/Base/DN151_DoorSeal.psc:91:1:none-form-usage
 Scripts/Source/Base/DN151_DoorSeal.psc:108:121:line-length
@@ -5882,6 +5914,7 @@ Scripts/Source/Base/DN170_ChairScript.psc:75:1:none-form-usage
 Scripts/Source/Base/DN170_ChairScript.psc:76:1:none-form-usage
 Scripts/Source/Base/DN170_ChairScript.psc:80:1:none-form-usage
 Scripts/Source/Base/DN170_DismemberSpawn.psc:34:11:forbidden-functions
+Scripts/Source/Base/DN170_FloorCrack.psc:18:1:nesting-depth
 Scripts/Source/Base/DN170_FloorCrack.psc:21:34:forbidden-functions
 Scripts/Source/Base/DN170_FloorCrack.psc:33:1:none-form-usage
 Scripts/Source/Base/DN170_FloorCrack.psc:33:39:forbidden-functions
@@ -6130,6 +6163,7 @@ Scripts/Source/Base/DefaultActivateLinkedRefOnActivate.psc:38:9:forbidden-functi
 Scripts/Source/Base/DefaultActivateLinkedRefOnHit.psc:10:121:line-length
 Scripts/Source/Base/DefaultActivateLinkedRefOnHit.psc:12:6:forbidden-functions
 Scripts/Source/Base/DefaultActivateSelf.psc:2:121:line-length
+Scripts/Source/Base/DefaultActivateSelf.psc:32:1:nesting-depth
 Scripts/Source/Base/DefaultActivateSelf.psc:34:26:forbidden-functions
 Scripts/Source/Base/DefaultActivateSelf.psc:35:36:forbidden-functions
 Scripts/Source/Base/DefaultActivateSelf.psc:36:121:line-length
@@ -6292,6 +6326,7 @@ Scripts/Source/Base/DefaultCounter.psc:61:11:forbidden-functions
 Scripts/Source/Base/DefaultCounter.psc:63:11:forbidden-functions
 Scripts/Source/Base/DefaultCounter.psc:67:10:forbidden-functions
 Scripts/Source/Base/DefaultCounter.psc:70:10:forbidden-functions
+Scripts/Source/Base/DefaultCounter.psc:76:1:nesting-depth
 Scripts/Source/Base/DefaultCounter.psc:92:11:forbidden-functions
 Scripts/Source/Base/DefaultCounter.psc:95:15:forbidden-functions
 Scripts/Source/Base/DefaultCounter.psc:96:12:forbidden-functions
@@ -6376,6 +6411,7 @@ Scripts/Source/Base/DefaultCrowdEventManager.psc:192:23:unresolved-script
 Scripts/Source/Base/DefaultCrowdEventManager.psc:198:8:forbidden-functions
 Scripts/Source/Base/DefaultCrowdEventMember.psc:33:121:line-length
 Scripts/Source/Base/DefaultCrowdEventMember.psc:37:121:line-length
+Scripts/Source/Base/DefaultCrowdEventMember.psc:70:1:nesting-depth
 Scripts/Source/Base/DefaultCrowdEventMember.psc:74:1:none-form-usage
 Scripts/Source/Base/DefaultCrowdEventMember.psc:77:10:forbidden-functions
 Scripts/Source/Base/DefaultCrowdEventMember.psc:88:1:unchecked-cast
@@ -6414,6 +6450,7 @@ Scripts/Source/Base/DefaultDisableHavokOnLoad.psc:45:121:line-length
 Scripts/Source/Base/DefaultDisableHavokOnLoad.psc:59:28:forbidden-functions
 Scripts/Source/Base/DefaultDisableHavokOnLoad.psc:62:1:unchecked-cast
 Scripts/Source/Base/DefaultDisableSelfTrigger.psc:2:121:line-length
+Scripts/Source/Base/DefaultDisableSelfTrigger.psc:29:1:nesting-depth
 Scripts/Source/Base/DefaultDisableSelfTrigger.psc:31:26:forbidden-functions
 Scripts/Source/Base/DefaultDisableSelfTrigger.psc:32:36:forbidden-functions
 Scripts/Source/Base/DefaultDisableSelfTrigger.psc:33:121:line-length
@@ -6618,6 +6655,7 @@ Scripts/Source/Base/DefaultRotateHelper.psc:115:8:forbidden-functions
 Scripts/Source/Base/DefaultRotateHelper.psc:116:8:forbidden-functions
 Scripts/Source/Base/DefaultRotateHelper.psc:117:8:forbidden-functions
 Scripts/Source/Base/DefaultRotateHelper.psc:118:8:forbidden-functions
+Scripts/Source/Base/DefaultScriptFunctions.psc:7:1:nesting-depth
 Scripts/Source/Base/DefaultScriptFunctions.psc:7:1:parameter-count
 Scripts/Source/Base/DefaultScriptFunctions.psc:7:121:line-length
 Scripts/Source/Base/DefaultScriptFunctions.psc:16:3:empty-body
@@ -6869,6 +6907,7 @@ Scripts/Source/Base/DialogueInstituteShaunKidQuestScript.psc:14:1:none-form-usag
 Scripts/Source/Base/DialogueInstituteShaunKidQuestScript.psc:14:14:slow-functions
 Scripts/Source/Base/DialogueInstituteShaunKidQuestScript.psc:15:1:none-form-usage
 Scripts/Source/Base/DialogueRailroadScript.psc:10:1:cyclomatic-complexity
+Scripts/Source/Base/DialogueRailroadScript.psc:10:1:nesting-depth
 Scripts/Source/Base/DialogueRailroadScript.psc:12:22:forbidden-functions
 Scripts/Source/Base/DialogueRailroadScript.psc:15:1:none-form-usage
 Scripts/Source/Base/DialogueRailroadScript.psc:15:1:none-form-usage
@@ -7221,10 +7260,12 @@ Scripts/Source/Base/EE_LightChangeState_Hostile.psc:11:8:forbidden-functions
 Scripts/Source/Base/EMSystemTurfScript.psc:52:33:unresolved-script
 Scripts/Source/Base/EMSystemTurfScript.psc:60:34:unresolved-script
 Scripts/Source/Base/EMSystemTurfScript.psc:62:11:forbidden-functions
+Scripts/Source/Base/EMSystemTurfScript.psc:78:1:nesting-depth
 Scripts/Source/Base/EMSystemTurfScript.psc:81:121:line-length
 Scripts/Source/Base/EMSystemTurfScript.psc:83:34:unresolved-script
 Scripts/Source/Base/EMSystemTurfScript.psc:110:20:argument-types
 Scripts/Source/Base/EMSystemTurfScript.psc:116:10:forbidden-functions
+Scripts/Source/Base/EMSystemTurfScript.psc:129:1:nesting-depth
 Scripts/Source/Base/EMSystemTurfScript.psc:137:11:forbidden-functions
 Scripts/Source/Base/EMSystemTurfScript.psc:145:36:unresolved-script
 Scripts/Source/Base/EMSystemTurfScript.psc:152:3:strict-boolean
@@ -7293,6 +7334,7 @@ Scripts/Source/Base/ElevatorMasterScript.psc:17:121:line-length
 Scripts/Source/Base/ElevatorMasterScript.psc:29:121:line-length
 Scripts/Source/Base/ElevatorMasterScript.psc:32:121:line-length
 Scripts/Source/Base/ElevatorMasterScript.psc:84:41:forbidden-functions
+Scripts/Source/Base/ElevatorMasterScript.psc:88:1:nesting-depth
 Scripts/Source/Base/ElevatorMasterScript.psc:90:32:forbidden-functions
 Scripts/Source/Base/ElevatorMasterScript.psc:91:32:forbidden-functions
 Scripts/Source/Base/ElevatorMasterScript.psc:92:31:forbidden-functions
@@ -7341,6 +7383,7 @@ Scripts/Source/Base/ElevatorMasterScript.psc:266:31:forbidden-functions
 Scripts/Source/Base/ElevatorMasterScript.psc:279:34:forbidden-functions
 Scripts/Source/Base/ElevatorMasterScript.psc:280:31:forbidden-functions
 Scripts/Source/Base/ElevatorMasterScript.psc:292:1:cyclomatic-complexity
+Scripts/Source/Base/ElevatorMasterScript.psc:292:1:nesting-depth
 Scripts/Source/Base/ElevatorMasterScript.psc:293:8:forbidden-functions
 Scripts/Source/Base/ElevatorMasterScript.psc:295:25:forbidden-functions
 Scripts/Source/Base/ElevatorMasterScript.psc:297:33:forbidden-functions
@@ -7418,6 +7461,7 @@ Scripts/Source/Base/EncounterZone.psc:10:121:line-length
 Scripts/Source/Base/ExplodeOnContactScript.psc:13:9:forbidden-functions
 Scripts/Source/Base/FEVHoundEventScript.psc:6:1:argument-naming
 Scripts/Source/Base/FEVHoundEventScript.psc:9:1:none-form-usage
+Scripts/Source/Base/FFDiamondCity01MixerScript.psc:13:1:nesting-depth
 Scripts/Source/Base/FFDiamondCity01MixerScript.psc:14:26:forbidden-functions
 Scripts/Source/Base/FFDiamondCity01MixerScript.psc:19:1:none-form-usage
 Scripts/Source/Base/FFDiamondCity01MixerScript.psc:21:121:line-length
@@ -7600,6 +7644,7 @@ Scripts/Source/Base/FXMagicTimedAnimEventScript.psc:23:1:argument-naming
 Scripts/Source/Base/FXMagicTimedAnimEventScript.psc:23:1:argument-naming
 Scripts/Source/Base/FXMagicTimedAnimEventScript.psc:26:2:strict-boolean
 Scripts/Source/Base/FXMagicTimedAnimEventScript.psc:34:6:strict-boolean
+Scripts/Source/Base/FXPrydwenFlyoverScript.psc:30:1:nesting-depth
 Scripts/Source/Base/FXPrydwenFlyoverScript.psc:32:20:forbidden-functions
 Scripts/Source/Base/FXPrydwenFlyoverScript.psc:38:5:strict-boolean
 Scripts/Source/Base/FXPrydwenFlyoverScript.psc:54:1:none-form-usage
@@ -7658,6 +7703,7 @@ Scripts/Source/Base/FeralGhoulGlowingFXSCRIPT.psc:28:2:empty-body
 Scripts/Source/Base/FireFightStall_ActorScript.psc:34:27:forbidden-functions
 Scripts/Source/Base/FireFightStall_ActorScript.psc:35:1:unchecked-cast
 Scripts/Source/Base/FireFightStall_ActorScript.psc:35:51:unresolved-script
+Scripts/Source/Base/FireFightStall_ActorScript.psc:43:1:nesting-depth
 Scripts/Source/Base/FireFightStall_ActorScript.psc:44:22:forbidden-functions
 Scripts/Source/Base/FireFightStall_ActorScript.psc:55:36:unresolved-script
 Scripts/Source/Base/FireFightStall_ActorScript.psc:60:40:unresolved-script
@@ -7793,6 +7839,7 @@ Scripts/Source/Base/FollowersScript.psc:791:1:none-form-usage
 Scripts/Source/Base/FollowersScript.psc:811:1:none-form-usage
 Scripts/Source/Base/FollowersScript.psc:814:1:unchecked-cast
 Scripts/Source/Base/FollowersScript.psc:815:1:unchecked-cast
+Scripts/Source/Base/FollowersScript.psc:823:1:nesting-depth
 Scripts/Source/Base/FollowersScript.psc:823:121:line-length
 Scripts/Source/Base/FollowersScript.psc:825:1:none-form-usage
 Scripts/Source/Base/FollowersScript.psc:831:1:none-form-usage
@@ -7925,6 +7972,7 @@ Scripts/Source/Base/FollowersScript.psc:1865:1:unchecked-cast
 Scripts/Source/Base/FollowersScript.psc:1916:121:line-length
 Scripts/Source/Base/FollowersScript.psc:1936:121:line-length
 Scripts/Source/Base/FollowersScript.psc:1946:22:forbidden-functions
+Scripts/Source/Base/FollowersScript.psc:1952:1:nesting-depth
 Scripts/Source/Base/FollowersScript.psc:1955:1:none-form-usage
 Scripts/Source/Base/FollowersScript.psc:1958:1:unchecked-cast
 Scripts/Source/Base/FollowersScript.psc:1958:1:unchecked-cast
@@ -19718,6 +19766,7 @@ Scripts/Source/Base/Fragments/Quests/QF_MS07_000229FC.psc:109:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_MS07_000229FC.psc:109:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_MS07_000229FC.psc:109:121:line-length
 Scripts/Source/Base/Fragments/Quests/QF_MS07_000229FC.psc:110:1:none-form-usage
+Scripts/Source/Base/Fragments/Quests/QF_MS07_000229FC.psc:117:1:nesting-depth
 Scripts/Source/Base/Fragments/Quests/QF_MS07_000229FC.psc:123:11:forbidden-functions
 Scripts/Source/Base/Fragments/Quests/QF_MS07_000229FC.psc:126:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_MS07_000229FC.psc:126:121:line-length
@@ -22178,6 +22227,7 @@ Scripts/Source/Base/Fragments/Quests/QF_Patch_1_4_00249E88.psc:13:1:none-form-us
 Scripts/Source/Base/Fragments/Quests/QF_Patch_1_6_0024A010.psc:12:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_Patch_1_6_0024A010.psc:17:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_Patch_1_6_0024A010.psc:18:1:none-form-usage
+Scripts/Source/Base/Fragments/Quests/QF_Patch_1_7_0024A0A1.psc:5:1:nesting-depth
 Scripts/Source/Base/Fragments/Quests/QF_Patch_1_7_0024A0A1.psc:12:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_Patch_1_7_0024A0A1.psc:12:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_Patch_1_7_0024A0A1.psc:13:1:none-form-usage
@@ -30785,6 +30835,7 @@ Scripts/Source/Base/Fragments/Terminals/TERM_hackerDoorHolotapeSubMe_00188AE3.ps
 Scripts/Source/Base/Fragments/Terminals/TERM_hackerDoorHolotapeSubMe_00188AE3.psc:68:47:forbidden-functions
 Scripts/Source/Base/Fragments/Terminals/TERM_hackerDoorHolotapeSubMe_00188AE3.psc:74:9:forbidden-functions
 Scripts/Source/Base/Fragments/Terminals/TERM_hackerDoorHolotapeSubMe_00188AE3.psc:80:47:forbidden-functions
+Scripts/Source/Base/Fragments/Terminals/TERM_hackerProtectronHolotap_001680E5.psc:5:1:nesting-depth
 Scripts/Source/Base/Fragments/Terminals/TERM_hackerProtectronHolotap_001680E5.psc:13:1:unchecked-cast
 Scripts/Source/Base/Fragments/Terminals/TERM_hackerProtectronHolotap_001680E5.psc:16:11:forbidden-functions
 Scripts/Source/Base/Fragments/Terminals/TERM_hackerProtectronHolotap_001680E5.psc:17:1:unchecked-cast
@@ -30872,6 +30923,7 @@ Scripts/Source/Base/Fragments/Terminals/TERM_hackerVentHolotapeSubMe_0018A8DD.ps
 Scripts/Source/Base/Fragments/Terminals/TERM_hackerVentHolotapeSubMe_0018A8DD.psc:72:21:forbidden-functions
 Scripts/Source/Base/Fragments/Terminals/TERM_hackerVentHolotapeSubMe_0018A8DD.psc:73:21:forbidden-functions
 Scripts/Source/Base/Fragments/Terminals/TERM_hackerVentHolotapeSubMe_0018A8DD.psc:77:23:forbidden-functions
+Scripts/Source/Base/Fragments/Terminals/TERM_hackerVentHolotapeSubMe_0018A8DD.psc:88:1:nesting-depth
 Scripts/Source/Base/Fragments/Terminals/TERM_hackerVentHolotapeSubMe_0018A8DD.psc:97:22:forbidden-functions
 Scripts/Source/Base/Fragments/Terminals/TERM_hackerVentHolotapeSubMe_0018A8DD.psc:98:22:forbidden-functions
 Scripts/Source/Base/Fragments/Terminals/TERM_hackerVentHolotapeSubMe_0018A8DD.psc:102:24:forbidden-functions
@@ -33724,6 +33776,7 @@ Scripts/Source/Base/FuseBox_BoxScript.psc:22:1:unchecked-cast
 Scripts/Source/Base/FuseBox_BoxScript.psc:22:14:forbidden-functions
 Scripts/Source/Base/FuseBox_BoxScript.psc:24:1:unchecked-cast
 Scripts/Source/Base/FuseBox_BoxScript.psc:24:14:forbidden-functions
+Scripts/Source/Base/FuseBox_BoxScript.psc:43:1:nesting-depth
 Scripts/Source/Base/FuseBox_BoxScript.psc:44:6:forbidden-functions
 Scripts/Source/Base/FuseBox_BoxScript.psc:45:30:forbidden-functions
 Scripts/Source/Base/FuseBox_BoxScript.psc:45:60:forbidden-functions
@@ -33855,6 +33908,7 @@ Scripts/Source/Base/GenericBrawlPlayerScript.psc:31:9:forbidden-functions
 Scripts/Source/Base/GenericBrawlPlayerScript.psc:37:8:forbidden-functions
 Scripts/Source/Base/GenericBrawlPlayerScript.psc:43:10:forbidden-functions
 Scripts/Source/Base/GenericBrawlPlayerScript.psc:44:9:forbidden-functions
+Scripts/Source/Base/GenericBrawlScript.psc:3:1:nesting-depth
 Scripts/Source/Base/GenericBrawlScript.psc:4:1:none-form-usage
 Scripts/Source/Base/GenericBrawlScript.psc:5:1:none-form-usage
 Scripts/Source/Base/GenericBrawlScript.psc:7:8:forbidden-functions
@@ -33895,6 +33949,7 @@ Scripts/Source/Base/GenericDoctorsScript.psc:92:10:forbidden-functions
 Scripts/Source/Base/GenericDoctorsScript.psc:94:10:forbidden-functions
 Scripts/Source/Base/GenericDoctorsScript.psc:96:10:forbidden-functions
 Scripts/Source/Base/GenericGoHomeScript.psc:10:1:none-form-usage
+Scripts/Source/Base/GenericGoHomeScript.psc:13:1:nesting-depth
 Scripts/Source/Base/GenericGoHomeScript.psc:15:1:none-form-usage
 Scripts/Source/Base/GenericGoHomeScript.psc:18:1:none-form-usage
 Scripts/Source/Base/GenericGoHomeScript.psc:21:9:strict-boolean
@@ -33908,6 +33963,7 @@ Scripts/Source/Base/GenericGoHomeScript.psc:37:17:strict-boolean
 Scripts/Source/Base/GenericGoHomeScript.psc:38:27:forbidden-functions
 Scripts/Source/Base/GenericGoHomeScript.psc:40:1:none-form-usage
 Scripts/Source/Base/GenericGoHomeScript.psc:41:31:forbidden-functions
+Scripts/Source/Base/GenericGoHomeScript.psc:52:1:nesting-depth
 Scripts/Source/Base/GenericGoHomeScript.psc:54:5:strict-boolean
 Scripts/Source/Base/GenericGoHomeScript.psc:58:13:strict-boolean
 Scripts/Source/Base/GenericGoHomeScript.psc:59:23:forbidden-functions
@@ -34060,6 +34116,7 @@ Scripts/Source/Base/Hardcore/HC_ManagerScript.psc:396:121:line-length
 Scripts/Source/Base/Hardcore/HC_ManagerScript.psc:492:3:strict-boolean
 Scripts/Source/Base/Hardcore/HC_ManagerScript.psc:509:121:line-length
 Scripts/Source/Base/Hardcore/HC_ManagerScript.psc:580:38:unresolved-script
+Scripts/Source/Base/Hardcore/HC_ManagerScript.psc:586:1:nesting-depth
 Scripts/Source/Base/Hardcore/HC_ManagerScript.psc:597:40:unresolved-script
 Scripts/Source/Base/Hardcore/HC_ManagerScript.psc:603:15:forbidden-functions
 Scripts/Source/Base/Hardcore/HC_ManagerScript.psc:604:38:unresolved-script
@@ -34327,6 +34384,7 @@ Scripts/Source/Base/HazardBase.psc:53:121:line-length
 Scripts/Source/Base/HazardBase.psc:54:121:line-length
 Scripts/Source/Base/HazardBase.psc:56:1:none-form-usage
 Scripts/Source/Base/HazardBase.psc:57:1:none-form-usage
+Scripts/Source/Base/HeavyActorPushOnImpact.psc:19:1:nesting-depth
 Scripts/Source/Base/HeavyActorPushOnImpact.psc:21:8:forbidden-functions
 Scripts/Source/Base/HeavyActorPushOnImpact.psc:23:5:strict-boolean
 Scripts/Source/Base/HeavyActorPushOnImpact.psc:24:12:forbidden-functions
@@ -34367,6 +34425,7 @@ Scripts/Source/Base/HostileFactionClutterHandlerScript.psc:21:6:forbidden-functi
 Scripts/Source/Base/HoveringActorScript.psc:12:13:forbidden-functions
 Scripts/Source/Base/HoveringVertibirdScript.psc:64:8:forbidden-functions
 Scripts/Source/Base/IDCardReaderScript.psc:55:121:line-length
+Scripts/Source/Base/IDCardReaderScript.psc:60:1:nesting-depth
 Scripts/Source/Base/IDCardReaderScript.psc:61:23:forbidden-functions
 Scripts/Source/Base/IDCardReaderScript.psc:70:45:forbidden-functions
 Scripts/Source/Base/IDCardReaderScript.psc:78:22:unresolved-script
@@ -34385,6 +34444,7 @@ Scripts/Source/Base/IDCardReaderScript.psc:121:31:unresolved-script
 Scripts/Source/Base/IDCardReaderScript.psc:122:38:unresolved-script
 Scripts/Source/Base/IDCardReaderScript.psc:123:42:unresolved-script
 Scripts/Source/Base/IDCardReaderScript.psc:125:22:unresolved-script
+Scripts/Source/Base/IDCardReaderScript.psc:150:1:nesting-depth
 Scripts/Source/Base/IDCardReaderScript.psc:155:42:forbidden-functions
 Scripts/Source/Base/IDCardReaderScript.psc:163:8:forbidden-functions
 Scripts/Source/Base/IDCardReaderScript.psc:165:41:forbidden-functions
@@ -34468,6 +34528,7 @@ Scripts/Source/Base/Inst302InteriorTriggerScript.psc:9:1:none-form-usage
 Scripts/Source/Base/Inst302InteriorTriggerScript.psc:10:1:none-form-usage
 Scripts/Source/Base/Inst302InteriorTriggerScript.psc:10:36:forbidden-functions
 Scripts/Source/Base/Inst302InteriorTriggerScript.psc:11:1:none-form-usage
+Scripts/Source/Base/Inst302QuestScript.psc:15:1:nesting-depth
 Scripts/Source/Base/Inst302QuestScript.psc:20:1:none-form-usage
 Scripts/Source/Base/Inst302QuestScript.psc:62:1:none-form-usage
 Scripts/Source/Base/Inst302QuestScript.psc:63:1:none-form-usage
@@ -34489,6 +34550,7 @@ Scripts/Source/Base/Inst302SkipToCombat.psc:20:1:none-form-usage
 Scripts/Source/Base/Inst302SkipToCombat.psc:21:1:none-form-usage
 Scripts/Source/Base/Inst302SkipToCombat.psc:22:1:none-form-usage
 Scripts/Source/Base/Inst302SynthRoomTriggerScript.psc:10:1:argument-naming
+Scripts/Source/Base/Inst302SynthRoomTriggerScript.psc:10:1:nesting-depth
 Scripts/Source/Base/Inst302SynthRoomTriggerScript.psc:12:1:none-form-usage
 Scripts/Source/Base/Inst302SynthRoomTriggerScript.psc:14:23:forbidden-functions
 Scripts/Source/Base/Inst302SynthRoomTriggerScript.psc:15:1:none-form-usage
@@ -34644,6 +34706,7 @@ Scripts/Source/Base/Inst307FightQuestScript.psc:358:21:unresolved-script
 Scripts/Source/Base/Inst307FightQuestScript.psc:387:121:line-length
 Scripts/Source/Base/Inst307FightQuestScript.psc:440:121:line-length
 Scripts/Source/Base/Inst307FightQuestScript.psc:460:121:line-length
+Scripts/Source/Base/Inst307FightQuestScript.psc:468:1:nesting-depth
 Scripts/Source/Base/Inst307FightQuestScript.psc:485:10:forbidden-functions
 Scripts/Source/Base/Inst307FightQuestScript.psc:500:121:line-length
 Scripts/Source/Base/Inst307FightQuestScript.psc:501:121:line-length
@@ -34666,6 +34729,7 @@ Scripts/Source/Base/Inst307FightQuestScript.psc:615:1:unchecked-cast
 Scripts/Source/Base/Inst307FightQuestScript.psc:616:1:unchecked-cast
 Scripts/Source/Base/Inst307FightQuestScript.psc:617:1:unchecked-cast
 Scripts/Source/Base/Inst307FightQuestScript.psc:664:1:cyclomatic-complexity
+Scripts/Source/Base/Inst307FightQuestScript.psc:664:1:nesting-depth
 Scripts/Source/Base/Inst307FightQuestScript.psc:691:31:unresolved-script
 Scripts/Source/Base/Inst307FightQuestScript.psc:697:121:line-length
 Scripts/Source/Base/Inst307FightQuestScript.psc:703:32:unresolved-script
@@ -34675,6 +34739,7 @@ Scripts/Source/Base/Inst307FightQuestScript.psc:731:1:unchecked-cast
 Scripts/Source/Base/Inst307FightQuestScript.psc:746:1:unchecked-cast
 Scripts/Source/Base/Inst307FightQuestScript.psc:778:35:unresolved-script
 Scripts/Source/Base/Inst307FightQuestScript.psc:787:30:unresolved-script
+Scripts/Source/Base/Inst307FightQuestScript.psc:815:1:nesting-depth
 Scripts/Source/Base/Inst307FightQuestScript.psc:857:121:line-length
 Scripts/Source/Base/Inst307FightQuestScript.psc:910:121:line-length
 Scripts/Source/Base/Inst307FightQuestScript.psc:911:121:line-length
@@ -35025,6 +35090,7 @@ Scripts/Source/Base/InstM03StarterScript2.psc:26:1:none-form-usage
 Scripts/Source/Base/InstM03UnlockHydroDoorScript.psc:7:1:none-form-usage
 Scripts/Source/Base/InstM03UnlockHydroDoorScript.psc:8:1:none-form-usage
 Scripts/Source/Base/InstMassFusionRelayTriggerScript.psc:9:1:argument-naming
+Scripts/Source/Base/InstMassFusionRelayTriggerScript.psc:9:1:nesting-depth
 Scripts/Source/Base/InstMassFusionRelayTriggerScript.psc:11:33:forbidden-functions
 Scripts/Source/Base/InstMassFusionRelayTriggerScript.psc:13:1:none-form-usage
 Scripts/Source/Base/InstMassFusionRelayTriggerScript.psc:16:1:none-form-usage
@@ -35103,6 +35169,7 @@ Scripts/Source/Base/InstituteBeaconSpawnerMarkerScript.psc:8:121:line-length
 Scripts/Source/Base/InstituteBeaconSpawnerMarkerScript.psc:18:1:place-at-me
 Scripts/Source/Base/InstituteBeaconSpawnerMarkerScript.psc:19:1:place-at-me
 Scripts/Source/Base/InstituteEmergencyRelayButtonScript.psc:6:1:argument-naming
+Scripts/Source/Base/InstituteEmergencyRelayButtonScript.psc:6:1:nesting-depth
 Scripts/Source/Base/InstituteEmergencyRelayButtonScript.psc:9:1:none-form-usage
 Scripts/Source/Base/InstituteEmergencyRelayButtonScript.psc:10:1:none-form-usage
 Scripts/Source/Base/InstituteEmergencyRelayButtonScript.psc:11:27:forbidden-functions
@@ -35112,6 +35179,7 @@ Scripts/Source/Base/InstituteEmergencyRelayButtonScript.psc:14:1:none-form-usage
 Scripts/Source/Base/InstituteEmergencyRelayButtonScript.psc:18:1:none-form-usage
 Scripts/Source/Base/InstituteEmergencyRelayButtonScript.psc:21:1:none-form-usage
 Scripts/Source/Base/InstituteEmergencyRelayTriggerScript.psc:18:1:argument-naming
+Scripts/Source/Base/InstituteEmergencyRelayTriggerScript.psc:18:1:nesting-depth
 Scripts/Source/Base/InstituteEmergencyRelayTriggerScript.psc:23:1:none-form-usage
 Scripts/Source/Base/InstituteEmergencyRelayTriggerScript.psc:32:1:none-form-usage
 Scripts/Source/Base/InstituteEmergencyRelayTriggerScript.psc:34:1:unchecked-cast
@@ -35355,6 +35423,7 @@ Scripts/Source/Base/LoadElevatorMasterScript.psc:84:5:forbidden-functions
 Scripts/Source/Base/LoadElevatorMasterScript.psc:85:3:forbidden-functions
 Scripts/Source/Base/LoadElevatorMasterScript.psc:88:13:forbidden-functions
 Scripts/Source/Base/LoadElevatorMasterScript.psc:96:8:forbidden-functions
+Scripts/Source/Base/LoadElevatorMasterScript.psc:101:1:nesting-depth
 Scripts/Source/Base/LoadElevatorMasterScript.psc:103:1:none-form-usage
 Scripts/Source/Base/LoadElevatorMasterScript.psc:103:52:forbidden-functions
 Scripts/Source/Base/LoadElevatorMasterScript.psc:104:12:forbidden-functions
@@ -35367,6 +35436,7 @@ Scripts/Source/Base/LoadElevatorMasterScript.psc:112:55:forbidden-functions
 Scripts/Source/Base/LoadElevatorMasterScript.psc:118:12:forbidden-functions
 Scripts/Source/Base/LoadElevatorMasterScript.psc:118:75:forbidden-functions
 Scripts/Source/Base/LoadElevatorMasterScript.psc:118:121:line-length
+Scripts/Source/Base/LoadElevatorMasterScript.psc:124:1:nesting-depth
 Scripts/Source/Base/LoadElevatorMasterScript.psc:125:31:forbidden-functions
 Scripts/Source/Base/LoadElevatorMasterScript.psc:126:33:forbidden-functions
 Scripts/Source/Base/LoadElevatorMasterScript.psc:131:30:forbidden-functions
@@ -35396,6 +35466,7 @@ Scripts/Source/Base/LoadElevatorMasterScript.psc:192:10:forbidden-functions
 Scripts/Source/Base/LoadElevatorMasterScript.psc:200:31:forbidden-functions
 Scripts/Source/Base/LoadElevatorMasterScript.psc:202:1:none-form-usage
 Scripts/Source/Base/LoadElevatorMasterScript.psc:202:22:slow-functions
+Scripts/Source/Base/LoadElevatorPanelScript.psc:30:1:nesting-depth
 Scripts/Source/Base/LoadElevatorPanelScript.psc:36:14:forbidden-functions
 Scripts/Source/Base/LoadElevatorPanelScript.psc:38:32:forbidden-functions
 Scripts/Source/Base/LoadElevatorPanelScript.psc:39:7:strict-boolean
@@ -35919,6 +35990,7 @@ Scripts/Source/Base/MQ105ActivationBlockerScript.psc:27:1:unchecked-cast
 Scripts/Source/Base/MQ105ActivationBlockerScript.psc:29:10:forbidden-functions
 Scripts/Source/Base/MQ105PlayerScript.psc:23:1:none-form-usage
 Scripts/Source/Base/MQ105PlayerScript.psc:32:1:none-form-usage
+Scripts/Source/Base/MQ106InvestgationDummySCRIPT.psc:16:1:nesting-depth
 Scripts/Source/Base/MQ106InvestgationDummySCRIPT.psc:18:11:forbidden-functions
 Scripts/Source/Base/MQ106InvestgationDummySCRIPT.psc:19:11:forbidden-functions
 Scripts/Source/Base/MQ106InvestgationDummySCRIPT.psc:20:11:forbidden-functions
@@ -36103,6 +36175,7 @@ Scripts/Source/Base/MQ203Script.psc:86:42:unresolved-script
 Scripts/Source/Base/MQ203Script.psc:91:10:forbidden-functions
 Scripts/Source/Base/MQ203Script.psc:132:10:forbidden-functions
 Scripts/Source/Base/MQ203Script.psc:147:1:cyclomatic-complexity
+Scripts/Source/Base/MQ203Script.psc:147:1:nesting-depth
 Scripts/Source/Base/MQ203Script.psc:151:9:forbidden-functions
 Scripts/Source/Base/MQ203Script.psc:152:11:forbidden-functions
 Scripts/Source/Base/MQ203Script.psc:165:121:line-length
@@ -36125,6 +36198,7 @@ Scripts/Source/Base/MQ203Script.psc:387:121:line-length
 Scripts/Source/Base/MQ203Script.psc:403:39:unresolved-script
 Scripts/Source/Base/MQ203Script.psc:403:45:forbidden-functions
 Scripts/Source/Base/MQ203Script.psc:406:20:unresolved-script
+Scripts/Source/Base/MQ203Script.psc:437:1:nesting-depth
 Scripts/Source/Base/MQ203Script.psc:439:2:strict-boolean
 Scripts/Source/Base/MQ203Script.psc:446:2:strict-boolean
 Scripts/Source/Base/MQ203Script.psc:462:29:unresolved-script
@@ -36169,6 +36243,7 @@ Scripts/Source/Base/MQ203Script.psc:808:45:forbidden-functions
 Scripts/Source/Base/MQ203Script.psc:810:16:unresolved-script
 Scripts/Source/Base/MQ203Script.psc:816:27:unresolved-script
 Scripts/Source/Base/MQ203Script.psc:828:11:forbidden-functions
+Scripts/Source/Base/MQ203Script.psc:853:1:nesting-depth
 Scripts/Source/Base/MQ203Script.psc:861:3:strict-boolean
 Scripts/Source/Base/MQ203Script.psc:865:1:unchecked-cast
 Scripts/Source/Base/MQ203Script.psc:875:5:strict-boolean
@@ -36203,6 +36278,7 @@ Scripts/Source/Base/MQ204CaveUpdateTriggerScript.psc:8:23:forbidden-functions
 Scripts/Source/Base/MQ204CaveUpdateTriggerScript.psc:9:1:none-form-usage
 Scripts/Source/Base/MQ204CaveUpdateTriggerScript.psc:10:1:unchecked-cast
 Scripts/Source/Base/MQ204EdgeUpdateTriggerRef.psc:5:1:argument-naming
+Scripts/Source/Base/MQ204EdgeUpdateTriggerRef.psc:5:1:nesting-depth
 Scripts/Source/Base/MQ204EdgeUpdateTriggerRef.psc:7:23:forbidden-functions
 Scripts/Source/Base/MQ204EdgeUpdateTriggerRef.psc:8:1:none-form-usage
 Scripts/Source/Base/MQ204EdgeUpdateTriggerRef.psc:9:1:none-form-usage
@@ -36314,6 +36390,7 @@ Scripts/Source/Base/MQ206Script.psc:415:8:forbidden-functions
 Scripts/Source/Base/MQ206Script.psc:428:23:slow-functions
 Scripts/Source/Base/MQ206Script.psc:428:34:unresolved-script
 Scripts/Source/Base/MQ206Script.psc:433:1:cyclomatic-complexity
+Scripts/Source/Base/MQ206Script.psc:433:1:nesting-depth
 Scripts/Source/Base/MQ206Script.psc:434:8:forbidden-functions
 Scripts/Source/Base/MQ206Script.psc:443:11:forbidden-functions
 Scripts/Source/Base/MQ206Script.psc:445:13:forbidden-functions
@@ -36417,6 +36494,7 @@ Scripts/Source/Base/MQ206Script.psc:723:1:none-form-usage
 Scripts/Source/Base/MQ206Script.psc:724:27:unresolved-script
 Scripts/Source/Base/MQ206Script.psc:728:3:strict-boolean
 Scripts/Source/Base/MQ206Script.psc:745:1:cyclomatic-complexity
+Scripts/Source/Base/MQ206Script.psc:745:1:nesting-depth
 Scripts/Source/Base/MQ206Script.psc:746:8:forbidden-functions
 Scripts/Source/Base/MQ206Script.psc:748:9:forbidden-functions
 Scripts/Source/Base/MQ206Script.psc:759:11:forbidden-functions
@@ -36660,6 +36738,7 @@ Scripts/Source/Base/MS01BulletScript.psc:16:1:none-form-usage
 Scripts/Source/Base/MS01BulletScript.psc:17:1:none-form-usage
 Scripts/Source/Base/MS01FridgeDoorScript.psc:5:1:none-form-usage
 Scripts/Source/Base/MS01HouseTriggerScript.psc:10:1:argument-naming
+Scripts/Source/Base/MS01HouseTriggerScript.psc:10:1:nesting-depth
 Scripts/Source/Base/MS01HouseTriggerScript.psc:12:1:none-form-usage
 Scripts/Source/Base/MS01HouseTriggerScript.psc:13:1:none-form-usage
 Scripts/Source/Base/MS01HouseTriggerScript.psc:14:1:none-form-usage
@@ -36833,6 +36912,7 @@ Scripts/Source/Base/MS04PostQuestScript.psc:27:1:unchecked-cast
 Scripts/Source/Base/MS04PostQuestScript.psc:28:1:none-form-usage
 Scripts/Source/Base/MS04SinjinActorScript.psc:7:24:forbidden-functions
 Scripts/Source/Base/MS04SinjinActorScript.psc:8:1:none-form-usage
+Scripts/Source/Base/MS04_LeverScript.psc:36:1:nesting-depth
 Scripts/Source/Base/MS04_LeverScript.psc:38:1:none-form-usage
 Scripts/Source/Base/MS04_LeverScript.psc:42:1:unchecked-cast
 Scripts/Source/Base/MS04_LeverScript.psc:45:14:forbidden-functions
@@ -36862,6 +36942,7 @@ Scripts/Source/Base/MS05BDeathclawSpeechScript.psc:11:1:none-form-usage
 Scripts/Source/Base/MS05BDeathclawSpeechScript.psc:11:121:line-length
 Scripts/Source/Base/MS05BDeathclawSpeechScript.psc:12:1:none-form-usage
 Scripts/Source/Base/MS05BDeathclawSpeechScript.psc:13:1:none-form-usage
+Scripts/Source/Base/MS05BNestInnerTriggerScript.psc:7:1:nesting-depth
 Scripts/Source/Base/MS05BNestInnerTriggerScript.psc:9:1:none-form-usage
 Scripts/Source/Base/MS05BNestInnerTriggerScript.psc:13:1:none-form-usage
 Scripts/Source/Base/MS05BNestInnerTriggerScript.psc:27:1:none-form-usage
@@ -36936,6 +37017,7 @@ Scripts/Source/Base/MS07cActiveStationTriggerScript.psc:22:1:unchecked-cast
 Scripts/Source/Base/MS07cActiveStationTriggerScript.psc:24:1:unchecked-cast
 Scripts/Source/Base/MS07cActiveStationTriggerScript.psc:25:1:unchecked-cast
 Scripts/Source/Base/MS07cActiveStationTriggerScript.psc:28:1:unchecked-cast
+Scripts/Source/Base/MS07cActiveStationTriggerScript.psc:40:1:nesting-depth
 Scripts/Source/Base/MS07cActiveStationTriggerScript.psc:44:1:none-form-usage
 Scripts/Source/Base/MS07cActiveStationTriggerScript.psc:44:1:none-form-usage
 Scripts/Source/Base/MS07cActiveStationTriggerScript.psc:47:26:forbidden-functions
@@ -36950,6 +37032,7 @@ Scripts/Source/Base/MS07cGreetingHandlerScript.psc:17:1:argument-naming
 Scripts/Source/Base/MS07cGreetingHandlerScript.psc:22:1:none-form-usage
 Scripts/Source/Base/MS07cGreetingHandlerScript.psc:24:1:none-form-usage
 Scripts/Source/Base/MS07cGreetingHandlerScript.psc:25:1:none-form-usage
+Scripts/Source/Base/MS07cHolotapeAliasScript.psc:14:1:nesting-depth
 Scripts/Source/Base/MS07cHolotapeAliasScript.psc:16:29:forbidden-functions
 Scripts/Source/Base/MS07cHolotapeAliasScript.psc:21:1:none-form-usage
 Scripts/Source/Base/MS07cHolotapeAliasScript.psc:23:1:none-form-usage
@@ -36964,6 +37047,7 @@ Scripts/Source/Base/MS07cHolotapeAliasScript.psc:41:1:none-form-usage
 Scripts/Source/Base/MS07cHolotapeAliasScript.psc:43:1:none-form-usage
 Scripts/Source/Base/MS07cHolotapeAliasScript.psc:55:1:none-form-usage
 Scripts/Source/Base/MS07cHolotapeAliasScript.psc:56:1:unchecked-cast
+Scripts/Source/Base/MS07cKeypadScript.psc:13:1:nesting-depth
 Scripts/Source/Base/MS07cKeypadScript.psc:18:1:none-form-usage
 Scripts/Source/Base/MS07cKeypadScript.psc:18:1:none-form-usage
 Scripts/Source/Base/MS07cKeypadScript.psc:20:26:forbidden-functions
@@ -37131,6 +37215,7 @@ Scripts/Source/Base/MS11PowerScript.psc:10:1:none-form-usage
 Scripts/Source/Base/MS11RepairScript.psc:8:1:none-form-usage
 Scripts/Source/Base/MS11RepairScript.psc:8:14:forbidden-functions
 Scripts/Source/Base/MS11RepairScript.psc:9:1:none-form-usage
+Scripts/Source/Base/MS11RepairSystemScript.psc:17:1:nesting-depth
 Scripts/Source/Base/MS11RepairSystemScript.psc:19:25:forbidden-functions
 Scripts/Source/Base/MS11RepairSystemScript.psc:21:1:none-form-usage
 Scripts/Source/Base/MS11RepairSystemScript.psc:24:1:none-form-usage
@@ -37248,6 +37333,7 @@ Scripts/Source/Base/MS13CookeDiesScript.psc:135:1:none-form-usage
 Scripts/Source/Base/MS13CookeDiesScript.psc:137:9:forbidden-functions
 Scripts/Source/Base/MS13CookeDiesScript.psc:140:10:forbidden-functions
 Scripts/Source/Base/MS13CookeDiesScript.psc:160:1:none-form-usage
+Scripts/Source/Base/MS13FindPhotoScript.psc:3:1:nesting-depth
 Scripts/Source/Base/MS13FindPhotoScript.psc:4:8:forbidden-functions
 Scripts/Source/Base/MS13FindPhotoScript.psc:5:22:forbidden-functions
 Scripts/Source/Base/MS13FindPhotoScript.psc:6:1:none-form-usage
@@ -37355,6 +37441,7 @@ Scripts/Source/Base/MS13Script.psc:150:1:none-form-usage
 Scripts/Source/Base/MS13Script.psc:151:1:none-form-usage
 Scripts/Source/Base/MS13Script.psc:170:8:forbidden-functions
 Scripts/Source/Base/MS14BullyScript.psc:7:1:argument-naming
+Scripts/Source/Base/MS14BullyScript.psc:7:1:nesting-depth
 Scripts/Source/Base/MS14BullyScript.psc:9:1:none-form-usage
 Scripts/Source/Base/MS14BullyScript.psc:10:1:none-form-usage
 Scripts/Source/Base/MS14BullyScript.psc:11:22:forbidden-functions
@@ -37490,6 +37577,7 @@ Scripts/Source/Base/MS17OutsideHouseHandlingScript.psc:32:1:unchecked-cast
 Scripts/Source/Base/MS17OutsideHouseHandlingScript.psc:33:9:forbidden-functions
 Scripts/Source/Base/MS17OutsideHouseHandlingScript.psc:39:10:forbidden-functions
 Scripts/Source/Base/MS17OutsideHouseHandlingScript.psc:51:1:argument-naming
+Scripts/Source/Base/MS17OutsideHouseHandlingScript.psc:51:1:nesting-depth
 Scripts/Source/Base/MS17OutsideHouseHandlingScript.psc:59:1:unchecked-cast
 Scripts/Source/Base/MS17PennyShopTriggerScript.psc:9:1:none-form-usage
 Scripts/Source/Base/MS17PennyShopTriggerScript.psc:10:1:none-form-usage
@@ -37789,6 +37877,7 @@ Scripts/Source/Base/MinArtilleryScript.psc:214:3:strict-boolean
 Scripts/Source/Base/MinArtilleryScript.psc:215:10:forbidden-functions
 Scripts/Source/Base/MinArtilleryScript.psc:223:8:forbidden-functions
 Scripts/Source/Base/MinArtilleryScript.psc:242:8:forbidden-functions
+Scripts/Source/Base/MinArtilleryScript.psc:247:1:nesting-depth
 Scripts/Source/Base/MinArtilleryScript.psc:248:8:forbidden-functions
 Scripts/Source/Base/MinArtilleryScript.psc:250:1:none-form-usage
 Scripts/Source/Base/MinArtilleryScript.psc:251:1:none-form-usage
@@ -37881,6 +37970,7 @@ Scripts/Source/Base/MinDefendCastleAttackScript.psc:293:11:forbidden-functions
 Scripts/Source/Base/MinDefendCastleAttackScript.psc:294:11:forbidden-functions
 Scripts/Source/Base/MinDefendCastleAttackScript.psc:296:11:forbidden-functions
 Scripts/Source/Base/MinDefendCastleAttackScript.psc:297:43:unresolved-script
+Scripts/Source/Base/MinDefendCastleAttackScript.psc:314:1:nesting-depth
 Scripts/Source/Base/MinDefendCastleAttackScript.psc:315:11:forbidden-functions
 Scripts/Source/Base/MinDefendCastleAttackScript.psc:320:19:forbidden-functions
 Scripts/Source/Base/MinDefendCastleAttackScript.psc:329:121:line-length
@@ -37925,6 +38015,7 @@ Scripts/Source/Base/MinDefendCastleAttackScript.psc:588:11:forbidden-functions
 Scripts/Source/Base/MinDefendCastleAttackScript.psc:607:42:unresolved-script
 Scripts/Source/Base/MinDefendCastleAttackScript.psc:612:41:unresolved-script
 Scripts/Source/Base/MinDefendCastleAttackScript.psc:613:33:forbidden-functions
+Scripts/Source/Base/MinDefendCastleAttackScript.psc:624:1:nesting-depth
 Scripts/Source/Base/MinDefendCastleAttackScript.psc:626:45:unresolved-script
 Scripts/Source/Base/MinDefendCastleAttackScript.psc:634:47:unresolved-script
 Scripts/Source/Base/MinDefendCastleAttackScript.psc:636:36:forbidden-functions
@@ -37939,6 +38030,7 @@ Scripts/Source/Base/MinDefendCastleAttackScript.psc:682:52:unresolved-script
 Scripts/Source/Base/MinDefendCastleAttackScript.psc:682:121:line-length
 Scripts/Source/Base/MinDefendCastleAttackScript.psc:697:11:forbidden-functions
 Scripts/Source/Base/MinDefendCastleAttackScript.psc:699:35:unresolved-script
+Scripts/Source/Base/MinDefendCastleAttackScript.psc:705:1:nesting-depth
 Scripts/Source/Base/MinDefendCastleAttackScript.psc:706:11:forbidden-functions
 Scripts/Source/Base/MinDefendCastleAttackScript.psc:712:52:unresolved-script
 Scripts/Source/Base/MinDefendCastleAttackScript.psc:712:73:unresolved-script
@@ -38053,6 +38145,7 @@ Scripts/Source/Base/MinDefendCastleVertibirdQuestScript.psc:99:24:unresolved-scr
 Scripts/Source/Base/MinDefendCastleVertibirdQuestScript.psc:102:24:unresolved-script
 Scripts/Source/Base/MinDefendCastleVertibirdQuestScript.psc:105:9:forbidden-functions
 Scripts/Source/Base/MinDestBOSScript.psc:56:30:forbidden-functions
+Scripts/Source/Base/MinDestBOSScript.psc:61:1:nesting-depth
 Scripts/Source/Base/MinDestBOSScript.psc:62:8:forbidden-functions
 Scripts/Source/Base/MinDestBOSScript.psc:64:22:forbidden-functions
 Scripts/Source/Base/MinDestBOSScript.psc:66:1:none-form-usage
@@ -38117,6 +38210,7 @@ Scripts/Source/Base/MinDestBOSScript.psc:230:1:none-form-usage
 Scripts/Source/Base/MinDestBOSScript.psc:241:3:strict-boolean
 Scripts/Source/Base/MinDestBOSScript.psc:253:1:unchecked-cast
 Scripts/Source/Base/MinDestBOSScript.psc:258:1:none-form-usage
+Scripts/Source/Base/MinDestBoSArtilleryScript.psc:11:1:nesting-depth
 Scripts/Source/Base/MinDestBoSArtilleryScript.psc:12:8:forbidden-functions
 Scripts/Source/Base/MinDestBoSArtilleryScript.psc:13:1:none-form-usage
 Scripts/Source/Base/MinDestBoSArtilleryScript.psc:30:1:unchecked-cast
@@ -38360,6 +38454,7 @@ Scripts/Source/Base/MinRecruit02Script.psc:30:1:none-form-usage
 Scripts/Source/Base/MinRecruit02Script.psc:32:32:unresolved-script
 Scripts/Source/Base/MinRecruit02Script.psc:40:1:none-form-usage
 Scripts/Source/Base/MinRecruit02Script.psc:44:1:none-form-usage
+Scripts/Source/Base/MinRecruit02Script.psc:48:1:nesting-depth
 Scripts/Source/Base/MinRecruit02Script.psc:49:8:forbidden-functions
 Scripts/Source/Base/MinRecruit02Script.psc:49:121:line-length
 Scripts/Source/Base/MinRecruit02Script.psc:53:10:forbidden-functions
@@ -38402,6 +38497,7 @@ Scripts/Source/Base/MinRecruitQuestScript.psc:110:9:forbidden-functions
 Scripts/Source/Base/MinRecruitQuestScript.psc:117:23:unresolved-script
 Scripts/Source/Base/MinRecruitQuestScript.psc:123:9:forbidden-functions
 Scripts/Source/Base/MinRecruitQuestScript.psc:143:37:unresolved-script
+Scripts/Source/Base/MinRecruitQuestScript.psc:146:1:nesting-depth
 Scripts/Source/Base/MinRecruitQuestScript.psc:147:8:forbidden-functions
 Scripts/Source/Base/MinRecruitQuestScript.psc:150:48:unresolved-script
 Scripts/Source/Base/MinRecruitQuestScript.psc:152:1:unchecked-cast
@@ -38517,6 +38613,7 @@ Scripts/Source/Base/MinutemenCentralScript.psc:367:1:none-form-usage
 Scripts/Source/Base/MinutemenCentralScript.psc:368:9:forbidden-functions
 Scripts/Source/Base/MinutemenCentralScript.psc:369:1:none-form-usage
 Scripts/Source/Base/MinutemenCentralScript.psc:383:1:cyclomatic-complexity
+Scripts/Source/Base/MinutemenCentralScript.psc:383:1:nesting-depth
 Scripts/Source/Base/MinutemenCentralScript.psc:384:8:forbidden-functions
 Scripts/Source/Base/MinutemenCentralScript.psc:388:26:slow-functions
 Scripts/Source/Base/MinutemenCentralScript.psc:388:37:unresolved-script
@@ -39064,6 +39161,7 @@ Scripts/Source/Base/PowerArmorBatteryInsertScript.psc:68:32:forbidden-functions
 Scripts/Source/Base/PowerArmorBatteryInsertScript.psc:79:10:forbidden-functions
 Scripts/Source/Base/PowerArmorBatteryInsertScript.psc:89:9:forbidden-functions
 Scripts/Source/Base/PowerArmorFXScript.psc:17:8:forbidden-functions
+Scripts/Source/Base/PowerArmorFXScript.psc:26:1:nesting-depth
 Scripts/Source/Base/PowerArmorFXScript.psc:28:12:forbidden-functions
 Scripts/Source/Base/PowerArmorFXScript.psc:42:10:forbidden-functions
 Scripts/Source/Base/PowerArmorFXScript.psc:51:11:forbidden-functions
@@ -39098,6 +39196,7 @@ Scripts/Source/Base/PowerArmorWorkbench.psc:53:1:variable-used-before-assignment
 Scripts/Source/Base/PowerArmorWorkbench.psc:53:9:forbidden-functions
 Scripts/Source/Base/PowerArmorWorkbench.psc:55:1:none-form-usage
 Scripts/Source/Base/PowerArmorWorkbench.psc:55:1:variable-used-before-assignment
+Scripts/Source/Base/PowerArmorWorkbench.psc:64:1:nesting-depth
 Scripts/Source/Base/PowerArmorWorkbench.psc:65:33:forbidden-functions
 Scripts/Source/Base/PowerArmorWorkbench.psc:68:10:forbidden-functions
 Scripts/Source/Base/PowerArmorWorkbench.psc:71:1:unchecked-cast
@@ -39167,6 +39266,7 @@ Scripts/Source/Base/ProjectorScript.psc:56:36:unresolved-script
 Scripts/Source/Base/ProjectorScript.psc:91:24:unresolved-script
 Scripts/Source/Base/ProjectorScript.psc:95:2:empty-body
 Scripts/Source/Base/ProjectorScript.psc:104:2:strict-boolean
+Scripts/Source/Base/ProjectorScript.psc:137:1:nesting-depth
 Scripts/Source/Base/ProjectorScript.psc:168:30:forbidden-functions
 Scripts/Source/Base/ProjectorScript.psc:169:15:unresolved-script
 Scripts/Source/Base/PrydwenDestructionScript.psc:44:121:line-length
@@ -39216,6 +39316,7 @@ Scripts/Source/Base/PulowskShelterScript.psc:31:1:none-form-usage
 Scripts/Source/Base/PulowskShelterScript.psc:32:1:none-form-usage
 Scripts/Source/Base/PulowskShelterScript.psc:34:1:none-form-usage
 Scripts/Source/Base/PulowskShelterScript.psc:35:43:forbidden-functions
+Scripts/Source/Base/PulowskShelterScript.psc:38:1:nesting-depth
 Scripts/Source/Base/PulowskShelterScript.psc:39:8:forbidden-functions
 Scripts/Source/Base/PulowskShelterScript.psc:40:28:forbidden-functions
 Scripts/Source/Base/PulowskShelterScript.psc:43:13:forbidden-functions
@@ -39244,6 +39345,7 @@ Scripts/Source/Base/Quest.psc:9:121:line-length
 Scripts/Source/Base/Quest.psc:10:121:line-length
 Scripts/Source/Base/Quest.psc:11:121:line-length
 Scripts/Source/Base/Quest.psc:12:121:line-length
+Scripts/Source/Base/Quest.psc:13:1:nesting-depth
 Scripts/Source/Base/Quest.psc:13:121:line-length
 Scripts/Source/Base/Quest.psc:16:8:forbidden-functions
 Scripts/Source/Base/Quest.psc:16:121:line-length
@@ -39372,6 +39474,7 @@ Scripts/Source/Base/RECheckpointPlayerDistanceScript.psc:17:8:forbidden-function
 Scripts/Source/Base/RECheckpointQuestScript.psc:20:121:line-length
 Scripts/Source/Base/RECheckpointQuestScript.psc:57:1:none-form-usage
 Scripts/Source/Base/RECheckpointQuestScript.psc:58:1:none-form-usage
+Scripts/Source/Base/RECheckpointQuestScript.psc:64:1:nesting-depth
 Scripts/Source/Base/RECheckpointQuestScript.psc:70:1:none-form-usage
 Scripts/Source/Base/RECheckpointQuestScript.psc:71:1:none-form-usage
 Scripts/Source/Base/RECheckpointQuestScript.psc:71:1:none-form-usage
@@ -39528,6 +39631,7 @@ Scripts/Source/Base/RECollectionAliasScript.psc:73:3:strict-boolean
 Scripts/Source/Base/RECollectionAliasScript.psc:76:35:forbidden-functions
 Scripts/Source/Base/RECorpseSwarmCreatorScript.psc:15:10:forbidden-functions
 Scripts/Source/Base/RECorpseSwarmCreatorScript.psc:19:10:forbidden-functions
+Scripts/Source/Base/RELCOnCombatStateChangedScript.psc:7:1:nesting-depth
 Scripts/Source/Base/RELCOnCombatStateChangedScript.psc:8:7:forbidden-functions
 Scripts/Source/Base/RELCOnCombatStateChangedScript.psc:11:9:forbidden-functions
 Scripts/Source/Base/RELCOnCombatStateChangedScript.psc:15:10:forbidden-functions
@@ -39587,6 +39691,7 @@ Scripts/Source/Base/REPrisonerScript.psc:92:33:forbidden-functions
 Scripts/Source/Base/REPrisonerScript.psc:97:9:forbidden-functions
 Scripts/Source/Base/REPrisonerScript.psc:107:8:forbidden-functions
 Scripts/Source/Base/REPrisonerScript.psc:131:7:forbidden-functions
+Scripts/Source/Base/REPrisonerScript.psc:140:1:nesting-depth
 Scripts/Source/Base/REPrisonerScript.psc:141:2:strict-boolean
 Scripts/Source/Base/REPrisonerScript.psc:152:3:strict-boolean
 Scripts/Source/Base/REPrisonerScript.psc:158:6:strict-boolean
@@ -39653,6 +39758,7 @@ Scripts/Source/Base/REScript.psc:139:9:forbidden-functions
 Scripts/Source/Base/REScript.psc:150:8:forbidden-functions
 Scripts/Source/Base/REScript.psc:161:9:forbidden-functions
 Scripts/Source/Base/REScript.psc:167:1:cyclomatic-complexity
+Scripts/Source/Base/REScript.psc:167:1:nesting-depth
 Scripts/Source/Base/REScript.psc:168:8:forbidden-functions
 Scripts/Source/Base/REScript.psc:180:10:forbidden-functions
 Scripts/Source/Base/REScript.psc:188:5:strict-boolean
@@ -39673,6 +39779,7 @@ Scripts/Source/Base/REScript.psc:236:11:forbidden-functions
 Scripts/Source/Base/REScript.psc:268:1:none-form-usage
 Scripts/Source/Base/REScript.psc:277:3:strict-boolean
 Scripts/Source/Base/REScript.psc:278:10:forbidden-functions
+Scripts/Source/Base/REScript.psc:286:1:nesting-depth
 Scripts/Source/Base/REScript.psc:297:1:unchecked-cast
 Scripts/Source/Base/REScript.psc:307:1:unchecked-cast
 Scripts/Source/Base/REScript.psc:315:1:none-form-usage
@@ -39880,6 +39987,7 @@ Scripts/Source/Base/RR201HolotapeTrackingScript.psc:7:1:none-form-usage
 Scripts/Source/Base/RR201HolotapeTrackingScript.psc:8:1:unchecked-cast
 Scripts/Source/Base/RR201HolotapeTrackingScript.psc:12:30:forbidden-functions
 Scripts/Source/Base/RR201HolotapeTrackingScript.psc:13:1:unchecked-cast
+Scripts/Source/Base/RR201RebelChestScript.psc:12:1:nesting-depth
 Scripts/Source/Base/RR201RebelChestScript.psc:12:121:line-length
 Scripts/Source/Base/RR201RebelChestScript.psc:14:8:forbidden-functions
 Scripts/Source/Base/RR201RebelChestScript.psc:17:9:forbidden-functions
@@ -39890,6 +39998,7 @@ Scripts/Source/Base/RR201RebelChestScript.psc:31:1:none-form-usage
 Scripts/Source/Base/RR201RebelChestScript.psc:31:1:none-form-usage
 Scripts/Source/Base/RR201RebelChestScript.psc:32:1:none-form-usage
 Scripts/Source/Base/RR201RebelChestScript.psc:33:1:none-form-usage
+Scripts/Source/Base/RR201RebelChestScript.psc:41:1:nesting-depth
 Scripts/Source/Base/RR201RebelChestScript.psc:41:121:line-length
 Scripts/Source/Base/RR201RebelChestScript.psc:43:8:forbidden-functions
 Scripts/Source/Base/RR201RebelChestScript.psc:46:9:forbidden-functions
@@ -40191,6 +40300,7 @@ Scripts/Source/Base/RefCollectionAliasManager.psc:306:11:forbidden-functions
 Scripts/Source/Base/RefCollectionAliasManager.psc:313:1:variable-used-before-assignment
 Scripts/Source/Base/RefCollectionAliasManager.psc:316:9:forbidden-functions
 Scripts/Source/Base/RefCollectionAliasManager.psc:320:8:forbidden-functions
+Scripts/Source/Base/RefCollectionAliasManager.psc:326:1:nesting-depth
 Scripts/Source/Base/RefCollectionAliasManager.psc:327:8:forbidden-functions
 Scripts/Source/Base/RefCollectionAliasManager.psc:334:2:strict-boolean
 Scripts/Source/Base/RefCollectionAliasManager.psc:344:12:forbidden-functions
@@ -40268,6 +40378,7 @@ Scripts/Source/Base/RelayTowerQuestScript.psc:12:1:variable-used-before-assignme
 Scripts/Source/Base/RelayTowerQuestScript.psc:13:1:variable-used-before-assignment
 Scripts/Source/Base/RelayTowerQuestScript.psc:15:1:variable-used-before-assignment
 Scripts/Source/Base/RelayTowerScript.psc:45:1:none-form-usage
+Scripts/Source/Base/RelayTowerScript.psc:63:1:nesting-depth
 Scripts/Source/Base/RelayTowerScript.psc:67:1:none-form-usage
 Scripts/Source/Base/RelayTowerScript.psc:68:1:none-form-usage
 Scripts/Source/Base/RelayTowerScript.psc:70:4:strict-boolean
@@ -40296,6 +40407,7 @@ Scripts/Source/Base/RelayTowerScript.psc:173:1:none-form-usage
 Scripts/Source/Base/RelayTowerScript.psc:186:1:none-form-usage
 Scripts/Source/Base/RelayTowerScript.psc:192:1:none-form-usage
 Scripts/Source/Base/RelayTowerScript.psc:198:1:none-form-usage
+Scripts/Source/Base/RelayTowerScript.psc:241:1:nesting-depth
 Scripts/Source/Base/RelayTowerScript.psc:243:35:forbidden-functions
 Scripts/Source/Base/RelayTowerScript.psc:246:1:none-form-usage
 Scripts/Source/Base/RelayTowerScript.psc:246:121:line-length
@@ -40548,6 +40660,7 @@ Scripts/Source/Base/SpotlightScript.psc:103:29:unresolved-script
 Scripts/Source/Base/SpotlightScript.psc:129:1:none-form-usage
 Scripts/Source/Base/SpotlightScript.psc:138:3:empty-body
 Scripts/Source/Base/SpotlightScript.psc:146:121:line-length
+Scripts/Source/Base/SpotlightScript.psc:147:1:nesting-depth
 Scripts/Source/Base/SpotlightScript.psc:149:3:empty-body
 Scripts/Source/Base/SpotlightScript.psc:149:26:forbidden-functions
 Scripts/Source/Base/SpotlightScript.psc:154:121:line-length
@@ -40579,6 +40692,7 @@ Scripts/Source/Base/SpotlightScript.psc:309:1:none-form-usage
 Scripts/Source/Base/SpotlightScript.psc:315:1:none-form-usage
 Scripts/Source/Base/SpotlightScript.psc:333:1:none-form-usage
 Scripts/Source/Base/SpotlightScript.psc:350:121:line-length
+Scripts/Source/Base/SpotlightScript.psc:351:1:nesting-depth
 Scripts/Source/Base/SpotlightScript.psc:358:1:none-form-usage
 Scripts/Source/Base/SpotlightScript.psc:364:29:unresolved-script
 Scripts/Source/Base/SpotlightScript.psc:367:121:line-length
@@ -40625,8 +40739,10 @@ Scripts/Source/Base/SpotlightTriggerScript.psc:185:121:line-length
 Scripts/Source/Base/SpotlightTriggerScript.psc:210:1:explicit-return
 Scripts/Source/Base/SpotlightTriggerScript.psc:218:1:none-form-usage
 Scripts/Source/Base/SpotlightTriggerScript.psc:231:121:line-length
+Scripts/Source/Base/SpotlightTriggerScript.psc:246:1:nesting-depth
 Scripts/Source/Base/SpotlightTriggerScript.psc:257:4:empty-body
 Scripts/Source/Base/SpotlightTriggerScript.psc:306:18:unresolved-script
+Scripts/Source/Base/SpotlightTriggerScript.psc:310:1:nesting-depth
 Scripts/Source/Base/SpotlightTriggerScript.psc:317:29:forbidden-functions
 Scripts/Source/Base/SpotlightTriggerScript.psc:324:1:unreachable-statement
 Scripts/Source/Base/SpotlightTriggerScript.psc:333:1:unreachable-statement
@@ -41049,6 +41165,7 @@ Scripts/Source/Base/TestActorStimSenseScript.psc:63:3:strict-boolean
 Scripts/Source/Base/TestActorStimSenseScript.psc:64:1:none-form-usage
 Scripts/Source/Base/TestActorStimSenseScript.psc:77:121:line-length
 Scripts/Source/Base/TestBlockActivationScript.psc:8:8:forbidden-functions
+Scripts/Source/Base/TestCellPowerArmorScript.psc:18:1:nesting-depth
 Scripts/Source/Base/TestCellPowerArmorScript.psc:19:9:forbidden-functions
 Scripts/Source/Base/TestCellPowerArmorScript.psc:20:27:forbidden-functions
 Scripts/Source/Base/TestCellPowerArmorScript.psc:21:35:forbidden-functions
@@ -41114,6 +41231,7 @@ Scripts/Source/Base/TestDrSkImpulseTrigScript.psc:27:9:forbidden-functions
 Scripts/Source/Base/TestDrSkImpulseTrigScript.psc:28:9:forbidden-functions
 Scripts/Source/Base/TestDrSkImpulseTrigScript.psc:29:9:forbidden-functions
 Scripts/Source/Base/TestDrewDisableSelfTrigger.psc:2:121:line-length
+Scripts/Source/Base/TestDrewDisableSelfTrigger.psc:29:1:nesting-depth
 Scripts/Source/Base/TestDrewDisableSelfTrigger.psc:31:26:forbidden-functions
 Scripts/Source/Base/TestDrewDisableSelfTrigger.psc:32:36:forbidden-functions
 Scripts/Source/Base/TestDrewDisableSelfTrigger.psc:33:121:line-length
@@ -41163,6 +41281,7 @@ Scripts/Source/Base/TestLocationalSoundTrigger.psc:58:9:forbidden-functions
 Scripts/Source/Base/TestLocationalSoundTrigger.psc:59:9:forbidden-functions
 Scripts/Source/Base/TestMagazineScript.psc:6:7:forbidden-functions
 Scripts/Source/Base/TestMalfunctioningDoorScript.psc:10:1:argument-naming
+Scripts/Source/Base/TestMegatonBombScript.psc:14:1:nesting-depth
 Scripts/Source/Base/TestMegatonBombScript.psc:16:25:forbidden-functions
 Scripts/Source/Base/TestMegatonBombScript.psc:17:1:none-form-usage
 Scripts/Source/Base/TestMegatonBombScript.psc:18:1:none-form-usage
@@ -41374,6 +41493,7 @@ Scripts/Source/Base/TrapExplGas.psc:103:41:unresolved-script
 Scripts/Source/Base/TrapExplGas.psc:104:12:forbidden-functions
 Scripts/Source/Base/TrapExplGas.psc:107:12:forbidden-functions
 Scripts/Source/Base/TrapExplGas.psc:110:12:forbidden-functions
+Scripts/Source/Base/TrapExplGas.psc:117:1:nesting-depth
 Scripts/Source/Base/TrapExplGas.psc:118:9:forbidden-functions
 Scripts/Source/Base/TrapExplGas.psc:120:74:unresolved-script
 Scripts/Source/Base/TrapExplGas.psc:124:11:forbidden-functions
@@ -41475,6 +41595,7 @@ Scripts/Source/Base/TrapTrigBase.psc:242:13:forbidden-functions
 Scripts/Source/Base/TrapTrigBase.psc:257:12:forbidden-functions
 Scripts/Source/Base/TrapTrigBase.psc:259:12:forbidden-functions
 Scripts/Source/Base/TrapTrigBase.psc:288:9:forbidden-functions
+Scripts/Source/Base/TrapTrigBase.psc:303:1:nesting-depth
 Scripts/Source/Base/TrapTrigBase.psc:307:25:forbidden-functions
 Scripts/Source/Base/TrapTrigBase.psc:322:1:unchecked-cast
 Scripts/Source/Base/TrapTrigBase.psc:335:1:unchecked-cast
@@ -41605,6 +41726,7 @@ Scripts/Source/Base/TutorialPlayerAliasScript.psc:103:1:none-form-usage
 Scripts/Source/Base/TutorialPlayerAliasScript.psc:104:1:none-form-usage
 Scripts/Source/Base/TutorialPlayerAliasScript.psc:106:1:none-form-usage
 Scripts/Source/Base/TutorialPlayerAliasScript.psc:115:1:cyclomatic-complexity
+Scripts/Source/Base/TutorialPlayerAliasScript.psc:115:1:nesting-depth
 Scripts/Source/Base/TutorialPlayerAliasScript.psc:120:121:line-length
 Scripts/Source/Base/TutorialPlayerAliasScript.psc:122:1:none-form-usage
 Scripts/Source/Base/TutorialPlayerAliasScript.psc:125:1:none-form-usage
@@ -41639,6 +41761,7 @@ Scripts/Source/Base/TutorialPlayerAliasScript.psc:194:1:none-form-usage
 Scripts/Source/Base/TutorialPlayerAliasScript.psc:198:1:none-form-usage
 Scripts/Source/Base/TutorialPlayerAliasScript.psc:199:1:none-form-usage
 Scripts/Source/Base/TutorialPlayerAliasScript.psc:204:1:cyclomatic-complexity
+Scripts/Source/Base/TutorialPlayerAliasScript.psc:204:1:nesting-depth
 Scripts/Source/Base/TutorialPlayerAliasScript.psc:211:1:none-form-usage
 Scripts/Source/Base/TutorialPlayerAliasScript.psc:211:1:none-form-usage
 Scripts/Source/Base/TutorialPlayerAliasScript.psc:221:1:none-form-usage
@@ -41672,6 +41795,7 @@ Scripts/Source/Base/TutorialPlayerAliasScript.psc:282:1:none-form-usage
 Scripts/Source/Base/TutorialPlayerAliasScript.psc:282:1:none-form-usage
 Scripts/Source/Base/TutorialPlayerAliasScript.psc:283:1:none-form-usage
 Scripts/Source/Base/TutorialPlayerAliasScript.psc:289:1:cyclomatic-complexity
+Scripts/Source/Base/TutorialPlayerAliasScript.psc:289:1:nesting-depth
 Scripts/Source/Base/TutorialPlayerAliasScript.psc:295:1:none-form-usage
 Scripts/Source/Base/TutorialPlayerAliasScript.psc:295:1:none-form-usage
 Scripts/Source/Base/TutorialPlayerAliasScript.psc:295:1:none-form-usage
@@ -41696,6 +41820,7 @@ Scripts/Source/Base/TutorialPlayerAliasScript.psc:356:1:none-form-usage
 Scripts/Source/Base/TutorialPlayerAliasScript.psc:366:1:none-form-usage
 Scripts/Source/Base/TutorialPlayerAliasScript.psc:367:1:none-form-usage
 Scripts/Source/Base/TutorialScript.psc:108:19:forbidden-functions
+Scripts/Source/Base/TutorialScript.psc:144:1:nesting-depth
 Scripts/Source/Base/TutorialScript.psc:152:81:unresolved-script
 Scripts/Source/Base/TutorialScript.psc:166:1:numeric-comparison
 Scripts/Source/Base/TutorialScript.psc:175:11:forbidden-functions
@@ -41708,6 +41833,7 @@ Scripts/Source/Base/TutorialScript.psc:209:53:unresolved-script
 Scripts/Source/Base/TutorialScript.psc:210:21:unresolved-script
 Scripts/Source/Base/TutorialScript.psc:214:1:argument-naming
 Scripts/Source/Base/TutorialScript.psc:214:1:cyclomatic-complexity
+Scripts/Source/Base/TutorialScript.psc:214:1:nesting-depth
 Scripts/Source/Base/TutorialScript.psc:214:121:line-length
 Scripts/Source/Base/TutorialScript.psc:219:72:unresolved-script
 Scripts/Source/Base/TutorialScript.psc:219:121:line-length
@@ -41730,6 +41856,7 @@ Scripts/Source/Base/TutorialScript.psc:244:25:unresolved-script
 Scripts/Source/Base/TutorialScript.psc:262:27:unresolved-script
 Scripts/Source/Base/TutorialScript.psc:264:20:unresolved-script
 Scripts/Source/Base/TutorialScript.psc:272:1:cyclomatic-complexity
+Scripts/Source/Base/TutorialScript.psc:272:1:nesting-depth
 Scripts/Source/Base/TutorialScript.psc:287:31:unresolved-script
 Scripts/Source/Base/TutorialScript.psc:288:24:unresolved-script
 Scripts/Source/Base/TutorialScript.psc:293:31:unresolved-script
@@ -41772,6 +41899,7 @@ Scripts/Source/Base/TutorialScript.psc:707:13:forbidden-functions
 Scripts/Source/Base/TutorialScript.psc:708:45:unresolved-script
 Scripts/Source/Base/TutorialScript.psc:710:13:forbidden-functions
 Scripts/Source/Base/TutorialScript.psc:711:48:unresolved-script
+Scripts/Source/Base/TutorialScript.psc:720:1:nesting-depth
 Scripts/Source/Base/TutorialScript.psc:721:53:unresolved-script
 Scripts/Source/Base/TutorialScript.psc:738:61:unresolved-script
 Scripts/Source/Base/TutorialScript.psc:741:64:unresolved-script
@@ -41910,6 +42038,7 @@ Scripts/Source/Base/V81ProjectorScript.psc:57:20:forbidden-functions
 Scripts/Source/Base/V81ProjectorScript.psc:59:2:empty-body
 Scripts/Source/Base/V81ProjectorScript.psc:66:22:unresolved-script
 Scripts/Source/Base/V81ProjectorScript.psc:67:2:strict-boolean
+Scripts/Source/Base/V81ProjectorScript.psc:97:1:nesting-depth
 Scripts/Source/Base/V81ProjectorScript.psc:126:30:forbidden-functions
 Scripts/Source/Base/V81ProjectorScript.psc:127:15:unresolved-script
 Scripts/Source/Base/V81SunshineDinerIntroScript.psc:10:1:none-form-usage
@@ -41981,6 +42110,7 @@ Scripts/Source/Base/V81_00_Intro_PlayerScript.psc:31:1:unchecked-cast
 Scripts/Source/Base/V81_02_QuestScript.psc:7:1:unchecked-cast
 Scripts/Source/Base/V81_02_QuestScript.psc:8:3:empty-body
 Scripts/Source/Base/V81_02_QuestScript.psc:9:121:line-length
+Scripts/Source/Base/VFTPlayerScript.psc:15:1:nesting-depth
 Scripts/Source/Base/VFTPlayerScript.psc:16:1:none-form-usage
 Scripts/Source/Base/VFTPlayerScript.psc:21:1:none-form-usage
 Scripts/Source/Base/VFTPlayerScript.psc:22:1:none-form-usage
@@ -42130,6 +42260,7 @@ Scripts/Source/Base/VendorInfoScript.psc:13:1:unchecked-cast
 Scripts/Source/Base/VertibirdCrashScript.psc:18:10:forbidden-functions
 Scripts/Source/Base/VertibirdCrashScript.psc:25:10:forbidden-functions
 Scripts/Source/Base/VertibirdCrashScript.psc:34:121:line-length
+Scripts/Source/Base/VertibirdCrashScript.psc:35:1:nesting-depth
 Scripts/Source/Base/VertibirdCrashScript.psc:46:11:forbidden-functions
 Scripts/Source/Base/VertibirdCrashScript.psc:51:33:forbidden-functions
 Scripts/Source/Base/VertibirdCrashScript.psc:55:14:forbidden-functions
@@ -42350,6 +42481,7 @@ Scripts/Source/Base/WorkshopAttackScript.psc:89:1:numeric-comparison
 Scripts/Source/Base/WorkshopAttackScript.psc:89:1:numeric-comparison
 Scripts/Source/Base/WorkshopAttackScript.psc:94:11:forbidden-functions
 Scripts/Source/Base/WorkshopAttackScript.psc:99:15:forbidden-functions
+Scripts/Source/Base/WorkshopAttackScript.psc:104:1:nesting-depth
 Scripts/Source/Base/WorkshopAttackScript.psc:105:11:forbidden-functions
 Scripts/Source/Base/WorkshopAttackScript.psc:110:1:none-form-usage
 Scripts/Source/Base/WorkshopAttackScript.psc:110:1:none-form-usage
@@ -42410,6 +42542,7 @@ Scripts/Source/Base/WorkshopBellNPCsScript.psc:4:1:argument-naming
 Scripts/Source/Base/WorkshopBellNPCsScript.psc:5:8:forbidden-functions
 Scripts/Source/Base/WorkshopCastleRadioTransmitterScript.psc:20:1:none-form-usage
 Scripts/Source/Base/WorkshopCastleRadioTransmitterScript.psc:22:1:none-form-usage
+Scripts/Source/Base/WorkshopChildScript.psc:22:1:nesting-depth
 Scripts/Source/Base/WorkshopChildScript.psc:23:8:forbidden-functions
 Scripts/Source/Base/WorkshopChildScript.psc:26:2:strict-boolean
 Scripts/Source/Base/WorkshopChildScript.psc:27:31:forbidden-functions
@@ -42558,11 +42691,13 @@ Scripts/Source/Base/WorkshopObjectScript.psc:194:1:numeric-comparison
 Scripts/Source/Base/WorkshopObjectScript.psc:225:1:none-form-usage
 Scripts/Source/Base/WorkshopObjectScript.psc:229:1:none-form-usage
 Scripts/Source/Base/WorkshopObjectScript.psc:257:2:strict-boolean
+Scripts/Source/Base/WorkshopObjectScript.psc:278:1:nesting-depth
 Scripts/Source/Base/WorkshopObjectScript.psc:282:4:strict-boolean
 Scripts/Source/Base/WorkshopObjectScript.psc:316:2:strict-boolean
 Scripts/Source/Base/WorkshopObjectScript.psc:318:3:empty-body
 Scripts/Source/Base/WorkshopObjectScript.psc:335:3:strict-boolean
 Scripts/Source/Base/WorkshopObjectScript.psc:341:22:forbidden-functions
+Scripts/Source/Base/WorkshopObjectScript.psc:387:1:nesting-depth
 Scripts/Source/Base/WorkshopObjectScript.psc:405:3:strict-boolean
 Scripts/Source/Base/WorkshopObjectScript.psc:433:3:strict-boolean
 Scripts/Source/Base/WorkshopObjectScript.psc:454:1:none-form-usage
@@ -42592,6 +42727,7 @@ Scripts/Source/Base/WorkshopObjectScript.psc:573:3:empty-body
 Scripts/Source/Base/WorkshopObjectScript.psc:577:1:none-form-usage
 Scripts/Source/Base/WorkshopObjectScript.psc:581:2:strict-boolean
 Scripts/Source/Base/WorkshopObjectScript.psc:582:1:none-form-usage
+Scripts/Source/Base/WorkshopObjectScript.psc:586:1:nesting-depth
 Scripts/Source/Base/WorkshopObjectScript.psc:587:1:none-form-usage
 Scripts/Source/Base/WorkshopObjectScript.psc:587:121:line-length
 Scripts/Source/Base/WorkshopObjectScript.psc:593:1:none-form-usage
@@ -42629,6 +42765,7 @@ Scripts/Source/Base/WorkshopParentScript.psc:65:121:line-length
 Scripts/Source/Base/WorkshopParentScript.psc:98:121:line-length
 Scripts/Source/Base/WorkshopParentScript.psc:235:121:line-length
 Scripts/Source/Base/WorkshopParentScript.psc:661:121:line-length
+Scripts/Source/Base/WorkshopParentScript.psc:675:1:nesting-depth
 Scripts/Source/Base/WorkshopParentScript.psc:682:64:unresolved-script
 Scripts/Source/Base/WorkshopParentScript.psc:683:62:unresolved-script
 Scripts/Source/Base/WorkshopParentScript.psc:690:55:unresolved-script
@@ -42669,6 +42806,7 @@ Scripts/Source/Base/WorkshopParentScript.psc:976:121:line-length
 Scripts/Source/Base/WorkshopParentScript.psc:980:9:forbidden-functions
 Scripts/Source/Base/WorkshopParentScript.psc:984:8:forbidden-functions
 Scripts/Source/Base/WorkshopParentScript.psc:1020:121:line-length
+Scripts/Source/Base/WorkshopParentScript.psc:1033:1:nesting-depth
 Scripts/Source/Base/WorkshopParentScript.psc:1044:3:strict-boolean
 Scripts/Source/Base/WorkshopParentScript.psc:1046:121:line-length
 Scripts/Source/Base/WorkshopParentScript.psc:1047:121:line-length
@@ -42710,6 +42848,7 @@ Scripts/Source/Base/WorkshopParentScript.psc:1418:121:line-length
 Scripts/Source/Base/WorkshopParentScript.psc:1424:121:line-length
 Scripts/Source/Base/WorkshopParentScript.psc:1498:121:line-length
 Scripts/Source/Base/WorkshopParentScript.psc:1520:1:unchecked-cast
+Scripts/Source/Base/WorkshopParentScript.psc:1530:1:nesting-depth
 Scripts/Source/Base/WorkshopParentScript.psc:1530:121:line-length
 Scripts/Source/Base/WorkshopParentScript.psc:1536:3:strict-boolean
 Scripts/Source/Base/WorkshopParentScript.psc:1556:102:unresolved-script
@@ -42765,6 +42904,7 @@ Scripts/Source/Base/WorkshopParentScript.psc:1889:2:unused-getter
 Scripts/Source/Base/WorkshopParentScript.psc:1893:3:strict-boolean
 Scripts/Source/Base/WorkshopParentScript.psc:1905:2:unused-getter
 Scripts/Source/Base/WorkshopParentScript.psc:1913:1:cyclomatic-complexity
+Scripts/Source/Base/WorkshopParentScript.psc:1913:1:nesting-depth
 Scripts/Source/Base/WorkshopParentScript.psc:1913:121:line-length
 Scripts/Source/Base/WorkshopParentScript.psc:1948:121:line-length
 Scripts/Source/Base/WorkshopParentScript.psc:1962:121:line-length
@@ -42775,6 +42915,7 @@ Scripts/Source/Base/WorkshopParentScript.psc:2077:121:line-length
 Scripts/Source/Base/WorkshopParentScript.psc:2078:121:line-length
 Scripts/Source/Base/WorkshopParentScript.psc:2116:2:unused-getter
 Scripts/Source/Base/WorkshopParentScript.psc:2126:121:line-length
+Scripts/Source/Base/WorkshopParentScript.psc:2127:1:nesting-depth
 Scripts/Source/Base/WorkshopParentScript.psc:2136:39:unresolved-script
 Scripts/Source/Base/WorkshopParentScript.psc:2139:32:unresolved-script
 Scripts/Source/Base/WorkshopParentScript.psc:2140:38:unresolved-script
@@ -42784,6 +42925,7 @@ Scripts/Source/Base/WorkshopParentScript.psc:2214:1:none-form-usage
 Scripts/Source/Base/WorkshopParentScript.psc:2217:1:none-form-usage
 Scripts/Source/Base/WorkshopParentScript.psc:2247:2:strict-boolean
 Scripts/Source/Base/WorkshopParentScript.psc:2272:1:unchecked-cast
+Scripts/Source/Base/WorkshopParentScript.psc:2294:1:nesting-depth
 Scripts/Source/Base/WorkshopParentScript.psc:2366:121:line-length
 Scripts/Source/Base/WorkshopParentScript.psc:2372:37:unresolved-script
 Scripts/Source/Base/WorkshopParentScript.psc:2373:31:unresolved-script
@@ -42792,14 +42934,17 @@ Scripts/Source/Base/WorkshopParentScript.psc:2398:121:line-length
 Scripts/Source/Base/WorkshopParentScript.psc:2436:2:strict-boolean
 Scripts/Source/Base/WorkshopParentScript.psc:2447:121:line-length
 Scripts/Source/Base/WorkshopParentScript.psc:2452:3:strict-boolean
+Scripts/Source/Base/WorkshopParentScript.psc:2461:1:nesting-depth
 Scripts/Source/Base/WorkshopParentScript.psc:2467:3:strict-boolean
 Scripts/Source/Base/WorkshopParentScript.psc:2475:121:line-length
 Scripts/Source/Base/WorkshopParentScript.psc:2477:5:strict-boolean
 Scripts/Source/Base/WorkshopParentScript.psc:2478:121:line-length
 Scripts/Source/Base/WorkshopParentScript.psc:2488:1:none-form-usage
 Scripts/Source/Base/WorkshopParentScript.psc:2495:1:none-form-usage
+Scripts/Source/Base/WorkshopParentScript.psc:2520:1:nesting-depth
 Scripts/Source/Base/WorkshopParentScript.psc:2523:2:strict-boolean
 Scripts/Source/Base/WorkshopParentScript.psc:2532:1:unchecked-cast
+Scripts/Source/Base/WorkshopParentScript.psc:2554:1:nesting-depth
 Scripts/Source/Base/WorkshopParentScript.psc:2579:1:unchecked-cast
 Scripts/Source/Base/WorkshopParentScript.psc:2579:121:line-length
 Scripts/Source/Base/WorkshopParentScript.psc:2580:1:unchecked-cast
@@ -42827,12 +42972,14 @@ Scripts/Source/Base/WorkshopParentScript.psc:2800:3:strict-boolean
 Scripts/Source/Base/WorkshopParentScript.psc:2806:121:line-length
 Scripts/Source/Base/WorkshopParentScript.psc:2820:121:line-length
 Scripts/Source/Base/WorkshopParentScript.psc:2830:121:line-length
+Scripts/Source/Base/WorkshopParentScript.psc:2864:1:nesting-depth
 Scripts/Source/Base/WorkshopParentScript.psc:2928:2:strict-boolean
 Scripts/Source/Base/WorkshopParentScript.psc:2931:121:line-length
 Scripts/Source/Base/WorkshopParentScript.psc:2952:121:line-length
 Scripts/Source/Base/WorkshopParentScript.psc:2954:48:unresolved-script
 Scripts/Source/Base/WorkshopParentScript.psc:2960:121:line-length
 Scripts/Source/Base/WorkshopParentScript.psc:2969:121:line-length
+Scripts/Source/Base/WorkshopParentScript.psc:2979:1:nesting-depth
 Scripts/Source/Base/WorkshopParentScript.psc:2991:121:line-length
 Scripts/Source/Base/WorkshopParentScript.psc:2993:48:unresolved-script
 Scripts/Source/Base/WorkshopParentScript.psc:3000:4:strict-boolean
@@ -42840,6 +42987,7 @@ Scripts/Source/Base/WorkshopParentScript.psc:3021:121:line-length
 Scripts/Source/Base/WorkshopParentScript.psc:3030:28:unresolved-script
 Scripts/Source/Base/WorkshopParentScript.psc:3032:1:none-form-usage
 Scripts/Source/Base/WorkshopParentScript.psc:3036:1:cyclomatic-complexity
+Scripts/Source/Base/WorkshopParentScript.psc:3036:1:nesting-depth
 Scripts/Source/Base/WorkshopParentScript.psc:3042:2:unused-getter
 Scripts/Source/Base/WorkshopParentScript.psc:3044:121:line-length
 Scripts/Source/Base/WorkshopParentScript.psc:3055:26:unresolved-script
@@ -42899,6 +43047,7 @@ Scripts/Source/Base/WorkshopParentScript.psc:3666:121:line-length
 Scripts/Source/Base/WorkshopParentScript.psc:3669:121:line-length
 Scripts/Source/Base/WorkshopParentScript.psc:3682:121:line-length
 Scripts/Source/Base/WorkshopParentScript.psc:3683:8:forbidden-functions
+Scripts/Source/Base/WorkshopParentScript.psc:3695:1:nesting-depth
 Scripts/Source/Base/WorkshopParentScript.psc:3695:121:line-length
 Scripts/Source/Base/WorkshopParentScript.psc:3696:8:forbidden-functions
 Scripts/Source/Base/WorkshopParentScript.psc:3704:121:line-length
@@ -42934,6 +43083,7 @@ Scripts/Source/Base/WorkshopParentScript.psc:3867:1:none-form-usage
 Scripts/Source/Base/WorkshopParentScript.psc:3876:41:unresolved-script
 Scripts/Source/Base/WorkshopParentScript.psc:3877:1:unchecked-cast
 Scripts/Source/Base/WorkshopParentScript.psc:3877:29:unresolved-script
+Scripts/Source/Base/WorkshopParentScript.psc:3884:1:nesting-depth
 Scripts/Source/Base/WorkshopParentScript.psc:3886:1:none-form-usage
 Scripts/Source/Base/WorkshopParentScript.psc:3895:1:none-form-usage
 Scripts/Source/Base/WorkshopParentScript.psc:3897:1:unchecked-cast
@@ -42954,6 +43104,7 @@ Scripts/Source/Base/WorkshopRE02Script.psc:32:32:unresolved-script
 Scripts/Source/Base/WorkshopRE02Script.psc:39:1:none-form-usage
 Scripts/Source/Base/WorkshopRE02Script.psc:42:1:none-form-usage
 Scripts/Source/Base/WorkshopRE02Script.psc:43:35:unresolved-script
+Scripts/Source/Base/WorkshopRE02Script.psc:47:1:nesting-depth
 Scripts/Source/Base/WorkshopRE02Script.psc:51:10:forbidden-functions
 Scripts/Source/Base/WorkshopRE02Script.psc:61:1:none-form-usage
 Scripts/Source/Base/WorkshopRE02Script.psc:63:1:none-form-usage
@@ -43166,6 +43317,7 @@ Scripts/Source/Base/WorkshopScript.psc:765:1:none-form-usage
 Scripts/Source/Base/WorkshopScript.psc:766:1:none-form-usage
 Scripts/Source/Base/WorkshopScript.psc:767:1:none-form-usage
 Scripts/Source/Base/WorkshopScript.psc:770:1:none-form-usage
+Scripts/Source/Base/WorkshopScript.psc:777:1:nesting-depth
 Scripts/Source/Base/WorkshopScript.psc:783:1:none-form-usage
 Scripts/Source/Base/WorkshopScript.psc:784:1:none-form-usage
 Scripts/Source/Base/WorkshopScript.psc:784:121:line-length
@@ -43331,6 +43483,7 @@ Scripts/Source/Base/WorkshopScript.psc:1282:1:none-form-usage
 Scripts/Source/Base/WorkshopScript.psc:1283:1:numeric-comparison
 Scripts/Source/Base/WorkshopScript.psc:1285:1:none-form-usage
 Scripts/Source/Base/WorkshopScript.psc:1289:1:cyclomatic-complexity
+Scripts/Source/Base/WorkshopScript.psc:1289:1:nesting-depth
 Scripts/Source/Base/WorkshopScript.psc:1291:1:none-form-usage
 Scripts/Source/Base/WorkshopScript.psc:1294:1:none-form-usage
 Scripts/Source/Base/WorkshopScript.psc:1296:1:none-form-usage
@@ -43451,6 +43604,7 @@ Scripts/Source/Base/WorkshopTutorialScript.psc:35:9:forbidden-functions
 Scripts/Source/Base/WorkshopTutorialScript.psc:35:121:line-length
 Scripts/Source/Base/WorkshopTutorialScript.psc:42:9:forbidden-functions
 Scripts/Source/Base/WorkshopTutorialScript.psc:42:121:line-length
+Scripts/Source/Base/WorkshopTutorialScript.psc:205:1:nesting-depth
 Scripts/Source/Base/WorkshopTutorialScript.psc:209:9:forbidden-functions
 Scripts/Source/Base/WorkshopTutorialScript.psc:217:11:forbidden-functions
 Scripts/Source/Base/WorkshopTutorialScript.psc:219:12:forbidden-functions
@@ -43476,6 +43630,7 @@ Scripts/Source/Base/WorkshopTutorialScript.psc:345:9:forbidden-functions
 Scripts/Source/Base/WorkshopTutorialScript.psc:367:10:forbidden-functions
 Scripts/Source/Base/WorkshopTutorialScript.psc:372:9:forbidden-functions
 Scripts/Source/Base/WorkshopTutorialScript.psc:375:10:forbidden-functions
+Scripts/Source/Base/WorkshopTutorialScript.psc:381:1:nesting-depth
 Scripts/Source/Base/WorkshopTutorialScript.psc:381:121:line-length
 Scripts/Source/Base/WorkshopTutorialScript.psc:386:8:forbidden-functions
 Scripts/Source/Base/WorkshopTutorialScript.psc:386:121:line-length
@@ -43483,6 +43638,7 @@ Scripts/Source/Base/WorkshopTutorialScript.psc:390:121:line-length
 Scripts/Source/Base/WorkshopTutorialScript.psc:409:10:forbidden-functions
 Scripts/Source/Base/WorkshopTutorialScript.psc:409:121:line-length
 Scripts/Source/Base/WorkshopTutorialScript.psc:433:8:forbidden-functions
+Scripts/Source/Base/WorkshopTutorialScript.psc:437:1:nesting-depth
 Scripts/Source/Base/WorkshopTutorialScript.psc:438:8:forbidden-functions
 Scripts/Source/Base/WorkshopTutorialScript.psc:441:9:forbidden-functions
 Scripts/Source/Base/WorkshopTutorialScript.psc:444:1:none-form-usage
@@ -43493,6 +43649,7 @@ Scripts/Source/Base/WorkshopTutorialScript.psc:465:5:empty-body
 Scripts/Source/Base/WorkshopTutorialScript.psc:470:10:forbidden-functions
 Scripts/Source/Base/WorkshopTutorialScript.psc:470:121:line-length
 Scripts/Source/Base/WorkshopTutorialScript.psc:477:8:forbidden-functions
+Scripts/Source/Base/WorkshopTutorialScript.psc:504:1:nesting-depth
 Scripts/Source/Base/WorkshopTutorialScript.psc:505:8:forbidden-functions
 Scripts/Source/Base/WorkshopTutorialScript.psc:540:10:forbidden-functions
 Scripts/Source/Base/WorkshopTutorialScript.psc:549:9:forbidden-functions
@@ -43529,6 +43686,7 @@ Scripts/Source/Base/abProtectronRaceScript.psc:31:1:unchecked-cast
 Scripts/Source/Base/abProtectronRaceScript.psc:33:5:strict-boolean
 Scripts/Source/Base/abProtectronRaceScript.psc:34:12:forbidden-functions
 Scripts/Source/Base/abProtectronRaceScript.psc:48:2:empty-body
+Scripts/Source/Base/abProtectronRaceScript.psc:55:1:nesting-depth
 Scripts/Source/Base/abProtectronRaceScript.psc:56:2:empty-body
 Scripts/Source/Base/abProtectronRaceScript.psc:60:34:forbidden-functions
 Scripts/Source/Base/abProtectronRaceScript.psc:62:3:strict-boolean
@@ -43759,6 +43917,7 @@ Scripts/Source/Base/hackerHolotapeMaster.psc:4:121:line-length
 Scripts/Source/Base/hackerHolotapeMaster.psc:78:121:line-length
 Scripts/Source/Base/hackerHolotapeMaster.psc:85:1:argument-naming
 Scripts/Source/Base/hackerHolotapeMaster.psc:112:1:cyclomatic-complexity
+Scripts/Source/Base/hackerHolotapeMaster.psc:112:1:nesting-depth
 Scripts/Source/Base/hackerHolotapeMaster.psc:114:1:none-form-usage
 Scripts/Source/Base/hackerHolotapeMaster.psc:115:1:none-form-usage
 Scripts/Source/Base/hackerHolotapeMaster.psc:115:37:forbidden-functions
@@ -43821,6 +43980,7 @@ Scripts/Source/Base/hackerHolotapeMaster.psc:252:37:slow-functions
 Scripts/Source/Base/hackerHolotapeMaster.psc:252:48:unresolved-script
 Scripts/Source/Base/hackerHolotapeMaster.psc:255:37:slow-functions
 Scripts/Source/Base/hackerHolotapeMaster.psc:255:48:unresolved-script
+Scripts/Source/Base/hackerHolotapeMaster.psc:262:1:nesting-depth
 Scripts/Source/Base/hackerHolotapeMaster.psc:263:1:none-form-usage
 Scripts/Source/Base/hackerHolotapeMaster.psc:264:1:none-form-usage
 Scripts/Source/Base/hackerHolotapeMaster.psc:264:42:forbidden-functions
@@ -43987,6 +44147,7 @@ Scripts/Source/Base/holdupEffectScript.psc:198:42:unused-getter
 Scripts/Source/Base/holdupEffectScript.psc:200:1:none-form-usage
 Scripts/Source/Base/holdupEffectScript.psc:200:42:unused-getter
 Scripts/Source/Base/holdupExplosionEffectScript.psc:3:121:line-length
+Scripts/Source/Base/holdupExplosionEffectScript.psc:52:1:nesting-depth
 Scripts/Source/Base/holdupExplosionEffectScript.psc:57:65:forbidden-functions
 Scripts/Source/Base/holdupExplosionEffectScript.psc:57:121:line-length
 Scripts/Source/Base/holdupExplosionEffectScript.psc:59:14:forbidden-functions
@@ -44059,6 +44220,7 @@ Scripts/Source/Base/inst305RadioRackSlotScript.psc:74:2:forbidden-functions
 Scripts/Source/Base/inst305RadioRackSlotScript.psc:75:2:forbidden-functions
 Scripts/Source/Base/inst305RadioRackSlotScript.psc:76:2:forbidden-functions
 Scripts/Source/Base/inst305RadioRackSlotScript.psc:77:2:forbidden-functions
+Scripts/Source/Base/inst305RadioRackSlotScript.psc:88:1:nesting-depth
 Scripts/Source/Base/inst305RadioRackSlotScript.psc:90:1:none-form-usage
 Scripts/Source/Base/inst305RadioRackSlotScript.psc:90:1:none-form-usage
 Scripts/Source/Base/inst305RadioRackSlotScript.psc:94:12:forbidden-functions
@@ -44156,6 +44318,7 @@ Scripts/Source/Base/mindefendcastleattackerfillscript.psc:93:121:line-length
 Scripts/Source/Base/mindefendcastleattackerfillscript.psc:97:8:forbidden-functions
 Scripts/Source/Base/prydwenfireeffectsmanager.psc:11:1:argument-naming
 Scripts/Source/Base/prydwenfireeffectsmanager.psc:15:1:none-form-usage
+Scripts/Source/Base/securityBarScript.psc:24:1:nesting-depth
 Scripts/Source/Base/securityBarScript.psc:28:7:forbidden-functions
 Scripts/Source/Base/securityBarScript.psc:29:1:unchecked-cast
 Scripts/Source/Base/securityBarScript.psc:29:6:forbidden-functions
@@ -44203,6 +44366,7 @@ Scripts/Source/Base/securityBarScript.psc:123:1:none-form-usage
 Scripts/Source/Base/securityBarScript.psc:124:9:forbidden-functions
 Scripts/Source/Base/securityBarScript.psc:128:1:none-form-usage
 Scripts/Source/Base/securityBarScript.psc:130:25:forbidden-functions
+Scripts/Source/Base/securityBarScript.psc:133:1:nesting-depth
 Scripts/Source/Base/securityBarScript.psc:135:9:forbidden-functions
 Scripts/Source/Base/securityBarScript.psc:137:9:forbidden-functions
 Scripts/Source/Base/securityBarScript.psc:140:6:forbidden-functions
@@ -44238,6 +44402,7 @@ Scripts/Source/Base/tempConvertAngleToVector.psc:19:9:forbidden-functions
 Scripts/Source/Base/tempConvertAngleToVector.psc:29:9:forbidden-functions
 Scripts/Source/Base/tempConvertAngleToVector.psc:30:9:forbidden-functions
 Scripts/Source/Base/tempConvertAngleToVector.psc:45:9:forbidden-functions
+Scripts/Source/Base/testAddKeywordToLinkedActor.psc:8:1:nesting-depth
 Scripts/Source/Base/testAddKeywordToLinkedActor.psc:10:8:forbidden-functions
 Scripts/Source/Base/testAddKeywordToLinkedActor.psc:11:8:forbidden-functions
 Scripts/Source/Base/testAddKeywordToLinkedActor.psc:14:3:strict-boolean
@@ -44486,6 +44651,7 @@ Scripts/Source/Base/tpThistleShrapnelSCRIPT.psc:53:1:none-form-usage
 Scripts/Source/Base/tpTrapThistleScript.psc:28:3:strict-boolean
 Scripts/Source/Base/tpTrapThistleScript.psc:52:3:strict-boolean
 Scripts/Source/Base/tpTrapThistleScript.psc:68:5:strict-boolean
+Scripts/Source/Base/traphitbase.psc:62:1:nesting-depth
 Scripts/Source/Base/traphitbase.psc:62:121:line-length
 Scripts/Source/Base/traphitbase.psc:64:1:unchecked-cast
 Scripts/Source/Base/traphitbase.psc:64:1:unchecked-cast
@@ -44645,6 +44811,7 @@ Scripts/Source/DLC01/DLC01/DLC01BotCrippleMobilityOnLoad.psc:2:121:line-length
 Scripts/Source/DLC01/DLC01/DLC01BotModQuestScript.psc:1:12:script-filename-mismatch
 Scripts/Source/DLC01/DLC01/DLC01BotModQuestScript.psc:26:30:forbidden-functions
 Scripts/Source/DLC01/DLC01/DLC01BotModQuestScript.psc:31:121:line-length
+Scripts/Source/DLC01/DLC01/DLC01BotModQuestScript.psc:54:1:nesting-depth
 Scripts/Source/DLC01/DLC01/DLC01BotModQuestScript.psc:56:1:none-form-usage
 Scripts/Source/DLC01/DLC01/DLC01BotRemoveKeyword.psc:1:12:script-filename-mismatch
 Scripts/Source/DLC01/DLC01/DLC01BotRemovePerk.psc:1:12:script-filename-mismatch
@@ -44872,6 +45039,7 @@ Scripts/Source/DLC01/DLC01/DLC01LairQuestScript.psc:1177:121:line-length
 Scripts/Source/DLC01/DLC01/DLC01LairQuestScript.psc:1195:68:unresolved-script
 Scripts/Source/DLC01/DLC01/DLC01LairQuestScript.psc:1208:33:unresolved-script
 Scripts/Source/DLC01/DLC01/DLC01LairQuestScript.psc:1240:1:argument-naming
+Scripts/Source/DLC01/DLC01/DLC01LairQuestScript.psc:1240:1:nesting-depth
 Scripts/Source/DLC01/DLC01/DLC01LairQuestScript.psc:1260:48:forbidden-functions
 Scripts/Source/DLC01/DLC01/DLC01LairQuestScript.psc:1262:13:forbidden-functions
 Scripts/Source/DLC01/DLC01/DLC01Lair_AddMBattleDeathItems.psc:1:12:script-filename-mismatch
@@ -44911,6 +45079,7 @@ Scripts/Source/DLC01/DLC01/DLC01Lair_Dispatcher.psc:496:1:none-form-usage
 Scripts/Source/DLC01/DLC01/DLC01Lair_Dispatcher.psc:498:1:numeric-comparison
 Scripts/Source/DLC01/DLC01/DLC01Lair_Dispatcher.psc:532:121:line-length
 Scripts/Source/DLC01/DLC01/DLC01Lair_Dispatcher.psc:543:121:line-length
+Scripts/Source/DLC01/DLC01/DLC01Lair_Dispatcher.psc:544:1:nesting-depth
 Scripts/Source/DLC01/DLC01/DLC01Lair_Dispatcher.psc:555:121:line-length
 Scripts/Source/DLC01/DLC01/DLC01Lair_Dispatcher.psc:560:121:line-length
 Scripts/Source/DLC01/DLC01/DLC01Lair_Dispatcher.psc:584:1:numeric-comparison
@@ -44999,6 +45168,7 @@ Scripts/Source/DLC01/DLC01/DLC01MQ00Script.psc:215:1:none-form-usage
 Scripts/Source/DLC01/DLC01/DLC01MQ00Script.psc:216:1:none-form-usage
 Scripts/Source/DLC01/DLC01/DLC01MQ00Script.psc:219:1:none-form-usage
 Scripts/Source/DLC01/DLC01/DLC01MQ00Script.psc:220:1:none-form-usage
+Scripts/Source/DLC01/DLC01/DLC01MQ00Script.psc:224:1:nesting-depth
 Scripts/Source/DLC01/DLC01/DLC01MQ00Script.psc:225:8:forbidden-functions
 Scripts/Source/DLC01/DLC01/DLC01MQ00Script.psc:230:2:strict-boolean
 Scripts/Source/DLC01/DLC01/DLC01MQ00Script.psc:231:1:none-form-usage
@@ -45184,6 +45354,7 @@ Scripts/Source/DLC01/DLC01/DLC01_GarageDoorKlaxonScript.psc:26:1:none-form-usage
 Scripts/Source/DLC01/DLC01/DLC01_GarageDoorKlaxonScript.psc:26:23:forbidden-functions
 Scripts/Source/DLC01/DLC01/DLC01_GarageDoorKlaxonScript.psc:26:38:forbidden-functions
 Scripts/Source/DLC01/DLC01/DLC01_GarageDoorKlaxonScript.psc:27:1:none-form-usage
+Scripts/Source/DLC01/DLC01/DLC01_GarageDoorKlaxonScript.psc:35:1:nesting-depth
 Scripts/Source/DLC01/DLC01/DLC01_GarageDoorKlaxonScript.psc:36:9:forbidden-functions
 Scripts/Source/DLC01/DLC01/DLC01_GarageDoorKlaxonScript.psc:38:1:none-form-usage
 Scripts/Source/DLC01/DLC01/DLC01_GarageDoorKlaxonScript.psc:41:1:none-form-usage
@@ -45226,6 +45397,7 @@ Scripts/Source/DLC01/DLC01/DLC01_KlaxonJailDestScript.psc:1:12:script-filename-m
 Scripts/Source/DLC01/DLC01/DLC01_KlaxonJailDestScript.psc:21:19:forbidden-functions
 Scripts/Source/DLC01/DLC01/DLC01_KlaxonJailDestScript.psc:22:19:forbidden-functions
 Scripts/Source/DLC01/DLC01/DLC01_KlaxonJailDestScript.psc:22:34:forbidden-functions
+Scripts/Source/DLC01/DLC01/DLC01_KlaxonJailDestScript.psc:28:1:nesting-depth
 Scripts/Source/DLC01/DLC01/DLC01_KlaxonJailDestScript.psc:36:21:forbidden-functions
 Scripts/Source/DLC01/DLC01/DLC01_KlaxonJailDestScript.psc:37:21:forbidden-functions
 Scripts/Source/DLC01/DLC01/DLC01_KlaxonJailDestScript.psc:37:36:forbidden-functions
@@ -45255,6 +45427,7 @@ Scripts/Source/DLC01/DLC01/DLC01_MechanistDoorControlScript.psc:134:121:line-len
 Scripts/Source/DLC01/DLC01/DLC01_MechanistDoorControlScript.psc:158:121:line-length
 Scripts/Source/DLC01/DLC01/DLC01_MechanistDoorControlScript.psc:166:71:unresolved-script
 Scripts/Source/DLC01/DLC01/DLC01_MechanistDoorControlScript.psc:168:45:unresolved-script
+Scripts/Source/DLC01/DLC01/DLC01_MechanistDoorControlScript.psc:177:1:nesting-depth
 Scripts/Source/DLC01/DLC01/DLC01_MechanistDoorControlScript.psc:179:48:unresolved-script
 Scripts/Source/DLC01/DLC01/DLC01_MechanistDoorControlScript.psc:186:46:unresolved-script
 Scripts/Source/DLC01/DLC01/DLC01_MechanistDoorControlScript.psc:189:121:line-length
@@ -45295,6 +45468,7 @@ Scripts/Source/DLC01/DLC01/DLC01_MechanistDoorScript.psc:7:121:line-length
 Scripts/Source/DLC01/DLC01/DLC01_MechanistDoorScript.psc:34:121:line-length
 Scripts/Source/DLC01/DLC01/DLC01_MechanistDoorScript.psc:44:11:forbidden-functions
 Scripts/Source/DLC01/DLC01/DLC01_MedSprayScript.psc:1:12:script-filename-mismatch
+Scripts/Source/DLC01/DLC01/DLC01_MedSprayScript.psc:26:1:nesting-depth
 Scripts/Source/DLC01/DLC01/DLC01_MedSprayScript.psc:33:4:strict-boolean
 Scripts/Source/DLC01/DLC01/DLC01_MedSprayScript.psc:34:1:unchecked-cast
 Scripts/Source/DLC01/DLC01/DLC01_MedSprayScript.psc:44:1:none-form-usage
@@ -45482,6 +45656,7 @@ Scripts/Source/DLC01/DLC01/DLC01_TrackSystemDoorTrigger.psc:4:121:line-length
 Scripts/Source/DLC01/DLC01/DLC01_TrackSystemDoorTrigger.psc:14:121:line-length
 Scripts/Source/DLC01/DLC01/DLC01_TrackSystemDoorTrigger.psc:33:121:line-length
 Scripts/Source/DLC01/DLC01/DLC01_TrackSystemDoorTrigger.psc:56:1:argument-naming
+Scripts/Source/DLC01/DLC01/DLC01_TrackSystemDoorTrigger.psc:56:1:nesting-depth
 Scripts/Source/DLC01/DLC01/DLC01_TrackSystemDoorTrigger.psc:63:14:forbidden-functions
 Scripts/Source/DLC01/DLC01/DLC01_TrackSystemDoorTrigger.psc:72:121:line-length
 Scripts/Source/DLC01/DLC01/DLC01_TrackSystemMachine.psc:1:12:script-filename-mismatch
@@ -45496,6 +45671,7 @@ Scripts/Source/DLC01/DLC01/DLC01_TrackSystemMachine.psc:21:121:line-length
 Scripts/Source/DLC01/DLC01/DLC01_TrackSystemMachine.psc:25:121:line-length
 Scripts/Source/DLC01/DLC01/DLC01_TrackSystemMachine.psc:26:121:line-length
 Scripts/Source/DLC01/DLC01/DLC01_TrackSystemMachine.psc:35:121:line-length
+Scripts/Source/DLC01/DLC01/DLC01_TrackSystemMachine.psc:43:1:nesting-depth
 Scripts/Source/DLC01/DLC01/DLC01_TrackSystemMachine.psc:43:121:line-length
 Scripts/Source/DLC01/DLC01/DLC01_TrackSystemMachine.psc:84:1:unchecked-cast
 Scripts/Source/DLC01/DLC01/DLC01_TrackSystemMachine.psc:87:1:unchecked-cast
@@ -45577,6 +45753,7 @@ Scripts/Source/DLC01/DLC01/DLC01_TrackSystemTrack.psc:188:121:line-length
 Scripts/Source/DLC01/DLC01/DLC01_TrackSystemTrack.psc:189:121:line-length
 Scripts/Source/DLC01/DLC01/DLC01_TrackSystemTrack.psc:190:121:line-length
 Scripts/Source/DLC01/DLC01/DLC01_TrackSystemTrack.psc:191:121:line-length
+Scripts/Source/DLC01/DLC01/DLC01_TrackSystemTrack.psc:204:1:nesting-depth
 Scripts/Source/DLC01/DLC01/DLC01_TrackSystemTrack.psc:219:10:forbidden-functions
 Scripts/Source/DLC01/DLC01/DLC01_TrackSystemTrack.psc:224:1:unchecked-cast
 Scripts/Source/DLC01/DLC01/DLC01_TrackSystemTrack.psc:225:1:unchecked-cast
@@ -45611,6 +45788,7 @@ Scripts/Source/DLC01/DLC01/DLC01_TrackSystemTrack.psc:466:1:unchecked-cast
 Scripts/Source/DLC01/DLC01/DLC01_TrackSystemTrack.psc:468:1:unchecked-cast
 Scripts/Source/DLC01/DLC01/DLC01_TrackSystemTrack.psc:470:1:unchecked-cast
 Scripts/Source/DLC01/DLC01/DLC01_TrackSystemTrack.psc:476:39:unresolved-script
+Scripts/Source/DLC01/DLC01/DLC01_TrackSystemTrack.psc:503:1:nesting-depth
 Scripts/Source/DLC01/DLC01/DLC01_TrackSystemTrack.psc:506:24:unresolved-script
 Scripts/Source/DLC01/DLC01/DLC01_TrackSystemTrack.psc:514:29:unresolved-script
 Scripts/Source/DLC01/DLC01/DLC01_TrackSystemTrack.psc:521:31:unresolved-script
@@ -45675,6 +45853,8 @@ Scripts/Source/DLC01/DLC01/DLC01_UnstableModActorScript.psc:8:121:line-length
 Scripts/Source/DLC01/DLC01/DLC01_UnstableModActorScript.psc:11:121:line-length
 Scripts/Source/DLC01/DLC01/DLC01_UnstableModActorScript.psc:12:121:line-length
 Scripts/Source/DLC01/DLC01/DLC01_UnstableModActorScript.psc:13:121:line-length
+Scripts/Source/DLC01/DLC01/DLC01_UnstableModActorScript.psc:46:1:nesting-depth
+Scripts/Source/DLC01/DLC01/DLC01_UnstableModActorScript.psc:146:1:nesting-depth
 Scripts/Source/DLC01/DLC01/DLC01_UnstableModActorScript.psc:152:9:forbidden-functions
 Scripts/Source/DLC01/DLC01/DLC01_UnstableModActorScript.psc:153:9:forbidden-functions
 Scripts/Source/DLC01/DLC01/DLC01_UnstableModActorScript.psc:154:9:forbidden-functions
@@ -45708,6 +45888,7 @@ Scripts/Source/DLC01/DLC01/DLC01_UnstableModRestrictionScript.psc:2:121:line-len
 Scripts/Source/DLC01/DLC01/DLC01_UnstableModRestrictionScript.psc:4:121:line-length
 Scripts/Source/DLC01/DLC01/DLC01_UnstableModRestrictionScript.psc:32:16:forbidden-functions
 Scripts/Source/DLC01/DLC01/DLC01_UnstableModRestrictionScript.psc:49:1:argument-naming
+Scripts/Source/DLC01/DLC01/DLC01_UnstableModRestrictionScript.psc:49:1:nesting-depth
 Scripts/Source/DLC01/DLC01/DLC01_testJeffBScript.psc:1:12:script-filename-mismatch
 Scripts/Source/DLC01/DLC01/FXShaderOnEffect.psc:1:12:script-filename-mismatch
 Scripts/Source/DLC01/DLC01/FXShaderOnEffect.psc:8:1:argument-naming
@@ -48236,6 +48417,7 @@ Scripts/Source/DLC02/DLC02/DLC02WeaponRackScript.psc:96:15:argument-types
 Scripts/Source/DLC02/DLC02/DLC02WeaponRackScript.psc:99:15:argument-types
 Scripts/Source/DLC02/DLC02/DLC02WeaponRackScript.psc:106:15:argument-types
 Scripts/Source/DLC02/DLC02/DLC02WorkshopArenaCombatantScript.psc:1:12:script-filename-mismatch
+Scripts/Source/DLC02/DLC02/DLC02WorkshopArenaCombatantScript.psc:23:1:nesting-depth
 Scripts/Source/DLC02/DLC02/DLC02WorkshopArenaCombatantScript.psc:26:2:strict-boolean
 Scripts/Source/DLC02/DLC02/DLC02WorkshopArenaCombatantScript.psc:31:10:forbidden-functions
 Scripts/Source/DLC02/DLC02/DLC02WorkshopArenaCombatantScript.psc:32:59:unresolved-script
@@ -48267,6 +48449,7 @@ Scripts/Source/DLC02/DLC02/DLC02WorkshopAttackStarterScript.psc:94:1:numeric-com
 Scripts/Source/DLC02/DLC02/DLC02WorkshopAttackStarterScript.psc:94:121:line-length
 Scripts/Source/DLC02/DLC02/DLC02WorkshopAttackStarterScript.psc:96:11:forbidden-functions
 Scripts/Source/DLC02/DLC02/DLC02WorkshopAttackStarterScript.psc:111:9:forbidden-functions
+Scripts/Source/DLC02/DLC02/DLC02WorkshopAttackStarterScript.psc:116:1:nesting-depth
 Scripts/Source/DLC02/DLC02/DLC02WorkshopAttackStarterScript.psc:119:3:strict-boolean
 Scripts/Source/DLC02/DLC02/DLC02WorkshopAttackStarterScript.psc:126:23:unresolved-script
 Scripts/Source/DLC02/DLC02/DLC02WorkshopAttackStarterScript.psc:128:20:unresolved-script
@@ -48302,6 +48485,7 @@ Scripts/Source/DLC02/DLC02/DLC02WorkshopSummonedToRelaxScript.psc:63:3:strict-bo
 Scripts/Source/DLC02/DLC02/DLC02WorkshopSummonedToRelaxScript.psc:64:29:unresolved-script
 Scripts/Source/DLC02/DLC02/DLC02WorkshopSummonedToRelaxScript.psc:77:121:line-length
 Scripts/Source/DLC02/DLC02/DLC02WorkshopSummonedToRelaxScript.psc:84:13:forbidden-functions
+Scripts/Source/DLC02/DLC02/DLC02WorkshopSummonedToRelaxScript.psc:90:1:nesting-depth
 Scripts/Source/DLC02/DLC02/DLC02WorkshopSummonedToRelaxScript.psc:91:8:forbidden-functions
 Scripts/Source/DLC02/DLC02/DLC02WorkshopSummonedToRelaxScript.psc:98:39:unresolved-script
 Scripts/Source/DLC02/DLC02/DLC02WorkshopSummonedToRelaxScript.psc:99:42:unresolved-script
@@ -48342,6 +48526,7 @@ Scripts/Source/DLC02/DLC02/DLC02WorkshopTameSirenScript.psc:45:9:forbidden-funct
 Scripts/Source/DLC02/DLC02/DLC02WorkshopTameSirenScript.psc:46:1:none-form-usage
 Scripts/Source/DLC02/DLC02/DLC02WorkshopTrapHit.psc:1:12:script-filename-mismatch
 Scripts/Source/DLC02/DLC02/DLC02WorkshopTrapHit.psc:51:1:cyclomatic-complexity
+Scripts/Source/DLC02/DLC02/DLC02WorkshopTrapHit.psc:51:1:nesting-depth
 Scripts/Source/DLC02/DLC02/DLC02WorkshopTrapHit.psc:51:121:line-length
 Scripts/Source/DLC02/DLC02/DLC02WorkshopTrapHit.psc:52:10:forbidden-functions
 Scripts/Source/DLC02/DLC02/DLC02WorkshopTrapHit.psc:53:10:forbidden-functions
@@ -48585,6 +48770,7 @@ Scripts/Source/DLC02/DLC02/WorkshopCageScript.psc:133:11:forbidden-functions
 Scripts/Source/DLC02/DLC02/WorkshopCageScript.psc:140:11:forbidden-functions
 Scripts/Source/DLC02/DLC02/WorkshopCageScript.psc:144:9:forbidden-functions
 Scripts/Source/DLC02/DLC02/WorkshopCageScript.psc:145:11:forbidden-functions
+Scripts/Source/DLC02/DLC02/WorkshopCageScript.psc:154:1:nesting-depth
 Scripts/Source/DLC02/DLC02/WorkshopCageScript.psc:155:8:forbidden-functions
 Scripts/Source/DLC02/DLC02/WorkshopCageScript.psc:158:9:forbidden-functions
 Scripts/Source/DLC02/DLC02/WorkshopCageScript.psc:159:11:forbidden-functions
@@ -49284,6 +49470,7 @@ Scripts/Source/DLC03/DLC03/DLC03MQ02FightQuestScript.psc:77:43:unresolved-script
 Scripts/Source/DLC03/DLC03/DLC03MQ02FightQuestScript.psc:81:40:unresolved-script
 Scripts/Source/DLC03/DLC03/DLC03MQ02FightQuestScript.psc:82:37:unresolved-script
 Scripts/Source/DLC03/DLC03/DLC03MQ02FightQuestScript.psc:113:121:line-length
+Scripts/Source/DLC03/DLC03/DLC03MQ02FightQuestScript.psc:114:1:nesting-depth
 Scripts/Source/DLC03/DLC03/DLC03MQ02FightQuestScript.psc:114:121:line-length
 Scripts/Source/DLC03/DLC03/DLC03MQ02FightQuestScript.psc:170:121:line-length
 Scripts/Source/DLC03/DLC03/DLC03MQ02FightQuestScript.psc:188:121:line-length
@@ -49297,6 +49484,7 @@ Scripts/Source/DLC03/DLC03/DLC03MQ02FightQuestScript.psc:229:12:forbidden-functi
 Scripts/Source/DLC03/DLC03/DLC03MQ02FightQuestScript.psc:239:121:line-length
 Scripts/Source/DLC03/DLC03/DLC03MQ02FightQuestScript.psc:240:121:line-length
 Scripts/Source/DLC03/DLC03/DLC03MQ02FightQuestScript.psc:251:1:argument-naming
+Scripts/Source/DLC03/DLC03/DLC03MQ02FightQuestScript.psc:251:1:nesting-depth
 Scripts/Source/DLC03/DLC03/DLC03MQ02FightQuestScript.psc:253:26:unresolved-script
 Scripts/Source/DLC03/DLC03/DLC03MQ02FightQuestScript.psc:255:34:unresolved-script
 Scripts/Source/DLC03/DLC03/DLC03MQ02FightQuestScript.psc:256:31:unresolved-script
@@ -49341,6 +49529,7 @@ Scripts/Source/DLC03/DLC03/DLC03MQ06FuseBoxScript.psc:23:1:unchecked-cast
 Scripts/Source/DLC03/DLC03/DLC03MQ06FuseBoxScript.psc:23:14:forbidden-functions
 Scripts/Source/DLC03/DLC03/DLC03MQ06FuseBoxScript.psc:25:1:unchecked-cast
 Scripts/Source/DLC03/DLC03/DLC03MQ06FuseBoxScript.psc:25:14:forbidden-functions
+Scripts/Source/DLC03/DLC03/DLC03MQ06FuseBoxScript.psc:44:1:nesting-depth
 Scripts/Source/DLC03/DLC03/DLC03MQ06FuseBoxScript.psc:45:6:forbidden-functions
 Scripts/Source/DLC03/DLC03/DLC03MQ06FuseBoxScript.psc:46:30:forbidden-functions
 Scripts/Source/DLC03/DLC03/DLC03MQ06FuseBoxScript.psc:46:60:forbidden-functions
@@ -49425,6 +49614,7 @@ Scripts/Source/DLC03/DLC03/DLC03MQ06_WindFarmHandlingScript.psc:96:1:none-form-u
 Scripts/Source/DLC03/DLC03/DLC03MQ06_WindFarmHandlingScript.psc:99:1:none-form-usage
 Scripts/Source/DLC03/DLC03/DLC03MQ06_WindFarmHandlingScript.psc:107:31:forbidden-functions
 Scripts/Source/DLC03/DLC03/DLC03MQ06_WindFarmHandlingScript.psc:123:1:cyclomatic-complexity
+Scripts/Source/DLC03/DLC03/DLC03MQ06_WindFarmHandlingScript.psc:123:1:nesting-depth
 Scripts/Source/DLC03/DLC03/DLC03MQ06_WindFarmHandlingScript.psc:126:19:forbidden-functions
 Scripts/Source/DLC03/DLC03/DLC03MQ06_WindFarmHandlingScript.psc:127:121:line-length
 Scripts/Source/DLC03/DLC03/DLC03MQ06_WindFarmHandlingScript.psc:133:1:none-form-usage
@@ -49505,6 +49695,7 @@ Scripts/Source/DLC03/DLC03/DLC03MQElliePostQuestScript.psc:1:12:script-filename-
 Scripts/Source/DLC03/DLC03/DLC03MQNickPostQuestScript.psc:1:12:script-filename-mismatch
 Scripts/Source/DLC03/DLC03/DLC03ModFriendLevel.psc:1:12:script-filename-mismatch
 Scripts/Source/DLC03/DLC03/DLC03NakanoShipWheelACTScript.psc:1:12:script-filename-mismatch
+Scripts/Source/DLC03/DLC03/DLC03NakanoShipWheelACTScript.psc:8:1:nesting-depth
 Scripts/Source/DLC03/DLC03/DLC03NakanoShipWheelACTScript.psc:9:25:forbidden-functions
 Scripts/Source/DLC03/DLC03/DLC03NakanoShipWheelACTScript.psc:10:1:unchecked-cast
 Scripts/Source/DLC03/DLC03/DLC03NakanoShipWheelACTScript.psc:10:7:forbidden-functions
@@ -49618,6 +49809,7 @@ Scripts/Source/DLC03/DLC03/DLC03SubKlaxonEnableMarkers.psc:1:12:script-filename-
 Scripts/Source/DLC03/DLC03/DLC03SubKlaxonEnableMarkers.psc:19:1:none-form-usage
 Scripts/Source/DLC03/DLC03/DLC03TrapHit.psc:1:12:script-filename-mismatch
 Scripts/Source/DLC03/DLC03/DLC03TrapHit.psc:56:1:cyclomatic-complexity
+Scripts/Source/DLC03/DLC03/DLC03TrapHit.psc:56:1:nesting-depth
 Scripts/Source/DLC03/DLC03/DLC03TrapHit.psc:56:121:line-length
 Scripts/Source/DLC03/DLC03/DLC03TrapHit.psc:57:10:forbidden-functions
 Scripts/Source/DLC03/DLC03/DLC03TrapHit.psc:58:10:forbidden-functions
@@ -49672,6 +49864,7 @@ Scripts/Source/DLC03/DLC03/DLC03WindmillButtonScript.psc:7:1:unchecked-cast
 Scripts/Source/DLC03/DLC03/DLC03WindmillButtonScript.psc:7:6:forbidden-functions
 Scripts/Source/DLC03/DLC03/DLC03WindmillButtonScript.psc:8:1:none-form-usage
 Scripts/Source/DLC03/DLC03/DLC03WorkshopParentScript.psc:1:12:script-filename-mismatch
+Scripts/Source/DLC03/DLC03/DLC03WorkshopParentScript.psc:10:1:nesting-depth
 Scripts/Source/DLC03/DLC03/DLC03WorkshopParentScript.psc:14:3:strict-boolean
 Scripts/Source/DLC03/DLC03/DLC03WorkshopParentScript.psc:15:10:forbidden-functions
 Scripts/Source/DLC03/DLC03/DLC03WorkshopParentScript.psc:17:31:unresolved-script
@@ -50800,6 +50993,7 @@ Scripts/Source/DLC03/DLC03/FarHarborFF02CondenserScript.psc:29:9:forbidden-funct
 Scripts/Source/DLC03/DLC03/FarHarborFF02CondenserScript.psc:30:1:none-form-usage
 Scripts/Source/DLC03/DLC03/FarHarborFF02CondenserScript.psc:31:9:forbidden-functions
 Scripts/Source/DLC03/DLC03/FogCondenserCollectionAliasScript.psc:1:12:script-filename-mismatch
+Scripts/Source/DLC03/DLC03/FogCondenserCollectionAliasScript.psc:18:1:nesting-depth
 Scripts/Source/DLC03/DLC03/FogCondenserCollectionAliasScript.psc:19:8:forbidden-functions
 Scripts/Source/DLC03/DLC03/FogCondenserCollectionAliasScript.psc:20:121:line-length
 Scripts/Source/DLC03/DLC03/FogCondenserCollectionAliasScript.psc:24:27:forbidden-functions
@@ -52609,6 +52803,7 @@ Scripts/Source/DLC03/DLC03/Fragments/Quests/QF_DLC03MQ05_01001B43.psc:215:9:forb
 Scripts/Source/DLC03/DLC03/Fragments/Quests/QF_DLC03MQ05_01001B43.psc:218:1:none-form-usage
 Scripts/Source/DLC03/DLC03/Fragments/Quests/QF_DLC03MQ05_01001B43.psc:222:9:forbidden-functions
 Scripts/Source/DLC03/DLC03/Fragments/Quests/QF_DLC03MQ05_01001B43.psc:267:1:cyclomatic-complexity
+Scripts/Source/DLC03/DLC03/Fragments/Quests/QF_DLC03MQ05_01001B43.psc:267:1:nesting-depth
 Scripts/Source/DLC03/DLC03/Fragments/Quests/QF_DLC03MQ05_01001B43.psc:273:1:none-form-usage
 Scripts/Source/DLC03/DLC03/Fragments/Quests/QF_DLC03MQ05_01001B43.psc:276:1:none-form-usage
 Scripts/Source/DLC03/DLC03/Fragments/Quests/QF_DLC03MQ05_01001B43.psc:283:1:none-form-usage
@@ -54504,6 +54699,7 @@ Scripts/Source/DLC03/DLC03/MQ04Script.psc:245:1:none-form-usage
 Scripts/Source/DLC03/DLC03/MQ04Script.psc:246:3:strict-boolean
 Scripts/Source/DLC03/DLC03/MQ04Script.psc:261:8:forbidden-functions
 Scripts/Source/DLC03/DLC03/MQ04Script.psc:262:1:none-form-usage
+Scripts/Source/DLC03/DLC03/MQ04Script.psc:267:1:nesting-depth
 Scripts/Source/DLC03/DLC03/MQ04Script.psc:268:8:forbidden-functions
 Scripts/Source/DLC03/DLC03/MQ04Script.psc:269:1:none-form-usage
 Scripts/Source/DLC03/DLC03/MQ04Script.psc:271:1:none-form-usage
@@ -54663,6 +54859,7 @@ Scripts/Source/DLC03/DLC03/VRDataRetrieverScript.psc:125:1:none-form-usage
 Scripts/Source/DLC03/DLC03/VRDataRetrieverScript.psc:125:1:none-form-usage
 Scripts/Source/DLC03/DLC03/VRDataRetrieverScript.psc:132:2:strict-boolean
 Scripts/Source/DLC03/DLC03/VRDataRetrieverScript.psc:133:9:forbidden-functions
+Scripts/Source/DLC03/DLC03/VRDataRetrieverScript.psc:141:1:nesting-depth
 Scripts/Source/DLC03/DLC03/VRDataRetrieverScript.psc:144:34:forbidden-functions
 Scripts/Source/DLC03/DLC03/VRDataRetrieverScript.psc:145:3:strict-boolean
 Scripts/Source/DLC03/DLC03/VRDataRetrieverScript.psc:157:10:forbidden-functions
@@ -54721,6 +54918,7 @@ Scripts/Source/DLC03/DLC03/WorkshopRadiantOwned03Script.psc:35:12:forbidden-func
 Scripts/Source/DLC03/DLC03/WorkshopRadiantOwned03Script.psc:37:1:unchecked-cast
 Scripts/Source/DLC03/DLC03/WorkshopRadiantOwned04Script.psc:1:12:script-filename-mismatch
 Scripts/Source/DLC03/DLC03/WorkshopRadiantOwned04Script.psc:22:8:forbidden-functions
+Scripts/Source/DLC03/DLC03/WorkshopRadiantOwned04Script.psc:25:1:nesting-depth
 Scripts/Source/DLC03/DLC03/WorkshopRadiantOwned04Script.psc:26:1:none-form-usage
 Scripts/Source/DLC03/DLC03/WorkshopRadiantOwned04Script.psc:28:1:none-form-usage
 Scripts/Source/DLC03/DLC03/WorkshopRadiantOwned04Script.psc:30:1:none-form-usage
@@ -55610,6 +55808,7 @@ Scripts/Source/DLC04/DLC04/DLC04BotModQuestScript.psc:595:42:unresolved-script
 Scripts/Source/DLC04/DLC04/DLC04BotModQuestScript.psc:596:42:unresolved-script
 Scripts/Source/DLC04/DLC04/DLC04BotModQuestScript.psc:597:42:unresolved-script
 Scripts/Source/DLC04/DLC04/DLC04BotModQuestScript.psc:614:121:line-length
+Scripts/Source/DLC04/DLC04/DLC04BotModQuestScript.psc:637:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04BotModQuestScript.psc:639:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04BottleRackScript.psc:1:12:script-filename-mismatch
 Scripts/Source/DLC04/DLC04/DLC04BottleRackScript.psc:42:121:line-length
@@ -55656,6 +55855,7 @@ Scripts/Source/DLC04/DLC04/DLC04BottlingPlantStarterScript.psc:8:1:none-form-usa
 Scripts/Source/DLC04/DLC04/DLC04BottlingPlantStarterScript.psc:13:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04BottlingPlantStarterScript.psc:14:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04ChaseOffDisableQuestScript.psc:1:12:script-filename-mismatch
+Scripts/Source/DLC04/DLC04/DLC04ChaseOffDisableQuestScript.psc:31:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04ChaseOffDisableQuestScript.psc:34:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04ChaseOffDisableQuestScript.psc:43:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04ChaseOffDisableQuestScript.psc:44:1:none-form-usage
@@ -55664,6 +55864,7 @@ Scripts/Source/DLC04/DLC04/DLC04ChaseOffDisableQuestScript.psc:59:1:none-form-us
 Scripts/Source/DLC04/DLC04/DLC04ChaseOffDisableQuestScript.psc:60:9:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04ChaseOffDisableQuestScript.psc:61:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04ChaseOffDisableQuestScript.psc:63:10:forbidden-functions
+Scripts/Source/DLC04/DLC04/DLC04ChaseOffDisableQuestScript.psc:74:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04ChaseOffDisableQuestScript.psc:76:8:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04ChaseOffDisableQuestScript.psc:82:1:unchecked-cast
 Scripts/Source/DLC04/DLC04/DLC04ChaseOffDisableQuestScript.psc:85:1:unchecked-cast
@@ -55760,6 +55961,7 @@ Scripts/Source/DLC04/DLC04/DLC04GZBattlezoneQuestScript.psc:10:8:forbidden-funct
 Scripts/Source/DLC04/DLC04/DLC04GZBattlezoneQuestScript.psc:14:10:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04GZBattlezoneQuestScript.psc:15:1:setvalue-in-loop
 Scripts/Source/DLC04/DLC04/DLC04GZBattlezoneQuestScript.psc:34:1:argument-naming
+Scripts/Source/DLC04/DLC04/DLC04GZBattlezoneQuestScript.psc:34:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04GZBattlezoneQuestScript.psc:36:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04GZBattlezoneQuestScript.psc:38:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04GZBattlezoneQuestScript.psc:38:1:none-form-usage
@@ -55781,6 +55983,7 @@ Scripts/Source/DLC04/DLC04/DLC04GZEMSystemTurfScript.psc:80:34:unresolved-script
 Scripts/Source/DLC04/DLC04/DLC04GZEMSystemTurfScript.psc:98:10:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04GZEMSystemTurfScript.psc:108:20:argument-types
 Scripts/Source/DLC04/DLC04/DLC04GZEMSystemTurfScript.psc:114:10:forbidden-functions
+Scripts/Source/DLC04/DLC04/DLC04GZEMSystemTurfScript.psc:127:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04GZEMSystemTurfScript.psc:135:11:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04GZEMSystemTurfScript.psc:141:8:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04GZEMSystemTurfScript.psc:144:36:unresolved-script
@@ -56178,6 +56381,7 @@ Scripts/Source/DLC04/DLC04/DLC04KiddieKingdomMainQuestScript.psc:64:9:forbidden-
 Scripts/Source/DLC04/DLC04/DLC04KiddieKingdomMainQuestScript.psc:71:10:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04KiddieKingdomMainQuestScript.psc:76:1:numeric-comparison
 Scripts/Source/DLC04/DLC04/DLC04KiddieKingdomMainQuestScript.psc:85:9:forbidden-functions
+Scripts/Source/DLC04/DLC04/DLC04KiddieKingdomMainQuestScript.psc:90:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04KiddieKingdomMainQuestScript.psc:91:8:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04KiddieKingdomMainQuestScript.psc:92:117:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04KiddieKingdomMainQuestScript.psc:92:121:line-length
@@ -56204,6 +56408,7 @@ Scripts/Source/DLC04/DLC04/DLC04KiddieKingdomMainQuestScript.psc:266:1:unchecked
 Scripts/Source/DLC04/DLC04/DLC04KiddieKingdomMainQuestScript.psc:268:10:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04KiddieKingdomMainQuestScript.psc:292:8:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04KiddieKingdomMainQuestScript.psc:294:9:forbidden-functions
+Scripts/Source/DLC04/DLC04/DLC04KiddieKingdomMainQuestScript.psc:307:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04KiddieKingdomMainQuestScript.psc:308:8:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04KiddieKingdomMainQuestScript.psc:354:8:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04KiddieKingdomMainQuestScript.psc:365:9:forbidden-functions
@@ -56404,6 +56609,7 @@ Scripts/Source/DLC04/DLC04/DLC04MQ01GauntletQuestScript.psc:193:9:forbidden-func
 Scripts/Source/DLC04/DLC04/DLC04MQ01GauntletQuestScript.psc:221:8:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04MQ01GauntletQuestScript.psc:223:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04MQ01GauntletQuestScript.psc:224:1:none-form-usage
+Scripts/Source/DLC04/DLC04/DLC04MQ01GauntletQuestScript.psc:232:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04MQ01GauntletQuestScript.psc:233:8:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04MQ01GauntletQuestScript.psc:245:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04MQ01GauntletQuestScript.psc:246:11:forbidden-functions
@@ -56624,6 +56830,7 @@ Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:569:8:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:574:8:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:576:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:580:1:none-form-usage
+Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:600:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:601:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:603:8:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:610:8:forbidden-functions
@@ -56667,6 +56874,7 @@ Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:853:121:line-length
 Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:854:121:line-length
 Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:855:121:line-length
 Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:856:121:line-length
+Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:857:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:857:121:line-length
 Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:860:8:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:860:121:line-length
@@ -57159,6 +57367,7 @@ Scripts/Source/DLC04/DLC04/DLC04MS02Script.psc:66:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04MS02Script.psc:68:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04MS02_AlignmentScript.psc:1:12:script-filename-mismatch
 Scripts/Source/DLC04/DLC04/DLC04MS02_AlignmentScript.psc:11:1:cyclomatic-complexity
+Scripts/Source/DLC04/DLC04/DLC04MS02_AlignmentScript.psc:11:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04MS02_AlignmentScript.psc:12:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04MS02_AlignmentScript.psc:12:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04MS02_AlignmentScript.psc:12:1:none-form-usage
@@ -57242,6 +57451,7 @@ Scripts/Source/DLC04/DLC04/DLC04MS02_FinalButtonScript.psc:49:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04MS02_SentryBotScript.psc:1:12:script-filename-mismatch
 Scripts/Source/DLC04/DLC04/DLC04MS02_SentryBotScript.psc:6:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04MS02_Spacesuit_Script.psc:1:12:script-filename-mismatch
+Scripts/Source/DLC04/DLC04/DLC04MS02_Spacesuit_Script.psc:6:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04MS02_Spacesuit_Script.psc:7:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04MS02_Spacesuit_Script.psc:8:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04MS02_Spacesuit_Script.psc:9:30:forbidden-functions
@@ -57259,6 +57469,7 @@ Scripts/Source/DLC04/DLC04/DLC04MS02_Spacesuit_Script.psc:21:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04MS02_Spacesuit_Script.psc:21:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04MS03_BodyDropScript.psc:1:12:script-filename-mismatch
 Scripts/Source/DLC04/DLC04/DLC04MS03_BodyDropScript.psc:22:1:cyclomatic-complexity
+Scripts/Source/DLC04/DLC04/DLC04MS03_BodyDropScript.psc:22:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04MS03_BodyDropScript.psc:23:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04MS03_BodyDropScript.psc:23:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04MS03_BodyDropScript.psc:24:1:none-form-usage
@@ -57310,6 +57521,7 @@ Scripts/Source/DLC04/DLC04/DLC04PPHChangeLocationScript.psc:60:121:line-length
 Scripts/Source/DLC04/DLC04/DLC04PPHChangeLocationScript.psc:62:121:line-length
 Scripts/Source/DLC04/DLC04/DLC04PPHScript.psc:1:12:script-filename-mismatch
 Scripts/Source/DLC04/DLC04/DLC04PPHScript.psc:52:1:cyclomatic-complexity
+Scripts/Source/DLC04/DLC04/DLC04PPHScript.psc:52:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04PPHScript.psc:56:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04PPHScript.psc:57:11:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04PPHScript.psc:58:1:none-form-usage
@@ -57459,6 +57671,7 @@ Scripts/Source/DLC04/DLC04/DLC04PPHUnloadScript.psc:1:12:script-filename-mismatc
 Scripts/Source/DLC04/DLC04/DLC04PPHUnloadScript.psc:6:9:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04PPHUnloadScript.psc:7:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04PQFlagpoleAliasScript.psc:1:12:script-filename-mismatch
+Scripts/Source/DLC04/DLC04/DLC04PQFlagpoleAliasScript.psc:14:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04PQFlagpoleAliasScript.psc:15:7:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04PQFlagpoleAliasScript.psc:17:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04PQFlagpoleAliasScript.psc:17:1:none-form-usage
@@ -57499,6 +57712,7 @@ Scripts/Source/DLC04/DLC04/DLC04PackFightsScript.psc:9:9:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04PackFightsScript.psc:10:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04PackScentGrenadeQuestScript.psc:1:12:script-filename-mismatch
 Scripts/Source/DLC04/DLC04/DLC04PackScentGrenadeQuestScript.psc:47:121:line-length
+Scripts/Source/DLC04/DLC04/DLC04PackScentGrenadeQuestScript.psc:82:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04PackScentGrenadeQuestScript.psc:85:9:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04PackScentGrenadeQuestScript.psc:85:121:line-length
 Scripts/Source/DLC04/DLC04/DLC04PackScentGrenadeQuestScript.psc:99:23:forbidden-functions
@@ -57673,6 +57887,7 @@ Scripts/Source/DLC04/DLC04/DLC04RaidChaseOffScript.psc:115:121:line-length
 Scripts/Source/DLC04/DLC04/DLC04RaidChaseOffScript.psc:165:8:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04RaidChaseOffScript.psc:176:8:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04RaidChaseOffScript.psc:198:1:cyclomatic-complexity
+Scripts/Source/DLC04/DLC04/DLC04RaidChaseOffScript.psc:198:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04RaidChaseOffScript.psc:200:47:unresolved-script
 Scripts/Source/DLC04/DLC04/DLC04RaidChaseOffScript.psc:203:8:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04RaidChaseOffScript.psc:205:1:none-form-usage
@@ -57788,6 +58003,7 @@ Scripts/Source/DLC04/DLC04/DLC04RaidChaseOffScript.psc:650:10:forbidden-function
 Scripts/Source/DLC04/DLC04/DLC04RaidChaseOffScript.psc:652:1:unchecked-cast
 Scripts/Source/DLC04/DLC04/DLC04RaidChaseOffScript.psc:653:11:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04RaidChaseOffScript.psc:654:1:none-form-usage
+Scripts/Source/DLC04/DLC04/DLC04RaidChaseOffScript.psc:666:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04RaidChaseOffScript.psc:668:27:unresolved-script
 Scripts/Source/DLC04/DLC04/DLC04RaidChaseOffScript.psc:670:48:unresolved-script
 Scripts/Source/DLC04/DLC04/DLC04RaidChaseOffScript.psc:679:19:forbidden-functions
@@ -57803,6 +58019,7 @@ Scripts/Source/DLC04/DLC04/DLC04RaidCoerceScript.psc:82:121:line-length
 Scripts/Source/DLC04/DLC04/DLC04RaidCoerceScript.psc:120:8:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04RaidCoerceScript.psc:131:8:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04RaidCoerceScript.psc:153:1:cyclomatic-complexity
+Scripts/Source/DLC04/DLC04/DLC04RaidCoerceScript.psc:153:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04RaidCoerceScript.psc:155:47:unresolved-script
 Scripts/Source/DLC04/DLC04/DLC04RaidCoerceScript.psc:158:8:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04RaidCoerceScript.psc:159:1:none-form-usage
@@ -57908,6 +58125,7 @@ Scripts/Source/DLC04/DLC04/DLC04RaidIntimidationGasScript.psc:48:1:none-form-usa
 Scripts/Source/DLC04/DLC04/DLC04RaidIntimidationGasScript.psc:49:1:unchecked-cast
 Scripts/Source/DLC04/DLC04/DLC04RaidParentScript.psc:1:12:script-filename-mismatch
 Scripts/Source/DLC04/DLC04/DLC04RaidParentScript.psc:146:121:line-length
+Scripts/Source/DLC04/DLC04/DLC04RaidParentScript.psc:202:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04RaidParentScript.psc:202:121:line-length
 Scripts/Source/DLC04/DLC04/DLC04RaidParentScript.psc:204:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04RaidParentScript.psc:206:1:none-form-usage
@@ -57936,6 +58154,7 @@ Scripts/Source/DLC04/DLC04/DLC04RaidParentScript.psc:338:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04RaidParentScript.psc:339:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04RaidParentScript.psc:340:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04RaidParentScript.psc:343:1:cyclomatic-complexity
+Scripts/Source/DLC04/DLC04/DLC04RaidParentScript.psc:343:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04RaidParentScript.psc:347:9:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04RaidParentScript.psc:348:11:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04RaidParentScript.psc:353:1:none-form-usage
@@ -57992,6 +58211,7 @@ Scripts/Source/DLC04/DLC04/DLC04RaidParentScript.psc:638:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04RaidParentScript.psc:639:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04RaidParentScript.psc:645:1:variable-used-before-assignment
 Scripts/Source/DLC04/DLC04/DLC04RaidParentScript.psc:649:1:none-form-usage
+Scripts/Source/DLC04/DLC04/DLC04RaidParentScript.psc:668:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04RaidParentScript.psc:670:5:strict-boolean
 Scripts/Source/DLC04/DLC04/DLC04RaidParentScript.psc:674:13:strict-boolean
 Scripts/Source/DLC04/DLC04/DLC04RaidParentScript.psc:675:23:forbidden-functions
@@ -58025,12 +58245,14 @@ Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:130:121:line-length
 Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:173:8:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:179:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:189:8:forbidden-functions
+Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:211:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:212:39:unresolved-script
 Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:216:38:unresolved-script
 Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:237:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:237:75:unresolved-script
 Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:245:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:249:1:none-form-usage
+Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:256:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:272:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:273:12:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:275:12:forbidden-functions
@@ -58040,6 +58262,7 @@ Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:293:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:294:50:unresolved-script
 Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:303:10:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:313:1:cyclomatic-complexity
+Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:313:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:315:47:unresolved-script
 Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:318:8:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:319:1:none-form-usage
@@ -58118,6 +58341,7 @@ Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:631:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:632:11:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:634:11:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:654:8:forbidden-functions
+Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:657:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:660:27:unresolved-script
 Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:662:48:unresolved-script
 Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:674:11:forbidden-functions
@@ -58191,6 +58415,7 @@ Scripts/Source/DLC04/DLC04/DLC04RaidWipeOutScript.psc:258:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04RaidWipeOutScript.psc:258:67:unresolved-script
 Scripts/Source/DLC04/DLC04/DLC04RaidWipeOutScript.psc:265:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04RaidWipeOutScript.psc:270:1:cyclomatic-complexity
+Scripts/Source/DLC04/DLC04/DLC04RaidWipeOutScript.psc:270:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04RaidWipeOutScript.psc:272:47:unresolved-script
 Scripts/Source/DLC04/DLC04/DLC04RaidWipeOutScript.psc:275:8:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04RaidWipeOutScript.psc:276:1:none-form-usage
@@ -58289,6 +58514,7 @@ Scripts/Source/DLC04/DLC04/DLC04RaidWipeOutScript.psc:639:10:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04RaidWipeOutScript.psc:640:43:unresolved-script
 Scripts/Source/DLC04/DLC04/DLC04RaidWipeOutScript.psc:655:42:unresolved-script
 Scripts/Source/DLC04/DLC04/DLC04RaidWipeOutScript.psc:668:8:forbidden-functions
+Scripts/Source/DLC04/DLC04/DLC04RaidWipeOutScript.psc:671:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04RaidWipeOutScript.psc:673:27:unresolved-script
 Scripts/Source/DLC04/DLC04/DLC04RaidWipeOutScript.psc:675:48:unresolved-script
 Scripts/Source/DLC04/DLC04/DLC04RaidWipeOutScript.psc:685:11:forbidden-functions
@@ -58382,6 +58608,7 @@ Scripts/Source/DLC04/DLC04/DLC04RideControllerGenericScript.psc:38:8:forbidden-f
 Scripts/Source/DLC04/DLC04/DLC04RideControllerGenericScript.psc:39:68:unresolved-script
 Scripts/Source/DLC04/DLC04/DLC04RideControllerGenericScript.psc:105:1:argument-naming
 Scripts/Source/DLC04/DLC04/DLC04RideControllerGenericScript.psc:107:41:unresolved-script
+Scripts/Source/DLC04/DLC04/DLC04RideControllerGenericScript.psc:137:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04RideControllerGenericScript.psc:140:3:strict-boolean
 Scripts/Source/DLC04/DLC04/DLC04RideControllerGenericScript.psc:150:1:variable-used-before-assignment
 Scripts/Source/DLC04/DLC04/DLC04RideControllerGenericScript.psc:152:1:unchecked-cast
@@ -58432,6 +58659,7 @@ Scripts/Source/DLC04/DLC04/DLC04SafariGazelleEnableTriggerScript.psc:8:1:none-fo
 Scripts/Source/DLC04/DLC04/DLC04SafariGorillaDisableScript.psc:1:12:script-filename-mismatch
 Scripts/Source/DLC04/DLC04/DLC04SafariGorillaDisableScript.psc:6:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04SafariHolotapeScript.psc:1:12:script-filename-mismatch
+Scripts/Source/DLC04/DLC04/DLC04SafariHolotapeScript.psc:12:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04SafariHolotapeScript.psc:13:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04SafariHolotapeScript.psc:15:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04SafariHolotapeScript.psc:16:1:none-form-usage
@@ -58487,6 +58715,7 @@ Scripts/Source/DLC04/DLC04/DLC04TAliasMoveToHomeWorkshopScript.psc:36:8:forbidde
 Scripts/Source/DLC04/DLC04/DLC04TAliasMoveToHomeWorkshopScript.psc:38:1:unchecked-cast
 Scripts/Source/DLC04/DLC04/DLC04TAliasMoveToHomeWorkshopScript.psc:39:9:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04TAliasMoveToHomeWorkshopScript.psc:43:1:unchecked-cast
+Scripts/Source/DLC04/DLC04/DLC04TAliasMoveToHomeWorkshopScript.psc:53:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04TAliasMoveToHomeWorkshopScript.psc:55:5:strict-boolean
 Scripts/Source/DLC04/DLC04/DLC04TAliasMoveToHomeWorkshopScript.psc:59:13:strict-boolean
 Scripts/Source/DLC04/DLC04/DLC04TAliasMoveToHomeWorkshopScript.psc:60:23:forbidden-functions
@@ -58622,6 +58851,7 @@ Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:468:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:470:9:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:471:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:484:8:forbidden-functions
+Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:501:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:502:34:unresolved-script
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:503:9:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:506:48:unresolved-script
@@ -58640,6 +58870,7 @@ Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:665:34:unresolved-scrip
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:668:121:line-length
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:672:8:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:673:37:unresolved-script
+Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:679:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:680:8:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:681:34:unresolved-script
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:699:11:forbidden-functions
@@ -58662,6 +58893,7 @@ Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:789:8:forbidden-functio
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:790:69:unresolved-script
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:791:121:line-length
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:794:25:unresolved-script
+Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:826:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:832:1:unchecked-cast
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:833:10:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:834:1:unchecked-cast
@@ -58702,6 +58934,7 @@ Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:961:9:forbidden-functio
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:966:9:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:967:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:968:1:none-form-usage
+Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:977:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:991:10:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:999:10:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:1005:11:forbidden-functions
@@ -58714,6 +58947,7 @@ Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:1027:8:forbidden-functi
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:1033:1:setvalue-in-loop
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:1048:11:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:1048:121:line-length
+Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:1059:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:1067:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:1068:1:unchecked-cast
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:1068:39:forbidden-functions
@@ -58771,6 +59005,7 @@ Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:1271:121:line-length
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:1275:9:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:1281:2:strict-boolean
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:1283:4:strict-boolean
+Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:1309:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:1309:121:line-length
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:1310:8:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:1320:55:unresolved-script
@@ -58789,6 +59024,7 @@ Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:1352:1:unchecked-cast
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:1355:1:unchecked-cast
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:1360:9:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:1364:9:forbidden-functions
+Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:1370:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:1372:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:1378:70:unresolved-script
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:1383:1:none-form-usage
@@ -59598,6 +59834,7 @@ Scripts/Source/DLC04/DLC04/DLC04_GZNukaGalaxyFactionTriggerScript.psc:54:1:none-
 Scripts/Source/DLC04/DLC04/DLC04_GZNukaGalaxyFactionTriggerScript.psc:63:11:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04_GZNukaGalaxyLightMarkerScript.psc:1:12:script-filename-mismatch
 Scripts/Source/DLC04/DLC04/DLC04_GZNukaGalaxyLightMarkerScript.psc:27:9:forbidden-functions
+Scripts/Source/DLC04/DLC04/DLC04_GZNukaGalaxyLightMarkerScript.psc:41:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04_GZNukaGalaxyLightMarkerScript.psc:50:14:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04_GZNukaGalaxyLightMarkerScript.psc:60:8:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04_GZNukaGalaxyLightMarkerScript.psc:61:50:forbidden-functions
@@ -59767,6 +60004,7 @@ Scripts/Source/DLC04/DLC04/DLC04_KK_PumpDeactivatorScript.psc:5:1:argument-namin
 Scripts/Source/DLC04/DLC04/DLC04_KK_PumpDeactivatorScript.psc:6:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04_KK_PumpDeactivatorScript.psc:7:1:unchecked-cast
 Scripts/Source/DLC04/DLC04/DLC04_KK_RadFogCommentScript.psc:1:12:script-filename-mismatch
+Scripts/Source/DLC04/DLC04/DLC04_KK_RadFogCommentScript.psc:36:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04_KK_RadFogCommentScript.psc:37:11:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04_KK_RadFogCommentScript.psc:40:15:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04_KK_RadFogCommentScript.psc:41:1:none-form-usage
@@ -59820,6 +60058,7 @@ Scripts/Source/DLC04/DLC04/DLC04_MonorailControlLeverScript.psc:1:12:script-file
 Scripts/Source/DLC04/DLC04/DLC04_MonorailControlLeverScript.psc:16:16:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04_MonorailControlLeverScript.psc:17:20:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04_MonorailControlLeverScript.psc:31:10:forbidden-functions
+Scripts/Source/DLC04/DLC04/DLC04_MonorailControlLeverScript.psc:35:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04_MonorailControlLeverScript.psc:37:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04_MonorailControlLeverScript.psc:38:11:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04_MonorailControlLeverScript.psc:40:1:none-form-usage
@@ -60009,6 +60248,7 @@ Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:245:1:none-f
 Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:288:1:unchecked-cast
 Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:348:1:argument-naming
 Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:348:1:cyclomatic-complexity
+Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:348:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:353:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:353:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:356:1:none-form-usage
@@ -60018,6 +60258,7 @@ Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:364:29:forbi
 Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:370:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:376:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:394:121:line-length
+Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:427:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:437:1:unchecked-cast
 Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:437:1:unchecked-cast
 Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:438:42:forbidden-functions
@@ -60049,6 +60290,7 @@ Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:616:1:none-f
 Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:618:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:621:1:numeric-comparison
 Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:622:12:forbidden-functions
+Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:628:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:650:28:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:694:26:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:757:1:none-form-usage
@@ -60057,6 +60299,7 @@ Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:780:11:goto-
 Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:797:1:argument-naming
 Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:797:121:line-length
 Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:820:121:line-length
+Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:880:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:891:121:line-length
 Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:892:121:line-length
 Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:893:121:line-length
@@ -60188,6 +60431,7 @@ Scripts/Source/DLC04/DLC04/DLC04_NukaCadeQuestScript.psc:186:13:forbidden-functi
 Scripts/Source/DLC04/DLC04/DLC04_NukaCadeQuestScript.psc:188:56:unresolved-script
 Scripts/Source/DLC04/DLC04/DLC04_NukaCadeQuestScript.psc:189:12:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04_NukaCadeQuestScript.psc:212:4:strict-boolean
+Scripts/Source/DLC04/DLC04/DLC04_NukaCadeQuestScript.psc:237:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04_NukaCadeQuestScript.psc:240:8:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04_NukaCadeQuestScript.psc:245:10:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04_NukaCadeQuestScript.psc:250:5:strict-boolean
@@ -64532,6 +64776,7 @@ Scripts/Source/DLC05/DLC05/DLC05WorkshopFirework.psc:26:9:forbidden-functions
 Scripts/Source/DLC05/DLC05/DLC05WorkshopFirework.psc:27:26:forbidden-functions
 Scripts/Source/DLC05/DLC05/DLC05WorkshopFirework.psc:29:12:forbidden-functions
 Scripts/Source/DLC05/DLC05/DLC05WorkshopFirework.psc:46:8:forbidden-functions
+Scripts/Source/DLC05/DLC05/DLC05WorkshopFirework.psc:64:1:nesting-depth
 Scripts/Source/DLC05/DLC05/DLC05WorkshopFirework.psc:68:10:forbidden-functions
 Scripts/Source/DLC05/DLC05/DLC05WorkshopFirework.psc:68:121:line-length
 Scripts/Source/DLC05/DLC05/DLC05WorkshopFirework.psc:69:1:unchecked-cast
@@ -64731,6 +64976,7 @@ Scripts/Source/DLC05/DLC05/WeaponRackScript.psc:95:8:forbidden-functions
 Scripts/Source/DLC05/DLC05/WeaponRackScript.psc:95:121:line-length
 Scripts/Source/DLC05/DLC05/WeaponRackScript.psc:97:9:forbidden-functions
 Scripts/Source/DLC05/DLC05/WeaponRackScript.psc:100:9:forbidden-functions
+Scripts/Source/DLC05/DLC05/WeaponRackScript.psc:111:1:nesting-depth
 Scripts/Source/DLC05/DLC05/WeaponRackScript.psc:112:8:forbidden-functions
 Scripts/Source/DLC05/DLC05/WeaponRackScript.psc:114:2:strict-boolean
 Scripts/Source/DLC05/DLC05/WeaponRackScript.psc:118:121:line-length
@@ -64746,6 +64992,7 @@ Scripts/Source/DLC05/DLC05/WorkshopBuilderScript.psc:1:12:script-filename-mismat
 Scripts/Source/DLC05/DLC05/WorkshopBuilderScript.psc:47:121:line-length
 Scripts/Source/DLC05/DLC05/WorkshopBuilderScript.psc:60:8:forbidden-functions
 Scripts/Source/DLC05/DLC05/WorkshopBuilderScript.psc:68:8:forbidden-functions
+Scripts/Source/DLC05/DLC05/WorkshopBuilderScript.psc:76:1:nesting-depth
 Scripts/Source/DLC05/DLC05/WorkshopBuilderScript.psc:77:8:forbidden-functions
 Scripts/Source/DLC05/DLC05/WorkshopBuilderScript.psc:87:12:forbidden-functions
 Scripts/Source/DLC05/DLC05/WorkshopBuilderScript.psc:92:10:forbidden-functions
@@ -64790,11 +65037,13 @@ Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:163:8:forbidden-functions
 Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:171:121:line-length
 Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:173:9:forbidden-functions
 Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:173:121:line-length
+Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:180:1:nesting-depth
 Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:182:9:forbidden-functions
 Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:182:121:line-length
 Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:205:8:forbidden-functions
 Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:216:9:forbidden-functions
 Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:223:10:forbidden-functions
+Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:237:1:nesting-depth
 Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:238:8:forbidden-functions
 Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:245:4:strict-boolean
 Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:247:54:unresolved-script
@@ -64809,6 +65058,7 @@ Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:290:3:strict-boolean
 Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:291:10:forbidden-functions
 Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:324:10:forbidden-functions
 Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:338:11:forbidden-functions
+Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:356:1:nesting-depth
 Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:357:8:forbidden-functions
 Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:363:56:unresolved-script
 Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:364:66:unresolved-script
@@ -64819,7 +65069,9 @@ Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:387:8:forbidden-functions
 Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:394:1:numeric-comparison
 Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:398:9:forbidden-functions
 Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:402:8:forbidden-functions
+Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:406:1:nesting-depth
 Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:414:11:forbidden-functions
+Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:433:1:nesting-depth
 Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:434:8:forbidden-functions
 Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:437:3:strict-boolean
 Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:439:10:forbidden-functions
@@ -64894,6 +65146,7 @@ Scripts/Source/DLC06/DLC06/DLC06ExperimentQuestScript.psc:56:8:forbidden-functio
 Scripts/Source/DLC06/DLC06/DLC06ExperimentQuestScript.psc:61:8:forbidden-functions
 Scripts/Source/DLC06/DLC06/DLC06ExperimentQuestScript.psc:66:8:forbidden-functions
 Scripts/Source/DLC06/DLC06/DLC06ExperimentQuestScript.psc:71:1:none-form-usage
+Scripts/Source/DLC06/DLC06/DLC06ExperimentQuestScript.psc:81:1:nesting-depth
 Scripts/Source/DLC06/DLC06/DLC06ExperimentQuestScript.psc:82:1:none-form-usage
 Scripts/Source/DLC06/DLC06/DLC06ExperimentQuestScript.psc:83:1:none-form-usage
 Scripts/Source/DLC06/DLC06/DLC06ExperimentQuestScript.psc:83:9:forbidden-functions
@@ -64960,6 +65213,7 @@ Scripts/Source/DLC06/DLC06/DLC06OverseerDeskTrackingScript.psc:30:8:forbidden-fu
 Scripts/Source/DLC06/DLC06/DLC06OverseerDeskTrackingScript.psc:35:8:forbidden-functions
 Scripts/Source/DLC06/DLC06/DLC06OverseerDeskTrackingScript.psc:37:1:none-form-usage
 Scripts/Source/DLC06/DLC06/DLC06OverseerHandlerScript.psc:1:12:script-filename-mismatch
+Scripts/Source/DLC06/DLC06/DLC06OverseerHandlerScript.psc:96:1:nesting-depth
 Scripts/Source/DLC06/DLC06/DLC06OverseerHandlerScript.psc:97:8:forbidden-functions
 Scripts/Source/DLC06/DLC06/DLC06OverseerHandlerScript.psc:100:1:none-form-usage
 Scripts/Source/DLC06/DLC06/DLC06OverseerHandlerScript.psc:100:1:unchecked-cast
@@ -65068,6 +65322,7 @@ Scripts/Source/DLC06/DLC06/DLC06WorkshopParent.psc:136:1:none-form-usage
 Scripts/Source/DLC06/DLC06/DLC06WorkshopParent.psc:157:8:forbidden-functions
 Scripts/Source/DLC06/DLC06/DLC06WorkshopParent.psc:158:1:none-form-usage
 Scripts/Source/DLC06/DLC06/DLC06WorkshopParent.psc:163:8:forbidden-functions
+Scripts/Source/DLC06/DLC06/DLC06WorkshopParent.psc:167:1:nesting-depth
 Scripts/Source/DLC06/DLC06/DLC06WorkshopParent.psc:169:9:forbidden-functions
 Scripts/Source/DLC06/DLC06/DLC06WorkshopParent.psc:173:10:forbidden-functions
 Scripts/Source/DLC06/DLC06/DLC06WorkshopParent.psc:178:11:forbidden-functions
@@ -65087,6 +65342,7 @@ Scripts/Source/DLC06/DLC06/DLC06WorkshopParent.psc:248:35:unresolved-script
 Scripts/Source/DLC06/DLC06/DLC06WorkshopParent.psc:256:8:forbidden-functions
 Scripts/Source/DLC06/DLC06/DLC06WorkshopParent.psc:258:72:unresolved-script
 Scripts/Source/DLC06/DLC06/DLC06WorkshopParent.psc:259:5:strict-boolean
+Scripts/Source/DLC06/DLC06/DLC06WorkshopParent.psc:265:1:nesting-depth
 Scripts/Source/DLC06/DLC06/DLC06WorkshopParent.psc:266:5:strict-boolean
 Scripts/Source/DLC06/DLC06/DLC06WorkshopParent.psc:268:1:numeric-comparison
 Scripts/Source/DLC06/DLC06/DLC06WorkshopParent.psc:270:13:forbidden-functions
@@ -65678,6 +65934,7 @@ Scripts/Source/DLC06/DLC06/WorkshopObjectDeathScript.psc:35:8:forbidden-function
 Scripts/Source/DLC06/DLC06/WorkshopObjectDeathScript.psc:49:121:line-length
 Scripts/Source/DLC06/DLC06/WorkshopObjectDeathScript.psc:53:8:forbidden-functions
 Scripts/Source/DLC06/DLC06/WorkshopObjectDeathScript.psc:60:8:forbidden-functions
+Scripts/Source/DLC06/DLC06/WorkshopObjectDeathScript.psc:64:1:nesting-depth
 Scripts/Source/DLC06/DLC06/WorkshopObjectDeathScript.psc:67:8:forbidden-functions
 Scripts/Source/DLC06/DLC06/WorkshopObjectDeathScript.psc:68:2:strict-boolean
 Scripts/Source/DLC06/DLC06/WorkshopObjectDeathScript.psc:72:9:forbidden-functions
@@ -65697,6 +65954,7 @@ Scripts/Source/DLC06/DLC06/WorkshopObjectDeathScript.psc:124:8:forbidden-functio
 Scripts/Source/DLC06/DLC06/WorkshopObjectNoMultiResourceScript.psc:1:12:script-filename-mismatch
 Scripts/Source/DLC06/DLC06/WorkshopPowerbikeScript.psc:1:12:script-filename-mismatch
 Scripts/Source/DLC06/DLC06/WorkshopSpecialBuffScript.psc:1:12:script-filename-mismatch
+Scripts/Source/DLC06/DLC06/WorkshopSpecialBuffScript.psc:15:1:nesting-depth
 Scripts/Source/DLC06/DLC06/WorkshopSpecialBuffScript.psc:17:11:forbidden-functions
 Scripts/Source/DLC06/DLC06/WorkshopSpecialBuffScript.psc:18:28:forbidden-functions
 Scripts/Source/DLC06/DLC06/WorkshopSpecialBuffScript.psc:20:30:forbidden-functions

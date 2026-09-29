@@ -643,6 +643,7 @@ Scripts/Source/Quest.psc:8:121:line-length
 Scripts/Source/Quest.psc:9:121:line-length
 Scripts/Source/Quest.psc:10:121:line-length
 Scripts/Source/Quest.psc:11:121:line-length
+Scripts/Source/Quest.psc:12:1:nesting-depth
 Scripts/Source/Quest.psc:12:121:line-length
 Scripts/Source/Quest.psc:17:1:numeric-comparison
 Scripts/Source/Quest.psc:18:63:exclamation-spacing

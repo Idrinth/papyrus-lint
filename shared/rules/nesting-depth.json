@@ -1,0 +1,14 @@
+{
+  "id": "nesting-depth",
+  "name": "Nesting depth",
+  "category": "Other",
+  "visitor": "ast",
+  "tags": [
+    "maintainability"
+  ],
+  "severity": "info",
+  "importance": "medium",
+  "fixable": false,
+  "description": "Flags functions/events whose If/While nesting depth exceeds a configurable threshold.",
+  "definition": "Flags functions/events whose control-flow nesting depth (1 per nested `If`/`ElseIf`/`While`; `Else` does not add a level; a surrounding `State` is ignored) reaches a configurable threshold, as `[info]` at `nesting_depth_info` (default 4), `[warning]` at `nesting_depth_warning` (default 6), or `[error]` at `nesting_depth_error` (default 9). A configured warning below info is treated as equal to info, and a configured error below warning is treated as equal to warning."
+}
