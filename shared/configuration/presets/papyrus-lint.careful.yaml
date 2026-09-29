@@ -32,3 +32,5 @@
 cyclomatic_complexity_warning: 20  # was 10: avoid flooding unfamiliar/legacy code with complexity findings
 cyclomatic_complexity_error: 40    # was 20: same as above
 parameter_count_max: 10            # was 5: same first-pass leniency as complexity thresholds
+function_length_max_code_lines: 40 # was 10: same first-pass leniency as complexity thresholds
+function_length_max_lines: 60      # was 20: physical-line counterpart of the code-line limit

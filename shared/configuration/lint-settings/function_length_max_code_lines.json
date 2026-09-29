@@ -1,0 +1,32 @@
+{
+  "key": "function_length_max_code_lines",
+  "rust": {
+    "type": "usize",
+    "default": "10"
+  },
+  "yaml": {
+    "default": "10",
+    "comment": "Non-negative integer"
+  },
+  "ts_type": "number",
+  "doc": "The number of non-blank, non-comment body lines a function/event can have\nbefore the \"Function length\" lint flags it as a `[warning]`. Defaults are\n10 (`strict`), 20 (`standard`), and 40 (`careful`).",
+  "ui": {
+    "mount": "lint-config-settings",
+    "group": "function-length",
+    "group_kind": "fieldset",
+    "group_legend": "Function length thresholds",
+    "row": true,
+    "id": "function-length-max-code-lines",
+    "widget": "number",
+    "label": "Maximum lines of code",
+    "min": 0,
+    "clamp_min": 0,
+    "treat_zero_as_empty": false
+  },
+  "schema": {
+    "description": "Maximum number of non-blank, non-comment body lines a function or event may have before the function-length lint reports a warning.",
+    "type": "integer",
+    "minimum": 0,
+    "default": 10
+  }
+}

@@ -35,6 +35,7 @@ fn ast_rules_return_an_ast_visitor() {
     assert_ast(crate::explicit_return::visitor());
     assert_ast(crate::float_equality::visitor());
     assert_ast(crate::float_int_conversion::visitor());
+    assert_ast(crate::function_length::visitor());
     assert_ast(crate::function_override::visitor());
     assert_ast(crate::get_state_comparison::visitor());
     assert_ast(crate::global_variable_increment::visitor());
