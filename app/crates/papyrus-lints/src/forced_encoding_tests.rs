@@ -1,8 +1,10 @@
 use super::*;
 
 fn check_with(source: &str, encoding: EncodingEnforced) -> Vec<Diagnostic> {
-    let mut config = crate::config::Config::default();
-    config.encoding_enforced = encoding;
+    let config = crate::config::Config {
+        encoding_enforced: encoding,
+        ..Default::default()
+    };
     let ast = papyrus_parser::parse(source).ok();
     let tokens = papyrus_parser::tokenize(source).ok();
     super::check(
@@ -41,23 +43,29 @@ fn windows_1252_flags_emoji() {
 
 #[test]
 fn rule_can_be_disabled_in_configuration() {
-    let mut config = crate::config::Config::default();
+    let mut config = crate::config::Config {
+        encoding_enforced: EncodingEnforced::Iso88591,
+        ..Default::default()
+    };
     config.rules.forced_encoding = false;
-    config.encoding_enforced = EncodingEnforced::Iso88591;
     assert!(crate::lint("ScriptName Example\n; \u{1F30D}\n", &config).is_empty());
 }
 
 #[test]
 fn disable_file_comment_suppresses_the_diagnostic() {
-    let mut config = crate::config::Config::default();
-    config.encoding_enforced = EncodingEnforced::Iso88591;
+    let config = crate::config::Config {
+        encoding_enforced: EncodingEnforced::Iso88591,
+        ..Default::default()
+    };
     let source = "ScriptName Example\n; \u{1F30D}\n; @disable-file forced-encoding\n";
     assert!(crate::lint(source, &config).is_empty());
 }
 
 fn repair_with(source: &str, encoding: EncodingEnforced) -> String {
-    let mut config = crate::config::Config::default();
-    config.encoding_enforced = encoding;
+    let config = crate::config::Config {
+        encoding_enforced: encoding,
+        ..Default::default()
+    };
     let ast = papyrus_parser::parse(source).ok();
     let tokens = papyrus_parser::tokenize(source).ok();
     super::repair(source, ast.as_ref(), tokens.as_deref(), &config)
