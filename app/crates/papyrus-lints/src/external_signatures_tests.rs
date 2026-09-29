@@ -17,6 +17,7 @@ fn no_external_signatures_leaves_member_metadata_unresolved() {
         external.function_return_type("ObjectReference", "GetItemCount"),
         None
     );
+    assert_eq!(external.registers_remote_event("Child", "OnCellAttach"), None);
 }
 
 #[test]

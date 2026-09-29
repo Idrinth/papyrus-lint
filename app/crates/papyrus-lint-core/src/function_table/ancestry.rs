@@ -29,6 +29,7 @@ fn parent_cache_key(script: &ScriptFunctions) -> Option<String> {
 mod cached;
 mod events;
 mod members;
+mod remote_events;
 mod states;
 
 pub(in crate::function_table) use events::ResolvedEvents;

@@ -62,3 +62,25 @@ fn literal_goto_state_targets_returns_lowercase_self_targets() {
     assert!(targets.contains("active"));
     assert!(targets.contains("inactive"));
 }
+
+#[test]
+fn remote_event_registrations_returns_lowercase_literal_leaves() {
+    let source = concat!(
+        "ScriptName Example\n\n",
+        "Event OnInit()\n",
+        "    RegisterForRemoteEvent(akTarget, \"OnCellAttach\")\n",
+        "    RegisterForRemoteEvent(akTarget, \"ONDEATH\")\n",
+        "EndEvent\n",
+    );
+    let script = papyrus_parser::parse_with_mode(
+        source,
+        papyrus_parser::parser::GameEdition::Fallout4,
+    )
+    .expect("test source should parse");
+
+    let regs = remote_event_registrations(&script);
+
+    assert!(regs.events.contains("oncellattach"));
+    assert!(regs.events.contains("ondeath"));
+    assert!(!regs.opaque);
+}

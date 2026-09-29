@@ -1,6 +1,6 @@
 use super::*;
 use crate::config::Config;
-use crate::external_signatures::NoExternalSignatures;
+use crate::external_signatures::{ExternalSignatures, NoExternalSignatures};
 use crate::Game;
 
 fn parse_fo4(source: &str) -> papyrus_parser::ast::Script {
@@ -160,4 +160,129 @@ fn lint_skips_when_game_is_skyrim() {
         &Config::default(),
     );
     assert!(diagnostics.iter().all(|d| d.rule != RULE));
+}
+
+struct AncestryRegistrations {
+    /// Lowercased script name → (registered event leaves, opaque).
+    scripts: std::collections::HashMap<String, (Vec<String>, bool)>,
+    /// Lowercased script name → parent name (original case ok; looked up lower).
+    extends: std::collections::HashMap<String, String>,
+}
+
+impl AncestryRegistrations {
+    fn with_child_and_parent(
+        parent: &str,
+        parent_events: Vec<String>,
+        parent_opaque: bool,
+    ) -> Self {
+        let mut scripts = std::collections::HashMap::new();
+        scripts.insert("child".to_string(), (Vec::new(), false));
+        scripts.insert(parent.to_ascii_lowercase(), (parent_events, parent_opaque));
+        let mut extends = std::collections::HashMap::new();
+        extends.insert("child".to_string(), parent.to_string());
+        Self { scripts, extends }
+    }
+
+    fn parent_registers(parent: &str, event: &str) -> Self {
+        Self::with_child_and_parent(parent, vec![event.to_ascii_lowercase()], false)
+    }
+
+    fn empty_parent(parent: &str) -> Self {
+        Self::with_child_and_parent(parent, Vec::new(), false)
+    }
+
+    fn opaque_parent(parent: &str) -> Self {
+        Self::with_child_and_parent(parent, Vec::new(), true)
+    }
+}
+
+impl ExternalSignatures for AncestryRegistrations {
+    fn lookup(&mut self, _type_name: &str, _function_name: &str) -> Option<Vec<crate::ParamInfo>> {
+        None
+    }
+
+    fn registers_remote_event(&mut self, type_name: &str, event_name: &str) -> Option<bool> {
+        let event_key = event_name.to_ascii_lowercase();
+        let mut visited = Vec::new();
+        let mut current = Some(type_name.to_ascii_lowercase());
+        let mut saw_any = false;
+        while let Some(name) = current {
+            if visited.contains(&name) {
+                return None;
+            }
+            let Some((events, opaque)) = self.scripts.get(&name) else {
+                return None;
+            };
+            saw_any = true;
+            if *opaque || events.iter().any(|event| event == &event_key) {
+                return Some(true);
+            }
+            current = self.extends.get(&name).map(|parent| parent.to_ascii_lowercase());
+            visited.push(name);
+        }
+        if saw_any {
+            Some(false)
+        } else {
+            None
+        }
+    }
+}
+
+fn check_ancestry(source: &str, external: &mut AncestryRegistrations) -> Vec<Diagnostic> {
+    let ast = parse_fo4(source);
+    let tokens = papyrus_parser::tokenize(source).ok();
+    super::check(
+        source,
+        Some(&ast),
+        tokens.as_deref(),
+        &Config::default(),
+        external,
+    )
+}
+
+const CHILD_HANDLER: &str = "ScriptName Child Extends ParentScript\n\nEvent ObjectReference.OnCellAttach(ObjectReference akSender)\nEndEvent\n";
+
+#[test]
+fn does_not_flag_when_parent_registers_matching_event() {
+    let mut external = AncestryRegistrations::parent_registers("ParentScript", "OnCellAttach");
+    assert!(check_ancestry(CHILD_HANDLER, &mut external).is_empty());
+}
+
+#[test]
+fn flags_when_neither_self_nor_parent_registers() {
+    let mut external = AncestryRegistrations::empty_parent("ParentScript");
+    let diagnostics = check_ancestry(CHILD_HANDLER, &mut external);
+    assert_eq!(diagnostics.len(), 1);
+    assert!(diagnostics[0].message.contains("ObjectReference.OnCellAttach"));
+    assert!(diagnostics[0].message.contains("parent it Extends"));
+}
+
+#[test]
+fn does_not_flag_when_parent_has_opaque_registration() {
+    let mut external = AncestryRegistrations::opaque_parent("ParentScript");
+    assert!(check_ancestry(CHILD_HANDLER, &mut external).is_empty());
+}
+
+#[test]
+fn does_not_flag_extends_script_when_ancestry_cannot_be_resolved() {
+    // NoExternalSignatures → registers_remote_event is None; Extends present → quiet.
+    let diagnostics = check(CHILD_HANDLER);
+    assert!(diagnostics.is_empty());
+}
+
+#[test]
+fn remote_event_registrations_collects_literals_and_opaque() {
+    let literal = parse_fo4(
+        "ScriptName Example\n\nEvent OnInit()\n    RegisterForRemoteEvent(akTarget, \"OnCellAttach\")\nEndEvent\n",
+    );
+    let regs = remote_event_registrations(&literal);
+    assert!(regs.events.contains("oncellattach"));
+    assert!(!regs.opaque);
+
+    let opaque = parse_fo4(
+        "ScriptName Example\n\nFunction Start(ScriptEventName eventName)\n    RegisterForRemoteEvent(akTarget, eventName)\nEndFunction\n",
+    );
+    let regs = remote_event_registrations(&opaque);
+    assert!(regs.events.is_empty());
+    assert!(regs.opaque);
 }
