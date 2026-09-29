@@ -1,0 +1,12 @@
+{
+  "key": "compile_check",
+  "yaml": {
+    "default": "false",
+    "comment": "true, false; also runs PapyrusCompiler.exe (into a throwaway temporary\ndirectory) as part of linting a dropped .psc, reporting its errors\nalongside the lint engine's own. Requires compiler_path to be set/\nauto-detected"
+  },
+  "schema": {
+    "description": "Also run PapyrusCompiler.exe (into a throwaway temporary directory) as part of linting a .psc, reporting its errors alongside the lint engine. Requires compiler_path to be set or auto-detected.",
+    "type": "boolean",
+    "default": false
+  }
+}

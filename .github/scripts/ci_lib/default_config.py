@@ -1,8 +1,11 @@
 """Generate the documented default papyrus-lint.yaml from shared sources.
 
 Source of truth:
-  - shared/configuration/lint-settings.yaml (project_settings, settings,
-    rules_yaml_comment)
+  - shared/configuration/project-settings/*.json
+  - shared/configuration/lint-settings/*.json
+  - shared/configuration/lint-settings.meta.json
+    (declaration order and rules_yaml_comment; refreshed into the
+    git-ignored lint-settings.yaml for the other readers)
   - shared/rules.json (or shared/rules/*.json) for each rule's description
     and enabled_by_default
 
@@ -41,10 +44,27 @@ def config_key_for(rule_id: str) -> str:
 
 
 def load_lint_settings(repo_root: Path) -> dict:
-    path = repo_root / "shared" / "configuration" / "lint-settings.yaml"
-    data = yaml.safe_load(path.read_text(encoding="utf-8"))
+    """The per-setting JSON files are the source of truth. When they are
+    present, refresh the git-ignored lint-settings.yaml consumers still read
+    and return that document. A tree that only has the YAML (unit tests)
+    is loaded as-is.
+    """
+    configuration = repo_root / "shared" / "configuration"
+    project_dir = configuration / "project-settings"
+    lint_dir = configuration / "lint-settings"
+    meta_path = configuration / "lint-settings.meta.json"
+    yaml_path = configuration / "lint-settings.yaml"
+    if project_dir.is_dir() and lint_dir.is_dir() and meta_path.is_file():
+        from ci_lib.lint_settings_yaml import assemble_lint_settings, render_lint_settings_yaml
+
+        document = assemble_lint_settings(project_dir, lint_dir, meta_path)
+        rendered = render_lint_settings_yaml(document)
+        if not yaml_path.is_file() or yaml_path.read_text(encoding="utf-8") != rendered:
+            yaml_path.write_text(rendered, encoding="utf-8")
+        return document
+    data = yaml.safe_load(yaml_path.read_text(encoding="utf-8"))
     if not isinstance(data, dict):
-        raise ValueError(f"{path} must contain a mapping")
+        raise ValueError(f"{yaml_path} must contain a mapping")
     return data
 
 

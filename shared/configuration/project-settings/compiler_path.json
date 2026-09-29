@@ -1,0 +1,15 @@
+{
+  "key": "compiler_path",
+  "yaml": {
+    "default": "null",
+    "comment": "Path to PapyrusCompiler.exe, or null to auto-detect it"
+  },
+  "schema": {
+    "description": "Path to PapyrusCompiler.exe, or null/omit to auto-detect it.",
+    "type": [
+      "string",
+      "null"
+    ],
+    "default": null
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "key": "indentation",
+  "rust": {
+    "type": "Indentation",
+    "default": "Indentation::default()"
+  },
+  "yaml": {
+    "default": "tab",
+    "comment": "tab, space"
+  },
+  "ts_type": "\"tab\" | \"space\"",
+  "doc": "The indentation style enforced by the \"Formatting checks\"/\n\"Indentation\" lint and automatic fix in README.md.",
+  "ui": {
+    "mount": "lint-config-settings",
+    "group": "indentation",
+    "group_kind": "indentation",
+    "group_prefix": "Indentation",
+    "id": "indentation-style",
+    "widget": "mapped-select",
+    "aria_label": "Indentation style",
+    "options": [
+      {
+        "value": "tabs",
+        "label": "Tabs",
+        "config": "tab"
+      },
+      {
+        "value": "spaces",
+        "label": "Spaces",
+        "config": "space"
+      }
+    ],
+    "enables_key": "indentation_width",
+    "enables_when": "space"
+  },
+  "schema": {
+    "description": "Expected indentation style, read by the indentation lint and automatic fix.",
+    "type": "string",
+    "enum": [
+      "tab",
+      "space"
+    ],
+    "default": "tab"
+  }
+}

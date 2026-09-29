@@ -1,0 +1,16 @@
+{
+  "key": "lookup_script_roots",
+  "yaml": {
+    "default": "[]",
+    "comment": "Extra directories searched only as a fallback when resolving other\nscripts for analysis (argument/return types, Extends, autocompletion).\nScripts found only here are never linted, and these directories are\nignored by conflicting-script-versions"
+  },
+  "schema": {
+    "description": "Extra directories searched only as a fallback when resolving other scripts for analysis (argument/return types, Extends, autocompletion). Scripts found only here are never linted, and these directories are ignored by conflicting-script-versions.",
+    "type": "array",
+    "items": {
+      "type": "string",
+      "minLength": 1
+    },
+    "default": []
+  }
+}

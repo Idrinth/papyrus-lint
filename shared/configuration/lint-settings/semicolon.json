@@ -1,0 +1,36 @@
+{
+  "key": "semicolon",
+  "rust": {
+    "type": "bool",
+    "default": "false"
+  },
+  "yaml": {
+    "default": "false",
+    "comment": "true, false"
+  },
+  "ts_type": "boolean",
+  "doc": "Whether lines are required to end in a semicolon (`true`) or must\nnot (`false`). See the \"Semicolon at end of line\" lint in\nREADME.md.",
+  "ui": {
+    "mount": "lint-config-settings",
+    "id": "semicolon-style",
+    "widget": "bool-select",
+    "label": "Trailing semicolons",
+    "true_value": "require",
+    "false_value": "forbid",
+    "options": [
+      {
+        "value": "forbid",
+        "label": "Remove where possible"
+      },
+      {
+        "value": "require",
+        "label": "Add to non-empty lines"
+      }
+    ]
+  },
+  "schema": {
+    "description": "Whether lines are required to end in a semicolon (true) or must not (false).",
+    "type": "boolean",
+    "default": false
+  }
+}

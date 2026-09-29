@@ -1,7 +1,9 @@
 name: CI / Linters
 
-# shared/rules.json is git-ignored. rustfmt does not run build scripts, but
-# clippy does and therefore regenerates the combined rule metadata first.
+# shared/rules.json and shared/configuration/lint-settings.yaml are
+# git-ignored. rustfmt does not run build scripts, but clippy does and
+# therefore regenerates the combined rule metadata first. The YAML job
+# rebuilds lint-settings.yaml so yamllint still sees the generator output.
 
 on:
   push:
@@ -51,6 +53,9 @@ jobs:
 
       - name: Install yamllint
         run: pip install yamllint==1.37.1
+
+      - name: Build lint-settings.yaml from per-setting JSON
+        run: python3 .github/scripts/build_lint_settings_yaml.py
 
       - name: Lint YAML sources
         run: yamllint shared/configuration/lint-settings.yaml shared/rules/data/*/*.yaml shared/links.yaml

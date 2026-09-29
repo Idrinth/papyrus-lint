@@ -1,0 +1,28 @@
+{
+  "key": "treat_form_as_bool_for_returns",
+  "rust": {
+    "type": "bool",
+    "default": "false"
+  },
+  "yaml": {
+    "default": "false",
+    "comment": "true allows a Bool function to return a non-array Form value, relying on\nPapyrus to treat None as false and an existing Form as true"
+  },
+  "ts_type": "boolean",
+  "doc": "Whether the \"Return type check\" lint accepts a non-array Form\nvalue returned from a `Bool` function. Papyrus implicitly treats\n`None` as false and an existing Form as true, but this common idiom\nis rejected by default so return types remain strict unless a\nproject explicitly opts in.",
+  "ui": {
+    "mount": "lint-config-settings",
+    "group": "treat-form-as-bool",
+    "group_kind": "fieldset",
+    "group_legend": "Return type check",
+    "id": "treat-form-as-bool-for-returns",
+    "widget": "checkbox",
+    "checkbox_label": "Treat Forms as Bool for returns",
+    "title": "treat_form_as_bool_for_returns"
+  },
+  "schema": {
+    "description": "Whether return-types accepts a non-array Form value returned from a Bool function, relying on Papyrus's implicit None/existing Form conversion.",
+    "type": "boolean",
+    "default": false
+  }
+}

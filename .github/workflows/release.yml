@@ -135,6 +135,9 @@ jobs:
       - name: Build rules.json from shared/rules/
         run: python3 .github/scripts/build_rules_json.py
 
+      - name: Build lint-settings.yaml from per-setting JSON
+        run: python3 .github/scripts/build_lint_settings_yaml.py
+
       - name: Generate default configuration
         shell: bash
         run: python3 .github/scripts/generate_default_config.py
@@ -170,6 +173,10 @@ jobs:
       - name: Build rules.json from shared/rules/
         shell: bash
         run: python3 .github/scripts/build_rules_json.py
+
+      - name: Build lint-settings.yaml from per-setting JSON
+        shell: bash
+        run: python3 .github/scripts/build_lint_settings_yaml.py
 
       - name: Generate default configuration
         shell: bash

@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 """Generate schema/papyrus-lint.schema.json from lint-settings + rules.
 
-Run after editing shared/configuration/lint-settings.yaml or shared/rules/*.json
-(and after build_rules_json.py). The output is a Pages/docs artifact and is
-git-ignored - not a source of truth. CI and Pages jobs generate it before use;
-editors consume the published copy at
+Run after editing a shared/configuration/project-settings or lint-settings
+JSON file, or shared/rules/*.json (and after build_rules_json.py). This
+refreshes the git-ignored lint-settings.yaml from those JSON files before
+reading it. The output is a Pages/docs artifact and is git-ignored - not a
+source of truth. CI and Pages jobs generate it before use; editors consume
+the published copy at
 https://papyrus-lint.idrinth.de/schema/papyrus-lint.schema.json.
 """
 

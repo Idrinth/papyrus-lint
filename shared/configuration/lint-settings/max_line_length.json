@@ -1,0 +1,28 @@
+{
+  "key": "max_line_length",
+  "rust": {
+    "type": "usize",
+    "default": "120"
+  },
+  "yaml": {
+    "default": "120",
+    "comment": "Non-negative integer; maximum characters allowed on one line"
+  },
+  "ts_type": "number",
+  "doc": "The maximum number of characters allowed on a line before the\n\"Line length\" lint emits a warning.",
+  "ui": {
+    "mount": "lint-config-settings",
+    "id": "max-line-length",
+    "widget": "number",
+    "label": "Maximum line length",
+    "min": 1,
+    "clamp_min": 1,
+    "treat_zero_as_empty": true
+  },
+  "schema": {
+    "description": "Non-negative integer; maximum characters allowed on one line",
+    "type": "integer",
+    "minimum": 0,
+    "default": 120
+  }
+}

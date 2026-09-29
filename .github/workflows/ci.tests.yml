@@ -1,8 +1,9 @@
 name: CI / Tests
 
 # Coverage comments are best-effort for forked PRs with read-only tokens.
-# shared/rules.json is git-ignored, so jobs that consume rule metadata generate
-# it before building or testing.
+# shared/rules.json and shared/configuration/lint-settings.yaml are
+# git-ignored, so jobs that consume them generate them before building or
+# testing. generate_default_config.py refreshes lint-settings.yaml itself.
 
 on:
   push:

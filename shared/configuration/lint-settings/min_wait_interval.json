@@ -1,0 +1,32 @@
+{
+  "key": "min_wait_interval",
+  "rust": {
+    "type": "f64",
+    "default": "0.1"
+  },
+  "yaml": {
+    "default": "0.1",
+    "comment": "Non-negative number"
+  },
+  "ts_type": "number",
+  "doc": "The interval/duration argument a `Utility.Wait`, `RegisterForUpdate`,\n`RegisterForSingleUpdate`, `RegisterForUpdateGameTime`, or\n`RegisterForSingleUpdateGameTime` call can go below before the\n\"Short wait/update interval\" lint flags it as a `[warning]`.",
+  "ui": {
+    "mount": "lint-config-settings",
+    "group": "wait",
+    "group_kind": "fieldset",
+    "group_legend": "Short wait/update interval threshold",
+    "row": true,
+    "id": "min-wait-interval",
+    "widget": "number",
+    "label": "Minimum interval",
+    "min": 0,
+    "step": 0.01,
+    "clamp_min": 0
+  },
+  "schema": {
+    "description": "Interval/duration argument a Utility.Wait / RegisterForUpdate / RegisterForSingleUpdate / RegisterForUpdateGameTime / RegisterForSingleUpdateGameTime call can go below before short-wait-interval flags it.",
+    "type": "number",
+    "minimum": 0,
+    "default": 0.1
+  }
+}
