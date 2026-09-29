@@ -115,7 +115,7 @@ DOCS = [
         "filename": "papyrus-lint.default.yaml",
         "source_dir": CONFIGURATION_DIR,
         "repo_dir": "configuration",
-        "source_url": f"{GITHUB_BLOB_BASE}/shared/configuration/lint-settings.json",
+        "source_url": f"{GITHUB_BLOB_BASE}/shared/configuration/lint-settings.yaml",
         "slug": "papyrus-lint-default-yaml",
         "kind": "yaml",
         "title": "Default configuration (papyrus-lint.yaml)",
@@ -188,7 +188,7 @@ def doc_url_prefix(doc: dict) -> str:
     published under. Mirrors the doc's `repo_dir` (defaulting to "docs")
     so a schema/configuration doc's page is filed under schema/
     /configuration/ rather than docs/, now that its source no longer lives
-    there."""
+    under docs/."""
     return doc.get("repo_dir", "docs")
 
 
