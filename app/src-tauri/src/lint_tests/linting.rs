@@ -1,5 +1,44 @@
 use super::super::*;
+use tauri::test::{get_ipc_response, mock_builder, mock_context, noop_assets, INVOKE_KEY};
 use tempfile::tempdir;
+
+fn invoke_request(command: &str, body: serde_json::Value) -> tauri::webview::InvokeRequest {
+    tauri::webview::InvokeRequest {
+        cmd: command.into(),
+        callback: tauri::ipc::CallbackFn(0),
+        error: tauri::ipc::CallbackFn(1),
+        url: "tauri://localhost".parse().unwrap(),
+        body: tauri::ipc::InvokeBody::Json(body),
+        headers: Default::default(),
+        invoke_key: INVOKE_KEY.to_string(),
+    }
+}
+
+#[test]
+fn batch_commands_accept_a_null_progress_channel_over_ipc() {
+    let app = crate::configure_builder(mock_builder())
+        .build(mock_context(noop_assets()))
+        .unwrap();
+    let webview = tauri::WebviewWindowBuilder::new(&app, "batch-null-channel", Default::default())
+        .build()
+        .unwrap();
+    let context = serde_json::to_value(ProjectLintContext::default()).unwrap();
+
+    for command in ["preload_project_scripts", "lint_project_scripts"] {
+        get_ipc_response(
+            &webview,
+            invoke_request(
+                command,
+                serde_json::json!({
+                    "paths": [],
+                    "context": context,
+                    "on_progress": null
+                }),
+            ),
+        )
+        .unwrap_or_else(|error| panic!("{command} rejected a null channel: {error}"));
+    }
+}
 
 #[test]
 fn lint_psc_file_lints_source_from_disk() {
