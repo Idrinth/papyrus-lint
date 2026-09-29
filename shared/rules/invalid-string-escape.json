@@ -1,0 +1,14 @@
+{
+  "id": "invalid-string-escape",
+  "name": "Invalid string escape",
+  "category": "Bugprone",
+  "visitor": "tokens",
+  "tags": [
+    "correctness"
+  ],
+  "severity": "warning",
+  "importance": "medium",
+  "fixable": false,
+  "description": "Flags a C-like escape such as \\n, \\t, or \\r inside a string literal, since Papyrus stores those as literal backslash-plus-letter characters rather than whitespace.",
+  "definition": "Flags, as a `[warning]`, a string literal that contains a C-like escape sequence from the high-signal set `\\n`, `\\t`, or `\\r`. Papyrus string literals have no escape sequences: a literal `\"\\n\"` is the two characters backslash and `n`, not a newline, so authors coming from C/JavaScript/Python who write `Debug.Trace(\"Loaded\\nDone\")` or `\"\\t\"` expecting whitespace get the backslash characters in the stored string instead. Only those three letters are checked, to avoid noise from intentional Windows-style paths that contain other backslash-letter pairs (`\"C:\\Games\"`) or doubled backslashes; `\\\\`, `\\\"`, and a backslash before any other letter are left alone. The diagnostic names the escape that was found and explains that Papyrus does not interpret it. Prefer separate `Debug.Trace` calls (or a real newline in the source between concatenated string literals, if the compiler accepts that) over embedding escape sequences. Not auto-fixable: the author's intent — a real newline, a literal backslash, or something else — cannot be inferred safely."
+}
