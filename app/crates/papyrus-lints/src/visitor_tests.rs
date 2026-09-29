@@ -91,8 +91,8 @@ fn token_rules_return_a_token_visitor() {
     assert_tokens(crate::comma_spacing::visitor());
     assert_tokens(crate::debug_side_effects::visitor());
     assert_tokens(crate::exclamation_spacing::visitor());
-    assert_tokens(crate::formid_hex_notation::visitor());
     assert_tokens(crate::forbidden_functions::visitor());
+    assert_tokens(crate::formid_hex_notation::visitor());
     assert_tokens(crate::get_form_from_file_skyrim_esm::visitor());
     assert_tokens(crate::indentation::visitor());
     assert_tokens(crate::missing_update_handler::visitor());
