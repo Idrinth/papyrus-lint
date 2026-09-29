@@ -1,0 +1,29 @@
+# Sequence used by apply_repairs. Later fixes see earlier rewrites.
+repair:
+  - identifier-casing
+  - slow-functions
+  - semicolon
+  - indentation
+  - property-sorting
+  - comma-spacing
+  - chain-whitespace
+  - exclamation-spacing
+  - operator-spacing
+  - assignment-operator-spacing
+  - type-casing
+  - trailing-whitespace
+  - global-variable-increment
+  - named-arguments
+  - unnecessary-function
+  - formid-hex-notation
+  - get-form-from-file-skyrim-esm
+  - final-newline
+  - get-form-from-file-load-index
+  - useless-downcast
+  - self-assignment
+  - boolean-simplification
+  - duplicate-import
+  - redundant-bool-assignment
+  - line-endings
+  - forced-encoding
+  - utf8-bom
