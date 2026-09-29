@@ -47,7 +47,10 @@ def render_schema(settings: dict, rules: list[dict]) -> dict:
         rule = by_key[key]
         enabled = rule.get("enabled_by_default", True)
         rule_props[key] = {
-            "description": rule.get("description") or rule.get("name") or key,
+            # Prefer the short display name so the generated schema stays a
+            # manageable size for API-based commits; rule docs live in
+            # shared/rules/<id>.json and the website.
+            "description": rule.get("name") or key,
             "type": "boolean",
             "default": enabled,
         }
