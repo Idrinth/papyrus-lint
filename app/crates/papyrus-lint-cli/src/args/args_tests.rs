@@ -213,6 +213,17 @@ fn format_flag_rejects_an_unknown_value() {
 }
 
 #[test]
+fn format_flag_accepts_short() {
+    let parsed = parse_lint(&args(&["--format=short", "Example.psc"])).expect("should parse");
+    match parsed {
+        ParsedCommand::Lint(lint) => {
+            assert_eq!(lint.output_format, crate::output::OutputFormat::Short);
+        }
+        other => panic!("expected a lint run, got {other:?}"),
+    }
+}
+
+#[test]
 fn hash_source_without_ai_format_is_an_error() {
     assert_eq!(
         parse_lint(&args(&["--hash-source", "Example.psc"])),

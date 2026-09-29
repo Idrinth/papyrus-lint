@@ -277,7 +277,7 @@ fn process_scripts<'a>(
         tag_filter: lint.tag_filter.as_deref(),
         quiet_warnings: lint.quiet_warnings,
         quiet_info: lint.quiet_info,
-        json: lint.output_format != OutputFormat::Plain,
+        json: matches!(lint.output_format, OutputFormat::Json | OutputFormat::Ai),
         output_format: lint.output_format,
         hash_source: lint.hash_source,
         use_color,
@@ -421,7 +421,9 @@ fn prepare_source(
             job.rule_filter,
             job.target_line,
             job.dry_run,
-            lint_context.json,
+            // Only `--format plain` prints dry-run diffs into the text report;
+            // short/json/ai omit them so short stays one finding per line.
+            lint_context.output_format != OutputFormat::Plain,
         )?;
         Ok(PreparedSource {
             source: outcome.source,

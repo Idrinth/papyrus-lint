@@ -418,7 +418,7 @@ fn unknown_format_is_a_usage_error_without_creating_an_output_file() {
     assert!(output.stdout.is_empty());
     assert_eq!(
         String::from_utf8(output.stderr).expect("stderr should be UTF-8"),
-        "error: --format must be 'plain', 'json', or 'ai', got 'xml'\n"
+        "error: --format must be 'plain', 'short', 'json', or 'ai', got 'xml'\n"
     );
     assert!(!report_path.exists());
 }
@@ -452,4 +452,23 @@ fn progress_without_an_output_file_is_a_usage_error() {
         String::from_utf8(output.stderr).expect("stderr should be UTF-8"),
         "error: --progress requires --output <path>\n"
     );
+}
+
+#[test]
+fn short_format_prints_compact_finding_lines_without_a_summary() {
+    let dir = tempfile::tempdir().expect("failed to create temp directory");
+    let script = dir.path().join("scripts/source/Example.psc");
+    write_file(&script, "ScriptName Example   \n");
+
+    let output = run_cli(&["--format", "short", &script.to_string_lossy()]);
+
+    assert!(output.status.success());
+    assert!(output.stderr.is_empty());
+    let stdout = String::from_utf8(output.stdout).expect("stdout should be UTF-8");
+    let lines: Vec<&str> = stdout.lines().filter(|line| !line.is_empty()).collect();
+    assert_eq!(lines.len(), 1, "expected one finding line, got {stdout:?}");
+    assert!(lines[0].contains(":trailing-whitespace"));
+    assert!(!stdout.contains('['));
+    assert!(!stdout.contains("PapyrusLinterCLI:"));
+    assert!(!stdout.contains("http"));
 }

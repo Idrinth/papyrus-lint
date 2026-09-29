@@ -106,6 +106,8 @@ fn append_lint_summary(
         OutputFormat::Plain => {
             append_plain_summary(report, scripts_checked, fix, dry_run, use_color)
         }
+        // Short mode is findings-only: no summary line.
+        OutputFormat::Short => {}
     }
 }
 

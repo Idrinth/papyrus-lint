@@ -129,6 +129,7 @@ fn parse_lint_positionals(
 fn parse_output_format(format_flag: Option<&str>) -> Result<OutputFormat, ArgsError> {
     match format_flag {
         None | Some("plain") => Ok(OutputFormat::Plain),
+        Some("short") => Ok(OutputFormat::Short),
         Some("json") => Ok(OutputFormat::Json),
         Some("ai") => Ok(OutputFormat::Ai),
         Some(value) => Err(ArgsError::InvalidFormat(value.to_string())),

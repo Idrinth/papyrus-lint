@@ -43,7 +43,7 @@ fn args_error_message(err: &ArgsError) -> String {
 fn format_flag_error(err: &ArgsError) -> String {
     match err {
         ArgsError::InvalidFormat(value) => {
-            format!("error: --format must be 'plain', 'json', or 'ai', got '{value}'")
+            format!("error: --format must be 'plain', 'short', 'json', or 'ai', got '{value}'")
         }
         ArgsError::InvalidDoctorFormat(value) => {
             format!("error: doctor --format must be 'plain' or 'json', got '{value}'")

@@ -166,6 +166,36 @@ pub fn format_parser_error_line(
     )
 }
 
+/// Renders one diagnostic as a compact one-line finding for `--format short`:
+/// `<path>:<line>:<column>:<rule-id>`. No message, severity tag, doc URL, or
+/// color — intended for large-folder scans and machine-readable scrapes.
+pub fn format_short_diagnostic_line<D: DiagnosticLike>(
+    path_display: &str,
+    diagnostic: &D,
+) -> String {
+    format!(
+        "{}:{}:{}:{}",
+        path_display,
+        diagnostic.line(),
+        diagnostic.column(),
+        diagnostic.rule()
+    )
+}
+
+/// Renders one lexer/parser error in the same compact shape as
+/// [`format_short_diagnostic_line`], using `lex`/`parse` in the rule-id
+/// slot so short-format scrapers can treat both findings uniformly.
+pub fn format_short_parser_error_line(
+    path_display: &str,
+    error: &crate::JsonParserError,
+) -> String {
+    let kind = match error.kind {
+        crate::ParserErrorKind::Lex => "lex",
+        crate::ParserErrorKind::Parse => "parse",
+    };
+    format!("{}:{}:{}:{}", path_display, error.line, error.column, kind)
+}
+
 #[cfg(test)]
 #[path = "plain_tests.rs"]
 mod tests;
