@@ -1,0 +1,48 @@
+{
+  "key": "game",
+  "rust": {
+    "type": "Game",
+    "default": "Game::default()"
+  },
+  "yaml": {
+    "default": "skyrim",
+    "comment": "Target game. Currently supported: skyrim, fallout4, starfield"
+  },
+  "ts_type": "Game",
+  "ts_alias": "Game",
+  "doc": "The game whose Papyrus dialect and runtime APIs this project targets.\nDefaults to [`Game::Skyrim`] for compatibility with configurations\ncreated before this key existed.",
+  "ui": {
+    "mount": "lint-config-game",
+    "id": "game-select",
+    "widget": "game",
+    "label": "Target game",
+    "title": "Target game",
+    "options": [
+      {
+        "value": "skyrim",
+        "label": "Skyrim"
+      },
+      {
+        "value": "fallout4",
+        "label": "Fallout 4"
+      },
+      {
+        "value": "starfield",
+        "label": "Starfield"
+      }
+    ],
+    "fill_selects": [
+      "config-picker-game-select"
+    ]
+  },
+  "schema": {
+    "description": "Game whose Papyrus dialect and runtime APIs the project targets.",
+    "type": "string",
+    "enum": [
+      "skyrim",
+      "fallout4",
+      "starfield"
+    ],
+    "default": "skyrim"
+  }
+}

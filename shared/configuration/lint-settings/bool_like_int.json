@@ -1,0 +1,28 @@
+{
+  "key": "bool_like_int",
+  "rust": {
+    "type": "bool",
+    "default": "true"
+  },
+  "yaml": {
+    "default": "true",
+    "comment": "true, false"
+  },
+  "ts_type": "boolean",
+  "doc": "Whether the \"Strict boolean check\" lint accepts an `Int` literal\n`1` or `0` used directly as an `If`/`ElseIf`/`While` condition,\ntreating it as the common \"bool-like\" idiom rather than flagging\nit. `true` by default. Any other `Int` value (a variable, a\nproperty, or a literal other than `1`/`0`) is still flagged\nregardless of this setting.",
+  "ui": {
+    "mount": "lint-config-settings",
+    "group": "bool-like",
+    "group_kind": "fieldset",
+    "group_legend": "Strict boolean check",
+    "id": "bool-like-int",
+    "widget": "checkbox",
+    "checkbox_label": "Allow 1/0 as bool-like",
+    "title": "bool_like_int"
+  },
+  "schema": {
+    "description": "Whether strict-boolean accepts the Int literals 1 and 0 used directly as If/ElseIf/While conditions.",
+    "type": "boolean",
+    "default": true
+  }
+}

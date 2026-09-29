@@ -91,7 +91,8 @@ CI treats clippy warnings as errors.
    (`src/tags.rs`), `Rules`/`default_rules()` (`src/config.rs`), the
    `collect_diagnostics`/`apply_repairs` dispatch, and each rule's
    `mod` in `src/lib.rs` from the generated `shared/rules.json` at build time.
-   `Config`'s other fields are compiled from `shared/configuration/lint-settings.yaml`.
+   `Config`'s other fields are compiled from the generated
+   `shared/configuration/lint-settings.yaml` (see "Adding a lint" below).
    `pages/build.py` generates the website's searchable `rules.html`
    straight from it; and release tooling fills in `templates/nexuspage.bbcode`'s
    five lint tables from it (see the comments in `.github/workflows/release.yml`) —
@@ -150,9 +151,16 @@ Minimum touch list (see also [`CONTRIBUTING.md`](CONTRIBUTING.md)):
    That script also writes `LINT_SETTINGS` from `shared/configuration/lint-settings.yaml`;
    `bindConfigSettings` renders those controls into `#lint-config-game` and
    `#lint-config-settings`. Don't hand-edit `Config` or those controls —
-   add the key to `shared/configuration/lint-settings.yaml` (with
-   `yaml.comment`, `yaml.default`, `schema`, and for Config fields `rust.type` /
-   `rust.default`), then regenerate
+   add `shared/configuration/lint-settings/<key>.json` (a Config field) or
+   `shared/configuration/project-settings/<key>.json` (a project setting)
+   and append that key to the matching list in
+   `shared/configuration/lint-settings.meta.json` (that list is the UI
+   order). The object needs `key` (matching the file name), `yaml.comment`,
+   `yaml.default`, `schema`, and for Config fields `rust.type` /
+   `rust.default`. Then run
+   `python3 .github/scripts/build_lint_settings_yaml.py` so the checked-in
+   `shared/configuration/lint-settings.yaml` stays in sync — consumers still
+   read that file — and regenerate
    `schema/papyrus-lint.schema.json`
    (`python3 .github/scripts/generate_config_schema.py`) and the git-ignored
    default YAML (`python3 .github/scripts/generate_default_config.py`).

@@ -1,0 +1,28 @@
+{
+  "key": "assume_auto_properties_filled",
+  "rust": {
+    "type": "bool",
+    "default": "false"
+  },
+  "yaml": {
+    "default": "false",
+    "comment": "true, false; true treats an Auto/AutoReadOnly property as already\nfilled in by the time a function runs instead of possibly None"
+  },
+  "ts_type": "boolean",
+  "doc": "Whether the \"None used as an existing Form\" lint treats a\nscript-level `Auto`/`AutoReadOnly` property as already filled in by\nthe time a function runs, rather than possibly still `None` (see\n[`crate::none_form_usage`]). `false` by default, so such a property\nis treated the same as an uninitialized local unless proven\notherwise. Many projects consider that noise, since in practice the\nCK's Property Manager (or another script's `PropertySet`) has\nalready filled every listed property in by the time any function\nruns; setting this to `true` drops that initial assumption. A\nproperty is still tracked (and flagged) once script code assigns it\n`None` directly, the same as a local variable. Has no effect on\n`unchecked_form_parameter`, which never tracks properties at all.",
+  "ui": {
+    "mount": "lint-config-settings",
+    "group": "assume-auto",
+    "group_kind": "fieldset",
+    "group_legend": "None used as an existing Form",
+    "id": "assume-auto-properties-filled",
+    "widget": "checkbox",
+    "checkbox_label": "Assume Auto properties are filled",
+    "title": "assume_auto_properties_filled"
+  },
+  "schema": {
+    "description": "Whether none-form-usage treats a script-level Auto/AutoReadOnly property as already filled in by the time a function runs, instead of possibly None.",
+    "type": "boolean",
+    "default": false
+  }
+}

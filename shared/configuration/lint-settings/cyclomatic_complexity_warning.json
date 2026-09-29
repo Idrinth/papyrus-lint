@@ -1,0 +1,32 @@
+{
+  "key": "cyclomatic_complexity_warning",
+  "rust": {
+    "type": "usize",
+    "default": "10"
+  },
+  "yaml": {
+    "default": "10",
+    "comment": "Non-negative integer"
+  },
+  "ts_type": "number",
+  "doc": "The cyclomatic complexity a function/event can reach before the\n\"Cyclomatic complexity\" lint flags it as a `[warning]`.",
+  "ui": {
+    "mount": "lint-config-settings",
+    "group": "cyclomatic",
+    "group_kind": "fieldset",
+    "group_legend": "Cyclomatic complexity thresholds",
+    "row": true,
+    "id": "cyclomatic-complexity-warning",
+    "widget": "number",
+    "label": "Warning at",
+    "min": 1,
+    "clamp_min": 1,
+    "treat_zero_as_empty": true
+  },
+  "schema": {
+    "description": "Cyclomatic complexity at which the cyclomatic-complexity lint reports a warning.",
+    "type": "integer",
+    "minimum": 0,
+    "default": 10
+  }
+}

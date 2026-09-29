@@ -1,0 +1,27 @@
+{
+  "key": "fail_on_info",
+  "rust": {
+    "type": "bool",
+    "default": "false"
+  },
+  "yaml": {
+    "default": "false",
+    "comment": "true, false"
+  },
+  "ts_type": "boolean",
+  "doc": "Like [`Self::fail_on_warning`], but for `[info]`-level diagnostics.\n`false` by default.",
+  "ui": {
+    "mount": "lint-config-settings",
+    "group": "fail-levels",
+    "group_kind": "fieldset",
+    "id": "fail-on-info",
+    "widget": "checkbox",
+    "checkbox_label": "Fail on info",
+    "title": "fail_on_info"
+  },
+  "schema": {
+    "description": "Whether the CLI treats an info-level diagnostic as a non-zero exit. Has no effect on the desktop app.",
+    "type": "boolean",
+    "default": false
+  }
+}

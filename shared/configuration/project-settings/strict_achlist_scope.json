@@ -1,0 +1,12 @@
+{
+  "key": "strict_achlist_scope",
+  "yaml": {
+    "default": "false",
+    "comment": "true enables strict cross-script resolution and conflicting-script-versions\nchecks for only the achlist's listed entries. false (the default) keeps\nparent-directory search roots. In strict mode, every .psc dependency must\nbe listed in the achlist"
+  },
+  "schema": {
+    "description": "When true, restrict cross-script resolution and conflicting-script-versions to an achlist's listed entries only. When false (the default), parent directories of listed entries are also search roots.",
+    "type": "boolean",
+    "default": false
+  }
+}

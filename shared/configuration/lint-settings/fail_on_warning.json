@@ -1,0 +1,28 @@
+{
+  "key": "fail_on_warning",
+  "rust": {
+    "type": "bool",
+    "default": "false"
+  },
+  "yaml": {
+    "default": "false",
+    "comment": "true, false"
+  },
+  "ts_type": "boolean",
+  "doc": "Whether the CLI (see `papyrus-lint-cli`) treats a `[warning]`-level\ndiagnostic as a reason to exit non-zero. `false` by default, so a\nproject only fails a lint run on `[error]`-level (and untagged)\ndiagnostics unless it opts in. Has no effect on the desktop app,\nwhich always shows every diagnostic regardless of severity.",
+  "ui": {
+    "mount": "lint-config-settings",
+    "group": "fail-levels",
+    "group_kind": "fieldset",
+    "group_legend": "CLI failure levels",
+    "id": "fail-on-warning",
+    "widget": "checkbox",
+    "checkbox_label": "Fail on warning",
+    "title": "fail_on_warning"
+  },
+  "schema": {
+    "description": "Whether the CLI treats a warning-level diagnostic as a non-zero exit. Has no effect on the desktop app.",
+    "type": "boolean",
+    "default": false
+  }
+}

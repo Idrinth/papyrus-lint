@@ -5,8 +5,11 @@ Lint/fix behavior is configured via an optional `papyrus-lint.yaml` (or
 The complete, annotated default file is generated from
 [`shared/configuration/lint-settings.yaml`](../shared/configuration/lint-settings.yaml)
 and [`shared/rules/`](../shared/rules/); it is the reference for the available
-keys, accepted values, and rule switches. Regenerate the git-ignored artifact
-with `python3 .github/scripts/generate_default_config.py`.
+keys, accepted values, and rule switches. That lint-settings file is itself
+generated from [`project-settings/`](../shared/configuration/project-settings)
+and [`lint-settings/`](../shared/configuration/lint-settings) (one JSON file
+per key). Regenerate the git-ignored default artifact with `python3
+.github/scripts/generate_default_config.py`.
 `PapyrusLinterCLI init` writes this file using the `strict` preset unless another
 preset is requested.
 
@@ -16,8 +19,8 @@ single `.psc`, the CLI looks for a nearby config and the conventional
 [Resolving a project](cli.md#resolving-a-project) for the exact search order.
 
 A JSON Schema for editors that support YAML schema association is generated
-from [`shared/configuration/lint-settings.yaml`](../shared/configuration/lint-settings.yaml)
-and [`shared/rules/`](../shared/rules/) (`python3 .github/scripts/generate_config_schema.py`)
+from that lint-settings file and [`shared/rules/`](../shared/rules/)
+(`python3 .github/scripts/generate_config_schema.py`)
 and published at
 `https://papyrus-lint.idrinth.de/schema/papyrus-lint.schema.json`. The generated
 file is git-ignored (like the default YAML); Pages and CI jobs produce it before

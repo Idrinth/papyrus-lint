@@ -120,13 +120,18 @@ false` on the `shared/rules/<id>.json` entry for opt-in rules.
 After adding or editing a `shared/rules/*.json` file, run `python3
 .github/scripts/build_rules_json.py` to regenerate the git-ignored
 `shared/rules.json` those generated files (and `pages/build.py`) actually
-read - do this before building or testing anything below. Then run `python3
+read - do this before building or testing anything below. Setting metadata
+works the same way: edit `shared/configuration/project-settings/<key>.json`
+or `shared/configuration/lint-settings/<key>.json` (and the order list in
+`shared/configuration/lint-settings.meta.json`), then run `python3
+.github/scripts/build_lint_settings_yaml.py` so the checked-in
+`shared/configuration/lint-settings.yaml` stays in sync. Then run `python3
 .github/scripts/generate_default_config.py` so the git-ignored
 `shared/configuration/papyrus-lint.default.yaml` and
 `schema/papyrus-lint.schema.json` match the rules and
-`shared/configuration/lint-settings.yaml` (Pages and CI already run this).
-Use `python3 .github/scripts/generate_config_schema.py` alone if you only need
-the schema.
+`shared/configuration/lint-settings.yaml` (Pages and CI already run the
+default-config and schema steps). Use `python3
+.github/scripts/generate_config_schema.py` alone if you only need the schema.
 
 A lint/fix job receives a `&papyrus_lints::Config`, deserialized from a
 project's optional `papyrus-lint.yaml`/`.yml`, so user-configurable behavior

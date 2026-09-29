@@ -10,6 +10,11 @@ shell, and `app/src/README.md` for the UI). Do not copy them here.
   checked in — run `python3 .github/scripts/build_rules_json.py` after
   cloning and again whenever a `shared/rules/*.json` file changes, before
   any of the commands below that touch it.
+- Setting metadata: edit `shared/configuration/project-settings/<key>.json`
+  or `shared/configuration/lint-settings/<key>.json`, then run `python3
+  .github/scripts/build_lint_settings_yaml.py`. The combined
+  `shared/configuration/lint-settings.yaml` stays checked in; don't edit it
+  by hand.
 - Full desktop app: `npm run tauri dev` / `npm run tauri build` (from `app/`).
   The desktop shell is built with [Tauri](https://tauri.app/), so building
   it requires Tauri's platform prerequisites (a Rust toolchain, plus the

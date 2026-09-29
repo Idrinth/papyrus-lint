@@ -1,3 +1,8 @@
+# Generated from `shared/configuration/project-settings/*.json`,
+# `shared/configuration/lint-settings/*.json`, and
+# `shared/configuration/lint-settings.meta.json` by
+# `.github/scripts/build_lint_settings_yaml.py`. Do not edit by hand.
+
 project_settings:
   - key: compiler_path
     yaml:

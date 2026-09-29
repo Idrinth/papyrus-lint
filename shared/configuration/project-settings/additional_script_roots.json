@@ -1,0 +1,16 @@
+{
+  "key": "additional_script_roots",
+  "yaml": {
+    "default": "[]",
+    "comment": "Extra directories (relative to the project root, or absolute) to search\nfor .psc files, besides scripts/source and source/scripts"
+  },
+  "schema": {
+    "description": "Extra directories (relative to the project root, or absolute) to search for .psc files, besides scripts/source and source/scripts. Used for linting, cross-script resolution, and the compiler -i path.",
+    "type": "array",
+    "items": {
+      "type": "string",
+      "minLength": 1
+    },
+    "default": []
+  }
+}
