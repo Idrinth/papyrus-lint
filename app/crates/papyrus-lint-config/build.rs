@@ -107,6 +107,7 @@ fn main() {
 fn generate_comments(default: &str) -> String {
     let mut fields = Vec::new();
     let mut comments = Vec::new();
+    let mut rule_comments = Vec::new();
 
     for line in default.lines() {
         if line.starts_with("# ") {
@@ -122,6 +123,12 @@ fn generate_comments(default: &str) -> String {
             );
             fields.push((key, comments.join("\n")));
             comments.clear();
+        } else if let Some((setting, comment)) = line.trim().split_once(" #") {
+            let key = setting
+                .split(':')
+                .next()
+                .unwrap_or_else(|| panic!("rule config line {line:?} has no key"));
+            rule_comments.push((key, comment.trim_start()));
         }
     }
 
@@ -134,14 +141,24 @@ fn generate_comments(default: &str) -> String {
         writeln!(generated, "    ({key:?}, {comment:?}),").expect("write to String");
     }
     generated.push_str(
+        "];
+
+const RULE_COMMENTS: &[(&str, &str)] = &[
+",
+    );
+    for (key, comment) in rule_comments {
+        writeln!(generated, "    ({key:?}, {comment:?}),").expect("write to String");
+    }
+    generated.push_str(
         "];\n\n\
-         /// Inserts the default config's comments above matching top-level keys.\n\
-         /// Nested keys, including individual rule toggles, are left alone.\n\
+         /// Restores the default config's comments on serialized settings and rules.\n\
          pub(crate) fn with_field_comments(yaml: &str) -> String {\n\
-         \x20   let mut out = String::with_capacity(yaml.len() + FIELD_COMMENTS.len() * 32);\n\
+         \x20   let mut out = String::with_capacity(yaml.len() + (FIELD_COMMENTS.len() + RULE_COMMENTS.len()) * 32);\n\
+         \x20   let mut in_rules = false;\n\
          \x20   for line in yaml.lines() {\n\
          \x20       if !line.starts_with(' ') {\n\
          \x20           if let Some(key) = line.split(':').next() {\n\
+         \x20               in_rules = key == \"rules\";\n\
          \x20               if let Some((_, comment)) = FIELD_COMMENTS.iter().find(|(name, _)| *name == key) {\n\
          \x20                   out.push_str(comment);\n\
          \x20                   out.push('\\n');\n\
@@ -149,6 +166,14 @@ fn generate_comments(default: &str) -> String {
          \x20           }\n\
          \x20       }\n\
          \x20       out.push_str(line);\n\
+         \x20       if in_rules && line.starts_with(\"  \") {\n\
+         \x20           if let Some(key) = line.trim().split(':').next() {\n\
+         \x20               if let Some((_, comment)) = RULE_COMMENTS.iter().find(|(name, _)| *name == key) {\n\
+         \x20                   out.push_str(\" # \");\n\
+         \x20                   out.push_str(comment);\n\
+         \x20               }\n\
+         \x20           }\n\
+         \x20       }\n\
          \x20       out.push('\\n');\n\
          \x20   }\n\
          \x20   out\n\
@@ -207,13 +232,22 @@ fn merge_preset(
         } else if in_rules {
             let mut parts = trimmed.splitn(2, ':');
             let rule_id = parts.next().expect("key:value line").trim();
-            let default_value = parts
+            let value_and_comment = parts
                 .next()
                 .unwrap_or_else(|| panic!("rule line {trimmed:?} has no value"))
-                .trim()
-                == "true";
+                .trim();
+            let (default_text, comment) = value_and_comment
+                .split_once(" #")
+                .map_or((value_and_comment, ""), |(value, comment)| {
+                    (value, comment.trim_start())
+                });
+            let default_value = default_text == "true";
             let value = preset_rule_value(preset, rule_id, default_value, rule_meta);
-            merged_lines.push(format!("  {rule_id}: {value}"));
+            if comment.is_empty() {
+                merged_lines.push(format!("  {rule_id}: {value}"));
+            } else {
+                merged_lines.push(format!("  {rule_id}: {value} # {comment}"));
+            }
         } else {
             merged_lines.push(line.to_string());
         }
