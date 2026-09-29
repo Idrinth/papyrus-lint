@@ -8,7 +8,12 @@ import unittest
 from pathlib import Path
 
 from ci_lib.config_schema import render_schema
-from ci_lib.default_config import config_key_for, render_default_yaml
+from ci_lib.default_config import (
+    alphabetical_rule_keys,
+    config_key_for,
+    load_lint_settings,
+    render_default_yaml,
+)
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -20,9 +25,7 @@ class DefaultConfigTests(unittest.TestCase):
         self.assertEqual(config_key_for("line-length"), "line_length")
 
     def test_render_default_yaml_matches_lint_settings_and_rules(self) -> None:
-        settings = json.loads(
-            (ROOT / "shared/configuration/lint-settings.json").read_text(encoding="utf-8")
-        )
+        settings = load_lint_settings(ROOT)
         rules = [
             json.loads(path.read_text(encoding="utf-8"))
             for path in sorted((ROOT / "shared/rules").glob("*.json"))
@@ -34,11 +37,14 @@ class DefaultConfigTests(unittest.TestCase):
         self.assertIn("\nrules:\n", text)
         self.assertIn("  member_chain_none_usage: false\n", text)
         self.assertEqual(text.count("\nrules:\n"), 1)
+        # Rules are alphabetical by config key.
+        rules_block = text.split("\nrules:\n", 1)[1].strip().splitlines()
+        keys = [line.split(":", 1)[0].strip() for line in rules_block if line.strip()]
+        self.assertEqual(keys, sorted(keys))
+        self.assertEqual(keys[0], "argument_naming")
 
     def test_render_schema_covers_games_and_all_rules(self) -> None:
-        settings = json.loads(
-            (ROOT / "shared/configuration/lint-settings.json").read_text(encoding="utf-8")
-        )
+        settings = load_lint_settings(ROOT)
         rules = [
             json.loads(path.read_text(encoding="utf-8"))
             for path in sorted((ROOT / "shared/rules").glob("*.json"))
@@ -49,6 +55,8 @@ class DefaultConfigTests(unittest.TestCase):
         )
         self.assertIn("max_line_length", schema["properties"])
         self.assertEqual(len(schema["properties"]["rules"]["properties"]), len(rules))
+        rule_keys = list(schema["properties"]["rules"]["properties"])
+        self.assertEqual(rule_keys, sorted(rule_keys))
         for key in (
             "deprecated_functions",
             "final_newline",
@@ -63,21 +71,14 @@ class DefaultConfigTests(unittest.TestCase):
         ):
             self.assertIn(key, schema["properties"]["rules"]["properties"])
 
-    def test_rule_order_mismatch_raises(self) -> None:
-        settings = {
-            "project_settings": [],
-            "settings": [
-                {
-                    "key": "game",
-                    "yaml_default": "skyrim",
-                    "yaml_comment": "game",
-                }
-            ],
-            "rules_yaml_comment": "rules",
-            "rule_order": ["missing_rule"],
-        }
-        with self.assertRaisesRegex(ValueError, "unknown keys"):
-            render_default_yaml(settings, [{"id": "line-length", "enabled_by_default": True}])
+    def test_duplicate_rule_config_key_raises(self) -> None:
+        with self.assertRaisesRegex(ValueError, "duplicate rule config key"):
+            alphabetical_rule_keys(
+                [
+                    {"id": "line-length"},
+                    {"id": "line-length"},
+                ]
+            )
 
 
 if __name__ == "__main__":
