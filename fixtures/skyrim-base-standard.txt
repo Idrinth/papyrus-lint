@@ -34247,6 +34247,7 @@ Source/Scripts/DLC2DBBookLevelLightTrigSCRIPT.psc:90:37:forbidden-functions
 Source/Scripts/DLC2DBMiscBookLeve1LightSCRIPT.psc:1:73:trailing-whitespace
 Source/Scripts/DLC2DBMiscBookLeve1LightSCRIPT.psc:12:6:forbidden-functions
 Source/Scripts/DLC2DBMiscBookLeve1LightSCRIPT.psc:13:11:forbidden-functions
+Source/Scripts/DLC2DBMiscBookLeve1LightSCRIPT.psc:19:1:self-comparison
 Source/Scripts/DLC2DBMiscBookLeve1LightSCRIPT.psc:20:1:indentation
 Source/Scripts/DLC2DBMiscBookLeve1LightSCRIPT.psc:21:11:forbidden-functions
 Source/Scripts/DLC2DBMiscBookLeve1LightSCRIPT.psc:22:1:indentation
