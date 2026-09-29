@@ -48392,6 +48392,7 @@ Source/Scripts/DLC2DBMiscBookLeve1LightSCRIPT.psc:9:1:identifier-casing
 Source/Scripts/DLC2DBMiscBookLeve1LightSCRIPT.psc:11:1:function-override
 Source/Scripts/DLC2DBMiscBookLeve1LightSCRIPT.psc:12:6:forbidden-functions
 Source/Scripts/DLC2DBMiscBookLeve1LightSCRIPT.psc:13:11:forbidden-functions
+Source/Scripts/DLC2DBMiscBookLeve1LightSCRIPT.psc:19:1:self-comparison
 Source/Scripts/DLC2DBMiscBookLeve1LightSCRIPT.psc:20:1:indentation
 Source/Scripts/DLC2DBMiscBookLeve1LightSCRIPT.psc:21:11:forbidden-functions
 Source/Scripts/DLC2DBMiscBookLeve1LightSCRIPT.psc:22:1:indentation

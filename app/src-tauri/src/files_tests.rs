@@ -1,8 +1,23 @@
 use super::*;
+use tauri::test::{
+    assert_ipc_response, get_ipc_response, mock_builder, mock_context, noop_assets, INVOKE_KEY,
+};
 use tempfile::tempdir;
 
 use crate::lint::{lint_psc_file, ProjectLintContext};
 use crate::repair::repair_psc_file;
+
+fn invoke_request(command: &str, body: serde_json::Value) -> tauri::webview::InvokeRequest {
+    tauri::webview::InvokeRequest {
+        cmd: command.into(),
+        callback: tauri::ipc::CallbackFn(0),
+        error: tauri::ipc::CallbackFn(1),
+        url: "tauri://localhost".parse().unwrap(),
+        body: tauri::ipc::InvokeBody::Json(body),
+        headers: Default::default(),
+        invoke_key: INVOKE_KEY.to_string(),
+    }
+}
 
 #[test]
 fn source_commands_parse_and_lint_without_touching_disk() {
@@ -545,4 +560,110 @@ fn get_psc_file_mtimes_keeps_existing_paths_when_another_path_is_missing() {
 #[test]
 fn get_psc_file_mtimes_returns_an_empty_map_for_no_paths() {
     assert!(get_psc_file_mtimes(Vec::new()).is_empty());
+}
+
+#[test]
+fn file_commands_accept_frontend_payloads_over_ipc() {
+    let dir = tempdir().unwrap();
+    let path = dir.path().join("Example.psc");
+    let source = "ScriptName Example\n\nFunction Run()\n    Game.GetPlayer()\nEndFunction\n";
+    std::fs::write(&path, source).unwrap();
+    let path = path.to_string_lossy().into_owned();
+    let app = crate::configure_builder(mock_builder())
+        .build(mock_context(noop_assets()))
+        .unwrap();
+    let webview = tauri::WebviewWindowBuilder::new(&app, "files-test", Default::default())
+        .build()
+        .unwrap();
+
+    assert_ipc_response(
+        &webview,
+        invoke_request("read_psc_file", serde_json::json!({ "path": path })),
+        Ok(source),
+    );
+    assert_ipc_response(
+        &webview,
+        invoke_request("hash_psc_file_md5", serde_json::json!({ "path": path })),
+        Ok(content_hash::md5_hex(source)),
+    );
+
+    let parsed = get_ipc_response(
+        &webview,
+        invoke_request(
+            "parse_psc_file",
+            serde_json::json!({ "path": path, "game": "skyrim" }),
+        ),
+    )
+    .unwrap()
+    .deserialize::<serde_json::Value>()
+    .unwrap();
+    assert_eq!(parsed["name"], "Example");
+
+    let diagnostics = get_ipc_response(
+        &webview,
+        invoke_request(
+            "lint_papyrus_script",
+            serde_json::json!({
+                "source": source,
+                "config": papyrus_lints::Config::default(),
+            }),
+        ),
+    )
+    .unwrap()
+    .deserialize::<serde_json::Value>()
+    .unwrap();
+    assert!(diagnostics
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|diagnostic| { diagnostic["rule"].as_str() == Some("forbidden-functions") }));
+
+    let mtimes = get_ipc_response(
+        &webview,
+        invoke_request(
+            "get_psc_file_mtimes",
+            serde_json::json!({ "paths": [path] }),
+        ),
+    )
+    .unwrap()
+    .deserialize::<serde_json::Value>()
+    .unwrap();
+    assert!(mtimes.get(&path).is_some());
+}
+
+#[test]
+fn file_commands_reject_malformed_frontend_payloads_over_ipc() {
+    let app = crate::configure_builder(mock_builder())
+        .build(mock_context(noop_assets()))
+        .unwrap();
+    let webview = tauri::WebviewWindowBuilder::new(&app, "files-error-test", Default::default())
+        .build()
+        .unwrap();
+
+    let missing_path = get_ipc_response(
+        &webview,
+        invoke_request("read_psc_file", serde_json::json!({})),
+    )
+    .expect_err("a missing path should be rejected");
+    assert!(
+        missing_path
+            .as_str()
+            .is_some_and(|message| message.contains("missing required key path")),
+        "{missing_path}"
+    );
+
+    let invalid_config = get_ipc_response(
+        &webview,
+        invoke_request(
+            "lint_papyrus_script",
+            serde_json::json!({ "source": "ScriptName Example\n", "config": false }),
+        ),
+    )
+    .expect_err("an invalid config should be rejected");
+    assert!(
+        invalid_config
+            .as_str()
+            .is_some_and(|message| message.contains("invalid type")),
+        "{invalid_config}"
+    );
 }
