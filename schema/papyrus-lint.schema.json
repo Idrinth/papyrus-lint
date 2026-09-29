@@ -323,6 +323,11 @@
           "type": "boolean",
           "default": true
         },
+        "empty_event_handler": {
+          "description": "Flags a completely empty Event in the empty/default state. Empty handlers inside a named State are left alone, since those often intentionally mute an inherited or engine event.",
+          "type": "boolean",
+          "default": true
+        },
         "duplicate_conditional_body": {
           "description": "Duplicate adjacent If/ElseIf/Else body",
           "type": "boolean",
@@ -645,6 +650,11 @@
         },
         "undefined_event": {
           "description": "Undefined event",
+          "type": "boolean",
+          "default": true
+        },
+        "boolean_simplification": {
+          "description": "Flags a Bool compared with == or != against true or false, since the value or its negation already says the same thing. The fix rewrites it to the value or '! value'.",
           "type": "boolean",
           "default": true
         }

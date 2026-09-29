@@ -379,6 +379,12 @@ fn each_rule_flag_gates_only_its_own_lint() {
                 config_with(|c| c.rules.unguarded_self_recursion = false),
             ),
             (
+                "ScriptName Example\n\nFunction Test(Bool ready)\n    If ready == true\n    EndIf\nEndFunction\n",
+                boolean_simplification::RULE,
+                Config::default(),
+                config_with(|c| c.rules.boolean_simplification = false),
+            ),
+            (
                 "ScriptName Example\n\nFunction Test()\n    Int a = 10\n    a = a\nEndFunction\n",
                 self_assignment::RULE,
                 Config::default(),
