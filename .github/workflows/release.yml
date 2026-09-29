@@ -170,6 +170,10 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+
       - name: Build rules.json from shared/rules/
         shell: bash
         run: python3 .github/scripts/build_rules_json.py
