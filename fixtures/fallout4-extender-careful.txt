@@ -58,6 +58,7 @@ Scripts/Source/F4SE/ObjectReference.psc:32:25:forbidden-functions
 Scripts/Source/F4SE/ObjectReference.psc:43:22:forbidden-functions
 Scripts/Source/F4SE/ObjectReference.psc:78:121:line-length
 Scripts/Source/F4SE/ObjectReference.psc:79:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:100:1:assignment-overwritten
 Scripts/Source/F4SE/ObjectReference.psc:105:10:forbidden-functions
 Scripts/Source/F4SE/ObjectReference.psc:110:29:forbidden-functions
 Scripts/Source/F4SE/ObjectReference.psc:113:11:forbidden-functions
