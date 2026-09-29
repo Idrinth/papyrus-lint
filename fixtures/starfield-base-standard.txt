@@ -148,9 +148,11 @@ Scripts/Source/Achievements_CompanionsAndEliteCrew.psc:38:1:indentation
 Scripts/Source/Achievements_CompanionsAndEliteCrew.psc:38:121:line-length
 Scripts/Source/Achievements_CompanionsAndEliteCrew.psc:39:1:indentation
 Scripts/Source/Achievements_CompanionsAndEliteCrew.psc:40:1:indentation
+Scripts/Source/Achievements_CompanionsAndEliteCrew.psc:46:1:parameter-count
 Scripts/Source/Achievements_CompanionsAndEliteCrew.psc:46:121:line-length
 Scripts/Source/Achievements_CompanionsAndEliteCrew.psc:47:1:indentation
 Scripts/Source/Achievements_CompanionsAndEliteCrew.psc:47:121:line-length
+Scripts/Source/Achievements_CompanionsAndEliteCrew.psc:50:1:parameter-count
 Scripts/Source/Achievements_CompanionsAndEliteCrew.psc:50:121:line-length
 Scripts/Source/Achievements_CompanionsAndEliteCrew.psc:51:1:indentation
 Scripts/Source/Achievements_CompanionsAndEliteCrew.psc:51:121:line-length
@@ -2823,17 +2825,21 @@ Scripts/Source/COM_CREW_GiveItemActorScript.psc:65:121:line-length
 Scripts/Source/COM_CREW_GiveItemActorScript.psc:81:85:unresolved-script
 Scripts/Source/COM_CREW_GiveItemActorScript.psc:84:121:line-length
 Scripts/Source/COM_CREW_GiveItemActorScript.psc:87:7:forbidden-functions
+Scripts/Source/COM_CREW_GiveItemActorScript.psc:95:1:parameter-count
 Scripts/Source/COM_CREW_GiveItemActorScript.psc:95:121:line-length
 Scripts/Source/COM_CREW_GiveItemActorScript.psc:96:121:line-length
+Scripts/Source/COM_CREW_GiveItemActorScript.psc:99:1:parameter-count
 Scripts/Source/COM_CREW_GiveItemActorScript.psc:99:121:line-length
 Scripts/Source/COM_CREW_GiveItemActorScript.psc:100:121:line-length
 Scripts/Source/COM_CommentTriggerQuestScript.psc:11:1:none-form-usage
 Scripts/Source/COM_CommentTriggerQuestScript.psc:12:1:none-form-usage
 Scripts/Source/COM_CommentTriggerQuestScript.psc:13:1:none-form-usage
 Scripts/Source/COM_CommentTriggerQuestScript.psc:15:121:line-length
+Scripts/Source/COM_CommentTriggerQuestScript.psc:27:1:parameter-count
 Scripts/Source/COM_CommentTriggerQuestScript.psc:27:121:line-length
 Scripts/Source/COM_CommentTriggerQuestScript.psc:28:1:indentation
 Scripts/Source/COM_CommentTriggerQuestScript.psc:28:121:line-length
+Scripts/Source/COM_CommentTriggerQuestScript.psc:31:1:parameter-count
 Scripts/Source/COM_CommentTriggerQuestScript.psc:31:121:line-length
 Scripts/Source/COM_CommentTriggerQuestScript.psc:32:1:indentation
 Scripts/Source/COM_CommentTriggerQuestScript.psc:32:121:line-length
@@ -2873,9 +2879,11 @@ Scripts/Source/COM_CommentTriggerScript.psc:129:121:line-length
 Scripts/Source/COM_CommentTriggerScript.psc:129:156:trailing-whitespace
 Scripts/Source/COM_CommentTriggerScript.psc:130:26:unresolved-script
 Scripts/Source/COM_CommentTriggerScript.psc:130:48:trailing-whitespace
+Scripts/Source/COM_CommentTriggerScript.psc:136:1:parameter-count
 Scripts/Source/COM_CommentTriggerScript.psc:136:121:line-length
 Scripts/Source/COM_CommentTriggerScript.psc:137:1:indentation
 Scripts/Source/COM_CommentTriggerScript.psc:137:121:line-length
+Scripts/Source/COM_CommentTriggerScript.psc:141:1:parameter-count
 Scripts/Source/COM_CommentTriggerScript.psc:141:121:line-length
 Scripts/Source/COM_CommentTriggerScript.psc:142:1:indentation
 Scripts/Source/COM_CommentTriggerScript.psc:142:121:line-length
@@ -2892,9 +2900,11 @@ Scripts/Source/COM_CommitmentGiftScript.psc:13:1:indentation
 Scripts/Source/COM_CommitmentGiftScript.psc:14:1:indentation
 Scripts/Source/COM_CommitmentGiftScript.psc:14:1:unchecked-cast
 Scripts/Source/COM_CommitmentGiftScript.psc:15:1:indentation
+Scripts/Source/COM_CommitmentGiftScript.psc:22:1:parameter-count
 Scripts/Source/COM_CommitmentGiftScript.psc:22:121:line-length
 Scripts/Source/COM_CommitmentGiftScript.psc:23:1:indentation
 Scripts/Source/COM_CommitmentGiftScript.psc:23:121:line-length
+Scripts/Source/COM_CommitmentGiftScript.psc:27:1:parameter-count
 Scripts/Source/COM_CommitmentGiftScript.psc:27:121:line-length
 Scripts/Source/COM_CommitmentGiftScript.psc:28:1:indentation
 Scripts/Source/COM_CommitmentGiftScript.psc:28:121:line-length
@@ -2906,9 +2916,11 @@ Scripts/Source/COM_CommitmentGift_ActivatorScript.psc:9:1:indentation
 Scripts/Source/COM_CommitmentGift_ActivatorScript.psc:10:1:indentation
 Scripts/Source/COM_CommitmentGift_ActivatorScript.psc:11:1:indentation
 Scripts/Source/COM_CommitmentGift_ActivatorScript.psc:12:1:indentation
+Scripts/Source/COM_CommitmentGift_ActivatorScript.psc:18:1:parameter-count
 Scripts/Source/COM_CommitmentGift_ActivatorScript.psc:18:121:line-length
 Scripts/Source/COM_CommitmentGift_ActivatorScript.psc:19:1:indentation
 Scripts/Source/COM_CommitmentGift_ActivatorScript.psc:19:121:line-length
+Scripts/Source/COM_CommitmentGift_ActivatorScript.psc:23:1:parameter-count
 Scripts/Source/COM_CommitmentGift_ActivatorScript.psc:23:121:line-length
 Scripts/Source/COM_CommitmentGift_ActivatorScript.psc:24:1:indentation
 Scripts/Source/COM_CommitmentGift_ActivatorScript.psc:24:121:line-length
@@ -2997,8 +3009,10 @@ Scripts/Source/COM_CompanionQuestScript.psc:487:54:unresolved-script
 Scripts/Source/COM_CompanionQuestScript.psc:488:1:indentation
 Scripts/Source/COM_CompanionQuestScript.psc:508:121:line-length
 Scripts/Source/COM_CompanionQuestScript.psc:544:121:line-length
+Scripts/Source/COM_CompanionQuestScript.psc:602:1:parameter-count
 Scripts/Source/COM_CompanionQuestScript.psc:602:121:line-length
 Scripts/Source/COM_CompanionQuestScript.psc:603:121:line-length
+Scripts/Source/COM_CompanionQuestScript.psc:606:1:parameter-count
 Scripts/Source/COM_CompanionQuestScript.psc:606:121:line-length
 Scripts/Source/COM_CompanionQuestScript.psc:607:121:line-length
 Scripts/Source/COM_ConvoQuestScript.psc:10:1:none-form-usage
@@ -3090,15 +3104,19 @@ Scripts/Source/COM_CoraHandlerQuestScript.psc:76:1:indentation
 Scripts/Source/COM_CoraHandlerQuestScript.psc:76:103:unresolved-script
 Scripts/Source/COM_CoraHandlerQuestScript.psc:77:1:indentation
 Scripts/Source/COM_CoraHandlerQuestScript.psc:77:110:unresolved-script
+Scripts/Source/COM_CoraHandlerQuestScript.psc:84:1:parameter-count
 Scripts/Source/COM_CoraHandlerQuestScript.psc:84:121:line-length
 Scripts/Source/COM_CoraHandlerQuestScript.psc:85:1:indentation
 Scripts/Source/COM_CoraHandlerQuestScript.psc:85:121:line-length
+Scripts/Source/COM_CoraHandlerQuestScript.psc:88:1:parameter-count
 Scripts/Source/COM_CoraHandlerQuestScript.psc:88:121:line-length
 Scripts/Source/COM_CoraHandlerQuestScript.psc:89:1:indentation
 Scripts/Source/COM_CoraHandlerQuestScript.psc:89:121:line-length
 Scripts/Source/COM_IncrementFlirtTopicScript.psc:8:2:strict-boolean
+Scripts/Source/COM_IncrementFlirtTopicScript.psc:20:1:parameter-count
 Scripts/Source/COM_IncrementFlirtTopicScript.psc:20:121:line-length
 Scripts/Source/COM_IncrementFlirtTopicScript.psc:21:121:line-length
+Scripts/Source/COM_IncrementFlirtTopicScript.psc:24:1:parameter-count
 Scripts/Source/COM_IncrementFlirtTopicScript.psc:24:121:line-length
 Scripts/Source/COM_IncrementFlirtTopicScript.psc:25:121:line-length
 Scripts/Source/COM_Quest_AndrejaAliasScript.psc:9:73:trailing-whitespace
@@ -3171,8 +3189,10 @@ Scripts/Source/COM_Quest_SamCoe_ShipScript.psc:20:1:none-form-usage
 Scripts/Source/COM_Quest_SamCoe_ShipScript.psc:20:1:none-form-usage
 Scripts/Source/COM_RedeemSecondChanceInfoScript.psc:4:1:trailing-whitespace
 Scripts/Source/COM_RedeemSecondChanceInfoScript.psc:7:1:unchecked-cast
+Scripts/Source/COM_RedeemSecondChanceInfoScript.psc:14:1:parameter-count
 Scripts/Source/COM_RedeemSecondChanceInfoScript.psc:14:121:line-length
 Scripts/Source/COM_RedeemSecondChanceInfoScript.psc:15:121:line-length
+Scripts/Source/COM_RedeemSecondChanceInfoScript.psc:18:1:parameter-count
 Scripts/Source/COM_RedeemSecondChanceInfoScript.psc:18:121:line-length
 Scripts/Source/COM_RedeemSecondChanceInfoScript.psc:19:121:line-length
 Scripts/Source/COM_SMQ01_AliasScript.psc:4:1:indentation
@@ -3631,6 +3651,7 @@ Scripts/Source/CityLife_LVC_AliasScript.psc:39:1:indentation
 Scripts/Source/CityLife_LVC_AliasScript.psc:43:1:indentation
 Scripts/Source/CityLife_LVC_AliasScript.psc:44:1:indentation
 Scripts/Source/CityLife_LVC_AliasScript.psc:45:1:indentation
+Scripts/Source/CityLife_LVC_AliasScript.psc:51:1:parameter-count
 Scripts/Source/CityLife_LVC_AliasScript.psc:51:121:line-length
 Scripts/Source/CityLife_LVC_AliasScript.psc:52:121:line-length
 Scripts/Source/CityNAMASTElevatorActivatorScript.psc:13:1:indentation
@@ -4402,8 +4423,10 @@ Scripts/Source/CompanionActorScript.psc:87:42:unresolved-script
 Scripts/Source/CompanionActorScript.psc:94:43:unresolved-script
 Scripts/Source/CompanionActorScript.psc:97:121:line-length
 Scripts/Source/CompanionActorScript.psc:105:40:unresolved-script
+Scripts/Source/CompanionActorScript.psc:111:1:parameter-count
 Scripts/Source/CompanionActorScript.psc:111:121:line-length
 Scripts/Source/CompanionActorScript.psc:112:121:line-length
+Scripts/Source/CompanionActorScript.psc:115:1:parameter-count
 Scripts/Source/CompanionActorScript.psc:115:121:line-length
 Scripts/Source/CompanionActorScript.psc:116:121:line-length
 Scripts/Source/CompanionAffinityEventsScript.psc:4:1:indentation
@@ -4492,8 +4515,10 @@ Scripts/Source/CompanionAffinityEventsScript.psc:857:27:forbidden-functions
 Scripts/Source/CompanionAffinityEventsScript.psc:862:64:unresolved-script
 Scripts/Source/CompanionAffinityEventsScript.psc:874:1:variable-used-before-assignment
 Scripts/Source/CompanionAffinityEventsScript.psc:875:1:variable-used-before-assignment
+Scripts/Source/CompanionAffinityEventsScript.psc:888:1:parameter-count
 Scripts/Source/CompanionAffinityEventsScript.psc:888:121:line-length
 Scripts/Source/CompanionAffinityEventsScript.psc:889:121:line-length
+Scripts/Source/CompanionAffinityEventsScript.psc:892:1:parameter-count
 Scripts/Source/CompanionAffinityEventsScript.psc:892:121:line-length
 Scripts/Source/CompanionAffinityEventsScript.psc:893:121:line-length
 Scripts/Source/CompanionAffinityScript.psc:4:1:indentation
@@ -4508,8 +4533,10 @@ Scripts/Source/CompanionAffinityScript.psc:28:121:line-length
 Scripts/Source/CompanionAffinityScript.psc:32:75:unresolved-script
 Scripts/Source/CompanionAffinityScript.psc:33:1:trailing-whitespace
 Scripts/Source/CompanionAffinityScript.psc:40:121:line-length
+Scripts/Source/CompanionAffinityScript.psc:47:1:parameter-count
 Scripts/Source/CompanionAffinityScript.psc:47:121:line-length
 Scripts/Source/CompanionAffinityScript.psc:48:121:line-length
+Scripts/Source/CompanionAffinityScript.psc:51:1:parameter-count
 Scripts/Source/CompanionAffinityScript.psc:51:121:line-length
 Scripts/Source/CompanionAffinityScript.psc:52:121:line-length
 Scripts/Source/CompanionCrimeFactionHostilityScript.psc:2:121:line-length
@@ -4598,8 +4625,10 @@ Scripts/Source/CompanionCrimeResponseScript.psc:228:60:unresolved-script
 Scripts/Source/CompanionCrimeResponseScript.psc:229:67:trailing-whitespace
 Scripts/Source/CompanionCrimeResponseScript.psc:230:1:trailing-whitespace
 Scripts/Source/CompanionCrimeResponseScript.psc:232:12:trailing-whitespace
+Scripts/Source/CompanionCrimeResponseScript.psc:248:1:parameter-count
 Scripts/Source/CompanionCrimeResponseScript.psc:248:121:line-length
 Scripts/Source/CompanionCrimeResponseScript.psc:249:121:line-length
+Scripts/Source/CompanionCrimeResponseScript.psc:252:1:parameter-count
 Scripts/Source/CompanionCrimeResponseScript.psc:252:121:line-length
 Scripts/Source/CompanionCrimeResponseScript.psc:253:121:line-length
 Scripts/Source/CompanionDebugScript.psc:5:1:indentation
@@ -4608,8 +4637,10 @@ Scripts/Source/CompanionDebugScript.psc:27:27:forbidden-functions
 Scripts/Source/CompanionDebugScript.psc:44:27:forbidden-functions
 Scripts/Source/CompanionDebugScript.psc:95:121:line-length
 Scripts/Source/CompanionDebugScript.psc:115:1:none-form-usage
+Scripts/Source/CompanionDebugScript.psc:121:1:parameter-count
 Scripts/Source/CompanionDebugScript.psc:121:121:line-length
 Scripts/Source/CompanionDebugScript.psc:122:121:line-length
+Scripts/Source/CompanionDebugScript.psc:125:1:parameter-count
 Scripts/Source/CompanionDebugScript.psc:125:121:line-length
 Scripts/Source/CompanionDebugScript.psc:126:121:line-length
 Scripts/Source/CompanionPowerArmorKeywordScript.psc:9:8:forbidden-functions
@@ -4735,8 +4766,10 @@ Scripts/Source/CrewRandomVoiceScript.psc:4:1:indentation
 Scripts/Source/CrewRandomVoiceScript.psc:13:5:exclamation-spacing
 Scripts/Source/CrewRandomVoiceScript.psc:15:121:line-length
 Scripts/Source/CrewRandomVoiceScript.psc:20:121:line-length
+Scripts/Source/CrewRandomVoiceScript.psc:40:1:parameter-count
 Scripts/Source/CrewRandomVoiceScript.psc:40:121:line-length
 Scripts/Source/CrewRandomVoiceScript.psc:41:121:line-length
+Scripts/Source/CrewRandomVoiceScript.psc:44:1:parameter-count
 Scripts/Source/CrewRandomVoiceScript.psc:44:121:line-length
 Scripts/Source/CrewRandomVoiceScript.psc:45:121:line-length
 Scripts/Source/CrewSpawnerScript.psc:2:121:line-length
@@ -4792,8 +4825,10 @@ Scripts/Source/Crew_RecruitQuestScript.psc:64:1:trailing-whitespace
 Scripts/Source/Crew_RecruitQuestScript.psc:66:9:forbidden-functions
 Scripts/Source/Crew_RecruitQuestScript.psc:69:27:unresolved-script
 Scripts/Source/Crew_RecruitQuestScript.psc:79:52:unresolved-script
+Scripts/Source/Crew_RecruitQuestScript.psc:87:1:parameter-count
 Scripts/Source/Crew_RecruitQuestScript.psc:87:121:line-length
 Scripts/Source/Crew_RecruitQuestScript.psc:88:121:line-length
+Scripts/Source/Crew_RecruitQuestScript.psc:91:1:parameter-count
 Scripts/Source/Crew_RecruitQuestScript.psc:91:121:line-length
 Scripts/Source/Crew_RecruitQuestScript.psc:92:121:line-length
 Scripts/Source/CrowdActors_AnimFlavorChange.psc:9:1:indentation
@@ -6253,6 +6288,7 @@ Scripts/Source/Debug.psc:129:1:indentation
 Scripts/Source/Debug.psc:129:121:line-length
 Scripts/Source/Debug.psc:137:1:indentation
 Scripts/Source/Debug.psc:138:1:indentation
+Scripts/Source/Debug.psc:147:1:parameter-count
 Scripts/Source/Debug.psc:147:121:line-length
 Scripts/Source/Debug.psc:148:121:line-length
 Scripts/Source/Debug.psc:165:41:trailing-whitespace
@@ -10120,6 +10156,7 @@ Scripts/Source/DefaultRefOnTriggerEnterMultiActor.psc:29:1:indentation
 Scripts/Source/DefaultRefOnTriggerEnterMultiActor.psc:30:1:indentation
 Scripts/Source/DefaultRefOnTriggerEnterMultiActor.psc:32:1:indentation
 Scripts/Source/DefaultRefOnTriggerEnterMultiActor.psc:33:1:indentation
+Scripts/Source/DefaultRefOnTriggerEnterMultiActor.psc:36:1:parameter-count
 Scripts/Source/DefaultRefOnTriggerEnterMultiActor.psc:36:121:line-length
 Scripts/Source/DefaultRefOnTriggerEnterMultiActor.psc:39:1:indentation
 Scripts/Source/DefaultRefOnTriggerEnterMultiActor.psc:40:1:indentation
@@ -10302,6 +10339,7 @@ Scripts/Source/DefaultScriptFunctions.psc:6:1:indentation
 Scripts/Source/DefaultScriptFunctions.psc:7:1:indentation
 Scripts/Source/DefaultScriptFunctions.psc:10:121:line-length
 Scripts/Source/DefaultScriptFunctions.psc:21:121:line-length
+Scripts/Source/DefaultScriptFunctions.psc:25:1:parameter-count
 Scripts/Source/DefaultScriptFunctions.psc:26:1:indentation
 Scripts/Source/DefaultScriptFunctions.psc:27:1:indentation
 Scripts/Source/DefaultScriptFunctions.psc:28:1:indentation
@@ -10358,6 +10396,7 @@ Scripts/Source/DefaultScriptFunctions.psc:82:1:trailing-whitespace
 Scripts/Source/DefaultScriptFunctions.psc:89:2:strict-boolean
 Scripts/Source/DefaultScriptFunctions.psc:93:3:strict-boolean
 Scripts/Source/DefaultScriptFunctions.psc:102:121:line-length
+Scripts/Source/DefaultScriptFunctions.psc:107:1:parameter-count
 Scripts/Source/DefaultScriptFunctions.psc:108:1:indentation
 Scripts/Source/DefaultScriptFunctions.psc:109:1:indentation
 Scripts/Source/DefaultScriptFunctions.psc:110:1:indentation
@@ -11783,9 +11822,11 @@ Scripts/Source/ENV_AFFL_CureAllEffect.psc:6:121:line-length
 Scripts/Source/ENV_AFFL_CureAllEffect.psc:7:1:indentation
 Scripts/Source/ENV_AFFL_CureAllEffect.psc:8:1:indentation
 Scripts/Source/ENV_AFFL_CureAllEffect.psc:8:1:none-form-usage
+Scripts/Source/ENV_AFFL_CureAllEffect.psc:14:1:parameter-count
 Scripts/Source/ENV_AFFL_CureAllEffect.psc:14:121:line-length
 Scripts/Source/ENV_AFFL_CureAllEffect.psc:15:1:indentation
 Scripts/Source/ENV_AFFL_CureAllEffect.psc:15:121:line-length
+Scripts/Source/ENV_AFFL_CureAllEffect.psc:18:1:parameter-count
 Scripts/Source/ENV_AFFL_CureAllEffect.psc:18:121:line-length
 Scripts/Source/ENV_AFFL_CureAllEffect.psc:19:1:indentation
 Scripts/Source/ENV_AFFL_CureAllEffect.psc:19:121:line-length
@@ -11793,9 +11834,11 @@ Scripts/Source/ENV_AFFL_CureRandomAfflictionScript.psc:9:121:line-length
 Scripts/Source/ENV_AFFL_CureRandomAfflictionScript.psc:10:1:indentation
 Scripts/Source/ENV_AFFL_CureRandomAfflictionScript.psc:12:1:indentation
 Scripts/Source/ENV_AFFL_CureRandomAfflictionScript.psc:12:1:none-form-usage
+Scripts/Source/ENV_AFFL_CureRandomAfflictionScript.psc:20:1:parameter-count
 Scripts/Source/ENV_AFFL_CureRandomAfflictionScript.psc:20:121:line-length
 Scripts/Source/ENV_AFFL_CureRandomAfflictionScript.psc:21:1:indentation
 Scripts/Source/ENV_AFFL_CureRandomAfflictionScript.psc:21:121:line-length
+Scripts/Source/ENV_AFFL_CureRandomAfflictionScript.psc:24:1:parameter-count
 Scripts/Source/ENV_AFFL_CureRandomAfflictionScript.psc:24:121:line-length
 Scripts/Source/ENV_AFFL_CureRandomAfflictionScript.psc:25:1:indentation
 Scripts/Source/ENV_AFFL_CureRandomAfflictionScript.psc:25:121:line-length
@@ -11845,8 +11888,10 @@ Scripts/Source/ENV_AFFL_PainEffectScript.psc:60:65:unresolved-script
 Scripts/Source/ENV_AFFL_PainEffectScript.psc:61:1:indentation
 Scripts/Source/ENV_AFFL_PainEffectScript.psc:62:1:indentation
 Scripts/Source/ENV_AFFL_PainEffectScript.psc:63:1:indentation
+Scripts/Source/ENV_AFFL_PainEffectScript.psc:69:1:parameter-count
 Scripts/Source/ENV_AFFL_PainEffectScript.psc:69:121:line-length
 Scripts/Source/ENV_AFFL_PainEffectScript.psc:70:121:line-length
+Scripts/Source/ENV_AFFL_PainEffectScript.psc:73:1:parameter-count
 Scripts/Source/ENV_AFFL_PainEffectScript.psc:73:121:line-length
 Scripts/Source/ENV_AFFL_PainEffectScript.psc:74:121:line-length
 Scripts/Source/ENV_AfflictionScript.psc:6:1:indentation
@@ -12314,9 +12359,11 @@ Scripts/Source/ENV_AfflictionScript.psc:586:1:indentation
 Scripts/Source/ENV_AfflictionScript.psc:587:1:indentation
 Scripts/Source/ENV_AfflictionScript.psc:588:1:trailing-whitespace
 Scripts/Source/ENV_AfflictionScript.psc:589:1:indentation
+Scripts/Source/ENV_AfflictionScript.psc:594:1:parameter-count
 Scripts/Source/ENV_AfflictionScript.psc:594:121:line-length
 Scripts/Source/ENV_AfflictionScript.psc:595:1:indentation
 Scripts/Source/ENV_AfflictionScript.psc:595:121:line-length
+Scripts/Source/ENV_AfflictionScript.psc:598:1:parameter-count
 Scripts/Source/ENV_AfflictionScript.psc:598:121:line-length
 Scripts/Source/ENV_AfflictionScript.psc:599:1:indentation
 Scripts/Source/ENV_AfflictionScript.psc:599:121:line-length
@@ -12326,9 +12373,11 @@ Scripts/Source/ENV_AfflictionTreatmentEffectScript.psc:11:1:trailing-whitespace
 Scripts/Source/ENV_AfflictionTreatmentEffectScript.psc:12:1:indentation
 Scripts/Source/ENV_AfflictionTreatmentEffectScript.psc:14:1:indentation
 Scripts/Source/ENV_AfflictionTreatmentEffectScript.psc:14:1:none-form-usage
+Scripts/Source/ENV_AfflictionTreatmentEffectScript.psc:20:1:parameter-count
 Scripts/Source/ENV_AfflictionTreatmentEffectScript.psc:20:121:line-length
 Scripts/Source/ENV_AfflictionTreatmentEffectScript.psc:21:1:indentation
 Scripts/Source/ENV_AfflictionTreatmentEffectScript.psc:21:121:line-length
+Scripts/Source/ENV_AfflictionTreatmentEffectScript.psc:24:1:parameter-count
 Scripts/Source/ENV_AfflictionTreatmentEffectScript.psc:24:121:line-length
 Scripts/Source/ENV_AfflictionTreatmentEffectScript.psc:25:1:indentation
 Scripts/Source/ENV_AfflictionTreatmentEffectScript.psc:25:121:line-length
@@ -12339,9 +12388,11 @@ Scripts/Source/ENV_Audio_SealedEnvEffectScript.psc:13:1:indentation
 Scripts/Source/ENV_Audio_SealedEnvEffectScript.psc:16:121:line-length
 Scripts/Source/ENV_Audio_SealedEnvEffectScript.psc:17:1:indentation
 Scripts/Source/ENV_Audio_SealedEnvEffectScript.psc:18:1:indentation
+Scripts/Source/ENV_Audio_SealedEnvEffectScript.psc:24:1:parameter-count
 Scripts/Source/ENV_Audio_SealedEnvEffectScript.psc:24:121:line-length
 Scripts/Source/ENV_Audio_SealedEnvEffectScript.psc:25:1:indentation
 Scripts/Source/ENV_Audio_SealedEnvEffectScript.psc:25:121:line-length
+Scripts/Source/ENV_Audio_SealedEnvEffectScript.psc:28:1:parameter-count
 Scripts/Source/ENV_Audio_SealedEnvEffectScript.psc:28:121:line-length
 Scripts/Source/ENV_Audio_SealedEnvEffectScript.psc:29:1:indentation
 Scripts/Source/ENV_Audio_SealedEnvEffectScript.psc:29:121:line-length
@@ -12351,8 +12402,10 @@ Scripts/Source/ENV_DisableSprintEffectScript.psc:8:1:indentation
 Scripts/Source/ENV_DisableSprintEffectScript.psc:11:121:line-length
 Scripts/Source/ENV_DisableSprintEffectScript.psc:12:1:indentation
 Scripts/Source/ENV_DispelEffectScript.psc:5:121:line-length
+Scripts/Source/ENV_DispelEffectScript.psc:20:1:parameter-count
 Scripts/Source/ENV_DispelEffectScript.psc:20:121:line-length
 Scripts/Source/ENV_DispelEffectScript.psc:21:121:line-length
+Scripts/Source/ENV_DispelEffectScript.psc:24:1:parameter-count
 Scripts/Source/ENV_DispelEffectScript.psc:24:121:line-length
 Scripts/Source/ENV_DispelEffectScript.psc:25:121:line-length
 Scripts/Source/ENV_Hazard_InteractionActivator.psc:4:1:indentation
@@ -12397,10 +12450,13 @@ Scripts/Source/ENV_Hazard_ParentScript.psc:97:1:trailing-whitespace
 Scripts/Source/ENV_Hazard_ParentScript.psc:105:1:none-form-usage
 Scripts/Source/ENV_Hazard_ParentScript.psc:119:1:trailing-whitespace
 Scripts/Source/ENV_Hazard_ParentScript.psc:129:1:none-form-usage
+Scripts/Source/ENV_Hazard_ParentScript.psc:153:1:parameter-count
 Scripts/Source/ENV_Hazard_ParentScript.psc:153:121:line-length
 Scripts/Source/ENV_Hazard_ParentScript.psc:154:121:line-length
+Scripts/Source/ENV_Hazard_ParentScript.psc:157:1:parameter-count
 Scripts/Source/ENV_Hazard_ParentScript.psc:157:121:line-length
 Scripts/Source/ENV_Hazard_ParentScript.psc:158:121:line-length
+Scripts/Source/ENV_Hazard_ParentScript.psc:161:1:parameter-count
 Scripts/Source/ENV_Hazard_ParentScript.psc:161:121:line-length
 Scripts/Source/ENV_Hazard_ParentScript.psc:162:121:line-length
 Scripts/Source/ENV_Hazard_Parent_PoolScript.psc:4:121:line-length
@@ -12418,9 +12474,11 @@ Scripts/Source/ENV_NotSealedLocationDoorScript.psc:15:1:indentation
 Scripts/Source/ENV_NotSealedLocationDoorScript.psc:15:121:line-length
 Scripts/Source/ENV_NotSealedLocationDoorScript.psc:17:1:indentation
 Scripts/Source/ENV_NotSealedLocationDoorScript.psc:18:1:indentation
+Scripts/Source/ENV_NotSealedLocationDoorScript.psc:25:1:parameter-count
 Scripts/Source/ENV_NotSealedLocationDoorScript.psc:25:121:line-length
 Scripts/Source/ENV_NotSealedLocationDoorScript.psc:26:1:indentation
 Scripts/Source/ENV_NotSealedLocationDoorScript.psc:26:121:line-length
+Scripts/Source/ENV_NotSealedLocationDoorScript.psc:29:1:parameter-count
 Scripts/Source/ENV_NotSealedLocationDoorScript.psc:29:121:line-length
 Scripts/Source/ENV_NotSealedLocationDoorScript.psc:30:1:indentation
 Scripts/Source/ENV_NotSealedLocationDoorScript.psc:30:121:line-length
@@ -12472,14 +12530,18 @@ Scripts/Source/ENV_PeriodicEffectScript.psc:349:45:unresolved-script
 Scripts/Source/ENV_PeriodicEffectScript.psc:355:42:unresolved-script
 Scripts/Source/ENV_PeriodicEffectScript.psc:371:45:unresolved-script
 Scripts/Source/ENV_PeriodicEffectScript.psc:376:42:unresolved-script
+Scripts/Source/ENV_PeriodicEffectScript.psc:392:1:parameter-count
 Scripts/Source/ENV_PeriodicEffectScript.psc:392:121:line-length
 Scripts/Source/ENV_PeriodicEffectScript.psc:393:121:line-length
+Scripts/Source/ENV_PeriodicEffectScript.psc:396:1:parameter-count
 Scripts/Source/ENV_PeriodicEffectScript.psc:396:121:line-length
 Scripts/Source/ENV_PeriodicEffectScript.psc:397:121:line-length
 Scripts/Source/ENV_Temp_BiomePackinSpawnScript.psc:4:52:trailing-whitespace
 Scripts/Source/ENV_Temp_BiomePackinSpawnScript.psc:7:1:trailing-whitespace
+Scripts/Source/ENV_Temp_BiomePackinSpawnScript.psc:22:1:parameter-count
 Scripts/Source/ENV_Temp_BiomePackinSpawnScript.psc:22:121:line-length
 Scripts/Source/ENV_Temp_BiomePackinSpawnScript.psc:23:121:line-length
+Scripts/Source/ENV_Temp_BiomePackinSpawnScript.psc:26:1:parameter-count
 Scripts/Source/ENV_Temp_BiomePackinSpawnScript.psc:26:121:line-length
 Scripts/Source/ENV_Temp_BiomePackinSpawnScript.psc:27:121:line-length
 Scripts/Source/ENV_Tutorial_EffectScript.psc:4:1:indentation
@@ -12487,9 +12549,11 @@ Scripts/Source/ENV_Tutorial_EffectScript.psc:14:121:line-length
 Scripts/Source/ENV_Tutorial_EffectScript.psc:15:1:indentation
 Scripts/Source/ENV_Tutorial_EffectScript.psc:17:1:indentation
 Scripts/Source/ENV_Tutorial_EffectScript.psc:17:48:unresolved-script
+Scripts/Source/ENV_Tutorial_EffectScript.psc:24:1:parameter-count
 Scripts/Source/ENV_Tutorial_EffectScript.psc:24:121:line-length
 Scripts/Source/ENV_Tutorial_EffectScript.psc:25:1:indentation
 Scripts/Source/ENV_Tutorial_EffectScript.psc:25:121:line-length
+Scripts/Source/ENV_Tutorial_EffectScript.psc:28:1:parameter-count
 Scripts/Source/ENV_Tutorial_EffectScript.psc:28:121:line-length
 Scripts/Source/ENV_Tutorial_EffectScript.psc:29:1:indentation
 Scripts/Source/ENV_Tutorial_EffectScript.psc:29:121:line-length
@@ -49238,7 +49302,9 @@ Scripts/Source/Game.psc:137:121:line-length
 Scripts/Source/Game.psc:138:121:line-length
 Scripts/Source/Game.psc:139:121:line-length
 Scripts/Source/Game.psc:140:121:line-length
+Scripts/Source/Game.psc:141:1:parameter-count
 Scripts/Source/Game.psc:141:121:line-length
+Scripts/Source/Game.psc:143:1:parameter-count
 Scripts/Source/Game.psc:143:121:line-length
 Scripts/Source/Game.psc:144:121:line-length
 Scripts/Source/Game.psc:145:27:trailing-whitespace
@@ -49880,6 +49946,7 @@ Scripts/Source/HazardBase.psc:25:6:exclamation-spacing
 Scripts/Source/HazardBase.psc:48:1:indentation
 Scripts/Source/HazardBase.psc:49:1:indentation
 Scripts/Source/HazardBase.psc:50:1:indentation
+Scripts/Source/HazardBase.psc:53:1:parameter-count
 Scripts/Source/HazardBase.psc:53:121:line-length
 Scripts/Source/HazardBase.psc:54:121:line-length
 Scripts/Source/HazardBase.psc:55:1:indentation
@@ -50019,6 +50086,7 @@ Scripts/Source/Home_SetStageOnUnlock_CollScript.psc:21:32:forbidden-functions
 Scripts/Source/Home_SetStageOnUnlock_CollScript.psc:22:1:indentation
 Scripts/Source/Home_SetStageOnUnlock_CollScript.psc:23:1:indentation
 Scripts/Source/Home_SetStageOnUnlock_CollScript.psc:24:1:indentation
+Scripts/Source/Home_SetStageOnUnlock_CollScript.psc:30:1:parameter-count
 Scripts/Source/Home_SetStageOnUnlock_CollScript.psc:30:121:line-length
 Scripts/Source/Home_SetStageOnUnlock_CollScript.psc:31:121:line-length
 Scripts/Source/Hope01_ChangeLocation_Script.psc:7:1:indentation
@@ -50219,6 +50287,7 @@ Scripts/Source/IncendiaryBurnSCRIPT.psc:61:1:indentation
 Scripts/Source/IncendiaryBurnSCRIPT.psc:65:121:line-length
 Scripts/Source/IncendiaryBurnSCRIPT.psc:66:1:trailing-whitespace
 Scripts/Source/IncendiaryBurnSCRIPT.psc:68:1:trailing-whitespace
+Scripts/Source/InputEnableLayer.psc:15:1:parameter-count
 Scripts/Source/InputEnableLayer.psc:15:121:line-length
 Scripts/Source/InputEnableLayer.psc:16:121:line-length
 Scripts/Source/InputEnableLayer.psc:18:1:indentation
@@ -50266,6 +50335,7 @@ Scripts/Source/InputEnableLayer.psc:78:1:indentation
 Scripts/Source/InputEnableLayer.psc:79:1:indentation
 Scripts/Source/InputEnableLayer.psc:81:1:indentation
 Scripts/Source/InputEnableLayer.psc:82:1:indentation
+Scripts/Source/InputEnableLayer.psc:82:1:parameter-count
 Scripts/Source/InputEnableLayer.psc:82:121:line-length
 Scripts/Source/InputEnableLayer.psc:83:1:indentation
 Scripts/Source/InputEnableLayer.psc:83:121:line-length
@@ -51146,6 +51216,7 @@ Scripts/Source/LC088QuestScript.psc:15:1:indentation
 Scripts/Source/LC088QuestScript.psc:16:1:indentation
 Scripts/Source/LC088QuestScript.psc:17:1:indentation
 Scripts/Source/LC088QuestScript.psc:18:1:indentation
+Scripts/Source/LC088QuestScript.psc:37:1:parameter-count
 Scripts/Source/LC088QuestScript.psc:37:65:assignment-operator-spacing
 Scripts/Source/LC088QuestScript.psc:37:65:assignment-operator-spacing
 Scripts/Source/LC088QuestScript.psc:37:83:assignment-operator-spacing
@@ -51167,6 +51238,7 @@ Scripts/Source/LC088QuestScript.psc:40:7:forbidden-functions
 Scripts/Source/LC088QuestScript.psc:40:66:forbidden-functions
 Scripts/Source/LC088QuestScript.psc:40:121:line-length
 Scripts/Source/LC088QuestScript.psc:41:22:unresolved-script
+Scripts/Source/LC088QuestScript.psc:45:1:parameter-count
 Scripts/Source/LC088QuestScript.psc:45:55:assignment-operator-spacing
 Scripts/Source/LC088QuestScript.psc:45:55:assignment-operator-spacing
 Scripts/Source/LC088QuestScript.psc:45:74:assignment-operator-spacing
@@ -51183,6 +51255,7 @@ Scripts/Source/LC088QuestScript.psc:45:147:assignment-operator-spacing
 Scripts/Source/LC088QuestScript.psc:45:172:assignment-operator-spacing
 Scripts/Source/LC088QuestScript.psc:45:172:assignment-operator-spacing
 Scripts/Source/LC088QuestScript.psc:48:26:unresolved-script
+Scripts/Source/LC088QuestScript.psc:52:1:parameter-count
 Scripts/Source/LC088QuestScript.psc:52:49:assignment-operator-spacing
 Scripts/Source/LC088QuestScript.psc:52:49:assignment-operator-spacing
 Scripts/Source/LC088QuestScript.psc:52:68:assignment-operator-spacing
@@ -53218,6 +53291,7 @@ Scripts/Source/LC165QuestScript.psc:751:130:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:751:130:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:751:155:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:751:155:assignment-operator-spacing
+Scripts/Source/LC165QuestScript.psc:762:1:parameter-count
 Scripts/Source/LC165QuestScript.psc:762:81:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:762:81:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:762:104:assignment-operator-spacing
@@ -53238,6 +53312,7 @@ Scripts/Source/LC165QuestScript.psc:762:283:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:762:317:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:762:317:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:763:121:line-length
+Scripts/Source/LC165QuestScript.psc:766:1:parameter-count
 Scripts/Source/LC165QuestScript.psc:766:75:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:766:75:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:766:98:assignment-operator-spacing
@@ -53258,6 +53333,7 @@ Scripts/Source/LC165QuestScript.psc:766:277:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:766:311:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:766:311:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:767:121:line-length
+Scripts/Source/LC165QuestScript.psc:770:1:parameter-count
 Scripts/Source/LC165QuestScript.psc:770:105:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:770:105:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:770:121:line-length
@@ -53277,6 +53353,7 @@ Scripts/Source/LC165QuestScript.psc:770:307:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:770:307:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:770:341:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:770:341:assignment-operator-spacing
+Scripts/Source/LC165QuestScript.psc:786:1:parameter-count
 Scripts/Source/LC165QuestScript.psc:786:99:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:786:99:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:786:121:line-length
@@ -53305,6 +53382,7 @@ Scripts/Source/LC165QuestScript.psc:805:71:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:806:1:numeric-comparison
 Scripts/Source/LC165QuestScript.psc:806:1:numeric-comparison
 Scripts/Source/LC165QuestScript.psc:809:121:line-length
+Scripts/Source/LC165QuestScript.psc:814:1:parameter-count
 Scripts/Source/LC165QuestScript.psc:814:113:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:814:113:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:814:121:line-length
@@ -53318,6 +53396,7 @@ Scripts/Source/LC165QuestScript.psc:814:244:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:814:244:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:814:278:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:814:278:assignment-operator-spacing
+Scripts/Source/LC165QuestScript.psc:827:1:parameter-count
 Scripts/Source/LC165QuestScript.psc:827:107:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:827:107:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:827:121:line-length
@@ -53334,6 +53413,7 @@ Scripts/Source/LC165QuestScript.psc:827:272:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:835:6:exclamation-spacing
 Scripts/Source/LC165QuestScript.psc:842:6:exclamation-spacing
 Scripts/Source/LC165QuestScript.psc:845:6:exclamation-spacing
+Scripts/Source/LC165QuestScript.psc:850:1:parameter-count
 Scripts/Source/LC165QuestScript.psc:850:116:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:850:116:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:850:121:line-length
@@ -53347,6 +53427,7 @@ Scripts/Source/LC165QuestScript.psc:850:247:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:850:247:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:850:281:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:850:281:assignment-operator-spacing
+Scripts/Source/LC165QuestScript.psc:863:1:parameter-count
 Scripts/Source/LC165QuestScript.psc:863:110:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:863:110:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:863:121:line-length
@@ -53488,6 +53569,7 @@ Scripts/Source/LC165QuestScript.psc:1341:10:forbidden-functions
 Scripts/Source/LC165QuestScript.psc:1341:121:line-length
 Scripts/Source/LC165QuestScript.psc:1345:121:line-length
 Scripts/Source/LC165QuestScript.psc:1350:121:line-length
+Scripts/Source/LC165QuestScript.psc:1351:1:parameter-count
 Scripts/Source/LC165QuestScript.psc:1351:121:line-length
 Scripts/Source/LC165QuestScript.psc:1351:178:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:1351:178:assignment-operator-spacing
@@ -53506,6 +53588,7 @@ Scripts/Source/LC165QuestScript.psc:1351:386:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:1357:121:line-length
 Scripts/Source/LC165QuestScript.psc:1359:62:forbidden-functions
 Scripts/Source/LC165QuestScript.psc:1368:121:line-length
+Scripts/Source/LC165QuestScript.psc:1374:1:parameter-count
 Scripts/Source/LC165QuestScript.psc:1374:121:line-length
 Scripts/Source/LC165QuestScript.psc:1374:159:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:1374:159:assignment-operator-spacing
@@ -53796,6 +53879,7 @@ Scripts/Source/LC165QuestScript.psc:2293:1:indentation
 Scripts/Source/LC165QuestScript.psc:2294:1:indentation
 Scripts/Source/LC165QuestScript.psc:2299:8:forbidden-functions
 Scripts/Source/LC165QuestScript.psc:2303:121:line-length
+Scripts/Source/LC165QuestScript.psc:2305:1:parameter-count
 Scripts/Source/LC165QuestScript.psc:2305:121:line-length
 Scripts/Source/LC165QuestScript.psc:2305:188:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:2305:188:assignment-operator-spacing
@@ -59518,8 +59602,10 @@ Scripts/Source/MS03JunoQuestScript.psc:22:25:unresolved-script
 Scripts/Source/MS03JunoQuestScript.psc:28:58:unresolved-script
 Scripts/Source/MS03JunoQuestScript.psc:30:1:unchecked-cast
 Scripts/Source/MS03JunoQuestScript.psc:32:1:trailing-whitespace
+Scripts/Source/MS03JunoQuestScript.psc:42:1:parameter-count
 Scripts/Source/MS03JunoQuestScript.psc:42:121:line-length
 Scripts/Source/MS03JunoQuestScript.psc:43:121:line-length
+Scripts/Source/MS03JunoQuestScript.psc:46:1:parameter-count
 Scripts/Source/MS03JunoQuestScript.psc:46:121:line-length
 Scripts/Source/MS03JunoQuestScript.psc:47:121:line-length
 Scripts/Source/MS04DorianeActivateScript.psc:7:1:indentation
@@ -60034,6 +60120,7 @@ Scripts/Source/MechanicalTurretScript.psc:234:1:indentation
 Scripts/Source/MechanicalTurretScript.psc:235:1:indentation
 Scripts/Source/MechanicalTurretScript.psc:235:1:none-form-usage
 Scripts/Source/Message.psc:3:121:line-length
+Scripts/Source/Message.psc:5:1:parameter-count
 Scripts/Source/Message.psc:5:121:line-length
 Scripts/Source/Message.psc:9:112:assignment-operator-spacing
 Scripts/Source/Message.psc:9:112:assignment-operator-spacing
@@ -60121,8 +60208,10 @@ Scripts/Source/MissionBoardActivatorScript.psc:90:121:line-length
 Scripts/Source/MissionBoardActivatorScript.psc:91:1:indentation
 Scripts/Source/MissionBoardActivatorScript.psc:95:1:indentation
 Scripts/Source/MissionBoardActivatorScript.psc:96:1:indentation
+Scripts/Source/MissionBoardActivatorScript.psc:102:1:parameter-count
 Scripts/Source/MissionBoardActivatorScript.psc:102:121:line-length
 Scripts/Source/MissionBoardActivatorScript.psc:103:121:line-length
+Scripts/Source/MissionBoardActivatorScript.psc:106:1:parameter-count
 Scripts/Source/MissionBoardActivatorScript.psc:106:121:line-length
 Scripts/Source/MissionBoardActivatorScript.psc:107:121:line-length
 Scripts/Source/MissionBoardCargoContainerScript.psc:17:64:assignment-operator-spacing
@@ -60132,12 +60221,16 @@ Scripts/Source/MissionBoardCargoContainerScript.psc:17:81:assignment-operator-sp
 Scripts/Source/MissionBoardCargoContainerScript.psc:17:118:assignment-operator-spacing
 Scripts/Source/MissionBoardCargoContainerScript.psc:17:118:assignment-operator-spacing
 Scripts/Source/MissionBoardCargoContainerScript.psc:17:121:line-length
+Scripts/Source/MissionBoardCargoContainerScript.psc:26:1:parameter-count
 Scripts/Source/MissionBoardCargoContainerScript.psc:26:121:line-length
 Scripts/Source/MissionBoardCargoContainerScript.psc:27:121:line-length
+Scripts/Source/MissionBoardCargoContainerScript.psc:30:1:parameter-count
 Scripts/Source/MissionBoardCargoContainerScript.psc:30:121:line-length
 Scripts/Source/MissionBoardCargoContainerScript.psc:31:121:line-length
+Scripts/Source/MissionBoardPassengerSourceScript.psc:30:1:parameter-count
 Scripts/Source/MissionBoardPassengerSourceScript.psc:30:121:line-length
 Scripts/Source/MissionBoardPassengerSourceScript.psc:31:121:line-length
+Scripts/Source/MissionBoardPassengerSourceScript.psc:34:1:parameter-count
 Scripts/Source/MissionBoardPassengerSourceScript.psc:34:121:line-length
 Scripts/Source/MissionBoardPassengerSourceScript.psc:35:121:line-length
 Scripts/Source/MissionBoardSupplyActivatorScript.psc:12:1:indentation
@@ -60173,8 +60266,10 @@ Scripts/Source/MissionBoardSupplyActivatorScript.psc:38:1:argument-naming
 Scripts/Source/MissionBoardSupplyActivatorScript.psc:39:1:indentation
 Scripts/Source/MissionBoardSupplyActivatorScript.psc:40:1:indentation
 Scripts/Source/MissionBoardSupplyActivatorScript.psc:40:1:unchecked-cast
+Scripts/Source/MissionBoardSupplyActivatorScript.psc:47:1:parameter-count
 Scripts/Source/MissionBoardSupplyActivatorScript.psc:47:121:line-length
 Scripts/Source/MissionBoardSupplyActivatorScript.psc:48:121:line-length
+Scripts/Source/MissionBoardSupplyActivatorScript.psc:51:1:parameter-count
 Scripts/Source/MissionBoardSupplyActivatorScript.psc:51:121:line-length
 Scripts/Source/MissionBoardSupplyActivatorScript.psc:52:121:line-length
 Scripts/Source/MissionBountyQuestScript.psc:5:1:indentation
@@ -60208,8 +60303,10 @@ Scripts/Source/MissionBountyQuestScript.psc:28:1:indentation
 Scripts/Source/MissionBountyQuestScript.psc:29:1:indentation
 Scripts/Source/MissionBountyQuestScript.psc:30:1:indentation
 Scripts/Source/MissionBountyQuestScript.psc:31:1:indentation
+Scripts/Source/MissionBountyQuestScript.psc:37:1:parameter-count
 Scripts/Source/MissionBountyQuestScript.psc:37:121:line-length
 Scripts/Source/MissionBountyQuestScript.psc:38:121:line-length
+Scripts/Source/MissionBountyQuestScript.psc:41:1:parameter-count
 Scripts/Source/MissionBountyQuestScript.psc:41:121:line-length
 Scripts/Source/MissionBountyQuestScript.psc:42:121:line-length
 Scripts/Source/MissionBountySpaceScript.psc:4:1:indentation
@@ -60275,8 +60372,10 @@ Scripts/Source/MissionBountySpaceScript.psc:67:61:unresolved-script
 Scripts/Source/MissionBountySpaceScript.psc:68:1:indentation
 Scripts/Source/MissionBountySpaceScript.psc:69:1:indentation
 Scripts/Source/MissionBountySpaceScript.psc:70:1:indentation
+Scripts/Source/MissionBountySpaceScript.psc:76:1:parameter-count
 Scripts/Source/MissionBountySpaceScript.psc:76:121:line-length
 Scripts/Source/MissionBountySpaceScript.psc:77:121:line-length
+Scripts/Source/MissionBountySpaceScript.psc:80:1:parameter-count
 Scripts/Source/MissionBountySpaceScript.psc:80:121:line-length
 Scripts/Source/MissionBountySpaceScript.psc:81:121:line-length
 Scripts/Source/MissionCargoLinkActivatorScript.psc:8:1:indentation
@@ -60318,8 +60417,10 @@ Scripts/Source/MissionCargoParentScript.psc:43:36:unresolved-script
 Scripts/Source/MissionCargoParentScript.psc:44:34:unresolved-script
 Scripts/Source/MissionCargoParentScript.psc:53:1:indentation
 Scripts/Source/MissionCargoParentScript.psc:54:1:indentation
+Scripts/Source/MissionCargoParentScript.psc:61:1:parameter-count
 Scripts/Source/MissionCargoParentScript.psc:61:121:line-length
 Scripts/Source/MissionCargoParentScript.psc:62:121:line-length
+Scripts/Source/MissionCargoParentScript.psc:65:1:parameter-count
 Scripts/Source/MissionCargoParentScript.psc:65:121:line-length
 Scripts/Source/MissionCargoParentScript.psc:66:121:line-length
 Scripts/Source/MissionCargoQuestScript.psc:5:1:indentation
@@ -60842,8 +60943,10 @@ Scripts/Source/MissionParentScript.psc:406:77:assignment-operator-spacing
 Scripts/Source/MissionParentScript.psc:406:77:assignment-operator-spacing
 Scripts/Source/MissionParentScript.psc:406:105:assignment-operator-spacing
 Scripts/Source/MissionParentScript.psc:406:105:assignment-operator-spacing
+Scripts/Source/MissionParentScript.psc:412:1:parameter-count
 Scripts/Source/MissionParentScript.psc:412:121:line-length
 Scripts/Source/MissionParentScript.psc:413:121:line-length
+Scripts/Source/MissionParentScript.psc:416:1:parameter-count
 Scripts/Source/MissionParentScript.psc:416:121:line-length
 Scripts/Source/MissionParentScript.psc:417:121:line-length
 Scripts/Source/MissionPassengerQuestScript.psc:5:1:indentation
@@ -63775,8 +63878,10 @@ Scripts/Source/OE_CiviliansScript.psc:248:1:indentation
 Scripts/Source/OE_CiviliansScript.psc:249:1:indentation
 Scripts/Source/OE_CiviliansScript.psc:250:1:indentation
 Scripts/Source/OE_CiviliansScript.psc:251:1:indentation
+Scripts/Source/OE_CiviliansScript.psc:257:1:parameter-count
 Scripts/Source/OE_CiviliansScript.psc:257:121:line-length
 Scripts/Source/OE_CiviliansScript.psc:258:121:line-length
+Scripts/Source/OE_CiviliansScript.psc:261:1:parameter-count
 Scripts/Source/OE_CiviliansScript.psc:261:121:line-length
 Scripts/Source/OE_CiviliansScript.psc:262:121:line-length
 Scripts/Source/OE_DeadManWalking_Script.psc:4:1:indentation
@@ -63829,8 +63934,10 @@ Scripts/Source/OE_DialogueAVScript.psc:27:1:indentation
 Scripts/Source/OE_DialogueAVScript.psc:28:1:indentation
 Scripts/Source/OE_DialogueAVScript.psc:33:1:indentation
 Scripts/Source/OE_DialogueAVScript.psc:33:1:unchecked-cast
+Scripts/Source/OE_DialogueAVScript.psc:39:1:parameter-count
 Scripts/Source/OE_DialogueAVScript.psc:39:121:line-length
 Scripts/Source/OE_DialogueAVScript.psc:40:121:line-length
+Scripts/Source/OE_DialogueAVScript.psc:43:1:parameter-count
 Scripts/Source/OE_DialogueAVScript.psc:43:121:line-length
 Scripts/Source/OE_DialogueAVScript.psc:44:121:line-length
 Scripts/Source/OE_HuntedHomesteaders_QuestScript.psc:7:1:indentation
@@ -63956,8 +64063,10 @@ Scripts/Source/OE_LocksAndKeysScript.psc:82:1:indentation
 Scripts/Source/OE_LocksAndKeysScript.psc:82:10:forbidden-functions
 Scripts/Source/OE_LocksAndKeysScript.psc:86:1:indentation
 Scripts/Source/OE_LocksAndKeysScript.psc:86:10:forbidden-functions
+Scripts/Source/OE_LocksAndKeysScript.psc:93:1:parameter-count
 Scripts/Source/OE_LocksAndKeysScript.psc:93:121:line-length
 Scripts/Source/OE_LocksAndKeysScript.psc:94:121:line-length
+Scripts/Source/OE_LocksAndKeysScript.psc:97:1:parameter-count
 Scripts/Source/OE_LocksAndKeysScript.psc:97:121:line-length
 Scripts/Source/OE_LocksAndKeysScript.psc:98:121:line-length
 Scripts/Source/OE_MissionTerminalAliasScript.psc:4:1:indentation
@@ -63989,8 +64098,10 @@ Scripts/Source/OE_MissionTerminalQuestScript.psc:26:1:indentation
 Scripts/Source/OE_MissionTerminalQuestScript.psc:27:1:indentation
 Scripts/Source/OE_MissionTerminalQuestScript.psc:32:1:indentation
 Scripts/Source/OE_MissionTerminalQuestScript.psc:33:1:indentation
+Scripts/Source/OE_MissionTerminalQuestScript.psc:39:1:parameter-count
 Scripts/Source/OE_MissionTerminalQuestScript.psc:39:121:line-length
 Scripts/Source/OE_MissionTerminalQuestScript.psc:40:121:line-length
+Scripts/Source/OE_MissionTerminalQuestScript.psc:43:1:parameter-count
 Scripts/Source/OE_MissionTerminalQuestScript.psc:43:121:line-length
 Scripts/Source/OE_MissionTerminalQuestScript.psc:44:121:line-length
 Scripts/Source/OE_ShipsAddonScript.psc:6:17:trailing-whitespace
@@ -65273,6 +65384,7 @@ Scripts/Source/OE_ShipsAddonScript.psc:1122:1:indentation
 Scripts/Source/OE_ShipsAddonScript.psc:1122:10:trailing-whitespace
 Scripts/Source/OE_ShipsAddonScript.psc:1124:1:indentation
 Scripts/Source/OE_ShipsAddonScript.psc:1125:12:trailing-whitespace
+Scripts/Source/OE_ShipsAddonScript.psc:1130:1:parameter-count
 Scripts/Source/OE_ShipsAddonScript.psc:1130:109:assignment-operator-spacing
 Scripts/Source/OE_ShipsAddonScript.psc:1130:109:assignment-operator-spacing
 Scripts/Source/OE_ShipsAddonScript.psc:1130:121:line-length
@@ -65280,6 +65392,7 @@ Scripts/Source/OE_ShipsAddonScript.psc:1130:133:assignment-operator-spacing
 Scripts/Source/OE_ShipsAddonScript.psc:1130:133:assignment-operator-spacing
 Scripts/Source/OE_ShipsAddonScript.psc:1131:1:indentation
 Scripts/Source/OE_ShipsAddonScript.psc:1131:121:line-length
+Scripts/Source/OE_ShipsAddonScript.psc:1134:1:parameter-count
 Scripts/Source/OE_ShipsAddonScript.psc:1134:107:assignment-operator-spacing
 Scripts/Source/OE_ShipsAddonScript.psc:1134:107:assignment-operator-spacing
 Scripts/Source/OE_ShipsAddonScript.psc:1134:121:line-length
@@ -65471,19 +65584,25 @@ Scripts/Source/ObjectReference.psc:834:121:line-length
 Scripts/Source/ObjectReference.psc:838:71:assignment-operator-spacing
 Scripts/Source/ObjectReference.psc:838:71:assignment-operator-spacing
 Scripts/Source/ObjectReference.psc:840:121:line-length
+Scripts/Source/ObjectReference.psc:841:1:parameter-count
 Scripts/Source/ObjectReference.psc:841:121:line-length
+Scripts/Source/ObjectReference.psc:845:1:parameter-count
 Scripts/Source/ObjectReference.psc:845:121:line-length
+Scripts/Source/ObjectReference.psc:849:1:parameter-count
 Scripts/Source/ObjectReference.psc:849:121:line-length
 Scripts/Source/ObjectReference.psc:854:1:indentation
 Scripts/Source/ObjectReference.psc:854:121:line-length
+Scripts/Source/ObjectReference.psc:863:1:parameter-count
 Scripts/Source/ObjectReference.psc:863:121:line-length
 Scripts/Source/ObjectReference.psc:866:121:line-length
 Scripts/Source/ObjectReference.psc:868:121:line-length
 Scripts/Source/ObjectReference.psc:869:121:line-length
 Scripts/Source/ObjectReference.psc:873:121:line-length
 Scripts/Source/ObjectReference.psc:876:121:line-length
+Scripts/Source/ObjectReference.psc:888:1:parameter-count
 Scripts/Source/ObjectReference.psc:888:121:line-length
 Scripts/Source/ObjectReference.psc:894:121:line-length
+Scripts/Source/ObjectReference.psc:909:1:parameter-count
 Scripts/Source/ObjectReference.psc:909:121:line-length
 Scripts/Source/ObjectReference.psc:918:121:line-length
 Scripts/Source/ObjectReference.psc:921:121:line-length
@@ -65498,10 +65617,12 @@ Scripts/Source/ObjectReference.psc:985:121:line-length
 Scripts/Source/ObjectReference.psc:1129:21:slow-functions
 Scripts/Source/ObjectReference.psc:1136:121:line-length
 Scripts/Source/ObjectReference.psc:1145:121:line-length
+Scripts/Source/ObjectReference.psc:1148:1:parameter-count
 Scripts/Source/ObjectReference.psc:1148:121:line-length
 Scripts/Source/ObjectReference.psc:1151:121:line-length
 Scripts/Source/ObjectReference.psc:1152:121:line-length
 Scripts/Source/ObjectReference.psc:1156:121:line-length
+Scripts/Source/ObjectReference.psc:1186:1:parameter-count
 Scripts/Source/ObjectReference.psc:1186:121:line-length
 Scripts/Source/ObjectReference.psc:1190:121:line-length
 Scripts/Source/ObjectReference.psc:1199:121:line-length
@@ -65536,6 +65657,7 @@ Scripts/Source/ObjectReference.psc:1400:3:strict-boolean
 Scripts/Source/ObjectReference.psc:1413:2:strict-boolean
 Scripts/Source/ObjectReference.psc:1418:3:strict-boolean
 Scripts/Source/ObjectReference.psc:1428:121:line-length
+Scripts/Source/ObjectReference.psc:1429:1:parameter-count
 Scripts/Source/ObjectReference.psc:1429:80:assignment-operator-spacing
 Scripts/Source/ObjectReference.psc:1429:80:assignment-operator-spacing
 Scripts/Source/ObjectReference.psc:1429:99:assignment-operator-spacing
@@ -66939,9 +67061,11 @@ Scripts/Source/PEO/PEO_SustenanceCastWatchScript.psc:66:1:indentation
 Scripts/Source/PEO/PEO_SustenanceCastWatchScript.psc:70:1:indentation
 Scripts/Source/PEO/PEO_SustenanceCastWatchScript.psc:71:1:indentation
 Scripts/Source/PEO/PEO_SustenanceCastWatchScript.psc:72:1:indentation
+Scripts/Source/PEO/PEO_SustenanceCastWatchScript.psc:78:1:parameter-count
 Scripts/Source/PEO/PEO_SustenanceCastWatchScript.psc:78:121:line-length
 Scripts/Source/PEO/PEO_SustenanceCastWatchScript.psc:79:1:indentation
 Scripts/Source/PEO/PEO_SustenanceCastWatchScript.psc:79:121:line-length
+Scripts/Source/PEO/PEO_SustenanceCastWatchScript.psc:82:1:parameter-count
 Scripts/Source/PEO/PEO_SustenanceCastWatchScript.psc:82:121:line-length
 Scripts/Source/PEO/PEO_SustenanceCastWatchScript.psc:83:1:indentation
 Scripts/Source/PEO/PEO_SustenanceCastWatchScript.psc:83:121:line-length
@@ -67247,9 +67371,11 @@ Scripts/Source/PEO/SQ_PEO_QuestScript.psc:358:1:indentation
 Scripts/Source/PEO/SQ_PEO_QuestScript.psc:358:18:forbidden-functions
 Scripts/Source/PEO/SQ_PEO_QuestScript.psc:359:1:indentation
 Scripts/Source/PEO/SQ_PEO_QuestScript.psc:360:1:indentation
+Scripts/Source/PEO/SQ_PEO_QuestScript.psc:366:1:parameter-count
 Scripts/Source/PEO/SQ_PEO_QuestScript.psc:366:121:line-length
 Scripts/Source/PEO/SQ_PEO_QuestScript.psc:367:1:indentation
 Scripts/Source/PEO/SQ_PEO_QuestScript.psc:367:121:line-length
+Scripts/Source/PEO/SQ_PEO_QuestScript.psc:370:1:parameter-count
 Scripts/Source/PEO/SQ_PEO_QuestScript.psc:370:121:line-length
 Scripts/Source/PEO/SQ_PEO_QuestScript.psc:371:1:indentation
 Scripts/Source/PEO/SQ_PEO_QuestScript.psc:371:121:line-length
@@ -67767,6 +67893,7 @@ Scripts/Source/Quest.psc:10:121:line-length
 Scripts/Source/Quest.psc:11:121:line-length
 Scripts/Source/Quest.psc:12:121:line-length
 Scripts/Source/Quest.psc:13:1:cyclomatic-complexity
+Scripts/Source/Quest.psc:13:1:parameter-count
 Scripts/Source/Quest.psc:13:121:line-length
 Scripts/Source/Quest.psc:16:8:forbidden-functions
 Scripts/Source/Quest.psc:16:121:line-length
@@ -70582,8 +70709,10 @@ Scripts/Source/RQScript.psc:422:3:strict-boolean
 Scripts/Source/RQScript.psc:423:75:unresolved-script
 Scripts/Source/RQScript.psc:423:121:line-length
 Scripts/Source/RQScript.psc:436:121:line-length
+Scripts/Source/RQScript.psc:471:1:parameter-count
 Scripts/Source/RQScript.psc:471:121:line-length
 Scripts/Source/RQScript.psc:472:121:line-length
+Scripts/Source/RQScript.psc:475:1:parameter-count
 Scripts/Source/RQScript.psc:475:121:line-length
 Scripts/Source/RQScript.psc:476:121:line-length
 Scripts/Source/RQ_CollectScript.psc:4:1:indentation
@@ -70855,6 +70984,7 @@ Scripts/Source/RQ_ParentScript.psc:6:1:indentation
 Scripts/Source/RQ_ParentScript.psc:8:1:indentation
 Scripts/Source/RQ_ParentScript.psc:10:1:indentation
 Scripts/Source/RQ_ParentScript.psc:12:1:indentation
+Scripts/Source/RQ_ParentScript.psc:16:1:parameter-count
 Scripts/Source/RQ_ParentScript.psc:17:1:indentation
 Scripts/Source/RQ_ParentScript.psc:18:1:indentation
 Scripts/Source/RQ_ParentScript.psc:19:1:indentation
@@ -70866,6 +70996,7 @@ Scripts/Source/RQ_ParentScript.psc:24:1:indentation
 Scripts/Source/RQ_ParentScript.psc:25:1:indentation
 Scripts/Source/RQ_ParentScript.psc:26:1:indentation
 Scripts/Source/RQ_ParentScript.psc:46:121:line-length
+Scripts/Source/RQ_ParentScript.psc:49:1:parameter-count
 Scripts/Source/RQ_ParentScript.psc:50:1:indentation
 Scripts/Source/RQ_ParentScript.psc:51:1:indentation
 Scripts/Source/RQ_ParentScript.psc:52:1:indentation
@@ -70980,8 +71111,10 @@ Scripts/Source/RQ_SetStageOnExternalScene.psc:28:1:indentation
 Scripts/Source/RQ_SetStageOnExternalScene.psc:29:1:indentation
 Scripts/Source/RQ_SetStageOnExternalScene.psc:30:1:indentation
 Scripts/Source/RQ_SetStageOnExternalScene.psc:31:1:indentation
+Scripts/Source/RQ_SetStageOnExternalScene.psc:39:1:parameter-count
 Scripts/Source/RQ_SetStageOnExternalScene.psc:39:121:line-length
 Scripts/Source/RQ_SetStageOnExternalScene.psc:40:121:line-length
+Scripts/Source/RQ_SetStageOnExternalScene.psc:43:1:parameter-count
 Scripts/Source/RQ_SetStageOnExternalScene.psc:43:121:line-length
 Scripts/Source/RQ_SetStageOnExternalScene.psc:44:121:line-length
 Scripts/Source/RQ_TransportPersonScript.psc:4:22:trailing-whitespace
@@ -71145,8 +71278,10 @@ Scripts/Source/Rad01_LIST_QuestScript.psc:19:7:forbidden-functions
 Scripts/Source/Rad01_LIST_QuestScript.psc:19:68:slow-functions
 Scripts/Source/Rad01_LIST_QuestScript.psc:19:79:unresolved-script
 Scripts/Source/Rad01_LIST_QuestScript.psc:20:7:forbidden-functions
+Scripts/Source/Rad01_LIST_QuestScript.psc:36:1:parameter-count
 Scripts/Source/Rad01_LIST_QuestScript.psc:36:121:line-length
 Scripts/Source/Rad01_LIST_QuestScript.psc:37:121:line-length
+Scripts/Source/Rad01_LIST_QuestScript.psc:40:1:parameter-count
 Scripts/Source/Rad01_LIST_QuestScript.psc:40:121:line-length
 Scripts/Source/Rad01_LIST_QuestScript.psc:41:121:line-length
 Scripts/Source/Rad01_MoveRefsQuestScript.psc:4:1:indentation
@@ -71157,8 +71292,10 @@ Scripts/Source/Rad01_MoveRefsQuestScript.psc:14:1:indentation
 Scripts/Source/Rad01_MoveRefsQuestScript.psc:15:1:indentation
 Scripts/Source/Rad01_MoveRefsQuestScript.psc:69:3:strict-boolean
 Scripts/Source/Rad01_MoveRefsQuestScript.psc:70:48:trailing-whitespace
+Scripts/Source/Rad01_MoveRefsQuestScript.psc:98:1:parameter-count
 Scripts/Source/Rad01_MoveRefsQuestScript.psc:98:121:line-length
 Scripts/Source/Rad01_MoveRefsQuestScript.psc:99:121:line-length
+Scripts/Source/Rad01_MoveRefsQuestScript.psc:102:1:parameter-count
 Scripts/Source/Rad01_MoveRefsQuestScript.psc:102:121:line-length
 Scripts/Source/Rad01_MoveRefsQuestScript.psc:103:121:line-length
 Scripts/Source/RandomRotateZ.psc:10:1:indentation
@@ -75787,8 +75924,10 @@ Scripts/Source/SFBGS003/SFBGS003_AddBountyScannerCrimes.psc:70:1:indentation
 Scripts/Source/SFBGS003/SFBGS003_AddBountyScannerCrimes.psc:71:1:indentation
 Scripts/Source/SFBGS003/SFBGS003_AddBountyScannerCrimes.psc:71:68:trailing-whitespace
 Scripts/Source/SFBGS003/SFBGS003_AddBountyScannerCrimes.psc:72:12:trailing-whitespace
+Scripts/Source/SFBGS003/SFBGS003_AddBountyScannerCrimes.psc:77:1:parameter-count
 Scripts/Source/SFBGS003/SFBGS003_AddBountyScannerCrimes.psc:77:121:line-length
 Scripts/Source/SFBGS003/SFBGS003_AddBountyScannerCrimes.psc:78:121:line-length
+Scripts/Source/SFBGS003/SFBGS003_AddBountyScannerCrimes.psc:81:1:parameter-count
 Scripts/Source/SFBGS003/SFBGS003_AddBountyScannerCrimes.psc:81:121:line-length
 Scripts/Source/SFBGS003/SFBGS003_AddBountyScannerCrimes.psc:82:121:line-length
 Scripts/Source/SFBGS003/SFBGS003_RotateCarouselScript.psc:4:1:indentation
@@ -76038,8 +76177,10 @@ Scripts/Source/SFBGS003/SFBGS003_SQ_BountyMission_AliasScript.psc:190:1:indentat
 Scripts/Source/SFBGS003/SFBGS003_SQ_BountyMission_AliasScript.psc:191:1:indentation
 Scripts/Source/SFBGS003/SFBGS003_SQ_BountyMission_AliasScript.psc:191:10:trailing-whitespace
 Scripts/Source/SFBGS003/SFBGS003_SQ_BountyMission_AliasScript.psc:192:12:trailing-whitespace
+Scripts/Source/SFBGS003/SFBGS003_SQ_BountyMission_AliasScript.psc:197:1:parameter-count
 Scripts/Source/SFBGS003/SFBGS003_SQ_BountyMission_AliasScript.psc:197:121:line-length
 Scripts/Source/SFBGS003/SFBGS003_SQ_BountyMission_AliasScript.psc:198:121:line-length
+Scripts/Source/SFBGS003/SFBGS003_SQ_BountyMission_AliasScript.psc:201:1:parameter-count
 Scripts/Source/SFBGS003/SFBGS003_SQ_BountyMission_AliasScript.psc:201:121:line-length
 Scripts/Source/SFBGS003/SFBGS003_SQ_BountyMission_AliasScript.psc:202:121:line-length
 Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:2:97:trailing-whitespace
@@ -76233,8 +76374,10 @@ Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:180:1:indentation
 Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:180:121:line-length
 Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:180:139:trailing-whitespace
 Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:181:12:trailing-whitespace
+Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:186:1:parameter-count
 Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:186:121:line-length
 Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:187:121:line-length
+Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:190:1:parameter-count
 Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:190:121:line-length
 Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:191:121:line-length
 Scripts/Source/SFBGS003/SFBGS003_SQ_WantedPostersQuestScript.psc:4:1:indentation
@@ -76300,9 +76443,11 @@ Scripts/Source/SFBGS003/SFBGS003_SQ_WantedPostersQuestScript.psc:76:1:indentatio
 Scripts/Source/SFBGS003/SFBGS003_SQ_WantedPostersQuestScript.psc:77:1:indentation
 Scripts/Source/SFBGS003/SFBGS003_SQ_WantedPostersQuestScript.psc:78:1:indentation
 Scripts/Source/SFBGS003/SFBGS003_SQ_WantedPostersQuestScript.psc:79:1:indentation
+Scripts/Source/SFBGS003/SFBGS003_SQ_WantedPostersQuestScript.psc:86:1:parameter-count
 Scripts/Source/SFBGS003/SFBGS003_SQ_WantedPostersQuestScript.psc:86:121:line-length
 Scripts/Source/SFBGS003/SFBGS003_SQ_WantedPostersQuestScript.psc:87:1:indentation
 Scripts/Source/SFBGS003/SFBGS003_SQ_WantedPostersQuestScript.psc:87:121:line-length
+Scripts/Source/SFBGS003/SFBGS003_SQ_WantedPostersQuestScript.psc:90:1:parameter-count
 Scripts/Source/SFBGS003/SFBGS003_SQ_WantedPostersQuestScript.psc:90:121:line-length
 Scripts/Source/SFBGS003/SFBGS003_SQ_WantedPostersQuestScript.psc:91:1:indentation
 Scripts/Source/SFBGS003/SFBGS003_SQ_WantedPostersQuestScript.psc:91:121:line-length
@@ -76342,8 +76487,10 @@ Scripts/Source/SFBGS003/SFBGS003_ShutdownQuestScript.psc:52:136:trailing-whitesp
 Scripts/Source/SFBGS003/SFBGS003_ShutdownQuestScript.psc:53:1:indentation
 Scripts/Source/SFBGS003/SFBGS003_ShutdownQuestScript.psc:54:1:indentation
 Scripts/Source/SFBGS003/SFBGS003_ShutdownQuestScript.psc:54:18:unresolved-script
+Scripts/Source/SFBGS003/SFBGS003_ShutdownQuestScript.psc:61:1:parameter-count
 Scripts/Source/SFBGS003/SFBGS003_ShutdownQuestScript.psc:61:121:line-length
 Scripts/Source/SFBGS003/SFBGS003_ShutdownQuestScript.psc:62:121:line-length
+Scripts/Source/SFBGS003/SFBGS003_ShutdownQuestScript.psc:65:1:parameter-count
 Scripts/Source/SFBGS003/SFBGS003_ShutdownQuestScript.psc:65:121:line-length
 Scripts/Source/SFBGS003/SFBGS003_ShutdownQuestScript.psc:66:121:line-length
 Scripts/Source/SFBGS003/SFBGS003_WantedPosterQuestScript.psc:4:1:indentation
@@ -76381,9 +76528,11 @@ Scripts/Source/SFBGS003/SFBGS003_WantedPosterQuestScript.psc:52:1:indentation
 Scripts/Source/SFBGS003/SFBGS003_WantedPosterQuestScript.psc:53:1:indentation
 Scripts/Source/SFBGS003/SFBGS003_WantedPosterQuestScript.psc:53:121:line-length
 Scripts/Source/SFBGS003/SFBGS003_WantedPosterQuestScript.psc:54:1:indentation
+Scripts/Source/SFBGS003/SFBGS003_WantedPosterQuestScript.psc:61:1:parameter-count
 Scripts/Source/SFBGS003/SFBGS003_WantedPosterQuestScript.psc:61:121:line-length
 Scripts/Source/SFBGS003/SFBGS003_WantedPosterQuestScript.psc:62:1:indentation
 Scripts/Source/SFBGS003/SFBGS003_WantedPosterQuestScript.psc:62:121:line-length
+Scripts/Source/SFBGS003/SFBGS003_WantedPosterQuestScript.psc:65:1:parameter-count
 Scripts/Source/SFBGS003/SFBGS003_WantedPosterQuestScript.psc:65:121:line-length
 Scripts/Source/SFBGS003/SFBGS003_WantedPosterQuestScript.psc:66:1:indentation
 Scripts/Source/SFBGS003/SFBGS003_WantedPosterQuestScript.psc:66:121:line-length
@@ -76391,9 +76540,11 @@ Scripts/Source/SFBGS003/SFBGS003_WantedPosterRefScript.psc:4:1:indentation
 Scripts/Source/SFBGS003/SFBGS003_WantedPosterRefScript.psc:5:1:indentation
 Scripts/Source/SFBGS003/SFBGS003_WantedPosterRefScript.psc:10:1:indentation
 Scripts/Source/SFBGS003/SFBGS003_WantedPosterRefScript.psc:10:52:unresolved-script
+Scripts/Source/SFBGS003/SFBGS003_WantedPosterRefScript.psc:17:1:parameter-count
 Scripts/Source/SFBGS003/SFBGS003_WantedPosterRefScript.psc:17:121:line-length
 Scripts/Source/SFBGS003/SFBGS003_WantedPosterRefScript.psc:18:1:indentation
 Scripts/Source/SFBGS003/SFBGS003_WantedPosterRefScript.psc:18:121:line-length
+Scripts/Source/SFBGS003/SFBGS003_WantedPosterRefScript.psc:21:1:parameter-count
 Scripts/Source/SFBGS003/SFBGS003_WantedPosterRefScript.psc:21:121:line-length
 Scripts/Source/SFBGS003/SFBGS003_WantedPosterRefScript.psc:22:1:indentation
 Scripts/Source/SFBGS003/SFBGS003_WantedPosterRefScript.psc:22:121:line-length
@@ -76906,8 +77057,10 @@ Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:356:1:indentation
 Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:356:10:trailing-whitespace
 Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:358:1:indentation
 Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:359:12:trailing-whitespace
+Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:364:1:parameter-count
 Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:364:121:line-length
 Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:365:121:line-length
+Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:368:1:parameter-count
 Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:368:121:line-length
 Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:369:121:line-length
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:2:97:trailing-whitespace
@@ -77279,8 +77432,10 @@ Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:337:1:indentation
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:337:121:line-length
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:337:139:trailing-whitespace
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:338:12:trailing-whitespace
+Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:345:1:parameter-count
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:345:121:line-length
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:346:121:line-length
+Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:349:1:parameter-count
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:349:121:line-length
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:350:121:line-length
 Scripts/Source/SFBGS00D/ActionFigureAchievementScript.psc:5:1:indentation
@@ -83248,9 +83403,11 @@ Scripts/Source/SQ_AirlockAliasScript.psc:4:1:indentation
 Scripts/Source/SQ_AirlockAliasScript.psc:8:1:indentation
 Scripts/Source/SQ_AirlockAliasScript.psc:10:1:indentation
 Scripts/Source/SQ_AirlockAliasScript.psc:11:1:indentation
+Scripts/Source/SQ_AirlockAliasScript.psc:18:1:parameter-count
 Scripts/Source/SQ_AirlockAliasScript.psc:18:121:line-length
 Scripts/Source/SQ_AirlockAliasScript.psc:19:1:indentation
 Scripts/Source/SQ_AirlockAliasScript.psc:19:121:line-length
+Scripts/Source/SQ_AirlockAliasScript.psc:22:1:parameter-count
 Scripts/Source/SQ_AirlockAliasScript.psc:22:121:line-length
 Scripts/Source/SQ_AirlockAliasScript.psc:23:1:indentation
 Scripts/Source/SQ_AirlockAliasScript.psc:23:121:line-length
@@ -83288,9 +83445,11 @@ Scripts/Source/SQ_Airlock_DoorwayVolumeScript.psc:48:1:indentation
 Scripts/Source/SQ_Airlock_DoorwayVolumeScript.psc:49:1:indentation
 Scripts/Source/SQ_Airlock_DoorwayVolumeScript.psc:49:35:unresolved-script
 Scripts/Source/SQ_Airlock_DoorwayVolumeScript.psc:50:1:indentation
+Scripts/Source/SQ_Airlock_DoorwayVolumeScript.psc:56:1:parameter-count
 Scripts/Source/SQ_Airlock_DoorwayVolumeScript.psc:56:121:line-length
 Scripts/Source/SQ_Airlock_DoorwayVolumeScript.psc:57:1:indentation
 Scripts/Source/SQ_Airlock_DoorwayVolumeScript.psc:57:121:line-length
+Scripts/Source/SQ_Airlock_DoorwayVolumeScript.psc:60:1:parameter-count
 Scripts/Source/SQ_Airlock_DoorwayVolumeScript.psc:60:121:line-length
 Scripts/Source/SQ_Airlock_DoorwayVolumeScript.psc:61:1:indentation
 Scripts/Source/SQ_Airlock_DoorwayVolumeScript.psc:61:121:line-length
@@ -83315,9 +83474,11 @@ Scripts/Source/SQ_Airlock_InsideVolumeScript.psc:26:9:trailing-whitespace
 Scripts/Source/SQ_Airlock_InsideVolumeScript.psc:27:1:indentation
 Scripts/Source/SQ_Airlock_InsideVolumeScript.psc:28:1:indentation
 Scripts/Source/SQ_Airlock_InsideVolumeScript.psc:29:1:trailing-whitespace
+Scripts/Source/SQ_Airlock_InsideVolumeScript.psc:37:1:parameter-count
 Scripts/Source/SQ_Airlock_InsideVolumeScript.psc:37:121:line-length
 Scripts/Source/SQ_Airlock_InsideVolumeScript.psc:38:1:indentation
 Scripts/Source/SQ_Airlock_InsideVolumeScript.psc:38:121:line-length
+Scripts/Source/SQ_Airlock_InsideVolumeScript.psc:41:1:parameter-count
 Scripts/Source/SQ_Airlock_InsideVolumeScript.psc:41:121:line-length
 Scripts/Source/SQ_Airlock_InsideVolumeScript.psc:42:1:indentation
 Scripts/Source/SQ_Airlock_InsideVolumeScript.psc:42:121:line-length
@@ -83371,9 +83532,11 @@ Scripts/Source/SQ_Airlock_QuestScript.psc:72:1:indentation
 Scripts/Source/SQ_Airlock_QuestScript.psc:73:1:indentation
 Scripts/Source/SQ_Airlock_QuestScript.psc:78:1:indentation
 Scripts/Source/SQ_Airlock_QuestScript.psc:78:33:unresolved-script
+Scripts/Source/SQ_Airlock_QuestScript.psc:85:1:parameter-count
 Scripts/Source/SQ_Airlock_QuestScript.psc:85:121:line-length
 Scripts/Source/SQ_Airlock_QuestScript.psc:86:1:indentation
 Scripts/Source/SQ_Airlock_QuestScript.psc:86:121:line-length
+Scripts/Source/SQ_Airlock_QuestScript.psc:89:1:parameter-count
 Scripts/Source/SQ_Airlock_QuestScript.psc:89:121:line-length
 Scripts/Source/SQ_Airlock_QuestScript.psc:90:1:indentation
 Scripts/Source/SQ_Airlock_QuestScript.psc:90:121:line-length
@@ -83693,8 +83856,10 @@ Scripts/Source/SQ_COM_CREW_GiveItemQuestScript.psc:49:1:indentation
 Scripts/Source/SQ_COM_CREW_GiveItemQuestScript.psc:50:1:indentation
 Scripts/Source/SQ_COM_CREW_GiveItemQuestScript.psc:52:1:indentation
 Scripts/Source/SQ_COM_CREW_GiveItemQuestScript.psc:53:1:trailing-whitespace
+Scripts/Source/SQ_COM_CREW_GiveItemQuestScript.psc:59:1:parameter-count
 Scripts/Source/SQ_COM_CREW_GiveItemQuestScript.psc:59:121:line-length
 Scripts/Source/SQ_COM_CREW_GiveItemQuestScript.psc:60:121:line-length
+Scripts/Source/SQ_COM_CREW_GiveItemQuestScript.psc:63:1:parameter-count
 Scripts/Source/SQ_COM_CREW_GiveItemQuestScript.psc:63:121:line-length
 Scripts/Source/SQ_COM_CREW_GiveItemQuestScript.psc:64:121:line-length
 Scripts/Source/SQ_CaptiveScript.psc:5:1:indentation
@@ -83709,8 +83874,10 @@ Scripts/Source/SQ_CaptiveScript.psc:43:1:trailing-whitespace
 Scripts/Source/SQ_CaptiveScript.psc:45:26:unresolved-script
 Scripts/Source/SQ_CaptiveScript.psc:50:56:unresolved-script
 Scripts/Source/SQ_CaptiveScript.psc:53:28:unresolved-script
+Scripts/Source/SQ_CaptiveScript.psc:59:1:parameter-count
 Scripts/Source/SQ_CaptiveScript.psc:59:121:line-length
 Scripts/Source/SQ_CaptiveScript.psc:60:121:line-length
+Scripts/Source/SQ_CaptiveScript.psc:63:1:parameter-count
 Scripts/Source/SQ_CaptiveScript.psc:63:121:line-length
 Scripts/Source/SQ_CaptiveScript.psc:64:121:line-length
 Scripts/Source/SQ_ClearBountyTerminalScript.psc:4:1:indentation
@@ -84117,9 +84284,11 @@ Scripts/Source/SQ_Companions_ActiveCompanionScript.psc:135:1:indentation
 Scripts/Source/SQ_Companions_ActiveCompanionScript.psc:137:1:indentation
 Scripts/Source/SQ_Companions_ActiveCompanionScript.psc:139:1:indentation
 Scripts/Source/SQ_Companions_ActiveCompanionScript.psc:140:1:indentation
+Scripts/Source/SQ_Companions_ActiveCompanionScript.psc:147:1:parameter-count
 Scripts/Source/SQ_Companions_ActiveCompanionScript.psc:147:121:line-length
 Scripts/Source/SQ_Companions_ActiveCompanionScript.psc:148:1:indentation
 Scripts/Source/SQ_Companions_ActiveCompanionScript.psc:148:121:line-length
+Scripts/Source/SQ_Companions_ActiveCompanionScript.psc:151:1:parameter-count
 Scripts/Source/SQ_Companions_ActiveCompanionScript.psc:151:121:line-length
 Scripts/Source/SQ_Companions_ActiveCompanionScript.psc:152:1:indentation
 Scripts/Source/SQ_Companions_ActiveCompanionScript.psc:152:121:line-length
@@ -84348,8 +84517,10 @@ Scripts/Source/SQ_Crew_SpawnManagerScript.psc:59:1:unchecked-cast
 Scripts/Source/SQ_Crew_SpawnManagerScript.psc:62:1:unchecked-cast
 Scripts/Source/SQ_Crew_SpawnManagerScript.psc:66:1:unchecked-cast
 Scripts/Source/SQ_Crew_SpawnManagerScript.psc:72:1:unchecked-cast
+Scripts/Source/SQ_Crew_SpawnManagerScript.psc:86:1:parameter-count
 Scripts/Source/SQ_Crew_SpawnManagerScript.psc:86:121:line-length
 Scripts/Source/SQ_Crew_SpawnManagerScript.psc:87:121:line-length
+Scripts/Source/SQ_Crew_SpawnManagerScript.psc:90:1:parameter-count
 Scripts/Source/SQ_Crew_SpawnManagerScript.psc:90:121:line-length
 Scripts/Source/SQ_Crew_SpawnManagerScript.psc:91:121:line-length
 Scripts/Source/SQ_DoctorsScript.psc:4:1:indentation
@@ -84366,8 +84537,10 @@ Scripts/Source/SQ_DoctorsScript.psc:43:21:unresolved-script
 Scripts/Source/SQ_DoctorsScript.psc:50:21:unresolved-script
 Scripts/Source/SQ_DoctorsScript.psc:51:25:unresolved-script
 Scripts/Source/SQ_DoctorsScript.psc:60:43:slow-functions
+Scripts/Source/SQ_DoctorsScript.psc:66:1:parameter-count
 Scripts/Source/SQ_DoctorsScript.psc:66:121:line-length
 Scripts/Source/SQ_DoctorsScript.psc:67:121:line-length
+Scripts/Source/SQ_DoctorsScript.psc:70:1:parameter-count
 Scripts/Source/SQ_DoctorsScript.psc:70:121:line-length
 Scripts/Source/SQ_DoctorsScript.psc:71:121:line-length
 Scripts/Source/SQ_ENV_AfflictionsScript.psc:4:1:indentation
@@ -84712,9 +84885,11 @@ Scripts/Source/SQ_ENV_AfflictionsScript.psc:502:1:indentation
 Scripts/Source/SQ_ENV_AfflictionsScript.psc:503:1:indentation
 Scripts/Source/SQ_ENV_AfflictionsScript.psc:504:1:indentation
 Scripts/Source/SQ_ENV_AfflictionsScript.psc:505:1:indentation
+Scripts/Source/SQ_ENV_AfflictionsScript.psc:512:1:parameter-count
 Scripts/Source/SQ_ENV_AfflictionsScript.psc:512:121:line-length
 Scripts/Source/SQ_ENV_AfflictionsScript.psc:513:1:indentation
 Scripts/Source/SQ_ENV_AfflictionsScript.psc:513:121:line-length
+Scripts/Source/SQ_ENV_AfflictionsScript.psc:516:1:parameter-count
 Scripts/Source/SQ_ENV_AfflictionsScript.psc:516:121:line-length
 Scripts/Source/SQ_ENV_AfflictionsScript.psc:517:1:indentation
 Scripts/Source/SQ_ENV_AfflictionsScript.psc:517:121:line-length
@@ -84954,9 +85129,11 @@ Scripts/Source/SQ_EnvScript.psc:127:1:indentation
 Scripts/Source/SQ_EnvScript.psc:128:1:indentation
 Scripts/Source/SQ_EnvScript.psc:129:1:indentation
 Scripts/Source/SQ_EnvScript.psc:135:1:indentation
+Scripts/Source/SQ_EnvScript.psc:144:1:parameter-count
 Scripts/Source/SQ_EnvScript.psc:144:121:line-length
 Scripts/Source/SQ_EnvScript.psc:145:1:indentation
 Scripts/Source/SQ_EnvScript.psc:145:121:line-length
+Scripts/Source/SQ_EnvScript.psc:148:1:parameter-count
 Scripts/Source/SQ_EnvScript.psc:148:121:line-length
 Scripts/Source/SQ_EnvScript.psc:149:1:indentation
 Scripts/Source/SQ_EnvScript.psc:149:121:line-length
@@ -85144,9 +85321,11 @@ Scripts/Source/SQ_Env_TutorialQuestScript.psc:272:1:indentation
 Scripts/Source/SQ_Env_TutorialQuestScript.psc:272:39:forbidden-functions
 Scripts/Source/SQ_Env_TutorialQuestScript.psc:273:1:indentation
 Scripts/Source/SQ_Env_TutorialQuestScript.psc:273:10:trailing-whitespace
+Scripts/Source/SQ_Env_TutorialQuestScript.psc:281:1:parameter-count
 Scripts/Source/SQ_Env_TutorialQuestScript.psc:281:121:line-length
 Scripts/Source/SQ_Env_TutorialQuestScript.psc:282:1:indentation
 Scripts/Source/SQ_Env_TutorialQuestScript.psc:282:121:line-length
+Scripts/Source/SQ_Env_TutorialQuestScript.psc:285:1:parameter-count
 Scripts/Source/SQ_Env_TutorialQuestScript.psc:285:121:line-length
 Scripts/Source/SQ_Env_TutorialQuestScript.psc:286:1:indentation
 Scripts/Source/SQ_Env_TutorialQuestScript.psc:286:121:line-length
@@ -85281,8 +85460,10 @@ Scripts/Source/SQ_Followers_ActiveFollowersScript.psc:96:33:trailing-whitespace
 Scripts/Source/SQ_Followers_ActiveFollowersScript.psc:97:1:trailing-whitespace
 Scripts/Source/SQ_Followers_ActiveFollowersScript.psc:100:121:line-length
 Scripts/Source/SQ_Followers_ActiveFollowersScript.psc:120:11:forbidden-functions
+Scripts/Source/SQ_Followers_ActiveFollowersScript.psc:152:1:parameter-count
 Scripts/Source/SQ_Followers_ActiveFollowersScript.psc:152:121:line-length
 Scripts/Source/SQ_Followers_ActiveFollowersScript.psc:153:121:line-length
+Scripts/Source/SQ_Followers_ActiveFollowersScript.psc:156:1:parameter-count
 Scripts/Source/SQ_Followers_ActiveFollowersScript.psc:156:121:line-length
 Scripts/Source/SQ_Followers_ActiveFollowersScript.psc:157:121:line-length
 Scripts/Source/SQ_GravitationalTraitsScript.psc:20:1:indentation
@@ -85441,8 +85622,10 @@ Scripts/Source/SQ_GroupOccupationScript.psc:38:121:line-length
 Scripts/Source/SQ_GroupOccupationScript.psc:40:1:indentation
 Scripts/Source/SQ_GroupOccupationScript.psc:41:1:indentation
 Scripts/Source/SQ_GroupOccupationScript.psc:41:121:line-length
+Scripts/Source/SQ_GroupOccupationScript.psc:67:1:parameter-count
 Scripts/Source/SQ_GroupOccupationScript.psc:67:121:line-length
 Scripts/Source/SQ_GroupOccupationScript.psc:68:121:line-length
+Scripts/Source/SQ_GroupOccupationScript.psc:71:1:parameter-count
 Scripts/Source/SQ_GroupOccupationScript.psc:71:121:line-length
 Scripts/Source/SQ_GroupOccupationScript.psc:72:121:line-length
 Scripts/Source/SQ_GroupScript.psc:4:1:indentation
@@ -85545,6 +85728,7 @@ Scripts/Source/SQ_GroupScript.psc:215:121:line-length
 Scripts/Source/SQ_GroupScript.psc:216:77:unresolved-script
 Scripts/Source/SQ_GroupScript.psc:217:64:unresolved-script
 Scripts/Source/SQ_GroupScript.psc:226:1:cyclomatic-complexity
+Scripts/Source/SQ_GroupScript.psc:226:1:parameter-count
 Scripts/Source/SQ_GroupScript.psc:226:121:line-length
 Scripts/Source/SQ_GroupScript.psc:228:1:trailing-whitespace
 Scripts/Source/SQ_GroupScript.psc:239:39:trailing-whitespace
@@ -85593,8 +85777,10 @@ Scripts/Source/SQ_GroupScript.psc:446:121:line-length
 Scripts/Source/SQ_GroupScript.psc:464:24:trailing-whitespace
 Scripts/Source/SQ_GroupScript.psc:475:2:strict-boolean
 Scripts/Source/SQ_GroupScript.psc:476:50:unresolved-script
+Scripts/Source/SQ_GroupScript.psc:512:1:parameter-count
 Scripts/Source/SQ_GroupScript.psc:512:121:line-length
 Scripts/Source/SQ_GroupScript.psc:513:121:line-length
+Scripts/Source/SQ_GroupScript.psc:516:1:parameter-count
 Scripts/Source/SQ_GroupScript.psc:516:121:line-length
 Scripts/Source/SQ_GroupScript.psc:517:121:line-length
 Scripts/Source/SQ_Groups_QuestScript.psc:6:1:trailing-whitespace
@@ -85666,8 +85852,10 @@ Scripts/Source/SQ_Groups_QuestScript.psc:238:39:unresolved-script
 Scripts/Source/SQ_Groups_QuestScript.psc:238:51:slow-functions
 Scripts/Source/SQ_Groups_QuestScript.psc:243:42:unresolved-script
 Scripts/Source/SQ_Groups_QuestScript.psc:243:54:slow-functions
+Scripts/Source/SQ_Groups_QuestScript.psc:249:1:parameter-count
 Scripts/Source/SQ_Groups_QuestScript.psc:249:121:line-length
 Scripts/Source/SQ_Groups_QuestScript.psc:250:121:line-length
+Scripts/Source/SQ_Groups_QuestScript.psc:253:1:parameter-count
 Scripts/Source/SQ_Groups_QuestScript.psc:253:121:line-length
 Scripts/Source/SQ_Groups_QuestScript.psc:254:121:line-length
 Scripts/Source/SQ_HotelierTriggerScript.psc:17:1:indentation
@@ -85718,9 +85906,11 @@ Scripts/Source/SQ_HotelierTriggerScript.psc:84:1:indentation
 Scripts/Source/SQ_HotelierTriggerScript.psc:84:30:forbidden-functions
 Scripts/Source/SQ_HotelierTriggerScript.psc:85:1:indentation
 Scripts/Source/SQ_HotelierTriggerScript.psc:85:1:none-form-usage
+Scripts/Source/SQ_HotelierTriggerScript.psc:94:1:parameter-count
 Scripts/Source/SQ_HotelierTriggerScript.psc:94:121:line-length
 Scripts/Source/SQ_HotelierTriggerScript.psc:95:1:indentation
 Scripts/Source/SQ_HotelierTriggerScript.psc:95:121:line-length
+Scripts/Source/SQ_HotelierTriggerScript.psc:98:1:parameter-count
 Scripts/Source/SQ_HotelierTriggerScript.psc:98:121:line-length
 Scripts/Source/SQ_HotelierTriggerScript.psc:99:1:indentation
 Scripts/Source/SQ_HotelierTriggerScript.psc:99:121:line-length
@@ -85801,9 +85991,11 @@ Scripts/Source/SQ_HoteliersActorScript.psc:99:47:forbidden-functions
 Scripts/Source/SQ_HoteliersActorScript.psc:100:1:indentation
 Scripts/Source/SQ_HoteliersActorScript.psc:100:1:unchecked-cast
 Scripts/Source/SQ_HoteliersActorScript.psc:101:1:indentation
+Scripts/Source/SQ_HoteliersActorScript.psc:110:1:parameter-count
 Scripts/Source/SQ_HoteliersActorScript.psc:110:121:line-length
 Scripts/Source/SQ_HoteliersActorScript.psc:111:1:indentation
 Scripts/Source/SQ_HoteliersActorScript.psc:111:121:line-length
+Scripts/Source/SQ_HoteliersActorScript.psc:114:1:parameter-count
 Scripts/Source/SQ_HoteliersActorScript.psc:114:121:line-length
 Scripts/Source/SQ_HoteliersActorScript.psc:115:1:indentation
 Scripts/Source/SQ_HoteliersActorScript.psc:115:121:line-length
@@ -85850,9 +86042,11 @@ Scripts/Source/SQ_HoteliersQuestScript.psc:45:1:indentation
 Scripts/Source/SQ_HoteliersQuestScript.psc:46:1:indentation
 Scripts/Source/SQ_HoteliersQuestScript.psc:47:1:indentation
 Scripts/Source/SQ_HoteliersQuestScript.psc:48:1:indentation
+Scripts/Source/SQ_HoteliersQuestScript.psc:55:1:parameter-count
 Scripts/Source/SQ_HoteliersQuestScript.psc:55:121:line-length
 Scripts/Source/SQ_HoteliersQuestScript.psc:56:1:indentation
 Scripts/Source/SQ_HoteliersQuestScript.psc:56:121:line-length
+Scripts/Source/SQ_HoteliersQuestScript.psc:59:1:parameter-count
 Scripts/Source/SQ_HoteliersQuestScript.psc:59:121:line-length
 Scripts/Source/SQ_HoteliersQuestScript.psc:60:1:indentation
 Scripts/Source/SQ_HoteliersQuestScript.psc:60:121:line-length
@@ -87353,6 +87547,7 @@ Scripts/Source/SQ_ParentScript.psc:1080:1:indentation
 Scripts/Source/SQ_ParentScript.psc:1081:1:indentation
 Scripts/Source/SQ_ParentScript.psc:1082:1:indentation
 Scripts/Source/SQ_ParentScript.psc:1090:1:cyclomatic-complexity
+Scripts/Source/SQ_ParentScript.psc:1090:1:parameter-count
 Scripts/Source/SQ_ParentScript.psc:1090:81:assignment-operator-spacing
 Scripts/Source/SQ_ParentScript.psc:1090:81:assignment-operator-spacing
 Scripts/Source/SQ_ParentScript.psc:1090:110:assignment-operator-spacing
@@ -88307,9 +88502,11 @@ Scripts/Source/SQ_PlayerSleepScript.psc:69:1:indentation
 Scripts/Source/SQ_PlayerSleepScript.psc:70:1:indentation
 Scripts/Source/SQ_PlayerSleepScript.psc:70:28:forbidden-functions
 Scripts/Source/SQ_PlayerSleepScript.psc:70:46:forbidden-functions
+Scripts/Source/SQ_PlayerSleepScript.psc:78:1:parameter-count
 Scripts/Source/SQ_PlayerSleepScript.psc:78:121:line-length
 Scripts/Source/SQ_PlayerSleepScript.psc:79:1:indentation
 Scripts/Source/SQ_PlayerSleepScript.psc:79:121:line-length
+Scripts/Source/SQ_PlayerSleepScript.psc:82:1:parameter-count
 Scripts/Source/SQ_PlayerSleepScript.psc:82:121:line-length
 Scripts/Source/SQ_PlayerSleepScript.psc:83:1:indentation
 Scripts/Source/SQ_PlayerSleepScript.psc:83:121:line-length
@@ -88322,9 +88519,11 @@ Scripts/Source/SQ_PreventRecalcScript.psc:13:1:indentation
 Scripts/Source/SQ_PreventRecalcScript.psc:13:1:none-form-usage
 Scripts/Source/SQ_PreventRecalcScript.psc:17:1:indentation
 Scripts/Source/SQ_PreventRecalcScript.psc:17:1:none-form-usage
+Scripts/Source/SQ_PreventRecalcScript.psc:23:1:parameter-count
 Scripts/Source/SQ_PreventRecalcScript.psc:23:121:line-length
 Scripts/Source/SQ_PreventRecalcScript.psc:24:1:indentation
 Scripts/Source/SQ_PreventRecalcScript.psc:24:121:line-length
+Scripts/Source/SQ_PreventRecalcScript.psc:27:1:parameter-count
 Scripts/Source/SQ_PreventRecalcScript.psc:27:121:line-length
 Scripts/Source/SQ_PreventRecalcScript.psc:28:1:indentation
 Scripts/Source/SQ_PreventRecalcScript.psc:28:121:line-length
@@ -88998,8 +89197,10 @@ Scripts/Source/SQ_TraitsQuestScript.psc:319:121:line-length
 Scripts/Source/SQ_TraitsQuestScript.psc:326:38:unresolved-script
 Scripts/Source/SQ_TraitsQuestScript.psc:327:38:unresolved-script
 Scripts/Source/SQ_TraitsQuestScript.psc:351:121:line-length
+Scripts/Source/SQ_TraitsQuestScript.psc:371:1:parameter-count
 Scripts/Source/SQ_TraitsQuestScript.psc:371:121:line-length
 Scripts/Source/SQ_TraitsQuestScript.psc:372:121:line-length
+Scripts/Source/SQ_TraitsQuestScript.psc:375:1:parameter-count
 Scripts/Source/SQ_TraitsQuestScript.psc:375:121:line-length
 Scripts/Source/SQ_TraitsQuestScript.psc:376:121:line-length
 Scripts/Source/SQ_TreasureMapQuestScript.psc:20:1:indentation
@@ -89446,10 +89647,12 @@ Scripts/Source/ScriptObject.psc:118:145:trailing-whitespace
 Scripts/Source/ScriptObject.psc:120:121:line-length
 Scripts/Source/ScriptObject.psc:122:121:line-length
 Scripts/Source/ScriptObject.psc:123:121:line-length
+Scripts/Source/ScriptObject.psc:128:1:parameter-count
 Scripts/Source/ScriptObject.psc:128:121:line-length
 Scripts/Source/ScriptObject.psc:129:121:line-length
 Scripts/Source/ScriptObject.psc:132:1:indentation
 Scripts/Source/ScriptObject.psc:133:1:indentation
+Scripts/Source/ScriptObject.psc:133:1:parameter-count
 Scripts/Source/ScriptObject.psc:133:121:line-length
 Scripts/Source/ScriptObject.psc:134:1:indentation
 Scripts/Source/ScriptObject.psc:134:121:line-length
@@ -89462,6 +89665,7 @@ Scripts/Source/ScriptObject.psc:139:1:indentation
 Scripts/Source/ScriptObject.psc:140:1:indentation
 Scripts/Source/ScriptObject.psc:142:1:indentation
 Scripts/Source/ScriptObject.psc:143:1:indentation
+Scripts/Source/ScriptObject.psc:143:1:parameter-count
 Scripts/Source/ScriptObject.psc:143:121:line-length
 Scripts/Source/ScriptObject.psc:144:1:indentation
 Scripts/Source/ScriptObject.psc:144:121:line-length
@@ -89474,6 +89678,7 @@ Scripts/Source/ScriptObject.psc:149:1:indentation
 Scripts/Source/ScriptObject.psc:150:1:indentation
 Scripts/Source/ScriptObject.psc:152:1:indentation
 Scripts/Source/ScriptObject.psc:153:1:indentation
+Scripts/Source/ScriptObject.psc:153:1:parameter-count
 Scripts/Source/ScriptObject.psc:153:121:line-length
 Scripts/Source/ScriptObject.psc:154:1:indentation
 Scripts/Source/ScriptObject.psc:154:121:line-length
@@ -89597,6 +89802,7 @@ Scripts/Source/ScriptObject.psc:301:1:indentation
 Scripts/Source/ScriptObject.psc:301:121:line-length
 Scripts/Source/ScriptObject.psc:303:1:indentation
 Scripts/Source/ScriptObject.psc:304:1:indentation
+Scripts/Source/ScriptObject.psc:304:1:parameter-count
 Scripts/Source/ScriptObject.psc:304:121:line-length
 Scripts/Source/ScriptObject.psc:305:1:indentation
 Scripts/Source/ScriptObject.psc:305:121:line-length
@@ -90495,8 +90701,10 @@ Scripts/Source/SignalReceiverScript.psc:338:121:line-length
 Scripts/Source/SignalReceiverScript.psc:339:1:trailing-whitespace
 Scripts/Source/SignalReceiverScript.psc:343:1:trailing-whitespace
 Scripts/Source/SignalReceiverScript.psc:345:1:unchecked-cast
+Scripts/Source/SignalReceiverScript.psc:358:1:parameter-count
 Scripts/Source/SignalReceiverScript.psc:358:121:line-length
 Scripts/Source/SignalReceiverScript.psc:359:121:line-length
+Scripts/Source/SignalReceiverScript.psc:362:1:parameter-count
 Scripts/Source/SignalReceiverScript.psc:362:121:line-length
 Scripts/Source/SignalReceiverScript.psc:363:121:line-length
 Scripts/Source/SignalReceiver_TestPipeGasSpray.psc:4:1:indentation
@@ -90556,8 +90764,10 @@ Scripts/Source/SignalSenderScript.psc:129:1:trailing-whitespace
 Scripts/Source/SignalSenderScript.psc:153:22:operator-spacing
 Scripts/Source/SignalSenderScript.psc:154:18:forbidden-functions
 Scripts/Source/SignalSenderScript.psc:167:20:forbidden-functions
+Scripts/Source/SignalSenderScript.psc:183:1:parameter-count
 Scripts/Source/SignalSenderScript.psc:183:121:line-length
 Scripts/Source/SignalSenderScript.psc:184:121:line-length
+Scripts/Source/SignalSenderScript.psc:187:1:parameter-count
 Scripts/Source/SignalSenderScript.psc:187:121:line-length
 Scripts/Source/SignalSenderScript.psc:188:121:line-length
 Scripts/Source/SignalSender_OnActorValue.psc:13:1:indentation
@@ -91629,6 +91839,7 @@ Scripts/Source/TEST_LVCQuestScript.psc:42:1:indentation
 Scripts/Source/TEST_LVCQuestScript.psc:43:1:indentation
 Scripts/Source/TEST_LVCQuestScript.psc:43:1:variable-used-before-assignment
 Scripts/Source/TEST_LVCQuestScript.psc:44:12:trailing-whitespace
+Scripts/Source/TEST_LVCQuestScript.psc:49:1:parameter-count
 Scripts/Source/TEST_LVCQuestScript.psc:49:121:line-length
 Scripts/Source/TEST_LVCQuestScript.psc:50:121:line-length
 Scripts/Source/TargetingEffectScript.psc:9:121:line-length
@@ -91690,8 +91901,10 @@ Scripts/Source/Temp_FixExistingSaves_CompanionCrime.psc:11:1:indentation
 Scripts/Source/Temp_FixExistingSaves_CompanionCrime.psc:13:1:indentation
 Scripts/Source/Temp_FixExistingSaves_CompanionCrime.psc:15:1:indentation
 Scripts/Source/Temp_FixExistingSaves_CompanionCrime.psc:16:1:indentation
+Scripts/Source/Temp_FixExistingSaves_CompanionCrime.psc:22:1:parameter-count
 Scripts/Source/Temp_FixExistingSaves_CompanionCrime.psc:22:121:line-length
 Scripts/Source/Temp_FixExistingSaves_CompanionCrime.psc:23:121:line-length
+Scripts/Source/Temp_FixExistingSaves_CompanionCrime.psc:26:1:parameter-count
 Scripts/Source/Temp_FixExistingSaves_CompanionCrime.psc:26:121:line-length
 Scripts/Source/Temp_FixExistingSaves_CompanionCrime.psc:27:121:line-length
 Scripts/Source/TerminalMenu.psc:3:121:line-length
@@ -91828,6 +92041,7 @@ Scripts/Source/TerrormorphMindControlEffectScript.psc:117:1:indentation
 Scripts/Source/TerrormorphMindControlEffectScript.psc:118:1:indentation
 Scripts/Source/TerrormorphMindControlEffectScript.psc:119:1:indentation
 Scripts/Source/TerrormorphMindControlEffectScript.psc:120:1:indentation
+Scripts/Source/TerrormorphMindControlEffectScript.psc:126:1:parameter-count
 Scripts/Source/TerrormorphMindControlEffectScript.psc:126:121:line-length
 Scripts/Source/TerrormorphMindControlEffectScript.psc:127:121:line-length
 Scripts/Source/TerrormorphRaceEffectScript.psc:9:121:line-length
@@ -93380,6 +93594,7 @@ Scripts/Source/TestLVC_PlayerAliasScript.psc:28:1:indentation
 Scripts/Source/TestLVC_PlayerAliasScript.psc:28:1:variable-used-before-assignment
 Scripts/Source/TestLVC_PlayerAliasScript.psc:29:1:indentation
 Scripts/Source/TestLVC_PlayerAliasScript.psc:31:1:indentation
+Scripts/Source/TestLVC_PlayerAliasScript.psc:38:1:parameter-count
 Scripts/Source/TestLVC_PlayerAliasScript.psc:38:121:line-length
 Scripts/Source/TestLVC_PlayerAliasScript.psc:39:121:line-length
 Scripts/Source/TestLandingPlatformAnimation.psc:11:8:forbidden-functions
@@ -94035,8 +94250,10 @@ Scripts/Source/TestPlayerCrimeEventScript.psc:8:1:indentation
 Scripts/Source/TestPlayerCrimeEventScript.psc:8:121:line-length
 Scripts/Source/TestPlayerCrimeEventScript.psc:12:1:indentation
 Scripts/Source/TestPlayerCrimeEventScript.psc:12:121:line-length
+Scripts/Source/TestPlayerCrimeEventScript.psc:18:1:parameter-count
 Scripts/Source/TestPlayerCrimeEventScript.psc:18:121:line-length
 Scripts/Source/TestPlayerCrimeEventScript.psc:19:121:line-length
+Scripts/Source/TestPlayerCrimeEventScript.psc:22:1:parameter-count
 Scripts/Source/TestPlayerCrimeEventScript.psc:22:121:line-length
 Scripts/Source/TestPlayerCrimeEventScript.psc:23:121:line-length
 Scripts/Source/TestPredatorFeedPackageScript.psc:7:1:indentation
@@ -94758,6 +94975,7 @@ Scripts/Source/TestSteveCQuestScript.psc:689:182:assignment-operator-spacing
 Scripts/Source/TestSteveCQuestScript.psc:689:182:assignment-operator-spacing
 Scripts/Source/TestSteveCQuestScript.psc:699:1:place-at-me
 Scripts/Source/TestSteveCQuestScript.psc:703:11:forbidden-functions
+Scripts/Source/TestSteveCQuestScript.psc:710:1:parameter-count
 Scripts/Source/TestSteveCQuestScript.psc:710:99:assignment-operator-spacing
 Scripts/Source/TestSteveCQuestScript.psc:710:99:assignment-operator-spacing
 Scripts/Source/TestSteveCQuestScript.psc:710:121:line-length
@@ -94783,6 +95001,7 @@ Scripts/Source/TestSteveCQuestScript.psc:713:71:assignment-operator-spacing
 Scripts/Source/TestSteveCQuestScript.psc:714:1:numeric-comparison
 Scripts/Source/TestSteveCQuestScript.psc:714:1:numeric-comparison
 Scripts/Source/TestSteveCQuestScript.psc:717:121:line-length
+Scripts/Source/TestSteveCQuestScript.psc:722:1:parameter-count
 Scripts/Source/TestSteveCQuestScript.psc:722:107:assignment-operator-spacing
 Scripts/Source/TestSteveCQuestScript.psc:722:107:assignment-operator-spacing
 Scripts/Source/TestSteveCQuestScript.psc:722:121:line-length
@@ -95728,6 +95947,7 @@ Scripts/Source/TriggerAmbushOnMarkerHit.psc:60:1:indentation
 Scripts/Source/TriggerAmbushOnMarkerHit.psc:60:19:comma-spacing
 Scripts/Source/TriggerAmbushOnMarkerHit.psc:61:1:indentation
 Scripts/Source/TriggerAmbushOnMarkerHit.psc:63:1:indentation
+Scripts/Source/TriggerAmbushOnMarkerHit.psc:69:1:parameter-count
 Scripts/Source/TriggerAmbushOnMarkerHit.psc:69:121:line-length
 Scripts/Source/TriggerAmbushOnMarkerHit.psc:70:121:line-length
 Scripts/Source/UC01QuestScript.psc:4:1:indentation
@@ -95811,6 +96031,7 @@ Scripts/Source/UC01QuestScript.psc:107:1:indentation
 Scripts/Source/UC01QuestScript.psc:109:1:indentation
 Scripts/Source/UC01QuestScript.psc:113:1:indentation
 Scripts/Source/UC01QuestScript.psc:113:57:unresolved-script
+Scripts/Source/UC01QuestScript.psc:119:1:parameter-count
 Scripts/Source/UC01QuestScript.psc:119:121:line-length
 Scripts/Source/UC01QuestScript.psc:120:121:line-length
 Scripts/Source/UC01_BlockingDoorCollScript.psc:4:121:line-length
@@ -95851,6 +96072,7 @@ Scripts/Source/UC01_CuttableWallCollScript.psc:14:1:indentation
 Scripts/Source/UC01_CuttableWallCollScript.psc:15:1:indentation
 Scripts/Source/UC01_CuttableWallCollScript.psc:16:1:indentation
 Scripts/Source/UC01_CuttableWallCollScript.psc:17:1:indentation
+Scripts/Source/UC01_CuttableWallCollScript.psc:23:1:parameter-count
 Scripts/Source/UC01_CuttableWallCollScript.psc:23:121:line-length
 Scripts/Source/UC01_CuttableWallCollScript.psc:24:121:line-length
 Scripts/Source/UC01_DebugRockAliasScript.psc:4:1:indentation
@@ -95921,6 +96143,7 @@ Scripts/Source/UC01_LightManager_TopicScript.psc:24:1:indentation
 Scripts/Source/UC01_LightManager_TopicScript.psc:24:1:none-form-usage
 Scripts/Source/UC01_LightManager_TopicScript.psc:24:1:unchecked-cast
 Scripts/Source/UC01_LightManager_TopicScript.psc:25:1:indentation
+Scripts/Source/UC01_LightManager_TopicScript.psc:31:1:parameter-count
 Scripts/Source/UC01_LightManager_TopicScript.psc:31:121:line-length
 Scripts/Source/UC01_LightManager_TopicScript.psc:32:121:line-length
 Scripts/Source/UC01_LightTimingRefScript.psc:23:1:indentation
@@ -95970,6 +96193,7 @@ Scripts/Source/UC01_LightTimingRefScript.psc:65:1:indentation
 Scripts/Source/UC01_LightTimingRefScript.psc:66:1:indentation
 Scripts/Source/UC01_LightTimingRefScript.psc:67:1:indentation
 Scripts/Source/UC01_LightTimingRefScript.psc:68:1:indentation
+Scripts/Source/UC01_LightTimingRefScript.psc:74:1:parameter-count
 Scripts/Source/UC01_LightTimingRefScript.psc:74:121:line-length
 Scripts/Source/UC01_LightTimingRefScript.psc:75:121:line-length
 Scripts/Source/UC01_MiscPointer_TopicScript.psc:10:1:indentation
@@ -96061,6 +96285,7 @@ Scripts/Source/UC01_PowerboxRefScript.psc:39:1:indentation
 Scripts/Source/UC01_PowerboxRefScript.psc:39:1:none-form-usage
 Scripts/Source/UC01_PowerboxRefScript.psc:40:1:indentation
 Scripts/Source/UC01_PowerboxRefScript.psc:41:1:indentation
+Scripts/Source/UC01_PowerboxRefScript.psc:47:1:parameter-count
 Scripts/Source/UC01_PowerboxRefScript.psc:47:121:line-length
 Scripts/Source/UC01_PowerboxRefScript.psc:48:121:line-length
 Scripts/Source/UC01_ReturnFromSimTriggerScript.psc:10:1:indentation
@@ -96072,6 +96297,7 @@ Scripts/Source/UC01_ReturnFromSimTriggerScript.psc:11:28:forbidden-functions
 Scripts/Source/UC01_ReturnFromSimTriggerScript.psc:12:1:indentation
 Scripts/Source/UC01_ReturnFromSimTriggerScript.psc:13:1:indentation
 Scripts/Source/UC01_ReturnFromSimTriggerScript.psc:14:1:indentation
+Scripts/Source/UC01_ReturnFromSimTriggerScript.psc:20:1:parameter-count
 Scripts/Source/UC01_ReturnFromSimTriggerScript.psc:20:121:line-length
 Scripts/Source/UC01_ReturnFromSimTriggerScript.psc:21:121:line-length
 Scripts/Source/UC01_RockAliasScript.psc:27:1:indentation
@@ -96104,6 +96330,7 @@ Scripts/Source/UC01_RockAliasScript.psc:57:1:indentation
 Scripts/Source/UC01_RockAliasScript.psc:57:1:unchecked-cast
 Scripts/Source/UC01_RockAliasScript.psc:58:1:indentation
 Scripts/Source/UC01_RockAliasScript.psc:58:1:unchecked-cast
+Scripts/Source/UC01_RockAliasScript.psc:64:1:parameter-count
 Scripts/Source/UC01_RockAliasScript.psc:64:121:line-length
 Scripts/Source/UC01_RockAliasScript.psc:65:121:line-length
 Scripts/Source/UC01_ShipSimAliasScript.psc:13:1:indentation
@@ -96112,6 +96339,7 @@ Scripts/Source/UC01_ShipSimAliasScript.psc:15:1:indentation
 Scripts/Source/UC01_ShipSimAliasScript.psc:15:1:unchecked-cast
 Scripts/Source/UC01_ShipSimAliasScript.psc:16:1:indentation
 Scripts/Source/UC01_ShipSimAliasScript.psc:16:1:none-form-usage
+Scripts/Source/UC01_ShipSimAliasScript.psc:19:1:parameter-count
 Scripts/Source/UC01_ShipSimAliasScript.psc:19:121:line-length
 Scripts/Source/UC01_ShipSimAliasScript.psc:20:121:line-length
 Scripts/Source/UC01_ShipSim_CollDeathScript.psc:10:1:indentation
@@ -96151,10 +96379,12 @@ Scripts/Source/UC01_ShipSim_PilotSeatAliasScript.psc:12:1:indentation
 Scripts/Source/UC01_ShipSim_PilotSeatAliasScript.psc:12:1:unchecked-cast
 Scripts/Source/UC01_ShipSim_PilotSeatAliasScript.psc:13:1:indentation
 Scripts/Source/UC01_ShipSim_PilotSeatAliasScript.psc:14:9:trailing-whitespace
+Scripts/Source/UC01_ShipSim_PilotSeatAliasScript.psc:19:1:parameter-count
 Scripts/Source/UC01_ShipSim_PilotSeatAliasScript.psc:19:121:line-length
 Scripts/Source/UC01_ShipSim_PilotSeatAliasScript.psc:20:121:line-length
 Scripts/Source/UC01_ShipSim_PlayerAliasScript.psc:4:1:indentation
 Scripts/Source/UC01_ShipSim_PlayerAliasScript.psc:5:9:trailing-whitespace
+Scripts/Source/UC01_ShipSim_PlayerAliasScript.psc:10:1:parameter-count
 Scripts/Source/UC01_ShipSim_PlayerAliasScript.psc:10:121:line-length
 Scripts/Source/UC01_ShipSim_PlayerAliasScript.psc:11:121:line-length
 Scripts/Source/UC01_ShipSim_TargetDeathScript.psc:4:1:indentation
@@ -96715,6 +96945,7 @@ Scripts/Source/UC01_ShipSimulationQuestScript.psc:622:1:indentation
 Scripts/Source/UC01_ShipSimulationQuestScript.psc:623:1:indentation
 Scripts/Source/UC01_ShipSimulationQuestScript.psc:625:1:indentation
 Scripts/Source/UC01_ShipSimulationQuestScript.psc:626:1:indentation
+Scripts/Source/UC01_ShipSimulationQuestScript.psc:632:1:parameter-count
 Scripts/Source/UC01_ShipSimulationQuestScript.psc:632:121:line-length
 Scripts/Source/UC01_ShipSimulationQuestScript.psc:633:121:line-length
 Scripts/Source/UC01_StealthCourseTriggerScript.psc:15:1:indentation
@@ -96762,6 +96993,7 @@ Scripts/Source/UC01_VanguardTerminalScript.psc:10:1:indentation
 Scripts/Source/UC01_VanguardTerminalScript.psc:10:61:forbidden-functions
 Scripts/Source/UC01_VanguardTerminalScript.psc:11:1:indentation
 Scripts/Source/UC01_VanguardTerminalScript.psc:11:1:none-form-usage
+Scripts/Source/UC01_VanguardTerminalScript.psc:17:1:parameter-count
 Scripts/Source/UC01_VanguardTerminalScript.psc:17:121:line-length
 Scripts/Source/UC01_VanguardTerminalScript.psc:18:121:line-length
 Scripts/Source/UC02_FuelTankTriggerCollScript.psc:25:1:indentation
@@ -96797,6 +97029,7 @@ Scripts/Source/UC02_FuelTankTriggerCollScript.psc:49:1:indentation
 Scripts/Source/UC02_FuelTankTriggerCollScript.psc:53:1:indentation
 Scripts/Source/UC02_FuelTankTriggerCollScript.psc:54:1:indentation
 Scripts/Source/UC02_FuelTankTriggerCollScript.psc:55:1:indentation
+Scripts/Source/UC02_FuelTankTriggerCollScript.psc:61:1:parameter-count
 Scripts/Source/UC02_FuelTankTriggerCollScript.psc:61:121:line-length
 Scripts/Source/UC02_FuelTankTriggerCollScript.psc:62:121:line-length
 Scripts/Source/UC02_PlayerAliasScript.psc:10:1:indentation
@@ -96877,6 +97110,7 @@ Scripts/Source/UC02_PowerBoxScript.psc:70:1:indentation
 Scripts/Source/UC02_PowerBoxScript.psc:71:1:indentation
 Scripts/Source/UC02_PowerBoxScript.psc:71:1:none-form-usage
 Scripts/Source/UC02_PowerBoxScript.psc:72:1:indentation
+Scripts/Source/UC02_PowerBoxScript.psc:78:1:parameter-count
 Scripts/Source/UC02_PowerBoxScript.psc:78:121:line-length
 Scripts/Source/UC02_PowerBoxScript.psc:79:121:line-length
 Scripts/Source/UC02_QuestScript.psc:4:1:indentation
@@ -97140,6 +97374,7 @@ Scripts/Source/UC02_QuestScript.psc:310:1:indentation
 Scripts/Source/UC02_QuestScript.psc:311:1:indentation
 Scripts/Source/UC02_QuestScript.psc:313:1:indentation
 Scripts/Source/UC02_QuestScript.psc:314:1:indentation
+Scripts/Source/UC02_QuestScript.psc:321:1:parameter-count
 Scripts/Source/UC02_QuestScript.psc:321:121:line-length
 Scripts/Source/UC02_QuestScript.psc:322:121:line-length
 Scripts/Source/UC02_ScannerQuestScript.psc:24:1:indentation
@@ -97237,6 +97472,7 @@ Scripts/Source/UC02_TerrormorphScript.psc:72:1:indentation
 Scripts/Source/UC02_TerrormorphScript.psc:73:1:indentation
 Scripts/Source/UC02_TerrormorphScript.psc:74:1:indentation
 Scripts/Source/UC02_TerrormorphScript.psc:75:1:indentation
+Scripts/Source/UC02_TerrormorphScript.psc:81:1:parameter-count
 Scripts/Source/UC02_TerrormorphScript.psc:81:121:line-length
 Scripts/Source/UC02_TerrormorphScript.psc:82:121:line-length
 Scripts/Source/UC03_AliasMoveRefOnUnload.psc:31:1:indentation
@@ -97258,6 +97494,7 @@ Scripts/Source/UC03_AliasMoveRefOnUnload.psc:43:1:indentation
 Scripts/Source/UC03_AliasMoveRefOnUnload.psc:44:1:indentation
 Scripts/Source/UC03_AliasMoveRefOnUnload.psc:45:1:indentation
 Scripts/Source/UC03_AliasMoveRefOnUnload.psc:46:1:indentation
+Scripts/Source/UC03_AliasMoveRefOnUnload.psc:52:1:parameter-count
 Scripts/Source/UC03_AliasMoveRefOnUnload.psc:52:121:line-length
 Scripts/Source/UC03_AliasMoveRefOnUnload.psc:53:121:line-length
 Scripts/Source/UC03_HadrianAliasScript.psc:4:1:indentation
@@ -97292,6 +97529,7 @@ Scripts/Source/UC03_PlayerAliasScript.psc:39:1:indentation
 Scripts/Source/UC03_PlayerAliasScript.psc:40:1:indentation
 Scripts/Source/UC03_PlayerAliasScript.psc:41:1:indentation
 Scripts/Source/UC03_PlayerAliasScript.psc:42:1:indentation
+Scripts/Source/UC03_PlayerAliasScript.psc:48:1:parameter-count
 Scripts/Source/UC03_PlayerAliasScript.psc:48:121:line-length
 Scripts/Source/UC03_PlayerAliasScript.psc:49:121:line-length
 Scripts/Source/UC03_SpaceportGuardRefColl.psc:4:1:indentation
@@ -97303,6 +97541,7 @@ Scripts/Source/UC03_SpaceportGuardRefColl.psc:10:1:indentation
 Scripts/Source/UC03_SpaceportGuardRefColl.psc:11:1:indentation
 Scripts/Source/UC03_SpaceportGuardRefColl.psc:13:1:indentation
 Scripts/Source/UC03_SpaceportGuardRefColl.psc:14:1:indentation
+Scripts/Source/UC03_SpaceportGuardRefColl.psc:20:1:parameter-count
 Scripts/Source/UC03_SpaceportGuardRefColl.psc:20:121:line-length
 Scripts/Source/UC03_SpaceportGuardRefColl.psc:21:121:line-length
 Scripts/Source/UC03_SupportQuest_PlayerAliasScript.psc:13:1:indentation
@@ -97367,6 +97606,7 @@ Scripts/Source/UC04_KilledByPlayerCollScript.psc:14:1:indentation
 Scripts/Source/UC04_KilledByPlayerCollScript.psc:15:1:indentation
 Scripts/Source/UC04_KilledByPlayerCollScript.psc:16:1:indentation
 Scripts/Source/UC04_KilledByPlayerCollScript.psc:17:1:indentation
+Scripts/Source/UC04_KilledByPlayerCollScript.psc:23:1:parameter-count
 Scripts/Source/UC04_KilledByPlayerCollScript.psc:23:121:line-length
 Scripts/Source/UC04_KilledByPlayerCollScript.psc:24:121:line-length
 Scripts/Source/UC04_KilledByPlayerScript.psc:10:1:indentation
@@ -97447,6 +97687,7 @@ Scripts/Source/UC04_PlayerAliasScript.psc:72:121:line-length
 Scripts/Source/UC04_PlayerAliasScript.psc:72:125:exclamation-spacing
 Scripts/Source/UC04_PlayerAliasScript.psc:73:1:indentation
 Scripts/Source/UC04_PlayerAliasScript.psc:74:1:indentation
+Scripts/Source/UC04_PlayerAliasScript.psc:80:1:parameter-count
 Scripts/Source/UC04_PlayerAliasScript.psc:80:121:line-length
 Scripts/Source/UC04_PlayerAliasScript.psc:81:121:line-length
 Scripts/Source/UC04_QuestScript.psc:8:1:indentation
@@ -97863,6 +98104,7 @@ Scripts/Source/UC04_QuestScript.psc:485:1:indentation
 Scripts/Source/UC04_QuestScript.psc:485:20:unresolved-script
 Scripts/Source/UC04_QuestScript.psc:486:1:indentation
 Scripts/Source/UC04_QuestScript.psc:486:38:unresolved-script
+Scripts/Source/UC04_QuestScript.psc:491:1:parameter-count
 Scripts/Source/UC04_QuestScript.psc:491:121:line-length
 Scripts/Source/UC04_QuestScript.psc:492:121:line-length
 Scripts/Source/UC04_RefColl_WarnIfHitScript.psc:24:121:line-length
@@ -97899,6 +98141,7 @@ Scripts/Source/UC04_TableGoodiesCollScript.psc:4:1:indentation
 Scripts/Source/UC04_TableGoodiesCollScript.psc:4:121:line-length
 Scripts/Source/UC04_TableGoodiesCollScript.psc:5:1:indentation
 Scripts/Source/UC04_TerrormorphAliasScript.psc:4:1:indentation
+Scripts/Source/UC04_TerrormorphAliasScript.psc:10:1:parameter-count
 Scripts/Source/UC04_TerrormorphAliasScript.psc:10:121:line-length
 Scripts/Source/UC04_TerrormorphAliasScript.psc:11:121:line-length
 Scripts/Source/UC04_ThrallAliasScript.psc:22:1:indentation
@@ -97951,6 +98194,7 @@ Scripts/Source/UC04_ThrallAliasScript.psc:63:1:indentation
 Scripts/Source/UC04_ThrallAliasScript.psc:64:1:indentation
 Scripts/Source/UC04_ThrallAliasScript.psc:65:1:indentation
 Scripts/Source/UC04_ThrallAliasScript.psc:66:1:indentation
+Scripts/Source/UC04_ThrallAliasScript.psc:72:1:parameter-count
 Scripts/Source/UC04_ThrallAliasScript.psc:72:121:line-length
 Scripts/Source/UC04_ThrallAliasScript.psc:73:121:line-length
 Scripts/Source/UC04_ToggleHallScreens.psc:7:1:indentation
@@ -98244,6 +98488,7 @@ Scripts/Source/UC05_QuestScript.psc:240:48:unresolved-script
 Scripts/Source/UC05_QuestScript.psc:242:1:indentation
 Scripts/Source/UC05_QuestScript.psc:243:1:indentation
 Scripts/Source/UC05_QuestScript.psc:245:1:indentation
+Scripts/Source/UC05_QuestScript.psc:252:1:parameter-count
 Scripts/Source/UC05_QuestScript.psc:252:121:line-length
 Scripts/Source/UC05_QuestScript.psc:253:121:line-length
 Scripts/Source/UC06_CompanionWaitScript.psc:14:1:indentation
@@ -98360,6 +98605,7 @@ Scripts/Source/UC06_OrlaseShipAliasScript.psc:64:1:indentation
 Scripts/Source/UC06_OrlaseShipAliasScript.psc:65:1:trailing-whitespace
 Scripts/Source/UC06_OrlaseShipAliasScript.psc:66:1:indentation
 Scripts/Source/UC06_OrlaseShipAliasScript.psc:66:1:variable-used-before-assignment
+Scripts/Source/UC06_OrlaseShipAliasScript.psc:71:1:parameter-count
 Scripts/Source/UC06_OrlaseShipAliasScript.psc:71:121:line-length
 Scripts/Source/UC06_OrlaseShipAliasScript.psc:72:121:line-length
 Scripts/Source/UC06_QuestScript.psc:28:1:indentation
@@ -98425,6 +98671,7 @@ Scripts/Source/UC06_QuestScript.psc:81:1:unchecked-cast
 Scripts/Source/UC06_QuestScript.psc:81:121:line-length
 Scripts/Source/UC06_QuestScript.psc:83:1:indentation
 Scripts/Source/UC06_QuestScript.psc:84:1:indentation
+Scripts/Source/UC06_QuestScript.psc:90:1:parameter-count
 Scripts/Source/UC06_QuestScript.psc:90:121:line-length
 Scripts/Source/UC06_QuestScript.psc:91:121:line-length
 Scripts/Source/UC06_TurretOnlineScript.psc:12:1:indentation
@@ -98521,6 +98768,7 @@ Scripts/Source/UC07QuestScript.psc:110:1:indentation
 Scripts/Source/UC07QuestScript.psc:111:1:indentation
 Scripts/Source/UC07QuestScript.psc:111:121:line-length
 Scripts/Source/UC07QuestScript.psc:111:160:trailing-whitespace
+Scripts/Source/UC07QuestScript.psc:117:1:parameter-count
 Scripts/Source/UC07QuestScript.psc:117:121:line-length
 Scripts/Source/UC07QuestScript.psc:118:121:line-length
 Scripts/Source/UC07_BatteryContainerCollScript.psc:10:1:indentation
@@ -98538,6 +98786,7 @@ Scripts/Source/UC07_BatteryContainerCollScript.psc:22:121:line-length
 Scripts/Source/UC07_BatteryContainerCollScript.psc:23:1:indentation
 Scripts/Source/UC07_BatteryContainerCollScript.psc:24:1:indentation
 Scripts/Source/UC07_BatteryContainerCollScript.psc:25:1:indentation
+Scripts/Source/UC07_BatteryContainerCollScript.psc:31:1:parameter-count
 Scripts/Source/UC07_BatteryContainerCollScript.psc:31:121:line-length
 Scripts/Source/UC07_BatteryContainerCollScript.psc:32:121:line-length
 Scripts/Source/UC07_BatteryMaterialsCollScript.psc:13:1:indentation
@@ -98567,6 +98816,7 @@ Scripts/Source/UC07_BatteryMaterialsCollScript.psc:37:1:indentation
 Scripts/Source/UC07_BatteryMaterialsCollScript.psc:37:1:none-form-usage
 Scripts/Source/UC07_BatteryMaterialsCollScript.psc:38:1:indentation
 Scripts/Source/UC07_BatteryMaterialsCollScript.psc:39:1:indentation
+Scripts/Source/UC07_BatteryMaterialsCollScript.psc:45:1:parameter-count
 Scripts/Source/UC07_BatteryMaterialsCollScript.psc:45:121:line-length
 Scripts/Source/UC07_BatteryMaterialsCollScript.psc:46:121:line-length
 Scripts/Source/UC07_CageUnlockRefScript.psc:16:1:indentation
@@ -98592,6 +98842,7 @@ Scripts/Source/UC07_EclipticOnCombatChangedScript.psc:16:1:indentation
 Scripts/Source/UC07_EclipticOnCombatChangedScript.psc:17:1:indentation
 Scripts/Source/UC07_EclipticOnCombatChangedScript.psc:18:1:indentation
 Scripts/Source/UC07_EclipticOnCombatChangedScript.psc:18:10:trailing-whitespace
+Scripts/Source/UC07_EclipticOnCombatChangedScript.psc:24:1:parameter-count
 Scripts/Source/UC07_EclipticOnCombatChangedScript.psc:24:121:line-length
 Scripts/Source/UC07_EclipticOnCombatChangedScript.psc:25:121:line-length
 Scripts/Source/UC07_HeatleechCollAliasScript.psc:10:1:indentation
@@ -98606,6 +98857,7 @@ Scripts/Source/UC07_HeatleechCollAliasScript.psc:14:44:forbidden-functions
 Scripts/Source/UC07_HeatleechCollAliasScript.psc:15:1:indentation
 Scripts/Source/UC07_HeatleechCollAliasScript.psc:16:1:indentation
 Scripts/Source/UC07_HeatleechCollAliasScript.psc:17:1:indentation
+Scripts/Source/UC07_HeatleechCollAliasScript.psc:23:1:parameter-count
 Scripts/Source/UC07_HeatleechCollAliasScript.psc:23:121:line-length
 Scripts/Source/UC07_HeatleechCollAliasScript.psc:24:121:line-length
 Scripts/Source/UC07_NiiraScrapperSlateScript.psc:12:1:indentation
@@ -98643,6 +98895,7 @@ Scripts/Source/UC07_PlayerAliasScript.psc:35:1:indentation
 Scripts/Source/UC07_PlayerAliasScript.psc:39:1:indentation
 Scripts/Source/UC07_PlayerAliasScript.psc:40:1:indentation
 Scripts/Source/UC07_PlayerAliasScript.psc:41:1:indentation
+Scripts/Source/UC07_PlayerAliasScript.psc:47:1:parameter-count
 Scripts/Source/UC07_PlayerAliasScript.psc:47:121:line-length
 Scripts/Source/UC07_PlayerAliasScript.psc:48:121:line-length
 Scripts/Source/UC08QuestScript.psc:21:1:indentation
@@ -98836,6 +99089,7 @@ Scripts/Source/UC08_AB_HostileThrallCollScript.psc:101:1:indentation
 Scripts/Source/UC08_AB_HostileThrallCollScript.psc:102:1:indentation
 Scripts/Source/UC08_AB_HostileThrallCollScript.psc:102:14:trailing-whitespace
 Scripts/Source/UC08_AB_HostileThrallCollScript.psc:103:1:indentation
+Scripts/Source/UC08_AB_HostileThrallCollScript.psc:109:1:parameter-count
 Scripts/Source/UC08_AB_HostileThrallCollScript.psc:109:121:line-length
 Scripts/Source/UC08_AB_HostileThrallCollScript.psc:110:121:line-length
 Scripts/Source/UC08_AnomalyAliasScript.psc:7:1:indentation
@@ -99352,6 +99606,7 @@ Scripts/Source/UC08_QueenBattle_QuestScript.psc:480:1:unchecked-cast
 Scripts/Source/UC08_QueenBattle_QuestScript.psc:481:1:indentation
 Scripts/Source/UC08_QueenBattle_QuestScript.psc:483:1:indentation
 Scripts/Source/UC08_QueenBattle_QuestScript.psc:484:1:indentation
+Scripts/Source/UC08_QueenBattle_QuestScript.psc:490:1:parameter-count
 Scripts/Source/UC08_QueenBattle_QuestScript.psc:490:121:line-length
 Scripts/Source/UC08_QueenBattle_QuestScript.psc:491:121:line-length
 Scripts/Source/UC08_RadarSwitches_CollScript.psc:13:1:indentation
@@ -99419,6 +99674,7 @@ Scripts/Source/UC09QuestScript.psc:37:17:forbidden-functions
 Scripts/Source/UC09QuestScript.psc:38:1:indentation
 Scripts/Source/UC09QuestScript.psc:40:1:indentation
 Scripts/Source/UC09QuestScript.psc:41:1:indentation
+Scripts/Source/UC09QuestScript.psc:49:1:parameter-count
 Scripts/Source/UC09QuestScript.psc:49:121:line-length
 Scripts/Source/UC09QuestScript.psc:50:121:line-length
 Scripts/Source/UC09SceneTriggerAliasScript.psc:10:1:indentation
@@ -99507,6 +99763,7 @@ Scripts/Source/UC09_HeatleechRefScript.psc:58:1:none-form-usage
 Scripts/Source/UC09_HeatleechRefScript.psc:59:1:indentation
 Scripts/Source/UC09_HeatleechRefScript.psc:60:1:indentation
 Scripts/Source/UC09_HeatleechRefScript.psc:61:1:indentation
+Scripts/Source/UC09_HeatleechRefScript.psc:67:1:parameter-count
 Scripts/Source/UC09_HeatleechRefScript.psc:67:121:line-length
 Scripts/Source/UC09_HeatleechRefScript.psc:68:121:line-length
 Scripts/Source/UC09_InvasivePestRefScript.psc:7:1:indentation
@@ -99650,6 +99907,7 @@ Scripts/Source/UCParentFactionQuestScript.psc:180:1:indentation
 Scripts/Source/UCParentFactionQuestScript.psc:182:1:indentation
 Scripts/Source/UCParentFactionQuestScript.psc:182:121:line-length
 Scripts/Source/UCParentFactionQuestScript.psc:183:1:indentation
+Scripts/Source/UCParentFactionQuestScript.psc:189:1:parameter-count
 Scripts/Source/UCParentFactionQuestScript.psc:189:121:line-length
 Scripts/Source/UCParentFactionQuestScript.psc:190:121:line-length
 Scripts/Source/UCR01_MorphsCollScript.psc:4:1:indentation
@@ -99768,6 +100026,7 @@ Scripts/Source/UCR03QuestScript.psc:158:1:none-form-usage
 Scripts/Source/UCR03QuestScript.psc:159:1:indentation
 Scripts/Source/UCR03QuestScript.psc:161:1:indentation
 Scripts/Source/UCR03QuestScript.psc:162:1:indentation
+Scripts/Source/UCR03QuestScript.psc:168:1:parameter-count
 Scripts/Source/UCR03QuestScript.psc:168:121:line-length
 Scripts/Source/UCR03QuestScript.psc:169:121:line-length
 Scripts/Source/UCR04QuestScript.psc:4:1:indentation
@@ -99999,6 +100258,7 @@ Scripts/Source/UCR04QuestScript.psc:240:40:unresolved-script
 Scripts/Source/UCR04QuestScript.psc:241:1:indentation
 Scripts/Source/UCR04QuestScript.psc:242:1:indentation
 Scripts/Source/UCR04QuestScript.psc:246:1:indentation
+Scripts/Source/UCR04QuestScript.psc:252:1:parameter-count
 Scripts/Source/UCR04QuestScript.psc:252:121:line-length
 Scripts/Source/UCR04QuestScript.psc:253:121:line-length
 Scripts/Source/UCR04XenbioRefScript.psc:7:1:indentation
@@ -100025,6 +100285,7 @@ Scripts/Source/UCR04_PlayerAliasScript.psc:41:1:indentation
 Scripts/Source/UCR04_PlayerAliasScript.psc:41:50:trailing-whitespace
 Scripts/Source/UCR04_PlayerAliasScript.psc:42:1:indentation
 Scripts/Source/UCR04_PlayerAliasScript.psc:43:1:indentation
+Scripts/Source/UCR04_PlayerAliasScript.psc:49:1:parameter-count
 Scripts/Source/UCR04_PlayerAliasScript.psc:49:121:line-length
 Scripts/Source/UCR04_PlayerAliasScript.psc:50:121:line-length
 Scripts/Source/UCR05QuestScript.psc:4:1:indentation
@@ -100066,6 +100327,7 @@ Scripts/Source/UCR05QuestScript.psc:65:1:indentation
 Scripts/Source/UCR05QuestScript.psc:66:1:indentation
 Scripts/Source/UCR05QuestScript.psc:67:1:indentation
 Scripts/Source/UCR05QuestScript.psc:68:1:indentation
+Scripts/Source/UCR05QuestScript.psc:74:1:parameter-count
 Scripts/Source/UCR05QuestScript.psc:74:121:line-length
 Scripts/Source/UCR05QuestScript.psc:75:121:line-length
 Scripts/Source/UCR05_PlayerAliasStartUpScript.psc:18:1:indentation
@@ -100268,6 +100530,7 @@ Scripts/Source/UC_WeatherTriggerScript.psc:49:1:indentation
 Scripts/Source/UC_WeatherTriggerScript.psc:53:1:indentation
 Scripts/Source/UC_WeatherTriggerScript.psc:54:1:indentation
 Scripts/Source/UC_WeatherTriggerScript.psc:55:1:indentation
+Scripts/Source/UC_WeatherTriggerScript.psc:61:1:parameter-count
 Scripts/Source/UC_WeatherTriggerScript.psc:61:121:line-length
 Scripts/Source/UC_WeatherTriggerScript.psc:62:121:line-length
 Scripts/Source/UC_WeatherTriggerScript_OnEnter.psc:5:1:indentation
@@ -100325,6 +100588,7 @@ Scripts/Source/UC_WeatherTriggerScript_OnEnter.psc:61:1:indentation
 Scripts/Source/UC_WeatherTriggerScript_OnEnter.psc:65:1:indentation
 Scripts/Source/UC_WeatherTriggerScript_OnEnter.psc:66:1:indentation
 Scripts/Source/UC_WeatherTriggerScript_OnEnter.psc:67:1:indentation
+Scripts/Source/UC_WeatherTriggerScript_OnEnter.psc:73:1:parameter-count
 Scripts/Source/UC_WeatherTriggerScript_OnEnter.psc:73:121:line-length
 Scripts/Source/UC_WeatherTriggerScript_OnEnter.psc:74:121:line-length
 Scripts/Source/Utility.psc:74:121:line-length

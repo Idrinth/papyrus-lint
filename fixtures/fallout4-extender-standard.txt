@@ -470,15 +470,19 @@ Scripts/Source/F4SE/ObjectReference.psc:667:121:line-length
 Scripts/Source/F4SE/ObjectReference.psc:670:121:line-length
 Scripts/Source/F4SE/ObjectReference.psc:672:121:line-length
 Scripts/Source/F4SE/ObjectReference.psc:674:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:676:1:parameter-count
 Scripts/Source/F4SE/ObjectReference.psc:676:121:line-length
 Scripts/Source/F4SE/ObjectReference.psc:678:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:680:1:parameter-count
 Scripts/Source/F4SE/ObjectReference.psc:680:121:line-length
 Scripts/Source/F4SE/ObjectReference.psc:682:121:line-length
 Scripts/Source/F4SE/ObjectReference.psc:683:121:line-length
 Scripts/Source/F4SE/ObjectReference.psc:693:121:line-length
 Scripts/Source/F4SE/ObjectReference.psc:694:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:706:1:parameter-count
 Scripts/Source/F4SE/ObjectReference.psc:706:121:line-length
 Scripts/Source/F4SE/ObjectReference.psc:712:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:727:1:parameter-count
 Scripts/Source/F4SE/ObjectReference.psc:727:121:line-length
 Scripts/Source/F4SE/ObjectReference.psc:738:121:line-length
 Scripts/Source/F4SE/ObjectReference.psc:742:121:line-length
@@ -491,7 +495,9 @@ Scripts/Source/F4SE/ObjectReference.psc:791:121:line-length
 Scripts/Source/F4SE/ObjectReference.psc:801:121:line-length
 Scripts/Source/F4SE/ObjectReference.psc:816:9:forbidden-functions
 Scripts/Source/F4SE/ObjectReference.psc:821:22:forbidden-functions
+Scripts/Source/F4SE/ObjectReference.psc:940:1:parameter-count
 Scripts/Source/F4SE/ObjectReference.psc:940:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:943:1:parameter-count
 Scripts/Source/F4SE/ObjectReference.psc:943:121:line-length
 Scripts/Source/F4SE/ObjectReference.psc:946:121:line-length
 Scripts/Source/F4SE/ObjectReference.psc:955:54:assignment-operator-spacing
@@ -528,6 +534,7 @@ Scripts/Source/F4SE/ScriptObject.psc:87:121:line-length
 Scripts/Source/F4SE/ScriptObject.psc:88:121:line-length
 Scripts/Source/F4SE/ScriptObject.psc:91:121:line-length
 Scripts/Source/F4SE/ScriptObject.psc:92:121:line-length
+Scripts/Source/F4SE/ScriptObject.psc:97:1:parameter-count
 Scripts/Source/F4SE/ScriptObject.psc:97:121:line-length
 Scripts/Source/F4SE/ScriptObject.psc:98:121:line-length
 Scripts/Source/F4SE/ScriptObject.psc:100:1:indentation
@@ -620,6 +627,7 @@ Scripts/Source/F4SE/ScriptObject.psc:209:1:indentation
 Scripts/Source/F4SE/ScriptObject.psc:210:1:indentation
 Scripts/Source/F4SE/ScriptObject.psc:212:1:indentation
 Scripts/Source/F4SE/ScriptObject.psc:213:1:indentation
+Scripts/Source/F4SE/ScriptObject.psc:213:1:parameter-count
 Scripts/Source/F4SE/ScriptObject.psc:213:121:line-length
 Scripts/Source/F4SE/ScriptObject.psc:214:1:indentation
 Scripts/Source/F4SE/ScriptObject.psc:214:121:line-length

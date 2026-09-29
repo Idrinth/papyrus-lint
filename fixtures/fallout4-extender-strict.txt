@@ -331,6 +331,7 @@ Scripts/Source/F4SE/Cell.psc:31:1:identifier-casing
 Scripts/Source/F4SE/Cell.psc:31:1:identifier-casing
 Scripts/Source/F4SE/Cell.psc:31:1:identifier-casing
 Scripts/Source/F4SE/Cell.psc:31:1:identifier-casing
+Scripts/Source/F4SE/Cell.psc:31:1:parameter-count
 Scripts/Source/F4SE/Cell.psc:34:1:indentation
 Scripts/Source/F4SE/Cell.psc:35:1:identifier-casing
 Scripts/Source/F4SE/Cell.psc:35:1:identifier-casing
@@ -602,6 +603,7 @@ Scripts/Source/F4SE/Game.psc:269:1:identifier-casing
 Scripts/Source/F4SE/Game.psc:269:1:identifier-casing
 Scripts/Source/F4SE/Game.psc:269:1:identifier-casing
 Scripts/Source/F4SE/Game.psc:269:1:identifier-casing
+Scripts/Source/F4SE/Game.psc:269:1:parameter-count
 Scripts/Source/F4SE/Game.psc:270:1:indentation
 Scripts/Source/F4SE/Game.psc:272:1:indentation
 Scripts/Source/F4SE/Game.psc:273:1:indentation
@@ -1460,6 +1462,7 @@ Scripts/Source/F4SE/ObjectReference.psc:215:1:identifier-casing
 Scripts/Source/F4SE/ObjectReference.psc:215:1:identifier-casing
 Scripts/Source/F4SE/ObjectReference.psc:215:1:identifier-casing
 Scripts/Source/F4SE/ObjectReference.psc:215:1:identifier-casing
+Scripts/Source/F4SE/ObjectReference.psc:215:1:parameter-count
 Scripts/Source/F4SE/ObjectReference.psc:215:121:line-length
 Scripts/Source/F4SE/ObjectReference.psc:218:1:identifier-casing
 Scripts/Source/F4SE/ObjectReference.psc:218:1:identifier-casing
@@ -1471,6 +1474,7 @@ Scripts/Source/F4SE/ObjectReference.psc:221:1:identifier-casing
 Scripts/Source/F4SE/ObjectReference.psc:221:1:identifier-casing
 Scripts/Source/F4SE/ObjectReference.psc:221:1:identifier-casing
 Scripts/Source/F4SE/ObjectReference.psc:221:1:identifier-casing
+Scripts/Source/F4SE/ObjectReference.psc:221:1:parameter-count
 Scripts/Source/F4SE/ObjectReference.psc:224:1:identifier-casing
 Scripts/Source/F4SE/ObjectReference.psc:230:1:identifier-casing
 Scripts/Source/F4SE/ObjectReference.psc:230:1:identifier-casing
@@ -1623,6 +1627,7 @@ Scripts/Source/F4SE/ObjectReference.psc:676:1:identifier-casing
 Scripts/Source/F4SE/ObjectReference.psc:676:1:identifier-casing
 Scripts/Source/F4SE/ObjectReference.psc:676:1:identifier-casing
 Scripts/Source/F4SE/ObjectReference.psc:676:1:identifier-casing
+Scripts/Source/F4SE/ObjectReference.psc:676:1:parameter-count
 Scripts/Source/F4SE/ObjectReference.psc:676:121:line-length
 Scripts/Source/F4SE/ObjectReference.psc:678:121:line-length
 Scripts/Source/F4SE/ObjectReference.psc:680:1:identifier-casing
@@ -1635,6 +1640,7 @@ Scripts/Source/F4SE/ObjectReference.psc:680:1:identifier-casing
 Scripts/Source/F4SE/ObjectReference.psc:680:1:identifier-casing
 Scripts/Source/F4SE/ObjectReference.psc:680:1:identifier-casing
 Scripts/Source/F4SE/ObjectReference.psc:680:1:identifier-casing
+Scripts/Source/F4SE/ObjectReference.psc:680:1:parameter-count
 Scripts/Source/F4SE/ObjectReference.psc:680:121:line-length
 Scripts/Source/F4SE/ObjectReference.psc:682:121:line-length
 Scripts/Source/F4SE/ObjectReference.psc:683:1:identifier-casing
@@ -1654,6 +1660,7 @@ Scripts/Source/F4SE/ObjectReference.psc:694:1:identifier-casing
 Scripts/Source/F4SE/ObjectReference.psc:694:1:identifier-casing
 Scripts/Source/F4SE/ObjectReference.psc:694:1:identifier-casing
 Scripts/Source/F4SE/ObjectReference.psc:694:1:identifier-casing
+Scripts/Source/F4SE/ObjectReference.psc:694:1:parameter-count
 Scripts/Source/F4SE/ObjectReference.psc:694:121:line-length
 Scripts/Source/F4SE/ObjectReference.psc:697:1:identifier-casing
 Scripts/Source/F4SE/ObjectReference.psc:700:1:identifier-casing
@@ -1669,6 +1676,7 @@ Scripts/Source/F4SE/ObjectReference.psc:706:1:identifier-casing
 Scripts/Source/F4SE/ObjectReference.psc:706:1:identifier-casing
 Scripts/Source/F4SE/ObjectReference.psc:706:1:identifier-casing
 Scripts/Source/F4SE/ObjectReference.psc:706:1:identifier-casing
+Scripts/Source/F4SE/ObjectReference.psc:706:1:parameter-count
 Scripts/Source/F4SE/ObjectReference.psc:706:121:line-length
 Scripts/Source/F4SE/ObjectReference.psc:709:1:identifier-casing
 Scripts/Source/F4SE/ObjectReference.psc:709:1:identifier-casing
@@ -1692,6 +1700,7 @@ Scripts/Source/F4SE/ObjectReference.psc:727:1:identifier-casing
 Scripts/Source/F4SE/ObjectReference.psc:727:1:identifier-casing
 Scripts/Source/F4SE/ObjectReference.psc:727:1:identifier-casing
 Scripts/Source/F4SE/ObjectReference.psc:727:1:identifier-casing
+Scripts/Source/F4SE/ObjectReference.psc:727:1:parameter-count
 Scripts/Source/F4SE/ObjectReference.psc:727:121:line-length
 Scripts/Source/F4SE/ObjectReference.psc:730:1:identifier-casing
 Scripts/Source/F4SE/ObjectReference.psc:730:1:identifier-casing
@@ -1738,6 +1747,7 @@ Scripts/Source/F4SE/ObjectReference.psc:791:121:line-length
 Scripts/Source/F4SE/ObjectReference.psc:801:1:identifier-casing
 Scripts/Source/F4SE/ObjectReference.psc:801:1:identifier-casing
 Scripts/Source/F4SE/ObjectReference.psc:801:1:identifier-casing
+Scripts/Source/F4SE/ObjectReference.psc:801:1:parameter-count
 Scripts/Source/F4SE/ObjectReference.psc:801:121:line-length
 Scripts/Source/F4SE/ObjectReference.psc:812:1:identifier-casing
 Scripts/Source/F4SE/ObjectReference.psc:813:1:identifier-casing
@@ -1801,6 +1811,7 @@ Scripts/Source/F4SE/ObjectReference.psc:940:1:identifier-casing
 Scripts/Source/F4SE/ObjectReference.psc:940:1:identifier-casing
 Scripts/Source/F4SE/ObjectReference.psc:940:1:identifier-casing
 Scripts/Source/F4SE/ObjectReference.psc:940:1:identifier-casing
+Scripts/Source/F4SE/ObjectReference.psc:940:1:parameter-count
 Scripts/Source/F4SE/ObjectReference.psc:940:121:line-length
 Scripts/Source/F4SE/ObjectReference.psc:943:1:identifier-casing
 Scripts/Source/F4SE/ObjectReference.psc:943:1:identifier-casing
@@ -1811,6 +1822,7 @@ Scripts/Source/F4SE/ObjectReference.psc:943:1:identifier-casing
 Scripts/Source/F4SE/ObjectReference.psc:943:1:identifier-casing
 Scripts/Source/F4SE/ObjectReference.psc:943:1:identifier-casing
 Scripts/Source/F4SE/ObjectReference.psc:943:1:identifier-casing
+Scripts/Source/F4SE/ObjectReference.psc:943:1:parameter-count
 Scripts/Source/F4SE/ObjectReference.psc:943:121:line-length
 Scripts/Source/F4SE/ObjectReference.psc:946:1:identifier-casing
 Scripts/Source/F4SE/ObjectReference.psc:946:1:identifier-casing
@@ -1977,6 +1989,7 @@ Scripts/Source/F4SE/ScriptObject.psc:97:1:identifier-casing
 Scripts/Source/F4SE/ScriptObject.psc:97:1:identifier-casing
 Scripts/Source/F4SE/ScriptObject.psc:97:1:identifier-casing
 Scripts/Source/F4SE/ScriptObject.psc:97:1:identifier-casing
+Scripts/Source/F4SE/ScriptObject.psc:97:1:parameter-count
 Scripts/Source/F4SE/ScriptObject.psc:97:121:line-length
 Scripts/Source/F4SE/ScriptObject.psc:98:121:line-length
 Scripts/Source/F4SE/ScriptObject.psc:100:1:indentation
@@ -2108,6 +2121,7 @@ Scripts/Source/F4SE/ScriptObject.psc:213:1:identifier-casing
 Scripts/Source/F4SE/ScriptObject.psc:213:1:identifier-casing
 Scripts/Source/F4SE/ScriptObject.psc:213:1:identifier-casing
 Scripts/Source/F4SE/ScriptObject.psc:213:1:indentation
+Scripts/Source/F4SE/ScriptObject.psc:213:1:parameter-count
 Scripts/Source/F4SE/ScriptObject.psc:213:121:line-length
 Scripts/Source/F4SE/ScriptObject.psc:214:1:indentation
 Scripts/Source/F4SE/ScriptObject.psc:214:121:line-length

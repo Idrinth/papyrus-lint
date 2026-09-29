@@ -106,6 +106,7 @@ Scripts/Source/F4SE/ObjectReference.psc:693:121:line-length
 Scripts/Source/F4SE/ObjectReference.psc:694:121:line-length
 Scripts/Source/F4SE/ObjectReference.psc:706:121:line-length
 Scripts/Source/F4SE/ObjectReference.psc:712:121:line-length
+Scripts/Source/F4SE/ObjectReference.psc:727:1:parameter-count
 Scripts/Source/F4SE/ObjectReference.psc:727:121:line-length
 Scripts/Source/F4SE/ObjectReference.psc:738:121:line-length
 Scripts/Source/F4SE/ObjectReference.psc:742:121:line-length

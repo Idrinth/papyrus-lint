@@ -1033,6 +1033,7 @@ Scripts/Source/Base/ArenaScript.psc:392:30:unresolved-script
 Scripts/Source/Base/ArenaScript.psc:397:8:forbidden-functions
 Scripts/Source/Base/ArenaScript.psc:398:31:unresolved-script
 Scripts/Source/Base/ArenaScript.psc:398:105:trailing-whitespace
+Scripts/Source/Base/ArenaScript.psc:402:1:parameter-count
 Scripts/Source/Base/ArenaScript.psc:402:121:line-length
 Scripts/Source/Base/ArenaScript.psc:405:121:line-length
 Scripts/Source/Base/ArenaScript.psc:413:8:forbidden-functions
@@ -5722,6 +5723,7 @@ Scripts/Source/Base/CZSpotlightScript.psc:75:1:cyclomatic-complexity
 Scripts/Source/Base/CZSpotlightScript.psc:75:1:identifier-casing
 Scripts/Source/Base/CZSpotlightScript.psc:75:1:identifier-casing
 Scripts/Source/Base/CZSpotlightScript.psc:75:1:identifier-casing
+Scripts/Source/Base/CZSpotlightScript.psc:75:1:parameter-count
 Scripts/Source/Base/CZSpotlightScript.psc:93:10:exclamation-spacing
 Scripts/Source/Base/CZSpotlightScript.psc:99:22:exclamation-spacing
 Scripts/Source/Base/CZSpotlightScript.psc:99:37:trailing-whitespace
@@ -6336,6 +6338,7 @@ Scripts/Source/Base/Cell.psc:31:1:identifier-casing
 Scripts/Source/Base/Cell.psc:31:1:identifier-casing
 Scripts/Source/Base/Cell.psc:31:1:identifier-casing
 Scripts/Source/Base/Cell.psc:31:1:identifier-casing
+Scripts/Source/Base/Cell.psc:31:1:parameter-count
 Scripts/Source/Base/Cell.psc:34:1:indentation
 Scripts/Source/Base/Cell.psc:35:1:identifier-casing
 Scripts/Source/Base/Cell.psc:35:1:identifier-casing
@@ -23239,6 +23242,7 @@ Scripts/Source/Base/DefaultActor.psc:18:1:indentation
 Scripts/Source/Base/DefaultActor.psc:19:1:indentation
 Scripts/Source/Base/DefaultActor.psc:23:1:indentation
 Scripts/Source/Base/DefaultActor.psc:24:1:indentation
+Scripts/Source/Base/DefaultActor.psc:27:1:parameter-count
 Scripts/Source/Base/DefaultActor.psc:27:121:line-length
 Scripts/Source/Base/DefaultActor.psc:29:121:line-length
 Scripts/Source/Base/DefaultActor.psc:30:12:final-newline
@@ -23264,6 +23268,7 @@ Scripts/Source/Base/DefaultAlias.psc:18:1:indentation
 Scripts/Source/Base/DefaultAlias.psc:19:1:indentation
 Scripts/Source/Base/DefaultAlias.psc:23:1:indentation
 Scripts/Source/Base/DefaultAlias.psc:24:1:indentation
+Scripts/Source/Base/DefaultAlias.psc:28:1:parameter-count
 Scripts/Source/Base/DefaultAlias.psc:28:121:line-length
 Scripts/Source/Base/DefaultAlias.psc:31:1:identifier-casing
 Scripts/Source/Base/DefaultAlias.psc:37:121:line-length
@@ -23957,6 +23962,7 @@ Scripts/Source/Base/DefaultCollectionAlias.psc:24:1:indentation
 Scripts/Source/Base/DefaultCollectionAlias.psc:25:1:indentation
 Scripts/Source/Base/DefaultCollectionAlias.psc:34:121:line-length
 Scripts/Source/Base/DefaultCollectionAlias.psc:39:1:identifier-casing
+Scripts/Source/Base/DefaultCollectionAlias.psc:39:1:parameter-count
 Scripts/Source/Base/DefaultCollectionAlias.psc:39:121:line-length
 Scripts/Source/Base/DefaultCollectionAlias.psc:41:1:trailing-whitespace
 Scripts/Source/Base/DefaultCollectionAlias.psc:42:1:identifier-casing
@@ -25014,6 +25020,7 @@ Scripts/Source/Base/DefaultRef.psc:18:1:indentation
 Scripts/Source/Base/DefaultRef.psc:19:1:indentation
 Scripts/Source/Base/DefaultRef.psc:24:1:indentation
 Scripts/Source/Base/DefaultRef.psc:25:1:indentation
+Scripts/Source/Base/DefaultRef.psc:28:1:parameter-count
 Scripts/Source/Base/DefaultRef.psc:28:121:line-length
 Scripts/Source/Base/DefaultRef.psc:30:121:line-length
 Scripts/Source/Base/DefaultRef.psc:31:12:final-newline
@@ -25316,6 +25323,7 @@ Scripts/Source/Base/DefaultRefOnTriggerEnterMultiActor.psc:20:1:indentation
 Scripts/Source/Base/DefaultRefOnTriggerEnterMultiActor.psc:21:1:indentation
 Scripts/Source/Base/DefaultRefOnTriggerEnterMultiActor.psc:23:1:indentation
 Scripts/Source/Base/DefaultRefOnTriggerEnterMultiActor.psc:24:1:indentation
+Scripts/Source/Base/DefaultRefOnTriggerEnterMultiActor.psc:27:1:parameter-count
 Scripts/Source/Base/DefaultRefOnTriggerEnterMultiActor.psc:27:121:line-length
 Scripts/Source/Base/DefaultRefOnTriggerEnterMultiActor.psc:29:121:line-length
 Scripts/Source/Base/DefaultRefOnTriggerEnterMultiActor.psc:34:1:function-override
@@ -25639,6 +25647,7 @@ Scripts/Source/Base/DefaultRotateHelper.psc:133:5:exclamation-spacing
 Scripts/Source/Base/DefaultRotateHelper.psc:133:8:trailing-whitespace
 Scripts/Source/Base/DefaultRotateHelper.psc:155:1:trailing-whitespace
 Scripts/Source/Base/DefaultScriptFunctions.psc:7:1:cyclomatic-complexity
+Scripts/Source/Base/DefaultScriptFunctions.psc:7:1:parameter-count
 Scripts/Source/Base/DefaultScriptFunctions.psc:7:121:line-length
 Scripts/Source/Base/DefaultScriptFunctions.psc:10:1:identifier-casing
 Scripts/Source/Base/DefaultScriptFunctions.psc:16:3:empty-body
@@ -25666,6 +25675,7 @@ Scripts/Source/Base/DefaultScriptFunctions.psc:65:1:identifier-casing
 Scripts/Source/Base/DefaultScriptFunctions.psc:65:1:identifier-casing
 Scripts/Source/Base/DefaultScriptFunctions.psc:65:1:unnecessary-function
 Scripts/Source/Base/DefaultScriptFunctions.psc:71:1:cyclomatic-complexity
+Scripts/Source/Base/DefaultScriptFunctions.psc:71:1:parameter-count
 Scripts/Source/Base/DefaultScriptFunctions.psc:71:1:unnecessary-function
 Scripts/Source/Base/DefaultScriptFunctions.psc:71:121:line-length
 Scripts/Source/Base/DefaultScriptFunctions.psc:76:1:indentation
@@ -26031,6 +26041,7 @@ Scripts/Source/Base/DefaultTopicInfo.psc:18:1:indentation
 Scripts/Source/Base/DefaultTopicInfo.psc:19:1:indentation
 Scripts/Source/Base/DefaultTopicInfo.psc:24:1:indentation
 Scripts/Source/Base/DefaultTopicInfo.psc:25:1:indentation
+Scripts/Source/Base/DefaultTopicInfo.psc:28:1:parameter-count
 Scripts/Source/Base/DefaultTopicInfo.psc:28:121:line-length
 Scripts/Source/Base/DefaultTopicInfo.psc:30:121:line-length
 Scripts/Source/Base/DefaultTopicInfo.psc:31:12:final-newline
@@ -30115,9 +30126,11 @@ Scripts/Source/Base/FollowersScript.psc:1643:1:indentation
 Scripts/Source/Base/FollowersScript.psc:1645:1:trailing-whitespace
 Scripts/Source/Base/FollowersScript.psc:1694:57:trailing-whitespace
 Scripts/Source/Base/FollowersScript.psc:1700:1:identifier-casing
+Scripts/Source/Base/FollowersScript.psc:1727:1:parameter-count
 Scripts/Source/Base/FollowersScript.psc:1727:1:unnecessary-function
 Scripts/Source/Base/FollowersScript.psc:1727:121:line-length
 Scripts/Source/Base/FollowersScript.psc:1728:121:line-length
+Scripts/Source/Base/FollowersScript.psc:1733:1:parameter-count
 Scripts/Source/Base/FollowersScript.psc:1733:121:line-length
 Scripts/Source/Base/FollowersScript.psc:1736:11:forbidden-functions
 Scripts/Source/Base/FollowersScript.psc:1741:121:line-length
@@ -81898,6 +81911,7 @@ Scripts/Source/Base/Fragments/Terminals/TERM_nativeSpotlightTerminal_000FDF2C.ps
 Scripts/Source/Base/Fragments/Terminals/TERM_nativeSpotlightTerminal_000FDF2C.psc:59:1:identifier-casing
 Scripts/Source/Base/Fragments/Terminals/TERM_nativeSpotlightTerminal_000FDF2C.psc:59:1:identifier-casing
 Scripts/Source/Base/Fragments/Terminals/TERM_nativeSpotlightTerminal_000FDF2C.psc:59:1:identifier-casing
+Scripts/Source/Base/Fragments/Terminals/TERM_nativeSpotlightTerminal_000FDF2C.psc:59:1:parameter-count
 Scripts/Source/Base/Fragments/Terminals/TERM_nativeSpotlightTerminal_000FDF2C.psc:59:1:unnecessary-function
 Scripts/Source/Base/Fragments/Terminals/TERM_nativeSpotlightTerminal_000FDF2C.psc:59:121:line-length
 Scripts/Source/Base/Fragments/Terminals/TERM_nativeSpotlightTerminal_000FDF2C.psc:61:1:indentation
@@ -82388,6 +82402,7 @@ Scripts/Source/Base/Fragments/Terminals/TERM_testDefaultTurretTermin_000F5E59.ps
 Scripts/Source/Base/Fragments/Terminals/TERM_testDefaultTurretTermin_000F5E59.psc:65:1:identifier-casing
 Scripts/Source/Base/Fragments/Terminals/TERM_testDefaultTurretTermin_000F5E59.psc:65:1:identifier-casing
 Scripts/Source/Base/Fragments/Terminals/TERM_testDefaultTurretTermin_000F5E59.psc:65:1:identifier-casing
+Scripts/Source/Base/Fragments/Terminals/TERM_testDefaultTurretTermin_000F5E59.psc:65:1:parameter-count
 Scripts/Source/Base/Fragments/Terminals/TERM_testDefaultTurretTermin_000F5E59.psc:65:1:unnecessary-function
 Scripts/Source/Base/Fragments/Terminals/TERM_testDefaultTurretTermin_000F5E59.psc:65:121:line-length
 Scripts/Source/Base/Fragments/Terminals/TERM_testDefaultTurretTermin_000F5E59.psc:66:1:indentation
@@ -88754,6 +88769,7 @@ Scripts/Source/Base/Game.psc:269:1:identifier-casing
 Scripts/Source/Base/Game.psc:269:1:identifier-casing
 Scripts/Source/Base/Game.psc:269:1:identifier-casing
 Scripts/Source/Base/Game.psc:269:1:identifier-casing
+Scripts/Source/Base/Game.psc:269:1:parameter-count
 Scripts/Source/Base/Game.psc:270:1:indentation
 Scripts/Source/Base/Game.psc:272:1:indentation
 Scripts/Source/Base/Game.psc:273:1:indentation
@@ -89772,6 +89788,7 @@ Scripts/Source/Base/Hardcore/HC_ManagerScript.psc:630:1:identifier-casing
 Scripts/Source/Base/Hardcore/HC_ManagerScript.psc:630:1:identifier-casing
 Scripts/Source/Base/Hardcore/HC_ManagerScript.psc:630:1:identifier-casing
 Scripts/Source/Base/Hardcore/HC_ManagerScript.psc:630:1:identifier-casing
+Scripts/Source/Base/Hardcore/HC_ManagerScript.psc:630:1:parameter-count
 Scripts/Source/Base/Hardcore/HC_ManagerScript.psc:630:1:unnecessary-function
 Scripts/Source/Base/Hardcore/HC_ManagerScript.psc:630:121:line-length
 Scripts/Source/Base/Hardcore/HC_ManagerScript.psc:630:126:assignment-operator-spacing
@@ -89840,6 +89857,7 @@ Scripts/Source/Base/Hardcore/HC_ManagerScript.psc:809:1:identifier-casing
 Scripts/Source/Base/Hardcore/HC_ManagerScript.psc:809:1:identifier-casing
 Scripts/Source/Base/Hardcore/HC_ManagerScript.psc:809:1:identifier-casing
 Scripts/Source/Base/Hardcore/HC_ManagerScript.psc:809:1:identifier-casing
+Scripts/Source/Base/Hardcore/HC_ManagerScript.psc:809:1:parameter-count
 Scripts/Source/Base/Hardcore/HC_ManagerScript.psc:809:121:line-length
 Scripts/Source/Base/Hardcore/HC_ManagerScript.psc:811:61:boolean-simplification
 Scripts/Source/Base/Hardcore/HC_ManagerScript.psc:812:121:line-length
@@ -90884,6 +90902,7 @@ Scripts/Source/Base/HazardBase.psc:53:1:identifier-casing
 Scripts/Source/Base/HazardBase.psc:53:1:identifier-casing
 Scripts/Source/Base/HazardBase.psc:53:1:identifier-casing
 Scripts/Source/Base/HazardBase.psc:53:1:identifier-casing
+Scripts/Source/Base/HazardBase.psc:53:1:parameter-count
 Scripts/Source/Base/HazardBase.psc:53:121:line-length
 Scripts/Source/Base/HazardBase.psc:54:121:line-length
 Scripts/Source/Base/HazardBase.psc:55:1:indentation
@@ -91213,6 +91232,7 @@ Scripts/Source/Base/InputEnableLayer.psc:15:1:identifier-casing
 Scripts/Source/Base/InputEnableLayer.psc:15:1:identifier-casing
 Scripts/Source/Base/InputEnableLayer.psc:15:1:identifier-casing
 Scripts/Source/Base/InputEnableLayer.psc:15:1:identifier-casing
+Scripts/Source/Base/InputEnableLayer.psc:15:1:parameter-count
 Scripts/Source/Base/InputEnableLayer.psc:15:121:line-length
 Scripts/Source/Base/InputEnableLayer.psc:16:121:line-length
 Scripts/Source/Base/InputEnableLayer.psc:18:1:indentation
@@ -91271,6 +91291,7 @@ Scripts/Source/Base/InputEnableLayer.psc:61:1:identifier-casing
 Scripts/Source/Base/InputEnableLayer.psc:61:1:identifier-casing
 Scripts/Source/Base/InputEnableLayer.psc:61:1:identifier-casing
 Scripts/Source/Base/InputEnableLayer.psc:61:1:indentation
+Scripts/Source/Base/InputEnableLayer.psc:61:1:parameter-count
 Scripts/Source/Base/InputEnableLayer.psc:61:121:line-length
 Scripts/Source/Base/InputEnableLayer.psc:62:1:indentation
 Scripts/Source/Base/InputEnableLayer.psc:62:121:line-length
@@ -93858,6 +93879,7 @@ Scripts/Source/Base/LegendaryMagicEffectEventListenScript.psc:43:121:line-length
 Scripts/Source/Base/LegendaryMagicEffectEventListenScript.psc:43:176:trailing-whitespace
 Scripts/Source/Base/LegendaryMagicEffectEventListenScript.psc:47:9:forbidden-functions
 Scripts/Source/Base/LegendaryMagicEffectEventListenScript.psc:47:121:line-length
+Scripts/Source/Base/LegendaryMagicEffectEventListenScript.psc:52:1:parameter-count
 Scripts/Source/Base/LegendaryMagicEffectEventListenScript.psc:52:121:line-length
 Scripts/Source/Base/LegendaryMagicEffectEventListenScript.psc:55:8:forbidden-functions
 Scripts/Source/Base/LegendaryMagicEffectEventListenScript.psc:56:8:forbidden-functions
@@ -100572,6 +100594,7 @@ Scripts/Source/Base/Message.psc:5:1:identifier-casing
 Scripts/Source/Base/Message.psc:5:1:identifier-casing
 Scripts/Source/Base/Message.psc:5:1:identifier-casing
 Scripts/Source/Base/Message.psc:5:1:identifier-casing
+Scripts/Source/Base/Message.psc:5:1:parameter-count
 Scripts/Source/Base/Message.psc:5:121:line-length
 Scripts/Source/Base/Message.psc:9:1:identifier-casing
 Scripts/Source/Base/Message.psc:9:1:identifier-casing
@@ -100579,6 +100602,7 @@ Scripts/Source/Base/Message.psc:9:1:identifier-casing
 Scripts/Source/Base/Message.psc:9:1:identifier-casing
 Scripts/Source/Base/Message.psc:9:1:identifier-casing
 Scripts/Source/Base/Message.psc:9:1:identifier-casing
+Scripts/Source/Base/Message.psc:9:1:parameter-count
 Scripts/Source/Base/Message.psc:9:112:assignment-operator-spacing
 Scripts/Source/Base/Message.psc:9:112:assignment-operator-spacing
 Scripts/Source/Base/Message.psc:9:121:line-length
@@ -104024,6 +104048,7 @@ Scripts/Source/Base/MirelurkQueenUnreachableArea.psc:67:9:final-newline
 Scripts/Source/Base/MiscObject.psc:4:1:identifier-casing
 Scripts/Source/Base/ModLegendaryConsecutiveHitsScript.psc:1:91:trailing-whitespace
 Scripts/Source/Base/ModLegendaryConsecutiveHitsScript.psc:9:1:function-override
+Scripts/Source/Base/ModLegendaryConsecutiveHitsScript.psc:9:1:parameter-count
 Scripts/Source/Base/ModLegendaryConsecutiveHitsScript.psc:9:121:line-length
 Scripts/Source/Base/ModLegendaryConsecutiveHitsScript.psc:10:8:forbidden-functions
 Scripts/Source/Base/ModLegendaryConsecutiveHitsScript.psc:11:8:forbidden-functions
@@ -104313,6 +104338,7 @@ Scripts/Source/Base/ObjectReference.psc:215:1:identifier-casing
 Scripts/Source/Base/ObjectReference.psc:215:1:identifier-casing
 Scripts/Source/Base/ObjectReference.psc:215:1:identifier-casing
 Scripts/Source/Base/ObjectReference.psc:215:1:identifier-casing
+Scripts/Source/Base/ObjectReference.psc:215:1:parameter-count
 Scripts/Source/Base/ObjectReference.psc:215:121:line-length
 Scripts/Source/Base/ObjectReference.psc:218:1:identifier-casing
 Scripts/Source/Base/ObjectReference.psc:218:1:identifier-casing
@@ -104324,6 +104350,7 @@ Scripts/Source/Base/ObjectReference.psc:221:1:identifier-casing
 Scripts/Source/Base/ObjectReference.psc:221:1:identifier-casing
 Scripts/Source/Base/ObjectReference.psc:221:1:identifier-casing
 Scripts/Source/Base/ObjectReference.psc:221:1:identifier-casing
+Scripts/Source/Base/ObjectReference.psc:221:1:parameter-count
 Scripts/Source/Base/ObjectReference.psc:224:1:identifier-casing
 Scripts/Source/Base/ObjectReference.psc:230:1:identifier-casing
 Scripts/Source/Base/ObjectReference.psc:230:1:identifier-casing
@@ -104476,6 +104503,7 @@ Scripts/Source/Base/ObjectReference.psc:676:1:identifier-casing
 Scripts/Source/Base/ObjectReference.psc:676:1:identifier-casing
 Scripts/Source/Base/ObjectReference.psc:676:1:identifier-casing
 Scripts/Source/Base/ObjectReference.psc:676:1:identifier-casing
+Scripts/Source/Base/ObjectReference.psc:676:1:parameter-count
 Scripts/Source/Base/ObjectReference.psc:676:121:line-length
 Scripts/Source/Base/ObjectReference.psc:678:121:line-length
 Scripts/Source/Base/ObjectReference.psc:680:1:identifier-casing
@@ -104488,6 +104516,7 @@ Scripts/Source/Base/ObjectReference.psc:680:1:identifier-casing
 Scripts/Source/Base/ObjectReference.psc:680:1:identifier-casing
 Scripts/Source/Base/ObjectReference.psc:680:1:identifier-casing
 Scripts/Source/Base/ObjectReference.psc:680:1:identifier-casing
+Scripts/Source/Base/ObjectReference.psc:680:1:parameter-count
 Scripts/Source/Base/ObjectReference.psc:680:121:line-length
 Scripts/Source/Base/ObjectReference.psc:682:121:line-length
 Scripts/Source/Base/ObjectReference.psc:683:1:identifier-casing
@@ -104507,6 +104536,7 @@ Scripts/Source/Base/ObjectReference.psc:694:1:identifier-casing
 Scripts/Source/Base/ObjectReference.psc:694:1:identifier-casing
 Scripts/Source/Base/ObjectReference.psc:694:1:identifier-casing
 Scripts/Source/Base/ObjectReference.psc:694:1:identifier-casing
+Scripts/Source/Base/ObjectReference.psc:694:1:parameter-count
 Scripts/Source/Base/ObjectReference.psc:694:121:line-length
 Scripts/Source/Base/ObjectReference.psc:697:1:identifier-casing
 Scripts/Source/Base/ObjectReference.psc:700:1:identifier-casing
@@ -104522,6 +104552,7 @@ Scripts/Source/Base/ObjectReference.psc:706:1:identifier-casing
 Scripts/Source/Base/ObjectReference.psc:706:1:identifier-casing
 Scripts/Source/Base/ObjectReference.psc:706:1:identifier-casing
 Scripts/Source/Base/ObjectReference.psc:706:1:identifier-casing
+Scripts/Source/Base/ObjectReference.psc:706:1:parameter-count
 Scripts/Source/Base/ObjectReference.psc:706:121:line-length
 Scripts/Source/Base/ObjectReference.psc:709:1:identifier-casing
 Scripts/Source/Base/ObjectReference.psc:709:1:identifier-casing
@@ -104545,6 +104576,7 @@ Scripts/Source/Base/ObjectReference.psc:727:1:identifier-casing
 Scripts/Source/Base/ObjectReference.psc:727:1:identifier-casing
 Scripts/Source/Base/ObjectReference.psc:727:1:identifier-casing
 Scripts/Source/Base/ObjectReference.psc:727:1:identifier-casing
+Scripts/Source/Base/ObjectReference.psc:727:1:parameter-count
 Scripts/Source/Base/ObjectReference.psc:727:121:line-length
 Scripts/Source/Base/ObjectReference.psc:730:1:identifier-casing
 Scripts/Source/Base/ObjectReference.psc:730:1:identifier-casing
@@ -104591,6 +104623,7 @@ Scripts/Source/Base/ObjectReference.psc:791:121:line-length
 Scripts/Source/Base/ObjectReference.psc:801:1:identifier-casing
 Scripts/Source/Base/ObjectReference.psc:801:1:identifier-casing
 Scripts/Source/Base/ObjectReference.psc:801:1:identifier-casing
+Scripts/Source/Base/ObjectReference.psc:801:1:parameter-count
 Scripts/Source/Base/ObjectReference.psc:801:121:line-length
 Scripts/Source/Base/ObjectReference.psc:812:1:identifier-casing
 Scripts/Source/Base/ObjectReference.psc:813:1:identifier-casing
@@ -104654,6 +104687,7 @@ Scripts/Source/Base/ObjectReference.psc:940:1:identifier-casing
 Scripts/Source/Base/ObjectReference.psc:940:1:identifier-casing
 Scripts/Source/Base/ObjectReference.psc:940:1:identifier-casing
 Scripts/Source/Base/ObjectReference.psc:940:1:identifier-casing
+Scripts/Source/Base/ObjectReference.psc:940:1:parameter-count
 Scripts/Source/Base/ObjectReference.psc:940:121:line-length
 Scripts/Source/Base/ObjectReference.psc:943:1:identifier-casing
 Scripts/Source/Base/ObjectReference.psc:943:1:identifier-casing
@@ -104664,6 +104698,7 @@ Scripts/Source/Base/ObjectReference.psc:943:1:identifier-casing
 Scripts/Source/Base/ObjectReference.psc:943:1:identifier-casing
 Scripts/Source/Base/ObjectReference.psc:943:1:identifier-casing
 Scripts/Source/Base/ObjectReference.psc:943:1:identifier-casing
+Scripts/Source/Base/ObjectReference.psc:943:1:parameter-count
 Scripts/Source/Base/ObjectReference.psc:943:121:line-length
 Scripts/Source/Base/ObjectReference.psc:946:1:identifier-casing
 Scripts/Source/Base/ObjectReference.psc:946:1:identifier-casing
@@ -106113,6 +106148,7 @@ Scripts/Source/Base/Quest.psc:13:1:identifier-casing
 Scripts/Source/Base/Quest.psc:13:1:identifier-casing
 Scripts/Source/Base/Quest.psc:13:1:identifier-casing
 Scripts/Source/Base/Quest.psc:13:1:identifier-casing
+Scripts/Source/Base/Quest.psc:13:1:parameter-count
 Scripts/Source/Base/Quest.psc:13:121:line-length
 Scripts/Source/Base/Quest.psc:16:8:forbidden-functions
 Scripts/Source/Base/Quest.psc:16:121:line-length
@@ -110245,6 +110281,7 @@ Scripts/Source/Base/ScriptObject.psc:97:1:identifier-casing
 Scripts/Source/Base/ScriptObject.psc:97:1:identifier-casing
 Scripts/Source/Base/ScriptObject.psc:97:1:identifier-casing
 Scripts/Source/Base/ScriptObject.psc:97:1:identifier-casing
+Scripts/Source/Base/ScriptObject.psc:97:1:parameter-count
 Scripts/Source/Base/ScriptObject.psc:97:121:line-length
 Scripts/Source/Base/ScriptObject.psc:98:121:line-length
 Scripts/Source/Base/ScriptObject.psc:100:1:indentation
@@ -110376,6 +110413,7 @@ Scripts/Source/Base/ScriptObject.psc:213:1:identifier-casing
 Scripts/Source/Base/ScriptObject.psc:213:1:identifier-casing
 Scripts/Source/Base/ScriptObject.psc:213:1:identifier-casing
 Scripts/Source/Base/ScriptObject.psc:213:1:indentation
+Scripts/Source/Base/ScriptObject.psc:213:1:parameter-count
 Scripts/Source/Base/ScriptObject.psc:213:121:line-length
 Scripts/Source/Base/ScriptObject.psc:214:1:indentation
 Scripts/Source/Base/ScriptObject.psc:214:121:line-length
@@ -124385,6 +124423,7 @@ Scripts/Source/Base/hackerHolotapeMaster.psc:364:1:indentation
 Scripts/Source/Base/hackerHolotapeMaster.psc:368:1:identifier-casing
 Scripts/Source/Base/hackerHolotapeMaster.psc:368:1:identifier-casing
 Scripts/Source/Base/hackerHolotapeMaster.psc:368:1:identifier-casing
+Scripts/Source/Base/hackerHolotapeMaster.psc:368:1:parameter-count
 Scripts/Source/Base/hackerHolotapeMaster.psc:368:1:unnecessary-function
 Scripts/Source/Base/hackerHolotapeMaster.psc:368:121:line-length
 Scripts/Source/Base/hackerHolotapeMaster.psc:369:1:indentation
@@ -140660,6 +140699,7 @@ Scripts/Source/DLC03/DLC03/DLC03MQ02FightQuestScript.psc:188:1:identifier-casing
 Scripts/Source/DLC03/DLC03/DLC03MQ02FightQuestScript.psc:188:1:identifier-casing
 Scripts/Source/DLC03/DLC03/DLC03MQ02FightQuestScript.psc:188:1:identifier-casing
 Scripts/Source/DLC03/DLC03/DLC03MQ02FightQuestScript.psc:188:1:identifier-casing
+Scripts/Source/DLC03/DLC03/DLC03MQ02FightQuestScript.psc:188:1:parameter-count
 Scripts/Source/DLC03/DLC03/DLC03MQ02FightQuestScript.psc:188:67:assignment-operator-spacing
 Scripts/Source/DLC03/DLC03/DLC03MQ02FightQuestScript.psc:188:67:assignment-operator-spacing
 Scripts/Source/DLC03/DLC03/DLC03MQ02FightQuestScript.psc:188:98:assignment-operator-spacing
@@ -161025,6 +161065,7 @@ Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:857:1:identifier-casing
 Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:857:1:identifier-casing
 Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:857:1:identifier-casing
 Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:857:1:identifier-casing
+Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:857:1:parameter-count
 Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:857:121:line-length
 Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:860:8:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:860:121:line-length
@@ -165355,6 +165396,7 @@ Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:893:1:identifier-casing
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:893:1:identifier-casing
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:893:1:identifier-casing
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:893:1:identifier-casing
+Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:893:1:parameter-count
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:893:121:line-length
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:894:8:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:894:121:line-length
@@ -169712,6 +169754,7 @@ Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:199:1:identi
 Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:201:1:identifier-casing
 Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:202:1:unchecked-cast
 Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:203:1:unchecked-cast
+Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:209:1:parameter-count
 Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:209:121:line-length
 Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:211:1:identifier-casing
 Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:213:1:identifier-casing

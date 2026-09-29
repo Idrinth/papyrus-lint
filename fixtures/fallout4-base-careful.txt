@@ -226,6 +226,7 @@ Scripts/Source/Base/ArenaScript.psc:391:30:unresolved-script
 Scripts/Source/Base/ArenaScript.psc:392:30:unresolved-script
 Scripts/Source/Base/ArenaScript.psc:397:8:forbidden-functions
 Scripts/Source/Base/ArenaScript.psc:398:31:unresolved-script
+Scripts/Source/Base/ArenaScript.psc:402:1:parameter-count
 Scripts/Source/Base/ArenaScript.psc:402:121:line-length
 Scripts/Source/Base/ArenaScript.psc:405:121:line-length
 Scripts/Source/Base/ArenaScript.psc:413:8:forbidden-functions
@@ -6255,6 +6256,7 @@ Scripts/Source/Base/DefaultCaptiveAlias.psc:174:21:unresolved-script
 Scripts/Source/Base/DefaultClearLocationOnTriggerScript.psc:6:28:forbidden-functions
 Scripts/Source/Base/DefaultClearLocationOnTriggerScript.psc:7:1:none-form-usage
 Scripts/Source/Base/DefaultCollectionAlias.psc:34:121:line-length
+Scripts/Source/Base/DefaultCollectionAlias.psc:39:1:parameter-count
 Scripts/Source/Base/DefaultCollectionAlias.psc:39:121:line-length
 Scripts/Source/Base/DefaultCollectionAlias.psc:45:121:line-length
 Scripts/Source/Base/DefaultCollectionAlias.psc:50:121:line-length
@@ -6616,6 +6618,7 @@ Scripts/Source/Base/DefaultRotateHelper.psc:115:8:forbidden-functions
 Scripts/Source/Base/DefaultRotateHelper.psc:116:8:forbidden-functions
 Scripts/Source/Base/DefaultRotateHelper.psc:117:8:forbidden-functions
 Scripts/Source/Base/DefaultRotateHelper.psc:118:8:forbidden-functions
+Scripts/Source/Base/DefaultScriptFunctions.psc:7:1:parameter-count
 Scripts/Source/Base/DefaultScriptFunctions.psc:7:121:line-length
 Scripts/Source/Base/DefaultScriptFunctions.psc:16:3:empty-body
 Scripts/Source/Base/DefaultScriptFunctions.psc:18:3:empty-body
@@ -31123,6 +31126,7 @@ Scripts/Source/Base/Fragments/Terminals/TERM_testDefaultTurretTermin_000F5E59.ps
 Scripts/Source/Base/Fragments/Terminals/TERM_testDefaultTurretTermin_000F5E59.psc:57:121:line-length
 Scripts/Source/Base/Fragments/Terminals/TERM_testDefaultTurretTermin_000F5E59.psc:58:121:line-length
 Scripts/Source/Base/Fragments/Terminals/TERM_testDefaultTurretTermin_000F5E59.psc:59:121:line-length
+Scripts/Source/Base/Fragments/Terminals/TERM_testDefaultTurretTermin_000F5E59.psc:65:1:parameter-count
 Scripts/Source/Base/Fragments/Terminals/TERM_testDefaultTurretTermin_000F5E59.psc:65:121:line-length
 Scripts/Source/Base/Fragments/Terminals/TERM_testDefaultTurretTermin_000F5E59.psc:67:15:forbidden-functions
 Scripts/Source/Base/Fragments/Terminals/TERM_testDefaultTurretTermin_000F5E59.psc:68:15:forbidden-functions
@@ -34393,8 +34397,10 @@ Scripts/Source/Base/ImprovingSwordSCRIPT.psc:7:1:argument-naming
 Scripts/Source/Base/ImprovingSwordSCRIPT.psc:13:1:global-variable-increment
 Scripts/Source/Base/ImprovingSwordSCRIPT.psc:13:1:none-form-usage
 Scripts/Source/Base/ImprovingSwordSCRIPT.psc:13:1:none-form-usage
+Scripts/Source/Base/InputEnableLayer.psc:15:1:parameter-count
 Scripts/Source/Base/InputEnableLayer.psc:15:121:line-length
 Scripts/Source/Base/InputEnableLayer.psc:16:121:line-length
+Scripts/Source/Base/InputEnableLayer.psc:61:1:parameter-count
 Scripts/Source/Base/InputEnableLayer.psc:61:121:line-length
 Scripts/Source/Base/InputEnableLayer.psc:62:121:line-length
 Scripts/Source/Base/Ins305MicrophoneScript.psc:6:1:argument-naming
@@ -38822,6 +38828,7 @@ Scripts/Source/Base/ObjectReference.psc:693:121:line-length
 Scripts/Source/Base/ObjectReference.psc:694:121:line-length
 Scripts/Source/Base/ObjectReference.psc:706:121:line-length
 Scripts/Source/Base/ObjectReference.psc:712:121:line-length
+Scripts/Source/Base/ObjectReference.psc:727:1:parameter-count
 Scripts/Source/Base/ObjectReference.psc:727:121:line-length
 Scripts/Source/Base/ObjectReference.psc:738:121:line-length
 Scripts/Source/Base/ObjectReference.psc:742:121:line-length

@@ -3434,12 +3434,14 @@ Scripts/Source/DefaultSceneStartOnEnterTrigger.psc:39:121:line-length
 Scripts/Source/DefaultSceneStartOnEnterTrigger.psc:39:184:unresolved-script
 Scripts/Source/DefaultScriptFunctions.psc:10:121:line-length
 Scripts/Source/DefaultScriptFunctions.psc:21:121:line-length
+Scripts/Source/DefaultScriptFunctions.psc:25:1:parameter-count
 Scripts/Source/DefaultScriptFunctions.psc:51:121:line-length
 Scripts/Source/DefaultScriptFunctions.psc:79:121:line-length
 Scripts/Source/DefaultScriptFunctions.psc:80:121:line-length
 Scripts/Source/DefaultScriptFunctions.psc:89:2:strict-boolean
 Scripts/Source/DefaultScriptFunctions.psc:93:3:strict-boolean
 Scripts/Source/DefaultScriptFunctions.psc:102:121:line-length
+Scripts/Source/DefaultScriptFunctions.psc:107:1:parameter-count
 Scripts/Source/DefaultScriptFunctions.psc:133:121:line-length
 Scripts/Source/DefaultScriptFunctions.psc:137:121:line-length
 Scripts/Source/DefaultScriptFunctions.psc:140:121:line-length
@@ -30561,8 +30563,10 @@ Scripts/Source/ImprovingSwordSCRIPT.psc:6:1:none-form-usage
 Scripts/Source/IncendiaryBurnSCRIPT.psc:30:121:line-length
 Scripts/Source/IncendiaryBurnSCRIPT.psc:33:2:strict-boolean
 Scripts/Source/IncendiaryBurnSCRIPT.psc:65:121:line-length
+Scripts/Source/InputEnableLayer.psc:15:1:parameter-count
 Scripts/Source/InputEnableLayer.psc:15:121:line-length
 Scripts/Source/InputEnableLayer.psc:16:121:line-length
+Scripts/Source/InputEnableLayer.psc:82:1:parameter-count
 Scripts/Source/InputEnableLayer.psc:82:121:line-length
 Scripts/Source/InputEnableLayer.psc:83:121:line-length
 Scripts/Source/InstigationEffectScript.psc:6:11:forbidden-functions
@@ -31875,7 +31879,9 @@ Scripts/Source/LC165QuestScript.psc:762:121:line-length
 Scripts/Source/LC165QuestScript.psc:763:121:line-length
 Scripts/Source/LC165QuestScript.psc:766:121:line-length
 Scripts/Source/LC165QuestScript.psc:767:121:line-length
+Scripts/Source/LC165QuestScript.psc:770:1:parameter-count
 Scripts/Source/LC165QuestScript.psc:770:121:line-length
+Scripts/Source/LC165QuestScript.psc:786:1:parameter-count
 Scripts/Source/LC165QuestScript.psc:786:121:line-length
 Scripts/Source/LC165QuestScript.psc:789:1:numeric-comparison
 Scripts/Source/LC165QuestScript.psc:806:1:numeric-comparison
@@ -35254,6 +35260,7 @@ Scripts/Source/ObjectReference.psc:834:121:line-length
 Scripts/Source/ObjectReference.psc:840:121:line-length
 Scripts/Source/ObjectReference.psc:841:121:line-length
 Scripts/Source/ObjectReference.psc:845:121:line-length
+Scripts/Source/ObjectReference.psc:849:1:parameter-count
 Scripts/Source/ObjectReference.psc:849:121:line-length
 Scripts/Source/ObjectReference.psc:854:121:line-length
 Scripts/Source/ObjectReference.psc:863:121:line-length
@@ -35264,6 +35271,7 @@ Scripts/Source/ObjectReference.psc:873:121:line-length
 Scripts/Source/ObjectReference.psc:876:121:line-length
 Scripts/Source/ObjectReference.psc:888:121:line-length
 Scripts/Source/ObjectReference.psc:894:121:line-length
+Scripts/Source/ObjectReference.psc:909:1:parameter-count
 Scripts/Source/ObjectReference.psc:909:121:line-length
 Scripts/Source/ObjectReference.psc:918:121:line-length
 Scripts/Source/ObjectReference.psc:921:121:line-length
@@ -36694,7 +36702,9 @@ Scripts/Source/RQ_HarvestMineScript.psc:127:115:unresolved-script
 Scripts/Source/RQ_Heal_01_Script.psc:14:121:line-length
 Scripts/Source/RQ_Heal_01_Script.psc:25:11:forbidden-functions
 Scripts/Source/RQ_Heal_01_Script.psc:26:60:unresolved-script
+Scripts/Source/RQ_ParentScript.psc:16:1:parameter-count
 Scripts/Source/RQ_ParentScript.psc:46:121:line-length
+Scripts/Source/RQ_ParentScript.psc:49:1:parameter-count
 Scripts/Source/RQ_ParentScript.psc:62:29:unresolved-script
 Scripts/Source/RQ_ParentScript.psc:68:1:variable-used-before-assignment
 Scripts/Source/RQ_ParentScript.psc:68:31:unresolved-script
@@ -44887,6 +44897,7 @@ Scripts/Source/TestSteveCQuestScript.psc:682:1:place-at-me
 Scripts/Source/TestSteveCQuestScript.psc:689:121:line-length
 Scripts/Source/TestSteveCQuestScript.psc:699:1:place-at-me
 Scripts/Source/TestSteveCQuestScript.psc:703:11:forbidden-functions
+Scripts/Source/TestSteveCQuestScript.psc:710:1:parameter-count
 Scripts/Source/TestSteveCQuestScript.psc:710:121:line-length
 Scripts/Source/TestSteveCQuestScript.psc:714:1:numeric-comparison
 Scripts/Source/TestSteveCQuestScript.psc:714:1:numeric-comparison
