@@ -2146,6 +2146,7 @@ scripts/Source/NetImmerse.psc:87:1:identifier-casing
 scripts/Source/NetImmerse.psc:87:1:identifier-casing
 scripts/Source/NetImmerse.psc:87:1:unnecessary-function
 scripts/Source/NetImmerse.psc:89:12:final-newline
+scripts/Source/ObjectReference.psc:3:1:function-length
 scripts/Source/ObjectReference.psc:3:1:identifier-casing
 scripts/Source/ObjectReference.psc:3:1:identifier-casing
 scripts/Source/ObjectReference.psc:3:1:identifier-casing
@@ -2165,6 +2166,7 @@ scripts/Source/ObjectReference.psc:21:1:numeric-comparison
 scripts/Source/ObjectReference.psc:23:1:indentation
 scripts/Source/ObjectReference.psc:27:25:forbidden-functions
 scripts/Source/ObjectReference.psc:31:1:indentation
+scripts/Source/ObjectReference.psc:37:1:function-length
 scripts/Source/ObjectReference.psc:38:1:identifier-casing
 scripts/Source/ObjectReference.psc:38:22:forbidden-functions
 scripts/Source/ObjectReference.psc:39:1:identifier-casing
@@ -2251,6 +2253,7 @@ scripts/Source/ObjectReference.psc:275:1:identifier-casing
 scripts/Source/ObjectReference.psc:275:26:forbidden-functions
 scripts/Source/ObjectReference.psc:281:121:line-length
 scripts/Source/ObjectReference.psc:283:121:line-length
+scripts/Source/ObjectReference.psc:284:1:function-length
 scripts/Source/ObjectReference.psc:284:1:identifier-casing
 scripts/Source/ObjectReference.psc:284:1:identifier-casing
 scripts/Source/ObjectReference.psc:284:1:identifier-casing
@@ -2578,6 +2581,7 @@ scripts/Source/Quest.psc:8:121:line-length
 scripts/Source/Quest.psc:9:121:line-length
 scripts/Source/Quest.psc:10:121:line-length
 scripts/Source/Quest.psc:11:121:line-length
+scripts/Source/Quest.psc:12:1:function-length
 scripts/Source/Quest.psc:12:1:identifier-casing
 scripts/Source/Quest.psc:12:1:identifier-casing
 scripts/Source/Quest.psc:12:1:identifier-casing
