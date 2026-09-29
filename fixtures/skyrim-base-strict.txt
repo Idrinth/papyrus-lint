@@ -710,6 +710,7 @@ Source/Scripts/ArenaEntranceTriggerScript.psc:7:1:identifier-casing
 Source/Scripts/ArenaEntranceTriggerScript.psc:8:1:unchecked-cast
 Source/Scripts/ArenaEntranceTriggerScript.psc:9:1:indentation
 Source/Scripts/ArenaEntranceTriggerScript.psc:9:1:unchecked-cast
+Source/Scripts/ArenaEntranceTriggerScript.psc:10:1:assignment-overwritten
 Source/Scripts/ArenaEntranceTriggerScript.psc:10:1:identifier-casing
 Source/Scripts/ArenaEntranceTriggerScript.psc:10:1:indentation
 Source/Scripts/ArenaEntranceTriggerScript.psc:11:1:indentation
@@ -830,13 +831,17 @@ Source/Scripts/ArenaScript.psc:341:8:forbidden-functions
 Source/Scripts/ArenaScript.psc:345:1:trailing-whitespace
 Source/Scripts/ArenaScript.psc:346:1:none-form-usage
 Source/Scripts/ArenaScript.psc:348:1:none-form-usage
+Source/Scripts/ArenaScript.psc:352:1:assignment-overwritten
 Source/Scripts/ArenaScript.psc:352:1:cyclomatic-complexity
 Source/Scripts/ArenaScript.psc:352:1:function-length
 Source/Scripts/ArenaScript.psc:352:1:identifier-casing
 Source/Scripts/ArenaScript.psc:352:51:assignment-operator-spacing
 Source/Scripts/ArenaScript.psc:352:51:assignment-operator-spacing
+Source/Scripts/ArenaScript.psc:353:1:assignment-overwritten
 Source/Scripts/ArenaScript.psc:353:1:identifier-casing
+Source/Scripts/ArenaScript.psc:354:1:assignment-overwritten
 Source/Scripts/ArenaScript.psc:354:1:identifier-casing
+Source/Scripts/ArenaScript.psc:355:1:assignment-overwritten
 Source/Scripts/ArenaScript.psc:355:1:identifier-casing
 Source/Scripts/ArenaScript.psc:355:24:forbidden-functions
 Source/Scripts/ArenaScript.psc:356:1:trailing-whitespace
@@ -6599,6 +6604,7 @@ Source/Scripts/BardSongsScript.psc:260:1:indentation
 Source/Scripts/BardSongsScript.psc:262:1:indentation
 Source/Scripts/BardSongsScript.psc:270:1:function-override
 Source/Scripts/BardSongsScript.psc:271:64:comma-spacing
+Source/Scripts/BardSongsScript.psc:278:1:assignment-overwritten
 Source/Scripts/BardSongsScript.psc:278:1:cyclomatic-complexity
 Source/Scripts/BardSongsScript.psc:278:1:function-length
 Source/Scripts/BardSongsScript.psc:278:121:line-length
@@ -6705,6 +6711,7 @@ Source/Scripts/BardSongsScript.psc:485:1:indentation
 Source/Scripts/BardSongsScript.psc:488:1:indentation
 Source/Scripts/BardSongsScript.psc:490:41:trailing-whitespace
 Source/Scripts/BardSongsScript.psc:493:1:none-form-usage
+Source/Scripts/BardSongsScript.psc:502:1:assignment-overwritten
 Source/Scripts/BardSongsScript.psc:502:1:function-length
 Source/Scripts/BardSongsScript.psc:502:121:line-length
 Source/Scripts/BardSongsScript.psc:504:1:trailing-whitespace
@@ -7414,6 +7421,7 @@ Source/Scripts/C01QuestScript.psc:55:1:identifier-casing
 Source/Scripts/C01QuestScript.psc:56:1:identifier-casing
 Source/Scripts/C01QuestScript.psc:58:1:function-length
 Source/Scripts/C01QuestScript.psc:58:1:function-override
+Source/Scripts/C01QuestScript.psc:59:1:assignment-overwritten
 Source/Scripts/C01QuestScript.psc:59:1:identifier-casing
 Source/Scripts/C01QuestScript.psc:59:1:unchecked-cast
 Source/Scripts/C01QuestScript.psc:60:1:trailing-whitespace
@@ -8301,6 +8309,7 @@ Source/Scripts/CCHorseArmorChangeScript.psc:53:23:exclamation-spacing
 Source/Scripts/CCHorseArmorChangeScript.psc:67:4:strict-boolean
 Source/Scripts/CCHorseArmorChangeScript.psc:71:1:none-form-usage
 Source/Scripts/CCHorseArmorChangeScript.psc:75:1:identifier-casing
+Source/Scripts/CCHorseArmorChangeScript.psc:76:1:assignment-overwritten
 Source/Scripts/CCHorseArmorChangeScript.psc:76:1:identifier-casing
 Source/Scripts/CCHorseArmorChangeScript.psc:77:1:identifier-casing
 Source/Scripts/CCHorseArmorChangeScript.psc:78:1:identifier-casing
@@ -8898,6 +8907,7 @@ Source/Scripts/CR12QuestScript.psc:22:30:unresolved-script
 Source/Scripts/CR12QuestScript.psc:23:30:unresolved-script
 Source/Scripts/CR12QuestScript.psc:24:1:none-form-usage
 Source/Scripts/CR12QuestScript.psc:24:60:unresolved-script
+Source/Scripts/CR12QuestScript.psc:26:1:assignment-overwritten
 Source/Scripts/CR12QuestScript.psc:26:1:identifier-casing
 Source/Scripts/CR12QuestScript.psc:27:1:trailing-whitespace
 Source/Scripts/CR12QuestScript.psc:28:1:unchecked-cast
@@ -10628,6 +10638,7 @@ Source/Scripts/CWCampaignScript.psc:1189:1:trailing-whitespace
 Source/Scripts/CWCampaignScript.psc:1190:1:indentation
 Source/Scripts/CWCampaignScript.psc:1190:121:line-length
 Source/Scripts/CWCampaignScript.psc:1194:1:trailing-whitespace
+Source/Scripts/CWCampaignScript.psc:1197:1:assignment-overwritten
 Source/Scripts/CWCampaignScript.psc:1197:1:function-length
 Source/Scripts/CWCampaignScript.psc:1198:1:indentation
 Source/Scripts/CWCampaignScript.psc:1200:121:line-length
@@ -13728,6 +13739,7 @@ Source/Scripts/CWMissionScript.psc:263:1:trailing-whitespace
 Source/Scripts/CWMissionScript.psc:264:2:empty-body
 Source/Scripts/CWMissionScript.psc:265:1:indentation
 Source/Scripts/CWMissionScript.psc:265:121:line-length
+Source/Scripts/CWMissionScript.psc:270:1:assignment-overwritten
 Source/Scripts/CWMissionScript.psc:270:1:function-length
 Source/Scripts/CWMissionScript.psc:270:1:identifier-casing
 Source/Scripts/CWMissionScript.psc:270:1:identifier-casing
@@ -13747,6 +13759,7 @@ Source/Scripts/CWMissionScript.psc:282:1:none-form-usage
 Source/Scripts/CWMissionScript.psc:282:121:line-length
 Source/Scripts/CWMissionScript.psc:282:142:trailing-whitespace
 Source/Scripts/CWMissionScript.psc:284:1:trailing-whitespace
+Source/Scripts/CWMissionScript.psc:288:1:assignment-overwritten
 Source/Scripts/CWMissionScript.psc:288:1:function-length
 Source/Scripts/CWMissionScript.psc:288:1:identifier-casing
 Source/Scripts/CWMissionScript.psc:288:1:identifier-casing
@@ -16840,6 +16853,7 @@ Source/Scripts/CWScript.psc:2377:1:trailing-whitespace
 Source/Scripts/CWScript.psc:2381:1:trailing-whitespace
 Source/Scripts/CWScript.psc:2386:1:function-length
 Source/Scripts/CWScript.psc:2387:1:indentation
+Source/Scripts/CWScript.psc:2388:1:assignment-overwritten
 Source/Scripts/CWScript.psc:2388:1:identifier-casing
 Source/Scripts/CWScript.psc:2389:1:trailing-whitespace
 Source/Scripts/CWScript.psc:2409:121:line-length
@@ -18132,6 +18146,7 @@ Source/Scripts/CWScript.psc:4779:1:trailing-whitespace
 Source/Scripts/CWScript.psc:4793:1:function-length
 Source/Scripts/CWScript.psc:4794:1:indentation
 Source/Scripts/CWScript.psc:4794:121:line-length
+Source/Scripts/CWScript.psc:4796:1:assignment-overwritten
 Source/Scripts/CWScript.psc:4799:1:trailing-whitespace
 Source/Scripts/CWScript.psc:4801:1:trailing-whitespace
 Source/Scripts/CWScript.psc:4811:1:indentation
@@ -18868,6 +18883,7 @@ Source/Scripts/CWSiegeScript.psc:319:1:indentation
 Source/Scripts/CWSiegeScript.psc:320:1:indentation
 Source/Scripts/CWSiegeScript.psc:321:1:indentation
 Source/Scripts/CWSiegeScript.psc:322:1:indentation
+Source/Scripts/CWSiegeScript.psc:345:1:assignment-overwritten
 Source/Scripts/CWSiegeScript.psc:345:1:function-length
 Source/Scripts/CWSiegeScript.psc:345:1:identifier-casing
 Source/Scripts/CWSiegeScript.psc:346:1:trailing-whitespace
@@ -18883,6 +18899,7 @@ Source/Scripts/CWSiegeScript.psc:377:1:trailing-whitespace
 Source/Scripts/CWSiegeScript.psc:379:1:indentation
 Source/Scripts/CWSiegeScript.psc:382:1:trailing-whitespace
 Source/Scripts/CWSiegeScript.psc:384:1:trailing-whitespace
+Source/Scripts/CWSiegeScript.psc:389:1:assignment-overwritten
 Source/Scripts/CWSiegeScript.psc:389:1:function-length
 Source/Scripts/CWSiegeScript.psc:389:1:identifier-casing
 Source/Scripts/CWSiegeScript.psc:390:1:trailing-whitespace
@@ -21680,6 +21697,7 @@ Source/Scripts/CritterSpawn.psc:167:121:line-length
 Source/Scripts/CritterSpawn.psc:172:14:forbidden-functions
 Source/Scripts/CritterSpawn.psc:181:6:exclamation-spacing
 Source/Scripts/CritterSpawn.psc:187:1:indentation
+Source/Scripts/CritterSpawn.psc:194:1:assignment-overwritten
 Source/Scripts/CritterSpawn.psc:194:1:identifier-casing
 Source/Scripts/CritterSpawn.psc:196:1:none-form-usage
 Source/Scripts/CritterSpawn.psc:196:1:none-form-usage
@@ -29097,6 +29115,7 @@ Source/Scripts/DLC1CritterFollowSCRIPT.psc:113:121:line-length
 Source/Scripts/DLC1CritterFollowSCRIPT.psc:120:1:trailing-whitespace
 Source/Scripts/DLC1CritterFollowSCRIPT.psc:124:29:unresolved-script
 Source/Scripts/DLC1CritterFollowSCRIPT.psc:126:1:identifier-casing
+Source/Scripts/DLC1CritterFollowSCRIPT.psc:129:1:assignment-overwritten
 Source/Scripts/DLC1CritterFollowSCRIPT.psc:129:1:identifier-casing
 Source/Scripts/DLC1CritterFollowSCRIPT.psc:131:1:indentation
 Source/Scripts/DLC1CritterFollowSCRIPT.psc:136:121:line-length
@@ -34541,6 +34560,7 @@ Source/Scripts/DLC1TrapPoisonBloom.psc:231:1:indentation
 Source/Scripts/DLC1TrapPoisonBloom.psc:234:1:trailing-whitespace
 Source/Scripts/DLC1TrapPoisonBloom.psc:238:64:semicolon
 Source/Scripts/DLC1TrapPoisonBloom.psc:239:121:line-length
+Source/Scripts/DLC1TrapPoisonBloom.psc:241:1:assignment-overwritten
 Source/Scripts/DLC1TrapPoisonBloom.psc:241:1:cyclomatic-complexity
 Source/Scripts/DLC1TrapPoisonBloom.psc:241:1:function-length
 Source/Scripts/DLC1TrapPoisonBloom.psc:241:1:function-override
@@ -37298,6 +37318,7 @@ Source/Scripts/DLC1VampireFeedBystanderScript.psc:53:1:identifier-casing
 Source/Scripts/DLC1VampireFeedBystanderScript.psc:54:1:trailing-whitespace
 Source/Scripts/DLC1VampireFeedBystanderScript.psc:55:3:strict-boolean
 Source/Scripts/DLC1VampireFeedBystanderScript.psc:57:1:indentation
+Source/Scripts/DLC1VampireFeedBystanderScript.psc:59:1:assignment-overwritten
 Source/Scripts/DLC1VampireFeedBystanderScript.psc:59:1:identifier-casing
 Source/Scripts/DLC1VampireFeedBystanderScript.psc:60:12:forbidden-functions
 Source/Scripts/DLC1VampireFeedBystanderScript.psc:63:1:indentation
@@ -38853,6 +38874,7 @@ Source/Scripts/DLC1_NPCMentalModelScript.psc:621:1:unnecessary-function
 Source/Scripts/DLC1_NPCMentalModelScript.psc:630:1:function-length
 Source/Scripts/DLC1_NPCMentalModelScript.psc:631:1:identifier-casing
 Source/Scripts/DLC1_NPCMentalModelScript.psc:631:1:none-form-usage
+Source/Scripts/DLC1_NPCMentalModelScript.psc:633:1:assignment-overwritten
 Source/Scripts/DLC1_NPCMentalModelScript.psc:633:1:identifier-casing
 Source/Scripts/DLC1_NPCMentalModelScript.psc:637:1:identifier-casing
 Source/Scripts/DLC1_NPCMentalModelScript.psc:637:1:none-form-usage
@@ -50203,6 +50225,7 @@ Source/Scripts/DLC2ExpSpiderZombieAbSelfSCRIPT.psc:20:37:trailing-whitespace
 Source/Scripts/DLC2ExpSpiderZombieOnHumanSCRIPT.psc:1:75:trailing-whitespace
 Source/Scripts/DLC2ExpSpiderZombieOnHumanSCRIPT.psc:9:39:trailing-whitespace
 Source/Scripts/DLC2ExpSpiderZombieOnHumanSCRIPT.psc:15:1:function-override
+Source/Scripts/DLC2ExpSpiderZombieOnHumanSCRIPT.psc:16:1:assignment-overwritten
 Source/Scripts/DLC2ExpSpiderZombieOnHumanSCRIPT.psc:18:19:boolean-simplification
 Source/Scripts/DLC2ExpSpiderZombieOnHumanSCRIPT.psc:20:1:none-form-usage
 Source/Scripts/DLC2ExpSpiderZombieOnHumanSCRIPT.psc:21:1:none-form-usage
@@ -53521,6 +53544,7 @@ Source/Scripts/DLC2MiraakAltarScript.psc:106:1:none-form-usage
 Source/Scripts/DLC2MiraakAltarScript.psc:109:1:none-form-usage
 Source/Scripts/DLC2MiraakAltarScript.psc:112:1:none-form-usage
 Source/Scripts/DLC2MiraakAltarScript.psc:115:1:trailing-whitespace
+Source/Scripts/DLC2MiraakAltarScript.psc:117:1:assignment-overwritten
 Source/Scripts/DLC2MiraakAltarScript.psc:117:1:identifier-casing
 Source/Scripts/DLC2MiraakAltarScript.psc:119:1:none-form-usage
 Source/Scripts/DLC2MiraakAltarScript.psc:119:1:unchecked-cast
@@ -56256,6 +56280,7 @@ Source/Scripts/DLC2TrapApoTentacle.psc:276:1:indentation
 Source/Scripts/DLC2TrapApoTentacle.psc:277:1:indentation
 Source/Scripts/DLC2TrapApoTentacle.psc:278:1:identifier-casing
 Source/Scripts/DLC2TrapApoTentacle.psc:280:1:identifier-casing
+Source/Scripts/DLC2TrapApoTentacle.psc:283:1:assignment-overwritten
 Source/Scripts/DLC2TrapApoTentacle.psc:283:1:cyclomatic-complexity
 Source/Scripts/DLC2TrapApoTentacle.psc:283:1:function-length
 Source/Scripts/DLC2TrapApoTentacle.psc:283:1:identifier-casing
@@ -56276,6 +56301,7 @@ Source/Scripts/DLC2TrapApoTentacle.psc:315:1:unchecked-cast
 Source/Scripts/DLC2TrapApoTentacle.psc:316:1:indentation
 Source/Scripts/DLC2TrapApoTentacle.psc:319:1:indentation
 Source/Scripts/DLC2TrapApoTentacle.psc:327:1:indentation
+Source/Scripts/DLC2TrapApoTentacle.psc:338:1:assignment-overwritten
 Source/Scripts/DLC2TrapApoTentacle.psc:338:1:function-length
 Source/Scripts/DLC2TrapApoTentacle.psc:338:1:identifier-casing
 Source/Scripts/DLC2TrapApoTentacle.psc:338:1:identifier-casing
@@ -64146,63 +64172,77 @@ Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:37:1:identifier-casing
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:38:1:identifier-casing
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:40:1:cyclomatic-complexity
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:40:1:function-length
+Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:43:1:assignment-overwritten
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:43:1:identifier-casing
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:43:1:none-form-usage
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:44:20:exclamation-spacing
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:44:35:exclamation-spacing
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:44:60:exclamation-spacing
+Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:50:1:assignment-overwritten
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:50:1:none-form-usage
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:51:20:exclamation-spacing
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:51:35:exclamation-spacing
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:51:60:exclamation-spacing
+Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:57:1:assignment-overwritten
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:57:1:none-form-usage
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:58:20:exclamation-spacing
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:58:35:exclamation-spacing
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:58:60:exclamation-spacing
+Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:64:1:assignment-overwritten
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:64:1:none-form-usage
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:65:20:exclamation-spacing
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:65:35:exclamation-spacing
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:65:60:exclamation-spacing
+Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:71:1:assignment-overwritten
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:71:1:none-form-usage
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:72:20:exclamation-spacing
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:72:35:exclamation-spacing
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:72:60:exclamation-spacing
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:77:7:trailing-whitespace
+Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:78:1:assignment-overwritten
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:78:1:none-form-usage
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:79:20:exclamation-spacing
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:79:35:exclamation-spacing
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:79:60:exclamation-spacing
+Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:85:1:assignment-overwritten
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:85:1:none-form-usage
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:86:20:exclamation-spacing
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:86:35:exclamation-spacing
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:86:60:exclamation-spacing
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:91:7:trailing-whitespace
+Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:92:1:assignment-overwritten
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:92:1:none-form-usage
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:93:20:exclamation-spacing
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:93:35:exclamation-spacing
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:93:60:exclamation-spacing
+Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:99:1:assignment-overwritten
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:99:1:none-form-usage
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:100:20:exclamation-spacing
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:100:35:exclamation-spacing
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:100:60:exclamation-spacing
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:105:7:trailing-whitespace
+Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:106:1:assignment-overwritten
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:106:1:none-form-usage
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:107:20:exclamation-spacing
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:107:35:exclamation-spacing
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:107:60:exclamation-spacing
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:112:7:trailing-whitespace
+Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:113:1:assignment-overwritten
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:113:1:none-form-usage
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:114:20:exclamation-spacing
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:114:35:exclamation-spacing
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:114:60:exclamation-spacing
+Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:120:1:assignment-overwritten
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:120:1:none-form-usage
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:121:20:exclamation-spacing
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:121:35:exclamation-spacing
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:121:60:exclamation-spacing
+Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:127:1:assignment-overwritten
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:127:1:none-form-usage
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:128:20:exclamation-spacing
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:128:35:exclamation-spacing
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:128:60:exclamation-spacing
+Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:134:1:assignment-overwritten
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:134:1:none-form-usage
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:135:20:exclamation-spacing
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:135:35:exclamation-spacing
@@ -64211,6 +64251,7 @@ Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:141:1:none-form-usage
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:142:20:exclamation-spacing
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:142:35:exclamation-spacing
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:142:60:exclamation-spacing
+Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:149:1:assignment-overwritten
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:150:21:exclamation-spacing
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:150:36:exclamation-spacing
 Source/Scripts/DLC2dunKolbjornDeathTrackingScript.psc:150:61:exclamation-spacing
@@ -71001,6 +71042,7 @@ Source/Scripts/FireFly.psc:90:12:forbidden-functions
 Source/Scripts/FireFly.psc:98:1:trailing-whitespace
 Source/Scripts/FireFly.psc:102:29:unresolved-script
 Source/Scripts/FireFly.psc:104:1:identifier-casing
+Source/Scripts/FireFly.psc:107:1:assignment-overwritten
 Source/Scripts/FireFly.psc:107:1:identifier-casing
 Source/Scripts/FireFly.psc:109:1:indentation
 Source/Scripts/FireFly.psc:114:121:line-length
@@ -72993,7 +73035,9 @@ Source/Scripts/HazardBase.psc:89:1:indentation
 Source/Scripts/HazardBase.psc:90:1:indentation
 Source/Scripts/HazardBase.psc:91:1:trailing-whitespace
 Source/Scripts/HazardBase.psc:92:1:identifier-casing
+Source/Scripts/HazardBase.psc:93:1:assignment-overwritten
 Source/Scripts/HazardBase.psc:93:1:identifier-casing
+Source/Scripts/HazardBase.psc:94:1:assignment-overwritten
 Source/Scripts/HazardBase.psc:94:1:identifier-casing
 Source/Scripts/HazardBase.psc:95:17:operator-spacing
 Source/Scripts/HazardBase.psc:97:20:operator-spacing
@@ -81438,6 +81482,7 @@ Source/Scripts/MS11QuestScript.psc:83:6:exclamation-spacing
 Source/Scripts/MS11QuestScript.psc:88:1:function-length
 Source/Scripts/MS11QuestScript.psc:88:1:identifier-casing
 Source/Scripts/MS11QuestScript.psc:88:1:identifier-casing
+Source/Scripts/MS11QuestScript.psc:89:1:assignment-overwritten
 Source/Scripts/MS11QuestScript.psc:89:1:identifier-casing
 Source/Scripts/MS11QuestScript.psc:90:1:none-form-usage
 Source/Scripts/MS11QuestScript.psc:97:1:trailing-whitespace
@@ -82532,6 +82577,7 @@ Source/Scripts/MagicTrap.psc:390:14:unused-property
 Source/Scripts/MagicTrap.psc:392:14:unused-property
 Source/Scripts/MagicTrap.psc:396:1:identifier-casing
 Source/Scripts/MagicTrap.psc:398:1:semicolon
+Source/Scripts/MagicTrap.psc:399:1:assignment-overwritten
 Source/Scripts/MagicTrap.psc:399:1:function-length
 Source/Scripts/MagicTrap.psc:399:1:identifier-casing
 Source/Scripts/MagicTrap.psc:400:1:indentation
@@ -82681,6 +82727,7 @@ Source/Scripts/MannequinActivatorSCRIPT.psc:224:1:cyclomatic-complexity
 Source/Scripts/MannequinActivatorSCRIPT.psc:224:1:function-length
 Source/Scripts/MannequinActivatorSCRIPT.psc:224:1:identifier-casing
 Source/Scripts/MannequinActivatorSCRIPT.psc:226:1:trailing-whitespace
+Source/Scripts/MannequinActivatorSCRIPT.psc:227:1:assignment-overwritten
 Source/Scripts/MannequinActivatorSCRIPT.psc:228:1:trailing-whitespace
 Source/Scripts/MannequinActivatorSCRIPT.psc:229:51:boolean-simplification
 Source/Scripts/MannequinActivatorSCRIPT.psc:234:1:trailing-whitespace
@@ -87022,6 +87069,7 @@ Source/Scripts/PlayerWerewolfCureSconceScript.psc:13:1:none-form-usage
 Source/Scripts/PlayerWerewolfCureSconceScript.psc:17:12:forbidden-functions
 Source/Scripts/PlayerWerewolfCureSconceScript.psc:18:1:none-form-usage
 Source/Scripts/PlayerWerewolfCureSconceScript.psc:18:40:forbidden-functions
+Source/Scripts/PlayerWerewolfCureSconceScript.psc:19:1:assignment-overwritten
 Source/Scripts/PlayerWerewolfCureSconceScript.psc:19:1:identifier-casing
 Source/Scripts/PlayerWerewolfCureSconceScript.psc:19:20:trailing-whitespace
 Source/Scripts/PlayerWerewolfCureSconceScript.psc:20:1:none-form-usage
@@ -121140,6 +121188,7 @@ Source/Scripts/RPDefault_Math.psc:23:1:unnecessary-function
 Source/Scripts/RPDefault_Math.psc:29:1:function-length
 Source/Scripts/RPDefault_Math.psc:29:1:identifier-casing
 Source/Scripts/RPDefault_Math.psc:29:1:identifier-casing
+Source/Scripts/RPDefault_Math.psc:30:1:assignment-overwritten
 Source/Scripts/RPDefault_Math.psc:30:1:identifier-casing
 Source/Scripts/RPDefault_Math.psc:31:1:indentation
 Source/Scripts/RPDefault_Math.psc:31:1:numeric-comparison
@@ -121158,6 +121207,7 @@ Source/Scripts/RPDefault_Math.psc:45:1:indentation
 Source/Scripts/RPDefault_Math.psc:49:1:function-length
 Source/Scripts/RPDefault_Math.psc:49:1:identifier-casing
 Source/Scripts/RPDefault_Math.psc:49:1:identifier-casing
+Source/Scripts/RPDefault_Math.psc:50:1:assignment-overwritten
 Source/Scripts/RPDefault_Math.psc:50:1:identifier-casing
 Source/Scripts/RPDefault_Math.psc:51:1:indentation
 Source/Scripts/RPDefault_Math.psc:51:1:numeric-comparison
@@ -121635,6 +121685,7 @@ Source/Scripts/RPDefault_OnHit.psc:46:1:trailing-whitespace
 Source/Scripts/RPDefault_OnHit.psc:48:1:trailing-whitespace
 Source/Scripts/RPDefault_OnHit.psc:49:40:forbidden-functions
 Source/Scripts/RPDefault_OnHit.psc:53:1:trailing-whitespace
+Source/Scripts/RPDefault_OnHit.psc:54:1:assignment-overwritten
 Source/Scripts/RPDefault_OnHit.psc:54:1:identifier-casing
 Source/Scripts/RPDefault_OnHit.psc:55:1:identifier-casing
 Source/Scripts/RPDefault_OnHit.psc:55:121:line-length
@@ -121709,6 +121760,7 @@ Source/Scripts/RPDefault_OnHitAlias.psc:45:1:trailing-whitespace
 Source/Scripts/RPDefault_OnHitAlias.psc:47:1:trailing-whitespace
 Source/Scripts/RPDefault_OnHitAlias.psc:48:40:forbidden-functions
 Source/Scripts/RPDefault_OnHitAlias.psc:52:1:trailing-whitespace
+Source/Scripts/RPDefault_OnHitAlias.psc:53:1:assignment-overwritten
 Source/Scripts/RPDefault_OnHitAlias.psc:53:1:identifier-casing
 Source/Scripts/RPDefault_OnHitAlias.psc:54:1:identifier-casing
 Source/Scripts/RPDefault_OnHitAlias.psc:54:121:line-length
@@ -122316,6 +122368,7 @@ Source/Scripts/RPDefault_Utility.psc:158:1:semicolon
 Source/Scripts/RPDefault_Utility.psc:160:60:trailing-whitespace
 Source/Scripts/RPDefault_Utility.psc:161:56:trailing-whitespace
 Source/Scripts/RPDefault_Utility.psc:163:1:semicolon
+Source/Scripts/RPDefault_Utility.psc:166:1:assignment-overwritten
 Source/Scripts/RPDefault_Utility.psc:166:1:cyclomatic-complexity
 Source/Scripts/RPDefault_Utility.psc:166:1:function-length
 Source/Scripts/RPDefault_Utility.psc:166:1:identifier-casing
@@ -144516,6 +144569,7 @@ Source/Scripts/TestMoth.psc:99:12:forbidden-functions
 Source/Scripts/TestMoth.psc:107:1:trailing-whitespace
 Source/Scripts/TestMoth.psc:111:29:unresolved-script
 Source/Scripts/TestMoth.psc:113:1:identifier-casing
+Source/Scripts/TestMoth.psc:116:1:assignment-overwritten
 Source/Scripts/TestMoth.psc:116:1:identifier-casing
 Source/Scripts/TestMoth.psc:118:1:indentation
 Source/Scripts/TestMoth.psc:123:121:line-length
@@ -144859,6 +144913,7 @@ Source/Scripts/TrapBear.psc:86:1:empty-event-handler
 Source/Scripts/TrapBear.psc:86:1:function-override
 Source/Scripts/TrapBear.psc:87:1:indentation
 Source/Scripts/TrapBear.psc:88:1:indentation
+Source/Scripts/TrapBear.psc:91:1:assignment-overwritten
 Source/Scripts/TrapBear.psc:91:1:function-length
 Source/Scripts/TrapBear.psc:91:1:identifier-casing
 Source/Scripts/TrapBear.psc:91:1:identifier-casing
@@ -146786,6 +146841,7 @@ Source/Scripts/TrapTriggerBase.psc:264:1:identifier-casing
 Source/Scripts/TrapTriggerBase.psc:264:1:identifier-casing
 Source/Scripts/TrapTriggerBase.psc:266:1:useless-downcast
 Source/Scripts/TrapTriggerBase.psc:274:1:indentation
+Source/Scripts/TrapTriggerBase.psc:275:1:assignment-overwritten
 Source/Scripts/TrapTriggerBase.psc:275:1:cyclomatic-complexity
 Source/Scripts/TrapTriggerBase.psc:275:1:function-length
 Source/Scripts/TrapTriggerBase.psc:275:1:identifier-casing
@@ -146806,6 +146862,7 @@ Source/Scripts/TrapTriggerBase.psc:307:1:unchecked-cast
 Source/Scripts/TrapTriggerBase.psc:308:1:indentation
 Source/Scripts/TrapTriggerBase.psc:311:1:indentation
 Source/Scripts/TrapTriggerBase.psc:319:1:indentation
+Source/Scripts/TrapTriggerBase.psc:330:1:assignment-overwritten
 Source/Scripts/TrapTriggerBase.psc:330:1:function-length
 Source/Scripts/TrapTriggerBase.psc:330:1:identifier-casing
 Source/Scripts/TrapTriggerBase.psc:330:1:identifier-casing
@@ -147974,6 +148031,7 @@ Source/Scripts/WETriggerScript.psc:152:1:none-form-usage
 Source/Scripts/WETriggerScript.psc:153:1:none-form-usage
 Source/Scripts/WETriggerScript.psc:154:1:none-form-usage
 Source/Scripts/WETriggerScript.psc:155:1:trailing-whitespace
+Source/Scripts/WETriggerScript.psc:157:1:assignment-overwritten
 Source/Scripts/WETriggerScript.psc:157:1:identifier-casing
 Source/Scripts/WETriggerScript.psc:157:84:trailing-whitespace
 Source/Scripts/WETriggerScript.psc:158:1:trailing-whitespace
@@ -149839,6 +149897,7 @@ Source/Scripts/WitchlightActorScript.psc:84:1:indentation
 Source/Scripts/WitchlightActorScript.psc:85:1:unused-local-variable
 Source/Scripts/WitchlightActorScript.psc:86:1:indentation
 Source/Scripts/WitchlightActorScript.psc:87:1:trailing-whitespace
+Source/Scripts/WitchlightActorScript.psc:89:1:assignment-overwritten
 Source/Scripts/WitchlightActorScript.psc:90:1:trailing-whitespace
 Source/Scripts/WitchlightActorScript.psc:91:2:empty-body
 Source/Scripts/WitchlightActorScript.psc:92:1:indentation
@@ -152252,6 +152311,7 @@ Source/Scripts/ccBGSSSE001_FishingSystemScript.psc:518:1:trailing-whitespace
 Source/Scripts/ccBGSSSE001_FishingSystemScript.psc:523:5:exclamation-spacing
 Source/Scripts/ccBGSSSE001_FishingSystemScript.psc:529:1:none-form-usage
 Source/Scripts/ccBGSSSE001_FishingSystemScript.psc:539:1:function-length
+Source/Scripts/ccBGSSSE001_FishingSystemScript.psc:540:1:assignment-overwritten
 Source/Scripts/ccBGSSSE001_FishingSystemScript.psc:540:1:identifier-casing
 Source/Scripts/ccBGSSSE001_FishingSystemScript.psc:541:1:identifier-casing
 Source/Scripts/ccBGSSSE001_FishingSystemScript.psc:542:1:identifier-casing
@@ -154192,6 +154252,7 @@ Source/Scripts/critterDragonFly.psc:76:1:function-override
 Source/Scripts/critterDragonFly.psc:77:1:trailing-whitespace
 Source/Scripts/critterDragonFly.psc:79:11:forbidden-functions
 Source/Scripts/critterDragonFly.psc:84:1:identifier-casing
+Source/Scripts/critterDragonFly.psc:87:1:assignment-overwritten
 Source/Scripts/critterDragonFly.psc:87:1:identifier-casing
 Source/Scripts/critterDragonFly.psc:89:1:indentation
 Source/Scripts/critterDragonFly.psc:92:1:trailing-whitespace
@@ -154279,6 +154340,7 @@ Source/Scripts/critterFish.psc:83:1:trailing-whitespace
 Source/Scripts/critterFish.psc:85:6:exclamation-spacing
 Source/Scripts/critterFish.psc:85:13:forbidden-functions
 Source/Scripts/critterFish.psc:90:1:identifier-casing
+Source/Scripts/critterFish.psc:93:1:assignment-overwritten
 Source/Scripts/critterFish.psc:93:1:identifier-casing
 Source/Scripts/critterFish.psc:95:1:indentation
 Source/Scripts/critterFish.psc:100:121:line-length
@@ -154404,6 +154466,7 @@ Source/Scripts/critterMoth.psc:111:121:line-length
 Source/Scripts/critterMoth.psc:118:1:trailing-whitespace
 Source/Scripts/critterMoth.psc:122:29:unresolved-script
 Source/Scripts/critterMoth.psc:124:1:identifier-casing
+Source/Scripts/critterMoth.psc:127:1:assignment-overwritten
 Source/Scripts/critterMoth.psc:127:1:identifier-casing
 Source/Scripts/critterMoth.psc:129:1:indentation
 Source/Scripts/critterMoth.psc:134:121:line-length
@@ -164671,6 +164734,7 @@ Source/Scripts/dunMiddenAtronachForgeSCRIPT.psc:59:1:identifier-casing
 Source/Scripts/dunMiddenAtronachForgeSCRIPT.psc:59:1:identifier-casing
 Source/Scripts/dunMiddenAtronachForgeSCRIPT.psc:61:11:forbidden-functions
 Source/Scripts/dunMiddenAtronachForgeSCRIPT.psc:62:1:trailing-whitespace
+Source/Scripts/dunMiddenAtronachForgeSCRIPT.psc:63:1:assignment-overwritten
 Source/Scripts/dunMiddenAtronachForgeSCRIPT.psc:63:1:identifier-casing
 Source/Scripts/dunMiddenAtronachForgeSCRIPT.psc:64:1:none-form-usage
 Source/Scripts/dunMiddenAtronachForgeSCRIPT.psc:68:1:none-form-usage
@@ -166596,6 +166660,7 @@ Source/Scripts/dunRiftenJailSetStageOnOpen.psc:22:1:nesting-depth
 Source/Scripts/dunRiftenJailSetStageOnOpen.psc:25:1:none-form-usage
 Source/Scripts/dunRiftenJailSetStageOnOpen.psc:27:1:identifier-casing
 Source/Scripts/dunRiftenJailSetStageOnOpen.psc:27:26:forbidden-functions
+Source/Scripts/dunRiftenJailSetStageOnOpen.psc:28:1:assignment-overwritten
 Source/Scripts/dunRiftenJailSetStageOnOpen.psc:28:1:identifier-casing
 Source/Scripts/dunRiftenJailSetStageOnOpen.psc:29:18:assignment-operator-spacing
 Source/Scripts/dunRiftenJailSetStageOnOpen.psc:30:15:forbidden-functions
@@ -172185,6 +172250,7 @@ Source/Scripts/testPhilDwarvenForgeInputBoxSCRIPT.psc:54:121:line-length
 Source/Scripts/testPhilDwarvenForgeInputBoxSCRIPT.psc:55:121:line-length
 Source/Scripts/testPhilDwarvenForgeInputBoxSCRIPT.psc:56:121:line-length
 Source/Scripts/testPhilDwarvenForgeInputBoxSCRIPT.psc:58:9:trailing-whitespace
+Source/Scripts/testPhilDwarvenForgeInputBoxSCRIPT.psc:67:1:assignment-overwritten
 Source/Scripts/testPhilDwarvenForgeInputBoxSCRIPT.psc:67:1:cyclomatic-complexity
 Source/Scripts/testPhilDwarvenForgeInputBoxSCRIPT.psc:67:1:function-length
 Source/Scripts/testPhilDwarvenForgeInputBoxSCRIPT.psc:67:1:identifier-casing
