@@ -81,6 +81,16 @@ impl IdentifierCasing {
     }
 }
 
+/// Leading UTF-8 BOM policy for the "UTF-8 BOM" lint.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum Utf8BomMode {
+    Required,
+    Allowed,
+    #[default]
+    Forbidden,
+}
+
 include!(concat!(env!("OUT_DIR"), "/config_struct.rs"));
 
 include!(concat!(env!("OUT_DIR"), "/rules_struct.rs"));
