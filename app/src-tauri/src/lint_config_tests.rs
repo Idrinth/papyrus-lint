@@ -1,5 +1,20 @@
 use super::*;
+use tauri::test::{
+    assert_ipc_response, get_ipc_response, mock_builder, mock_context, noop_assets, INVOKE_KEY,
+};
 use tempfile::tempdir;
+
+fn invoke_request(command: &str, body: serde_json::Value) -> tauri::webview::InvokeRequest {
+    tauri::webview::InvokeRequest {
+        cmd: command.into(),
+        callback: tauri::ipc::CallbackFn(0),
+        error: tauri::ipc::CallbackFn(1),
+        url: "tauri://localhost".parse().unwrap(),
+        body: tauri::ipc::InvokeBody::Json(body),
+        headers: Default::default(),
+        invoke_key: INVOKE_KEY.to_string(),
+    }
+}
 
 #[test]
 fn config_commands_round_trip_lint_and_compiler_settings() {
@@ -375,5 +390,92 @@ fn project_info_reports_both_conventional_layouts_before_absolute_roots() {
             second.to_string_lossy().into_owned(),
             external.path().to_string_lossy().into_owned(),
         ]
+    );
+}
+
+#[test]
+fn lint_config_commands_accept_frontend_payloads_over_ipc() {
+    let dir = tempdir().unwrap();
+    let dir = dir.path().to_string_lossy().into_owned();
+    let config = papyrus_lints::Config {
+        semicolon: true,
+        indentation_width: 2,
+        ..Default::default()
+    };
+    let app = crate::configure_builder(mock_builder())
+        .build(mock_context(noop_assets()))
+        .unwrap();
+    let webview = tauri::WebviewWindowBuilder::new(&app, "lint-config-test", Default::default())
+        .build()
+        .unwrap();
+
+    assert_ipc_response(
+        &webview,
+        invoke_request(
+            "save_lint_config",
+            serde_json::json!({ "dir": dir, "config": config }),
+        ),
+        Ok(()),
+    );
+
+    let loaded = get_ipc_response(
+        &webview,
+        invoke_request("load_lint_config", serde_json::json!({ "dir": dir })),
+    )
+    .unwrap()
+    .deserialize::<papyrus_lints::Config>()
+    .unwrap();
+    assert_eq!(loaded, config);
+
+    assert_ipc_response(
+        &webview,
+        invoke_request(
+            "save_script_roots",
+            serde_json::json!({ "dir": dir, "roots": ["shared", "generated"] }),
+        ),
+        Ok(()),
+    );
+    assert_ipc_response(
+        &webview,
+        invoke_request("load_script_roots", serde_json::json!({ "dir": dir })),
+        Ok(vec!["shared", "generated"]),
+    );
+}
+
+#[test]
+fn lint_config_commands_reject_malformed_frontend_payloads_over_ipc() {
+    let app = crate::configure_builder(mock_builder())
+        .build(mock_context(noop_assets()))
+        .unwrap();
+    let webview =
+        tauri::WebviewWindowBuilder::new(&app, "lint-config-error-test", Default::default())
+            .build()
+            .unwrap();
+
+    let missing_dir = get_ipc_response(
+        &webview,
+        invoke_request("load_lint_config", serde_json::json!({})),
+    )
+    .expect_err("a missing directory should be rejected");
+    assert!(
+        missing_dir
+            .as_str()
+            .is_some_and(|message| message.contains("missing required key dir")),
+        "{missing_dir}"
+    );
+
+    let invalid_roots = get_ipc_response(
+        &webview,
+        invoke_request(
+            "save_script_roots",
+            serde_json::json!({ "dir": ".", "roots": false }),
+        ),
+    )
+    .expect_err("non-array script roots should be rejected");
+    assert!(
+        invalid_roots
+            .as_str()
+            .is_some_and(|message| message.contains("invalid type")),
+        "{invalid_roots}"
     );
 }
