@@ -28,7 +28,7 @@ fn flags_functions_above_the_maximum() {
     let source = "ScriptName Example\n\nFunction Setup(Actor a, ObjectReference b, Form c, Int d, Float e, Bool f)\nEndFunction\n";
     let diagnostics = check(source, 5);
     assert_eq!(diagnostics.len(), 1);
-    assert!(diagnostics[0].message.starts_with("[info]"));
+    assert!(diagnostics[0].message.starts_with("[warning]"));
     assert!(diagnostics[0].message.contains("has 6 parameters"));
     assert!(diagnostics[0].message.contains("maximum: 5"));
     assert_eq!(diagnostics[0].rule, RULE);
@@ -63,6 +63,7 @@ fn respects_the_strict_default_of_five() {
         &mut crate::external_signatures::NoExternalSignatures,
     );
     assert_eq!(diagnostics.len(), 1);
+    assert!(diagnostics[0].message.starts_with("[warning]"));
 }
 
 #[test]
