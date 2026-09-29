@@ -6,9 +6,10 @@
 // selected, filtering/failure-threshold logic driven by CLI flags, and
 // writing the finished report to stdout or `--output <path>`.
 pub(crate) use papyrus_lint_output::{
-    build_ai_report, colorize, format_diagnostic_line, format_parser_error_line, generated_at,
-    resolve_color, rule_counts, severity_counts, to_json_diagnostics, AiFileReport, AiSource,
-    ColorChoice, ParserErrorKind, ANSI_GREEN, ANSI_RED, ANSI_YELLOW,
+    build_ai_report, colorize, format_diagnostic_line, format_parser_error_line,
+    format_short_diagnostic_line, format_short_parser_error_line, generated_at, resolve_color,
+    rule_counts, severity_counts, to_json_diagnostics, AiFileReport, AiSource, ColorChoice,
+    ParserErrorKind, ANSI_GREEN, ANSI_RED, ANSI_YELLOW,
 };
 pub use papyrus_lint_output::{JsonDiagnostic, JsonFileReport, JsonParserError, JsonReport};
 
@@ -79,6 +80,7 @@ pub(crate) fn normalize_tag_filter(tag_filter: Option<String>) -> Result<Option<
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub(crate) enum OutputFormat {
     Plain,
+    Short,
     Json,
     Ai,
 }
@@ -164,8 +166,9 @@ pub(crate) fn flush_report(
 /// report afterward in the script's original (not completion) order --
 /// see [`papyrus_lint_core::parallel::map_in_parallel`].
 pub(crate) struct FileOutcome {
-    /// This file's own slice of the plain-text report (a dry-run diff, if
-    /// any, followed by its diagnostic lines), empty in JSON/AI mode.
+    /// This file's own slice of the plain/short-text report (a dry-run
+    /// diff, if any, followed by its diagnostic lines), empty in JSON/AI
+    /// mode. Short mode never includes dry-run diffs.
     pub(crate) plain_text: Vec<u8>,
     pub(crate) json_file: Option<JsonFileReport>,
     pub(crate) ai_file: Option<AiFileReport>,
