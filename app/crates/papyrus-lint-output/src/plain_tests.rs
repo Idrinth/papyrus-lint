@@ -147,3 +147,40 @@ fn parser_error_formatter_colorizes_location_and_kind() {
     assert!(formatted.contains("expected ')'"));
     assert!(formatted.contains("[parse]"));
 }
+
+#[test]
+fn short_diagnostic_formatter_is_path_line_column_rule_only() {
+    let finding = diagnostic("trailing-whitespace", "[warning] trailing whitespace");
+
+    let formatted = format_short_diagnostic_line("Example.psc", &finding);
+
+    assert_eq!(formatted, "Example.psc:4:7:trailing-whitespace");
+    assert!(!formatted.contains('['));
+    assert!(!formatted.contains("warning"));
+    assert!(!formatted.contains("http"));
+}
+
+#[test]
+fn short_parser_error_formatter_uses_lex_or_parse_as_rule_id() {
+    let parse_err = crate::JsonParserError {
+        kind: crate::ParserErrorKind::Parse,
+        line: 2,
+        column: 18,
+        message: "expected ')'".to_string(),
+    };
+    assert_eq!(
+        format_short_parser_error_line("Broken.psc", &parse_err),
+        "Broken.psc:2:18:parse"
+    );
+
+    let lex_err = crate::JsonParserError {
+        kind: crate::ParserErrorKind::Lex,
+        line: 1,
+        column: 3,
+        message: "unexpected character".to_string(),
+    };
+    assert_eq!(
+        format_short_parser_error_line("Broken.psc", &lex_err),
+        "Broken.psc:1:3:lex"
+    );
+}
