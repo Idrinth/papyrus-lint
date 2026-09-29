@@ -3,19 +3,18 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { assembleRules, configKeyFor, renderConfigTypes } from "./generate-config-types.mjs";
+import { assembleRules, configKeyFor, loadYamlFile, renderConfigTypes } from "./generate-config-types.mjs";
 
 const SAMPLE_SETTINGS = [
   {
     key: "game",
-    yaml_default: "skyrim",
+    yaml: { default: "skyrim" },
     ts_type: "Game",
     ts_alias: "Game",
     ui: {
       id: "game-select",
       widget: "game",
       mount: "lint-config-game",
-      ui_order: 0,
       label: "Target game",
       options: [
         { value: "skyrim", label: "Skyrim" },
@@ -25,68 +24,37 @@ const SAMPLE_SETTINGS = [
   },
   {
     key: "semicolon",
-    yaml_default: "false",
+    yaml: { default: "false" },
     ts_type: "boolean",
-    ui: { id: "semicolon-style", widget: "bool-select", mount: "lint-config-settings", ui_order: 10, true_value: "require", false_value: "forbid" },
+    ui: { id: "semicolon-style", widget: "bool-select", mount: "lint-config-settings", true_value: "require", false_value: "forbid" },
   },
   {
     key: "indentation",
-    yaml_default: "tab",
+    yaml: { default: "tab" },
     ts_type: "\"tab\" | \"space\"",
-    ui: { id: "indentation-style", widget: "mapped-select", mount: "lint-config-settings", ui_order: 20 },
+    ui: { id: "indentation-style", widget: "mapped-select", mount: "lint-config-settings" },
   },
   {
     key: "indentation_width",
-    yaml_default: "4",
+    yaml: { default: "4" },
     ts_type: "number",
-    ui: { id: "indentation-width", widget: "number", mount: "lint-config-settings", ui_order: 30 },
+    ui: { id: "indentation-width", widget: "number", mount: "lint-config-settings" },
   },
   {
     key: "max_line_length",
-    yaml_default: "120",
+    yaml: { default: "120" },
     ts_type: "number",
-    ui: { id: "max-line-length", widget: "number", mount: "lint-config-settings", ui_order: 40 },
-  },
-  {
-    key: "identifier_casing",
-    yaml_default: "PascalCase",
-    ts_type: "IdentifierCasingStyle",
-    ts_alias: "IdentifierCasingStyle",
-    ui: {
-      id: "identifier-casing-style",
-      widget: "select",
-      mount: "lint-config-settings",
-      ui_order: 60,
-      options: [
-        { value: "camelCase", label: "camelCase" },
-        { value: "PascalCase", label: "PascalCase" },
-        { value: "snake_case", label: "snake_case" },
-        { value: "CONSTANT_CASE", label: "CONSTANT_CASE" },
-      ],
-    },
-  },
-  {
-    key: "cyclomatic_complexity_warning",
-    yaml_default: "10",
-    ts_type: "number",
-    ui: { id: "cyclomatic-complexity-warning", widget: "number", mount: "lint-config-settings", ui_order: 90 },
-  },
-  {
-    key: "cyclomatic_complexity_error",
-    yaml_default: "20",
-    ts_type: "number",
-    ui: { id: "cyclomatic-complexity-error", widget: "number", mount: "lint-config-settings", ui_order: 100 },
+    ui: { id: "max-line-length", widget: "number", mount: "lint-config-settings" },
   },
   {
     key: "type_casing",
-    yaml_default: "PascalCase",
+    yaml: { default: "PascalCase" },
     ts_type: "TypeCasingStyle",
     ts_alias: "TypeCasingStyle",
     ui: {
       id: "type-casing-style",
       widget: "select",
       mount: "lint-config-settings",
-      ui_order: 50,
       options: [
         { value: "PascalCase", label: "PascalCase" },
         { value: "camelCase", label: "camelCase" },
@@ -96,15 +64,31 @@ const SAMPLE_SETTINGS = [
     },
   },
   {
+    key: "identifier_casing",
+    yaml: { default: "PascalCase" },
+    ts_type: "IdentifierCasingStyle",
+    ts_alias: "IdentifierCasingStyle",
+    ui: {
+      id: "identifier-casing-style",
+      widget: "select",
+      mount: "lint-config-settings",
+      options: [
+        { value: "camelCase", label: "camelCase" },
+        { value: "PascalCase", label: "PascalCase" },
+        { value: "snake_case", label: "snake_case" },
+        { value: "CONSTANT_CASE", label: "CONSTANT_CASE" },
+      ],
+    },
+  },
+  {
     key: "named_arguments",
-    yaml_default: "never",
+    yaml: { default: "never" },
     ts_type: "NamedArgumentsStyle",
     ts_alias: "NamedArgumentsStyle",
     ui: {
       id: "named-arguments-style",
       widget: "select",
       mount: "lint-config-settings",
-      ui_order: 70,
       options: [
         { value: "always", label: "Always" },
         { value: "instead_of_defaults", label: "Instead of defaults" },
@@ -113,21 +97,14 @@ const SAMPLE_SETTINGS = [
     },
   },
   {
-    key: "min_wait_interval",
-    yaml_default: "0.1",
-    ts_type: "number",
-    ui: { id: "min-wait-interval", widget: "number", mount: "lint-config-settings", ui_order: 110 },
-  },
-  {
     key: "magic_numbers",
-    yaml_default: "loose",
+    yaml: { default: "loose" },
     ts_type: "MagicNumbersMode",
     ts_alias: "MagicNumbersMode",
     ui: {
       id: "magic-numbers-mode",
       widget: "select",
       mount: "lint-config-settings",
-      ui_order: 80,
       options: [
         { value: "loose", label: "Loose" },
         { value: "strict", label: "Strict" },
@@ -135,33 +112,51 @@ const SAMPLE_SETTINGS = [
     },
   },
   {
+    key: "cyclomatic_complexity_warning",
+    yaml: { default: "10" },
+    ts_type: "number",
+    ui: { id: "cyclomatic-complexity-warning", widget: "number", mount: "lint-config-settings" },
+  },
+  {
+    key: "cyclomatic_complexity_error",
+    yaml: { default: "20" },
+    ts_type: "number",
+    ui: { id: "cyclomatic-complexity-error", widget: "number", mount: "lint-config-settings" },
+  },
+  {
+    key: "min_wait_interval",
+    yaml: { default: "0.1" },
+    ts_type: "number",
+    ui: { id: "min-wait-interval", widget: "number", mount: "lint-config-settings" },
+  },
+  {
     key: "fail_on_warning",
-    yaml_default: "false",
+    yaml: { default: "false" },
     ts_type: "boolean",
-    ui: { id: "fail-on-warning", widget: "checkbox", mount: "lint-config-settings", ui_order: 120 },
+    ui: { id: "fail-on-warning", widget: "checkbox", mount: "lint-config-settings" },
   },
   {
     key: "fail_on_info",
-    yaml_default: "false",
+    yaml: { default: "false" },
     ts_type: "boolean",
-    ui: { id: "fail-on-info", widget: "checkbox", mount: "lint-config-settings", ui_order: 130 },
+    ui: { id: "fail-on-info", widget: "checkbox", mount: "lint-config-settings" },
   },
   {
     key: "bool_like_int",
-    yaml_default: "true",
+    yaml: { default: "true" },
     ts_type: "boolean",
-    ui: { id: "bool-like-int", widget: "checkbox", mount: "lint-config-settings", ui_order: 140 },
+    ui: { id: "bool-like-int", widget: "checkbox", mount: "lint-config-settings" },
   },
   {
     key: "assume_auto_properties_filled",
-    yaml_default: "false",
+    yaml: { default: "false" },
     ts_type: "boolean",
-    ui: { id: "assume-auto-properties-filled", widget: "checkbox", mount: "lint-config-settings", ui_order: 150 },
+    ui: { id: "assume-auto-properties-filled", widget: "checkbox", mount: "lint-config-settings" },
   },
 ];
 
 function yamlFor(...ruleLines) {
-  const top = SAMPLE_SETTINGS.map((setting) => `${setting.key}: ${setting.yaml_default}`).join("\n");
+  const top = SAMPLE_SETTINGS.map((setting) => `${setting.key}: ${setting.yaml.default}`).join("\n");
   return `${top}\nrules:\n${ruleLines.map((line) => `  ${line}\n`).join("")}`;
 }
 
@@ -225,8 +220,8 @@ describe("generate-config-types", () => {
 
   it("renders the repository lint settings against the default YAML and rules", () => {
     const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-    const settings = JSON.parse(
-      readFileSync(path.join(repoRoot, "shared/configuration/lint-settings.json"), "utf8"),
+    const settings = loadYamlFile(
+      path.join(repoRoot, "shared/configuration/lint-settings.yaml"),
     ).settings;
     const rendered = renderConfigTypes(
       assembleRules(path.join(repoRoot, "shared/rules")),
