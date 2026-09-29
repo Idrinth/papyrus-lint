@@ -36,12 +36,11 @@ class AssembleRulesTests(unittest.TestCase):
         ):
             assemble_rules(Path(directory))
 
-    def test_rejects_duplicate_repair_orders(self) -> None:
+    def test_rejects_repair_order_on_a_rule_file(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             self.write_rule(directory, "first-rule", id="first-rule", repair_order=1)
-            self.write_rule(directory, "second-rule", id="second-rule", repair_order=1)
 
-            with self.assertRaisesRegex(ValueError, "`repair_order` 1 is already used"):
+            with self.assertRaisesRegex(ValueError, "belongs in shared/rule-order.yaml"):
                 assemble_rules(Path(directory))
 
 
