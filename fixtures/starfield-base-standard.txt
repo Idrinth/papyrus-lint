@@ -81367,6 +81367,8 @@ Scripts/Source/SFBGS00D/SFBGS00DRandomEnableOnLoadScript.psc:79:1:indentation
 Scripts/Source/SFBGS00D/SFBGS00DRandomEnableOnLoadScript.psc:79:34:trailing-whitespace
 Scripts/Source/SFBGS00D/SFBGS00DRandomEnableOnLoadScript.psc:80:1:indentation
 Scripts/Source/SFBGS00D/SFBGS00DRandomEnableOnLoadScript.psc:80:15:forbidden-functions
+Scripts/Source/SFBGS00D/SFBGS00DRandomEnableOnLoadScript.psc:80:83:invalid-string-escape
+Scripts/Source/SFBGS00D/SFBGS00DRandomEnableOnLoadScript.psc:80:107:invalid-string-escape
 Scripts/Source/SFBGS00D/SFBGS00DRandomEnableOnLoadScript.psc:80:121:line-length
 Scripts/Source/SFBGS00D/SFBGS00DRandomEnableOnLoadScript.psc:81:1:indentation
 Scripts/Source/SFBGS00D/SFBGS00DRandomEnableOnLoadScript.psc:81:10:assignment-operator-spacing
