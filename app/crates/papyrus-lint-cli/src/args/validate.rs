@@ -12,9 +12,9 @@ use super::{ArgsError, BlobArgs, LintArgs, ParsedCommand};
 use crate::output::{normalize_tag_filter, ColorChoice, OutputFormat};
 
 /// Validates `raw` into a [`ParsedCommand`], performing every usage check a
-/// lint/fix run or `--blob` needs before any of the actual work
-/// (resolving paths, loading config, linting) begins. `fix` is supplied by
-/// the `lint` vs `fix` subcommand rather than a positional token.
+//! lint/fix run or `--blob` needs before any of the actual work
+//! (resolving paths, loading config, linting) begins. `fix` is supplied by
+//! the `lint` vs `fix` subcommand rather than a positional token.
 pub(super) fn validate(raw: RawArgs, fix: bool) -> Result<ParsedCommand, ArgsError> {
     let quiet_warnings = raw.quiet_warnings;
     let quiet_info = raw.quiet_info;
@@ -129,6 +129,7 @@ fn parse_lint_positionals(
 fn parse_output_format(format_flag: Option<&str>) -> Result<OutputFormat, ArgsError> {
     match format_flag {
         None | Some("plain") => Ok(OutputFormat::Plain),
+        Some("short") => Ok(OutputFormat::Short),
         Some("json") => Ok(OutputFormat::Json),
         Some("ai") => Ok(OutputFormat::Ai),
         Some(value) => Err(ArgsError::InvalidFormat(value.to_string())),
