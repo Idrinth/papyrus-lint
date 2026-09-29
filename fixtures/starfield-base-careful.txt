@@ -207,6 +207,7 @@ Scripts/Source/BEBlockPilotSeatScript.psc:8:121:line-length
 Scripts/Source/BEBlockPilotSeatScript.psc:25:1:argument-naming
 Scripts/Source/BEBlockPilotSeatScript.psc:26:59:forbidden-functions
 Scripts/Source/BEBlockPilotSeatScript.psc:29:1:none-form-usage
+Scripts/Source/BEBlockPilotSeatScript.psc:34:1:unregistered-remote-event
 Scripts/Source/BEBlockPilotSeatScriptObjRef.psc:2:121:line-length
 Scripts/Source/BEBlockPilotSeatScriptObjRef.psc:12:1:argument-naming
 Scripts/Source/BEBlockPilotSeatScriptObjRef.psc:13:1:none-form-usage
@@ -235,6 +236,7 @@ Scripts/Source/BEDebugScript.psc:68:59:unresolved-script
 Scripts/Source/BEDebugScript.psc:70:10:forbidden-functions
 Scripts/Source/BEDebugScript.psc:70:121:line-length
 Scripts/Source/BEDebugScript.psc:85:32:unresolved-script
+Scripts/Source/BEDebugScript.psc:94:1:unregistered-remote-event
 Scripts/Source/BEDebugScript.psc:97:8:forbidden-functions
 Scripts/Source/BEDebugScript.psc:102:10:forbidden-functions
 Scripts/Source/BEDebugScript.psc:110:8:forbidden-functions
@@ -268,6 +270,7 @@ Scripts/Source/BELandingQuestScript.psc:109:1:argument-naming
 Scripts/Source/BELandingQuestScript.psc:112:9:forbidden-functions
 Scripts/Source/BEObjectiveBlockPilotSeatScript.psc:18:1:unchecked-cast
 Scripts/Source/BEObjectiveBlockPilotSeatScript.psc:19:1:none-form-usage
+Scripts/Source/BEObjectiveBlockPilotSeatScript.psc:30:1:unregistered-remote-event
 Scripts/Source/BEObjectiveBlockPilotSeatScript.psc:39:10:forbidden-functions
 Scripts/Source/BEObjectiveBlockPilotSeatScript.psc:39:121:line-length
 Scripts/Source/BEObjectiveBlockPilotSeatScript.psc:44:1:none-form-usage
@@ -449,13 +452,18 @@ Scripts/Source/BEScript.psc:1112:9:forbidden-functions
 Scripts/Source/BEScript.psc:1123:10:forbidden-functions
 Scripts/Source/BEScript.psc:1123:121:line-length
 Scripts/Source/BEScript.psc:1131:20:unresolved-script
+Scripts/Source/BEScript.psc:1146:1:unregistered-remote-event
+Scripts/Source/BEScript.psc:1155:1:unregistered-remote-event
+Scripts/Source/BEScript.psc:1164:1:unregistered-remote-event
 Scripts/Source/BEScript.psc:1173:1:argument-naming
 Scripts/Source/BEScript.psc:1180:121:line-length
 Scripts/Source/BEScript.psc:1201:121:line-length
 Scripts/Source/BEScript.psc:1207:10:forbidden-functions
 Scripts/Source/BEScript.psc:1216:10:forbidden-functions
+Scripts/Source/BEScript.psc:1222:1:unregistered-remote-event
 Scripts/Source/BEScript.psc:1230:9:forbidden-functions
 Scripts/Source/BEScript.psc:1234:11:forbidden-functions
+Scripts/Source/BEScript.psc:1241:1:unregistered-remote-event
 Scripts/Source/BEScript.psc:1243:9:forbidden-functions
 Scripts/Source/BEScript.psc:1278:1:nesting-depth
 Scripts/Source/BEScript.psc:1278:121:line-length
@@ -1046,6 +1054,7 @@ Scripts/Source/COM_CompanionQuestScript.psc:139:44:unresolved-script
 Scripts/Source/COM_CompanionQuestScript.psc:143:30:forbidden-functions
 Scripts/Source/COM_CompanionQuestScript.psc:152:121:line-length
 Scripts/Source/COM_CompanionQuestScript.psc:163:121:line-length
+Scripts/Source/COM_CompanionQuestScript.psc:169:1:unregistered-remote-event
 Scripts/Source/COM_CompanionQuestScript.psc:172:70:unresolved-script
 Scripts/Source/COM_CompanionQuestScript.psc:179:121:line-length
 Scripts/Source/COM_CompanionQuestScript.psc:180:121:line-length
@@ -2529,6 +2538,7 @@ Scripts/Source/DefaultAliasOnActivateRemoveItems.psc:34:121:line-length
 Scripts/Source/DefaultAliasOnActivateRemoveItems.psc:36:121:line-length
 Scripts/Source/DefaultAliasOnActivateRemoveItems.psc:37:32:unresolved-script
 Scripts/Source/DefaultAliasOnBecomePlayerShip.psc:2:121:line-length
+Scripts/Source/DefaultAliasOnBecomePlayerShip.psc:19:1:unregistered-remote-event
 Scripts/Source/DefaultAliasOnBecomePlayerShip.psc:26:121:line-length
 Scripts/Source/DefaultAliasOnBecomePlayerShip.psc:27:121:line-length
 Scripts/Source/DefaultAliasOnBecomePlayerShip.psc:33:121:line-length
@@ -2735,6 +2745,7 @@ Scripts/Source/DefaultCaptiveAlias.psc:97:121:line-length
 Scripts/Source/DefaultCaptiveAlias.psc:110:72:unresolved-script
 Scripts/Source/DefaultCaptiveAlias.psc:113:48:forbidden-functions
 Scripts/Source/DefaultCaptiveAlias.psc:114:4:strict-boolean
+Scripts/Source/DefaultCaptiveAlias.psc:123:1:unregistered-remote-event
 Scripts/Source/DefaultCaptiveAlias.psc:148:24:unresolved-script
 Scripts/Source/DefaultCaptiveAlias.psc:156:121:line-length
 Scripts/Source/DefaultCaptiveAlias.psc:168:8:forbidden-functions
@@ -2751,6 +2762,7 @@ Scripts/Source/DefaultCaptiveWoundedAlias.psc:110:72:unresolved-script
 Scripts/Source/DefaultCaptiveWoundedAlias.psc:113:48:forbidden-functions
 Scripts/Source/DefaultCaptiveWoundedAlias.psc:114:10:forbidden-functions
 Scripts/Source/DefaultCaptiveWoundedAlias.psc:115:4:strict-boolean
+Scripts/Source/DefaultCaptiveWoundedAlias.psc:123:1:unregistered-remote-event
 Scripts/Source/DefaultCaptiveWoundedAlias.psc:149:24:unresolved-script
 Scripts/Source/DefaultCaptiveWoundedAlias.psc:157:121:line-length
 Scripts/Source/DefaultCaptiveWoundedAlias.psc:169:8:forbidden-functions
@@ -2780,6 +2792,7 @@ Scripts/Source/DefaultCollectionAliasOnContainerTo.psc:10:121:line-length
 Scripts/Source/DefaultCollectionAliasOnContainerTo.psc:11:121:line-length
 Scripts/Source/DefaultCollectionAliasOnDeath.psc:10:121:line-length
 Scripts/Source/DefaultCollectionAliasOnDeath.psc:13:121:line-length
+Scripts/Source/DefaultCollectionAliasOnDeath.psc:42:1:unregistered-remote-event
 Scripts/Source/DefaultCollectionAliasOnDeath.psc:46:37:forbidden-functions
 Scripts/Source/DefaultCollectionAliasOnDeath.psc:54:121:line-length
 Scripts/Source/DefaultCollectionAliasOnDeath.psc:55:121:line-length
@@ -2950,6 +2963,7 @@ Scripts/Source/DefaultCrowdEventManager.psc:198:8:forbidden-functions
 Scripts/Source/DefaultCrowdEventMember.psc:33:121:line-length
 Scripts/Source/DefaultCrowdEventMember.psc:37:121:line-length
 Scripts/Source/DefaultCrowdEventMember.psc:72:1:nesting-depth
+Scripts/Source/DefaultCrowdEventMember.psc:72:1:unregistered-remote-event
 Scripts/Source/DefaultCrowdEventMember.psc:76:35:unresolved-script
 Scripts/Source/DefaultCrowdEventMember.psc:79:10:forbidden-functions
 Scripts/Source/DefaultCrowdEventMember.psc:90:1:unchecked-cast
@@ -3582,6 +3596,8 @@ Scripts/Source/DefaultSurveyPlanetQuestScript.psc:29:1:none-form-usage
 Scripts/Source/DefaultSurveyPlanetQuestScript.psc:29:121:line-length
 Scripts/Source/DefaultSurveyPlanetQuestScript.psc:31:39:forbidden-functions
 Scripts/Source/DefaultSurveyTraitQuestScript.psc:8:121:line-length
+Scripts/Source/DefaultSurveyTraitQuestScript.psc:40:1:unregistered-remote-event
+Scripts/Source/DefaultSurveyTraitQuestScript.psc:44:1:unregistered-remote-event
 Scripts/Source/DefaultSurveyTraitQuestScript.psc:48:1:nesting-depth
 Scripts/Source/DefaultSurveyTraitQuestScript.psc:54:12:forbidden-functions
 Scripts/Source/DefaultSurveyTraitQuestScript.psc:54:121:line-length
@@ -4206,10 +4222,12 @@ Scripts/Source/EnableOnActivate.psc:21:9:forbidden-functions
 Scripts/Source/EnableOnDeath.psc:8:1:none-form-usage
 Scripts/Source/ExpandingBiomassScript.psc:60:47:forbidden-functions
 Scripts/Source/ExpandingBiomassScript.psc:123:121:line-length
+Scripts/Source/ExpandingBiomassScript.psc:137:1:unregistered-remote-event
 Scripts/Source/ExpandingBiomassScript.psc:205:21:forbidden-functions
 Scripts/Source/ExpandingBiomassScript.psc:245:21:forbidden-functions
 Scripts/Source/ExpandingBiomassScript.psc:275:25:forbidden-functions
 Scripts/Source/ExpandingBiomassScript.psc:280:13:forbidden-functions
+Scripts/Source/ExtendSecuritySystemScript.psc:4:1:unregistered-remote-event
 Scripts/Source/ExtendSecuritySystemScript.psc:7:8:forbidden-functions
 Scripts/Source/FABStartSceneScript.psc:26:1:none-form-usage
 Scripts/Source/FAB_PlaySoundScript.psc:8:1:none-form-usage
@@ -30320,7 +30338,9 @@ Scripts/Source/GenericMotorScript.psc:43:8:forbidden-functions
 Scripts/Source/GenericMotorScript.psc:57:8:forbidden-functions
 Scripts/Source/GenericSwitchScript.psc:14:121:line-length
 Scripts/Source/GenericSwitchScript.psc:31:39:forbidden-functions
+Scripts/Source/GenericSwitchScript.psc:49:1:unregistered-remote-event
 Scripts/Source/GenericSwitchScript.psc:64:9:forbidden-functions
+Scripts/Source/GenericSwitchScript.psc:69:1:unregistered-remote-event
 Scripts/Source/GenericSwitchScript.psc:95:9:forbidden-functions
 Scripts/Source/GlobalVariable.psc:10:14:slow-functions
 Scripts/Source/GlobalVariable.psc:15:10:slow-functions
@@ -30586,6 +30606,7 @@ Scripts/Source/Hope01_ChangeLocation_Script.psc:19:11:forbidden-functions
 Scripts/Source/Hope01_ChangeLocation_Script.psc:21:26:forbidden-functions
 Scripts/Source/Hope01_ChangeLocation_Script.psc:24:1:none-form-usage
 Scripts/Source/Hope01_ChangeLocation_Script.psc:24:18:forbidden-functions
+Scripts/Source/Hope01_ChangeLocation_Script.psc:39:1:unregistered-remote-event
 Scripts/Source/Hope01_ChangeLocation_Script.psc:40:11:forbidden-functions
 Scripts/Source/HoursWithoutIncidentSignScript.psc:23:33:forbidden-functions
 Scripts/Source/HoursWithoutIncidentSignScript.psc:28:35:forbidden-functions
@@ -30657,6 +30678,7 @@ Scripts/Source/KioskTerminalVendorScript.psc:30:121:line-length
 Scripts/Source/KioskTerminalVendorScript.psc:38:11:forbidden-functions
 Scripts/Source/KioskTerminalVendorScript.psc:41:9:strict-boolean
 Scripts/Source/KioskTerminalVendorScript.psc:45:33:forbidden-functions
+Scripts/Source/LC008SlaytonAlarm.psc:12:1:unregistered-remote-event
 Scripts/Source/LC008SlaytonAlarm.psc:23:15:forbidden-functions
 Scripts/Source/LC008SlaytonAlarm.psc:31:11:forbidden-functions
 Scripts/Source/LC008_ElevatorMover.psc:12:37:forbidden-functions
@@ -31067,6 +31089,7 @@ Scripts/Source/LC088_KeyQuestScript.psc:650:33:unresolved-script
 Scripts/Source/LC088_KeyQuestScript.psc:651:33:unresolved-script
 Scripts/Source/LC088_KeyQuestScript.psc:652:33:unresolved-script
 Scripts/Source/LC088_KeyQuestScript.psc:658:40:slow-functions
+Scripts/Source/LC088_KeyReactorScript.psc:16:1:unregistered-remote-event
 Scripts/Source/LC088_Key_RestrainingRefScript.psc:4:121:line-length
 Scripts/Source/LC088_Key_RestrainingRefScript.psc:5:121:line-length
 Scripts/Source/LC088_SpaceQuestScript.psc:324:19:forbidden-functions
@@ -31457,9 +31480,11 @@ Scripts/Source/LC088_VigilanceQuestScript.psc:326:1:unchecked-cast
 Scripts/Source/LC088_VigilanceQuestScript.psc:345:121:line-length
 Scripts/Source/LC088_VigilanceQuestScript.psc:346:40:slow-functions
 Scripts/Source/LC088_VigilanceQuestScript.psc:396:121:line-length
+Scripts/Source/LC088_VigilanceQuestScript.psc:397:1:unregistered-remote-event
 Scripts/Source/LC088_VigilanceQuestScript.psc:401:1:unchecked-cast
 Scripts/Source/LC088_VigilanceQuestScript.psc:401:121:line-length
 Scripts/Source/LC088_VigilanceQuestScript.psc:406:121:line-length
+Scripts/Source/LC088_VigilanceQuestScript.psc:408:1:unregistered-remote-event
 Scripts/Source/LC088_VigilanceQuestScript.psc:411:1:unchecked-cast
 Scripts/Source/LC088_VigilanceQuestScript.psc:420:23:unresolved-script
 Scripts/Source/LC088_VigilanceQuestScript.psc:422:32:unresolved-script
@@ -31688,6 +31713,7 @@ Scripts/Source/LC107CredTankSystemRefScript.psc:133:15:forbidden-functions
 Scripts/Source/LC107CredTankSystemRefScript.psc:135:15:forbidden-functions
 Scripts/Source/LC107CredTankSystemRefScript.psc:145:15:forbidden-functions
 Scripts/Source/LC107CredTankSystemRefScript.psc:147:15:forbidden-functions
+Scripts/Source/LC107CredTankSystemRefScript.psc:180:1:unregistered-remote-event
 Scripts/Source/LC107HullBreachExplosionSourceScript.psc:16:25:unresolved-script
 Scripts/Source/LC107HullBreachScript.psc:23:32:forbidden-functions
 Scripts/Source/LC107HullBreachScript.psc:51:30:forbidden-functions
@@ -31990,12 +32016,15 @@ Scripts/Source/LC165QuestScript.psc:1178:43:unresolved-script
 Scripts/Source/LC165QuestScript.psc:1179:36:unresolved-script
 Scripts/Source/LC165QuestScript.psc:1181:11:forbidden-functions
 Scripts/Source/LC165QuestScript.psc:1189:31:unresolved-script
+Scripts/Source/LC165QuestScript.psc:1197:1:unregistered-remote-event
 Scripts/Source/LC165QuestScript.psc:1199:44:unresolved-script
 Scripts/Source/LC165QuestScript.psc:1199:107:unresolved-script
 Scripts/Source/LC165QuestScript.psc:1199:121:line-length
+Scripts/Source/LC165QuestScript.psc:1204:1:unregistered-remote-event
 Scripts/Source/LC165QuestScript.psc:1206:44:unresolved-script
 Scripts/Source/LC165QuestScript.psc:1206:107:unresolved-script
 Scripts/Source/LC165QuestScript.psc:1206:121:line-length
+Scripts/Source/LC165QuestScript.psc:1211:1:unregistered-remote-event
 Scripts/Source/LC165QuestScript.psc:1213:44:unresolved-script
 Scripts/Source/LC165QuestScript.psc:1213:107:unresolved-script
 Scripts/Source/LC165QuestScript.psc:1213:121:line-length
@@ -32101,6 +32130,7 @@ Scripts/Source/LC165QuestScript.psc:1773:121:line-length
 Scripts/Source/LC165QuestScript.psc:1779:11:forbidden-functions
 Scripts/Source/LC165QuestScript.psc:1785:121:line-length
 Scripts/Source/LC165QuestScript.psc:1812:8:forbidden-functions
+Scripts/Source/LC165QuestScript.psc:1824:1:unregistered-remote-event
 Scripts/Source/LC165QuestScript.psc:1840:121:line-length
 Scripts/Source/LC165QuestScript.psc:1840:173:unresolved-script
 Scripts/Source/LC165QuestScript.psc:1841:121:line-length
@@ -32709,6 +32739,7 @@ Scripts/Source/LegendaryItemQuestScript.psc:230:10:forbidden-functions
 Scripts/Source/LegendaryItemQuestScript.psc:236:8:forbidden-functions
 Scripts/Source/LegendaryMagicEffectEventListenScript.psc:17:121:line-length
 Scripts/Source/LegendaryMagicEffectEventListenScript.psc:21:121:line-length
+Scripts/Source/LegendaryMagicEffectEventListenScript.psc:26:1:unregistered-remote-event
 Scripts/Source/LegendaryMagicEffectEventListenScript.psc:27:8:forbidden-functions
 Scripts/Source/LegendaryMagicEffectEventListenScript.psc:39:121:line-length
 Scripts/Source/LegendaryMagicEffectEventListenScript.psc:41:121:line-length
@@ -32756,6 +32787,8 @@ Scripts/Source/LegendaryOnHitEffectStaggerScript.psc:25:9:forbidden-functions
 Scripts/Source/LegendaryOnHitEffectStaggerScript.psc:26:1:place-at-me
 Scripts/Source/LegendaryOnHitEffectStaggerScript.psc:29:9:forbidden-functions
 Scripts/Source/LegendaryOnHitEffectStaggerScript.psc:30:1:place-at-me
+Scripts/Source/ListenForArtifact.psc:13:1:unregistered-remote-event
+Scripts/Source/ListenForArtifact.psc:17:1:unregistered-remote-event
 Scripts/Source/LoadElevatorFloorScript.psc:6:121:line-length
 Scripts/Source/LoadElevatorFloorScript.psc:49:121:line-length
 Scripts/Source/LoadElevatorFloorScript.psc:63:121:line-length
@@ -33011,6 +33044,7 @@ Scripts/Source/MQ104APlayerShipScript.psc:11:1:none-form-usage
 Scripts/Source/MQ104APlayerShipScript.psc:15:121:line-length
 Scripts/Source/MQ104APlayerShipScript.psc:17:121:line-length
 Scripts/Source/MQ104AScript.psc:7:1:none-form-usage
+Scripts/Source/MQ104AScript.psc:10:1:unregistered-remote-event
 Scripts/Source/MQ104AScript.psc:12:1:none-form-usage
 Scripts/Source/MQ104BComputerScript.psc:16:28:forbidden-functions
 Scripts/Source/MQ104BComputerScript.psc:19:1:none-form-usage
@@ -33656,6 +33690,7 @@ Scripts/Source/MQ403QuestScript.psc:55:1:none-form-usage
 Scripts/Source/MQ403QuestScript.psc:56:1:none-form-usage
 Scripts/Source/MQ403QuestScript.psc:57:1:none-form-usage
 Scripts/Source/MQ403QuestScript.psc:58:1:none-form-usage
+Scripts/Source/MQ403QuestScript.psc:61:1:unregistered-remote-event
 Scripts/Source/MQ403QuestScript.psc:62:1:none-form-usage
 Scripts/Source/MQ403QuestScript.psc:64:1:none-form-usage
 Scripts/Source/MQ403QuestScript.psc:66:1:none-form-usage
@@ -33738,6 +33773,7 @@ Scripts/Source/MQ_TempleQuestScript.psc:96:1:none-form-usage
 Scripts/Source/MQ_TempleQuestScript.psc:97:1:none-form-usage
 Scripts/Source/MQ_TempleQuestScript.psc:98:1:none-form-usage
 Scripts/Source/MQ_TempleQuestScript.psc:101:33:forbidden-functions
+Scripts/Source/MQ_TempleQuestScript.psc:104:1:unregistered-remote-event
 Scripts/Source/MQ_TempleQuestScript.psc:105:1:none-form-usage
 Scripts/Source/MQ_TempleQuestScript.psc:107:1:none-form-usage
 Scripts/Source/MQ_TempleQuestScript.psc:109:1:none-form-usage
@@ -33784,8 +33820,10 @@ Scripts/Source/MQ_Temple_SubScript.psc:168:121:line-length
 Scripts/Source/MQ_Temple_SubScript.psc:170:121:line-length
 Scripts/Source/MQ_Temple_SubScript.psc:171:121:line-length
 Scripts/Source/MQ_Temple_SubScript.psc:172:19:forbidden-functions
+Scripts/Source/MQ_Temple_SubScript.psc:182:1:unregistered-remote-event
 Scripts/Source/MQ_Temple_SubScript.psc:183:1:none-form-usage
 Scripts/Source/MQ_Temple_SubScript.psc:185:1:unchecked-cast
+Scripts/Source/MQ_Temple_SubScript.psc:189:1:unregistered-remote-event
 Scripts/Source/MQ_Temple_SubScript.psc:190:121:line-length
 Scripts/Source/MQ_Temple_SubScript.psc:194:1:none-form-usage
 Scripts/Source/MQ_Temple_SubScript.psc:195:1:none-form-usage
@@ -33979,7 +34017,9 @@ Scripts/Source/MS04PlayerScript.psc:11:121:line-length
 Scripts/Source/MS04PlayerScript.psc:12:11:forbidden-functions
 Scripts/Source/MS05QuestScript.psc:9:27:forbidden-functions
 Scripts/Source/MS05QuestScript.psc:21:121:line-length
+Scripts/Source/MS05QuestScript.psc:22:1:unregistered-remote-event
 Scripts/Source/MS05QuestScript.psc:27:1:unchecked-cast
+Scripts/Source/MS05RewardScript.psc:16:1:unregistered-remote-event
 Scripts/Source/MS05RewardScript.psc:18:11:forbidden-functions
 Scripts/Source/MS05RewardScript.psc:20:1:none-form-usage
 Scripts/Source/MS05RewardScript.psc:20:1:none-form-usage
@@ -34286,6 +34326,7 @@ Scripts/Source/MissionCargoQuestScript.psc:324:121:line-length
 Scripts/Source/MissionCargoQuestScript.psc:325:8:forbidden-functions
 Scripts/Source/MissionCargoQuestScript.psc:330:8:forbidden-functions
 Scripts/Source/MissionCargoQuestScript.psc:337:8:forbidden-functions
+Scripts/Source/MissionCargoQuestScript.psc:340:1:unregistered-remote-event
 Scripts/Source/MissionCargoQuestScript.psc:341:11:forbidden-functions
 Scripts/Source/MissionCargoQuestScript.psc:346:51:unresolved-script
 Scripts/Source/MissionCargoQuestScript.psc:352:2:strict-boolean
@@ -34575,6 +34616,7 @@ Scripts/Source/MissionPiracyQuestScript.psc:239:15:forbidden-functions
 Scripts/Source/MissionPiracyQuestScript.psc:239:121:line-length
 Scripts/Source/MissionPiracyQuestScript.psc:244:121:line-length
 Scripts/Source/MissionPiracyQuestScript.psc:247:61:unresolved-script
+Scripts/Source/MissionPiracyQuestScript.psc:255:1:unregistered-remote-event
 Scripts/Source/MissionPiracyQuestScript.psc:257:58:unresolved-script
 Scripts/Source/MissionPiracyQuestScript.psc:259:11:forbidden-functions
 Scripts/Source/MissionPiracyQuestScript.psc:266:1:argument-naming
@@ -34634,6 +34676,7 @@ Scripts/Source/MissionRescueQuestScript.psc:61:11:forbidden-functions
 Scripts/Source/MissionRescueQuestScript.psc:64:36:unresolved-script
 Scripts/Source/MissionRescueQuestScript.psc:67:38:unresolved-script
 Scripts/Source/MissionRescueQuestScript.psc:69:45:unresolved-script
+Scripts/Source/MissionRescueQuestScript.psc:74:1:unregistered-remote-event
 Scripts/Source/MissionRescueQuestScript.psc:76:58:unresolved-script
 Scripts/Source/MissionRescueQuestScript.psc:77:11:forbidden-functions
 Scripts/Source/MissionRescueQuestScript.psc:81:15:forbidden-functions
@@ -34747,6 +34790,7 @@ Scripts/Source/MissionSupplyScript.psc:268:11:forbidden-functions
 Scripts/Source/MissionSupplyScript.psc:273:35:unresolved-script
 Scripts/Source/MissionSupplyScript.psc:278:11:forbidden-functions
 Scripts/Source/MissionSupplyScript.psc:282:30:unresolved-script
+Scripts/Source/MissionSupplyScript.psc:286:1:unregistered-remote-event
 Scripts/Source/MissionSupplyScript.psc:289:8:forbidden-functions
 Scripts/Source/MissionSupplyScript.psc:293:15:forbidden-functions
 Scripts/Source/MissionSupplyScript.psc:294:46:slow-functions
@@ -34754,6 +34798,7 @@ Scripts/Source/MissionSupplyScript.psc:294:57:unresolved-script
 Scripts/Source/MissionSupplyScript.psc:299:15:forbidden-functions
 Scripts/Source/MissionSupplyScript.psc:304:47:slow-functions
 Scripts/Source/MissionSupplyScript.psc:304:58:unresolved-script
+Scripts/Source/MissionSupplyScript.psc:314:1:unregistered-remote-event
 Scripts/Source/MissionSupplyScript.psc:319:8:forbidden-functions
 Scripts/Source/MissionSupplyScript.psc:319:121:line-length
 Scripts/Source/MissionSupplyScript.psc:332:1:nesting-depth
@@ -34810,6 +34855,7 @@ Scripts/Source/MissionSurveyQuestScript.psc:152:8:forbidden-functions
 Scripts/Source/MissionSurveyQuestScript.psc:152:121:line-length
 Scripts/Source/MissionSurveyQuestScript_OLD.psc:55:121:line-length
 Scripts/Source/MissionSurveyTraitScript.psc:26:8:forbidden-functions
+Scripts/Source/MissionSurveyTraitScript.psc:34:1:unregistered-remote-event
 Scripts/Source/MissionSurveyTraitScript.psc:37:8:forbidden-functions
 Scripts/Source/MissionSurveyTraitScript.psc:40:1:unchecked-cast
 Scripts/Source/MissionSurveyTraitScript.psc:41:71:unresolved-script
@@ -35069,6 +35115,7 @@ Scripts/Source/OE_AustinF_CECSuperfan_Script.psc:28:121:line-length
 Scripts/Source/OE_AustinF_CECSuperfan_Script.psc:32:15:forbidden-functions
 Scripts/Source/OE_AustinF_CECSuperfan_Script.psc:37:15:forbidden-functions
 Scripts/Source/OE_AustinF_CECSuperfan_Script.psc:41:11:forbidden-functions
+Scripts/Source/OE_AustinF_PvG_Script.psc:11:1:unregistered-remote-event
 Scripts/Source/OE_AustinF_PvG_Script.psc:12:1:none-form-usage
 Scripts/Source/OE_CECSuperfan_PlayerScript.psc:21:11:forbidden-functions
 Scripts/Source/OE_CECSuperfan_PlayerScript.psc:24:1:argument-naming
@@ -35100,6 +35147,7 @@ Scripts/Source/OE_CiviliansScript.psc:141:1:none-form-usage
 Scripts/Source/OE_CiviliansScript.psc:149:1:none-form-usage
 Scripts/Source/OE_CiviliansScript.psc:150:1:none-form-usage
 Scripts/Source/OE_CiviliansScript.psc:154:9:strict-boolean
+Scripts/Source/OE_CiviliansScript.psc:161:1:unregistered-remote-event
 Scripts/Source/OE_CiviliansScript.psc:164:1:unchecked-cast
 Scripts/Source/OE_CiviliansScript.psc:167:54:unresolved-script
 Scripts/Source/OE_CiviliansScript.psc:174:1:none-form-usage
@@ -35499,6 +35547,7 @@ Scripts/Source/OutpostCargoLinkLightScript.psc:10:121:line-length
 Scripts/Source/OutpostCargoLinkLightScript.psc:11:5:strict-boolean
 Scripts/Source/OutpostCargoLinkLightScript.psc:14:40:slow-functions
 Scripts/Source/OutpostCargoLinkLightScript.psc:16:9:strict-boolean
+Scripts/Source/OutpostCargoLinkLightScript.psc:23:1:unregistered-remote-event
 Scripts/Source/OutpostCargoLinkLightScript.psc:24:8:forbidden-functions
 Scripts/Source/OutpostCargoLinkLightScript.psc:26:5:strict-boolean
 Scripts/Source/OutpostCargoLinkMarkerScript.psc:31:121:line-length
@@ -35596,6 +35645,7 @@ Scripts/Source/OutpostHarvesterFaunaScript.psc:322:11:forbidden-functions
 Scripts/Source/OutpostHarvesterFaunaScript.psc:324:15:forbidden-functions
 Scripts/Source/OutpostHarvesterFaunaScript.psc:329:15:forbidden-functions
 Scripts/Source/OutpostHarvesterFaunaScript.psc:336:15:forbidden-functions
+Scripts/Source/OutpostHarvesterFloraPlanterScript.psc:30:1:unregistered-remote-event
 Scripts/Source/OutpostHarvesterFloraPlanterScript.psc:32:8:forbidden-functions
 Scripts/Source/OutpostHarvesterFloraPlanterScript.psc:40:11:forbidden-functions
 Scripts/Source/OutpostHarvesterFloraPlanterScript.psc:44:9:strict-boolean
@@ -35962,9 +36012,11 @@ Scripts/Source/RAD03QuestScript.psc:23:1:none-form-usage
 Scripts/Source/RAD03QuestScript.psc:25:1:none-form-usage
 Scripts/Source/RAD03QuestScript.psc:35:121:line-length
 Scripts/Source/RAD03QuestScript.psc:44:121:line-length
+Scripts/Source/RAD03QuestScript.psc:45:1:unregistered-remote-event
 Scripts/Source/RAD03QuestScript.psc:48:1:unchecked-cast
 Scripts/Source/RAD04QuestScript.psc:7:27:forbidden-functions
 Scripts/Source/RAD04QuestScript.psc:11:121:line-length
+Scripts/Source/RAD04QuestScript.psc:12:1:unregistered-remote-event
 Scripts/Source/RAD04QuestScript.psc:15:1:unchecked-cast
 Scripts/Source/RAD04QuestScript.psc:15:1:unchecked-cast
 Scripts/Source/RAD06PlayerAliasScript.psc:10:121:line-length
@@ -36008,6 +36060,7 @@ Scripts/Source/REAliasScript.psc:112:121:line-length
 Scripts/Source/REAliasScript.psc:115:3:strict-boolean
 Scripts/Source/REAliasScript.psc:118:10:forbidden-functions
 Scripts/Source/REAliasWeaponOutScript.psc:6:8:forbidden-functions
+Scripts/Source/REAliasWeaponOutScript.psc:10:1:unregistered-remote-event
 Scripts/Source/REAliasWeaponOutScript.psc:11:8:forbidden-functions
 Scripts/Source/REAssaultQuestScript.psc:4:121:line-length
 Scripts/Source/REAssaultQuestScript.psc:40:8:forbidden-functions
@@ -36098,6 +36151,7 @@ Scripts/Source/REScript.psc:181:29:unresolved-script
 Scripts/Source/REScript.psc:182:9:forbidden-functions
 Scripts/Source/REScript.psc:182:72:unresolved-script
 Scripts/Source/REScript.psc:194:8:forbidden-functions
+Scripts/Source/REScript.psc:224:1:unregistered-remote-event
 Scripts/Source/REScript.psc:229:1:cyclomatic-complexity
 Scripts/Source/REScript.psc:229:1:nesting-depth
 Scripts/Source/REScript.psc:233:56:forbidden-functions
@@ -36263,6 +36317,7 @@ Scripts/Source/RI06_QuestScript.psc:124:1:none-form-usage
 Scripts/Source/RI06_QuestScript.psc:126:1:none-form-usage
 Scripts/Source/RI06_QuestScript.psc:126:1:none-form-usage
 Scripts/Source/RI06_QuestScript.psc:127:11:forbidden-functions
+Scripts/Source/RI07_IDCardReadersScript.psc:11:1:unregistered-remote-event
 Scripts/Source/RI07_MarketingTriggerAliasScript.psc:9:28:forbidden-functions
 Scripts/Source/RI07_MarketingTriggerAliasScript.psc:11:121:line-length
 Scripts/Source/RI07_NeurosurgeryTableScript.psc:6:7:forbidden-functions
@@ -36704,6 +36759,7 @@ Scripts/Source/RQScript.psc:174:121:line-length
 Scripts/Source/RQScript.psc:176:40:unresolved-script
 Scripts/Source/RQScript.psc:178:1:unchecked-cast
 Scripts/Source/RQScript.psc:178:9:forbidden-functions
+Scripts/Source/RQScript.psc:182:1:unregistered-remote-event
 Scripts/Source/RQScript.psc:184:121:line-length
 Scripts/Source/RQScript.psc:185:1:unchecked-cast
 Scripts/Source/RQScript.psc:186:1:unchecked-cast
@@ -36778,6 +36834,7 @@ Scripts/Source/RQ_DeliverScript.psc:14:121:line-length
 Scripts/Source/RQ_DeliverScript.psc:29:121:line-length
 Scripts/Source/RQ_DeliverScript.psc:49:32:slow-functions
 Scripts/Source/RQ_DeliverScript.psc:49:43:unresolved-script
+Scripts/Source/RQ_DeliverScript.psc:54:1:unregistered-remote-event
 Scripts/Source/RQ_DeliverScript.psc:65:62:unresolved-script
 Scripts/Source/RQ_DeliverScript.psc:72:63:unresolved-script
 Scripts/Source/RQ_DeliverScript.psc:72:121:line-length
@@ -38644,6 +38701,7 @@ Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:128:121:line-length
 Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:135:121:line-length
 Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:138:1:none-form-usage
 Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:139:53:unresolved-script
+Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:149:1:unregistered-remote-event
 Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:171:1:none-form-usage
 Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:175:1:none-form-usage
 Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:179:1:none-form-usage
@@ -42296,7 +42354,9 @@ Scripts/Source/SQ_OutpostAttackScript.psc:70:13:strict-boolean
 Scripts/Source/SQ_OutpostAttackScript.psc:79:11:forbidden-functions
 Scripts/Source/SQ_OutpostAttackScript.psc:92:1:none-form-usage
 Scripts/Source/SQ_OutpostAttackScript.psc:93:5:strict-boolean
+Scripts/Source/SQ_OutpostAttackScript.psc:102:1:unregistered-remote-event
 Scripts/Source/SQ_OutpostAttackScript.psc:103:8:forbidden-functions
+Scripts/Source/SQ_OutpostAttackScript.psc:112:1:unregistered-remote-event
 Scripts/Source/SQ_OutpostAttackScript.psc:113:8:forbidden-functions
 Scripts/Source/SQ_OutpostAttackScript.psc:117:121:line-length
 Scripts/Source/SQ_OutpostAttackScript.psc:128:1:none-form-usage
@@ -43444,7 +43504,9 @@ Scripts/Source/ScriptObject.psc:311:121:line-length
 Scripts/Source/ScriptObject.psc:353:121:line-length
 Scripts/Source/ScriptObject.psc:358:121:line-length
 Scripts/Source/ScriptObject.psc:406:121:line-length
+Scripts/Source/SecuritySystemScript.psc:14:1:unregistered-remote-event
 Scripts/Source/SecuritySystemScript.psc:23:5:empty-body
+Scripts/Source/SecuritySystemScript.psc:28:1:unregistered-remote-event
 Scripts/Source/SecuritySystemScript.psc:36:5:empty-body
 Scripts/Source/SetActorValueOnActivate.psc:13:1:setvalue-in-loop
 Scripts/Source/SetActorValueOnActivate.psc:14:1:unchecked-cast
@@ -43566,6 +43628,8 @@ Scripts/Source/ShuttleBayDoorManagerScript.psc:21:35:unresolved-script
 Scripts/Source/ShuttleBayDoorScript.psc:2:121:line-length
 Scripts/Source/ShuttleBayDoorScript.psc:5:42:forbidden-functions
 Scripts/Source/ShuttleBayDoorScript.psc:7:9:forbidden-functions
+Scripts/Source/ShuttleBayDoorScript.psc:14:1:unregistered-remote-event
+Scripts/Source/ShuttleBayDoorScript.psc:18:1:unregistered-remote-event
 Scripts/Source/SignalReceiverScript.psc:15:121:line-length
 Scripts/Source/SignalReceiverScript.psc:113:121:line-length
 Scripts/Source/SignalReceiverScript.psc:115:121:line-length
@@ -44365,7 +44429,10 @@ Scripts/Source/TestHardReversalScript2.psc:15:1:unchecked-cast
 Scripts/Source/TestHardReversalScript2.psc:16:1:unchecked-cast
 Scripts/Source/TestIDCardReader.psc:15:1:none-form-usage
 Scripts/Source/TestInstancedKeyScript.psc:4:10:forbidden-functions
+Scripts/Source/TestJeffBBossBattleControlScript.psc:30:1:unregistered-remote-event
 Scripts/Source/TestJeffBBossBattleControlScript.psc:32:1:none-form-usage
+Scripts/Source/TestJeffBBossBattleControlScript.psc:37:1:unregistered-remote-event
+Scripts/Source/TestJeffBBossBattleControlScript.psc:44:1:unregistered-remote-event
 Scripts/Source/TestJeffBBossBattleControlScript.psc:48:1:none-form-usage
 Scripts/Source/TestJeffBBossBattleControlScript.psc:48:1:none-form-usage
 Scripts/Source/TestJeffBBossBattleControlScript.psc:48:26:forbidden-functions
@@ -44422,6 +44489,7 @@ Scripts/Source/TestKenPlayerShipScript.psc:13:8:forbidden-functions
 Scripts/Source/TestKenPlayerShipScript.psc:15:36:forbidden-functions
 Scripts/Source/TestKenPlayerShipScript.psc:16:8:forbidden-functions
 Scripts/Source/TestKenPlayerShipScript.psc:17:1:none-form-usage
+Scripts/Source/TestKenPlayerShipScript.psc:21:1:unregistered-remote-event
 Scripts/Source/TestKenPlayerShipScript.psc:22:8:forbidden-functions
 Scripts/Source/TestKenPlayerShipScript.psc:24:9:forbidden-functions
 Scripts/Source/TestKenPlayerShipScript.psc:25:1:none-form-usage
@@ -44446,6 +44514,7 @@ Scripts/Source/TestKurtArtifactTempleQuestScript.psc:36:1:none-form-usage
 Scripts/Source/TestKurtArtifactTempleQuestScript.psc:37:1:none-form-usage
 Scripts/Source/TestKurtArtifactTempleQuestScript.psc:43:1:none-form-usage
 Scripts/Source/TestKurtArtifactTempleQuestScript.psc:51:1:none-form-usage
+Scripts/Source/TestKurtArtifactTempleQuestScript.psc:54:1:unregistered-remote-event
 Scripts/Source/TestKurtArtifactTempleQuestScript.psc:55:1:none-form-usage
 Scripts/Source/TestKurtBehaviorsTerminalScript.psc:29:11:forbidden-functions
 Scripts/Source/TestKurtBehaviorsTerminalScript.psc:32:19:forbidden-functions
@@ -45015,6 +45084,7 @@ Scripts/Source/TestSteveCQuestScript.psc:493:1:none-form-usage
 Scripts/Source/TestSteveCQuestScript.psc:500:1:argument-naming
 Scripts/Source/TestSteveCQuestScript.psc:500:121:line-length
 Scripts/Source/TestSteveCQuestScript.psc:502:8:forbidden-functions
+Scripts/Source/TestSteveCQuestScript.psc:512:1:unregistered-remote-event
 Scripts/Source/TestSteveCQuestScript.psc:513:8:forbidden-functions
 Scripts/Source/TestSteveCQuestScript.psc:517:8:forbidden-functions
 Scripts/Source/TestSteveCQuestScript.psc:521:1:none-form-usage
@@ -45298,6 +45368,7 @@ Scripts/Source/UC01_OrientationDisplayQuestScript.psc:11:1:none-form-usage
 Scripts/Source/UC01_OrientationDisplayScript.psc:13:1:none-form-usage
 Scripts/Source/UC01_OrientationDisplayScript.psc:14:1:unchecked-cast
 Scripts/Source/UC01_OrientationDisplayScript.psc:15:1:none-form-usage
+Scripts/Source/UC01_OrientationDisplayScript.psc:19:1:unregistered-remote-event
 Scripts/Source/UC01_OrientationDisplayScript.psc:19:121:line-length
 Scripts/Source/UC01_OrientationDisplayScript.psc:22:1:none-form-usage
 Scripts/Source/UC01_OrientationDisplayScript.psc:23:1:none-form-usage
@@ -45630,6 +45701,7 @@ Scripts/Source/UC04_PlayerAliasScript.psc:80:121:line-length
 Scripts/Source/UC04_PlayerAliasScript.psc:81:121:line-length
 Scripts/Source/UC04_QuestScript.psc:36:121:line-length
 Scripts/Source/UC04_QuestScript.psc:143:1:nesting-depth
+Scripts/Source/UC04_QuestScript.psc:143:1:unregistered-remote-event
 Scripts/Source/UC04_QuestScript.psc:149:9:strict-boolean
 Scripts/Source/UC04_QuestScript.psc:150:38:forbidden-functions
 Scripts/Source/UC04_QuestScript.psc:152:82:unresolved-script
@@ -46214,6 +46286,7 @@ Scripts/Source/UCR04QuestScript.psc:198:30:unresolved-script
 Scripts/Source/UCR04QuestScript.psc:199:121:line-length
 Scripts/Source/UCR04QuestScript.psc:199:157:unresolved-script
 Scripts/Source/UCR04QuestScript.psc:201:28:unresolved-script
+Scripts/Source/UCR04QuestScript.psc:214:1:unregistered-remote-event
 Scripts/Source/UCR04QuestScript.psc:219:1:unchecked-cast
 Scripts/Source/UCR04QuestScript.psc:222:1:unchecked-cast
 Scripts/Source/UCR04QuestScript.psc:222:81:slow-functions
@@ -46468,6 +46541,8 @@ Scripts/Source/rq_scantraitscript.psc:74:64:unresolved-script
 Scripts/Source/rq_scantraitscript.psc:74:121:line-length
 Scripts/Source/rq_scantraitscript.psc:75:32:slow-functions
 Scripts/Source/rq_scantraitscript.psc:75:43:unresolved-script
+Scripts/Source/rq_scantraitscript.psc:81:1:unregistered-remote-event
+Scripts/Source/rq_scantraitscript.psc:92:1:unregistered-remote-event
 Scripts/Source/rq_scantraitscript.psc:98:121:line-length
 Scripts/Source/rq_scantraitscript.psc:107:59:unresolved-script
 Scripts/Source/rq_scantraitscript.psc:108:32:forbidden-functions

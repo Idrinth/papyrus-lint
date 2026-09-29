@@ -825,6 +825,7 @@ Scripts/Source/BEBlockPilotSeatScript.psc:8:121:line-length
 Scripts/Source/BEBlockPilotSeatScript.psc:25:1:argument-naming
 Scripts/Source/BEBlockPilotSeatScript.psc:26:59:forbidden-functions
 Scripts/Source/BEBlockPilotSeatScript.psc:29:1:none-form-usage
+Scripts/Source/BEBlockPilotSeatScript.psc:34:1:unregistered-remote-event
 Scripts/Source/BEBlockPilotSeatScriptObjRef.psc:2:121:line-length
 Scripts/Source/BEBlockPilotSeatScriptObjRef.psc:12:1:argument-naming
 Scripts/Source/BEBlockPilotSeatScriptObjRef.psc:13:1:none-form-usage
@@ -896,6 +897,7 @@ Scripts/Source/BEDebugScript.psc:85:69:assignment-operator-spacing
 Scripts/Source/BEDebugScript.psc:85:69:assignment-operator-spacing
 Scripts/Source/BEDebugScript.psc:85:91:assignment-operator-spacing
 Scripts/Source/BEDebugScript.psc:85:91:assignment-operator-spacing
+Scripts/Source/BEDebugScript.psc:94:1:unregistered-remote-event
 Scripts/Source/BEDebugScript.psc:97:8:forbidden-functions
 Scripts/Source/BEDebugScript.psc:102:10:forbidden-functions
 Scripts/Source/BEDebugScript.psc:110:8:forbidden-functions
@@ -958,6 +960,7 @@ Scripts/Source/BELandingQuestScript.psc:112:9:forbidden-functions
 Scripts/Source/BEObjectiveBlockPilotSeatScript.psc:18:1:unchecked-cast
 Scripts/Source/BEObjectiveBlockPilotSeatScript.psc:19:1:none-form-usage
 Scripts/Source/BEObjectiveBlockPilotSeatScript.psc:25:37:trailing-whitespace
+Scripts/Source/BEObjectiveBlockPilotSeatScript.psc:30:1:unregistered-remote-event
 Scripts/Source/BEObjectiveBlockPilotSeatScript.psc:39:10:forbidden-functions
 Scripts/Source/BEObjectiveBlockPilotSeatScript.psc:39:121:line-length
 Scripts/Source/BEObjectiveBlockPilotSeatScript.psc:44:1:none-form-usage
@@ -1517,13 +1520,18 @@ Scripts/Source/BEScript.psc:1123:121:line-length
 Scripts/Source/BEScript.psc:1131:20:unresolved-script
 Scripts/Source/BEScript.psc:1131:47:exclamation-spacing
 Scripts/Source/BEScript.psc:1131:62:exclamation-spacing
+Scripts/Source/BEScript.psc:1146:1:unregistered-remote-event
+Scripts/Source/BEScript.psc:1155:1:unregistered-remote-event
+Scripts/Source/BEScript.psc:1164:1:unregistered-remote-event
 Scripts/Source/BEScript.psc:1173:1:argument-naming
 Scripts/Source/BEScript.psc:1180:121:line-length
 Scripts/Source/BEScript.psc:1201:121:line-length
 Scripts/Source/BEScript.psc:1207:10:forbidden-functions
 Scripts/Source/BEScript.psc:1216:10:forbidden-functions
+Scripts/Source/BEScript.psc:1222:1:unregistered-remote-event
 Scripts/Source/BEScript.psc:1230:9:forbidden-functions
 Scripts/Source/BEScript.psc:1234:11:forbidden-functions
+Scripts/Source/BEScript.psc:1241:1:unregistered-remote-event
 Scripts/Source/BEScript.psc:1243:9:forbidden-functions
 Scripts/Source/BEScript.psc:1278:1:cyclomatic-complexity
 Scripts/Source/BEScript.psc:1278:1:nesting-depth
@@ -2975,6 +2983,7 @@ Scripts/Source/COM_CompanionQuestScript.psc:143:30:forbidden-functions
 Scripts/Source/COM_CompanionQuestScript.psc:152:121:line-length
 Scripts/Source/COM_CompanionQuestScript.psc:162:1:trailing-whitespace
 Scripts/Source/COM_CompanionQuestScript.psc:163:121:line-length
+Scripts/Source/COM_CompanionQuestScript.psc:169:1:unregistered-remote-event
 Scripts/Source/COM_CompanionQuestScript.psc:172:70:unresolved-script
 Scripts/Source/COM_CompanionQuestScript.psc:179:121:line-length
 Scripts/Source/COM_CompanionQuestScript.psc:180:121:line-length
@@ -6925,6 +6934,7 @@ Scripts/Source/DefaultAliasOnBecomePlayerShip.psc:10:1:indentation
 Scripts/Source/DefaultAliasOnBecomePlayerShip.psc:11:1:indentation
 Scripts/Source/DefaultAliasOnBecomePlayerShip.psc:15:1:indentation
 Scripts/Source/DefaultAliasOnBecomePlayerShip.psc:16:1:indentation
+Scripts/Source/DefaultAliasOnBecomePlayerShip.psc:19:1:unregistered-remote-event
 Scripts/Source/DefaultAliasOnBecomePlayerShip.psc:22:1:indentation
 Scripts/Source/DefaultAliasOnBecomePlayerShip.psc:23:1:trailing-whitespace
 Scripts/Source/DefaultAliasOnBecomePlayerShip.psc:24:1:indentation
@@ -7783,6 +7793,7 @@ Scripts/Source/DefaultCaptiveAlias.psc:97:121:line-length
 Scripts/Source/DefaultCaptiveAlias.psc:110:72:unresolved-script
 Scripts/Source/DefaultCaptiveAlias.psc:113:48:forbidden-functions
 Scripts/Source/DefaultCaptiveAlias.psc:114:4:strict-boolean
+Scripts/Source/DefaultCaptiveAlias.psc:123:1:unregistered-remote-event
 Scripts/Source/DefaultCaptiveAlias.psc:148:24:unresolved-script
 Scripts/Source/DefaultCaptiveAlias.psc:156:121:line-length
 Scripts/Source/DefaultCaptiveAlias.psc:159:1:trailing-whitespace
@@ -7835,6 +7846,7 @@ Scripts/Source/DefaultCaptiveWoundedAlias.psc:110:72:unresolved-script
 Scripts/Source/DefaultCaptiveWoundedAlias.psc:113:48:forbidden-functions
 Scripts/Source/DefaultCaptiveWoundedAlias.psc:114:10:forbidden-functions
 Scripts/Source/DefaultCaptiveWoundedAlias.psc:115:4:strict-boolean
+Scripts/Source/DefaultCaptiveWoundedAlias.psc:123:1:unregistered-remote-event
 Scripts/Source/DefaultCaptiveWoundedAlias.psc:149:24:unresolved-script
 Scripts/Source/DefaultCaptiveWoundedAlias.psc:157:121:line-length
 Scripts/Source/DefaultCaptiveWoundedAlias.psc:160:1:trailing-whitespace
@@ -7922,6 +7934,7 @@ Scripts/Source/DefaultCollectionAliasOnDeath.psc:19:1:indentation
 Scripts/Source/DefaultCollectionAliasOnDeath.psc:23:1:indentation
 Scripts/Source/DefaultCollectionAliasOnDeath.psc:25:1:indentation
 Scripts/Source/DefaultCollectionAliasOnDeath.psc:27:22:trailing-whitespace
+Scripts/Source/DefaultCollectionAliasOnDeath.psc:42:1:unregistered-remote-event
 Scripts/Source/DefaultCollectionAliasOnDeath.psc:46:37:forbidden-functions
 Scripts/Source/DefaultCollectionAliasOnDeath.psc:47:1:indentation
 Scripts/Source/DefaultCollectionAliasOnDeath.psc:54:121:line-length
@@ -8366,6 +8379,7 @@ Scripts/Source/DefaultCrowdEventMember.psc:65:63:trailing-whitespace
 Scripts/Source/DefaultCrowdEventMember.psc:68:1:trailing-whitespace
 Scripts/Source/DefaultCrowdEventMember.psc:72:1:cyclomatic-complexity
 Scripts/Source/DefaultCrowdEventMember.psc:72:1:nesting-depth
+Scripts/Source/DefaultCrowdEventMember.psc:72:1:unregistered-remote-event
 Scripts/Source/DefaultCrowdEventMember.psc:76:5:exclamation-spacing
 Scripts/Source/DefaultCrowdEventMember.psc:76:35:unresolved-script
 Scripts/Source/DefaultCrowdEventMember.psc:79:10:forbidden-functions
@@ -10759,7 +10773,9 @@ Scripts/Source/DefaultSurveyTraitQuestScript.psc:9:1:indentation
 Scripts/Source/DefaultSurveyTraitQuestScript.psc:10:1:indentation
 Scripts/Source/DefaultSurveyTraitQuestScript.psc:20:64:trailing-whitespace
 Scripts/Source/DefaultSurveyTraitQuestScript.psc:21:1:indentation
+Scripts/Source/DefaultSurveyTraitQuestScript.psc:40:1:unregistered-remote-event
 Scripts/Source/DefaultSurveyTraitQuestScript.psc:41:1:indentation
+Scripts/Source/DefaultSurveyTraitQuestScript.psc:44:1:unregistered-remote-event
 Scripts/Source/DefaultSurveyTraitQuestScript.psc:45:1:indentation
 Scripts/Source/DefaultSurveyTraitQuestScript.psc:48:1:cyclomatic-complexity
 Scripts/Source/DefaultSurveyTraitQuestScript.psc:48:1:nesting-depth
@@ -12974,6 +12990,7 @@ Scripts/Source/ExpandingBiomassScript.psc:132:1:indentation
 Scripts/Source/ExpandingBiomassScript.psc:132:8:exclamation-spacing
 Scripts/Source/ExpandingBiomassScript.psc:133:1:indentation
 Scripts/Source/ExpandingBiomassScript.psc:134:1:indentation
+Scripts/Source/ExpandingBiomassScript.psc:137:1:unregistered-remote-event
 Scripts/Source/ExpandingBiomassScript.psc:138:1:indentation
 Scripts/Source/ExpandingBiomassScript.psc:142:1:indentation
 Scripts/Source/ExpandingBiomassScript.psc:143:1:trailing-whitespace
@@ -13090,6 +13107,7 @@ Scripts/Source/ExpandingBiomassScript.psc:285:1:indentation
 Scripts/Source/ExpandingBiomassScript.psc:286:1:indentation
 Scripts/Source/ExpandingBiomassScript.psc:287:1:indentation
 Scripts/Source/ExpandingBiomassScript.psc:288:1:indentation
+Scripts/Source/ExtendSecuritySystemScript.psc:4:1:unregistered-remote-event
 Scripts/Source/ExtendSecuritySystemScript.psc:5:1:indentation
 Scripts/Source/ExtendSecuritySystemScript.psc:6:1:indentation
 Scripts/Source/ExtendSecuritySystemScript.psc:7:1:indentation
@@ -49640,7 +49658,9 @@ Scripts/Source/GenericSwitchScript.psc:14:121:line-length
 Scripts/Source/GenericSwitchScript.psc:28:6:exclamation-spacing
 Scripts/Source/GenericSwitchScript.psc:31:39:forbidden-functions
 Scripts/Source/GenericSwitchScript.psc:42:6:exclamation-spacing
+Scripts/Source/GenericSwitchScript.psc:49:1:unregistered-remote-event
 Scripts/Source/GenericSwitchScript.psc:64:9:forbidden-functions
+Scripts/Source/GenericSwitchScript.psc:69:1:unregistered-remote-event
 Scripts/Source/GenericSwitchScript.psc:95:9:forbidden-functions
 Scripts/Source/GlobalVariable.psc:10:14:slow-functions
 Scripts/Source/GlobalVariable.psc:15:10:slow-functions
@@ -50160,6 +50180,7 @@ Scripts/Source/Hope01_ChangeLocation_Script.psc:27:1:indentation
 Scripts/Source/Hope01_ChangeLocation_Script.psc:32:1:indentation
 Scripts/Source/Hope01_ChangeLocation_Script.psc:34:1:indentation
 Scripts/Source/Hope01_ChangeLocation_Script.psc:36:1:indentation
+Scripts/Source/Hope01_ChangeLocation_Script.psc:39:1:unregistered-remote-event
 Scripts/Source/Hope01_ChangeLocation_Script.psc:40:1:indentation
 Scripts/Source/Hope01_ChangeLocation_Script.psc:40:11:forbidden-functions
 Scripts/Source/Hope01_ChangeLocation_Script.psc:44:7:trailing-whitespace
@@ -50578,6 +50599,7 @@ Scripts/Source/KioskTerminalVendorScript.psc:55:1:indentation
 Scripts/Source/KioskTerminalVendorScript.psc:56:1:indentation
 Scripts/Source/KioskTerminalVendorScript.psc:57:1:indentation
 Scripts/Source/KioskTerminalVendorScript.psc:58:1:indentation
+Scripts/Source/LC008SlaytonAlarm.psc:12:1:unregistered-remote-event
 Scripts/Source/LC008SlaytonAlarm.psc:13:1:indentation
 Scripts/Source/LC008SlaytonAlarm.psc:14:1:indentation
 Scripts/Source/LC008SlaytonAlarm.psc:15:1:indentation
@@ -51561,6 +51583,7 @@ Scripts/Source/LC088_KeyQuestScript.psc:651:33:unresolved-script
 Scripts/Source/LC088_KeyQuestScript.psc:652:33:unresolved-script
 Scripts/Source/LC088_KeyQuestScript.psc:658:40:slow-functions
 Scripts/Source/LC088_KeyReactorScript.psc:5:1:indentation
+Scripts/Source/LC088_KeyReactorScript.psc:16:1:unregistered-remote-event
 Scripts/Source/LC088_Key_RestrainingRefScript.psc:3:1:semicolon
 Scripts/Source/LC088_Key_RestrainingRefScript.psc:4:121:line-length
 Scripts/Source/LC088_Key_RestrainingRefScript.psc:5:121:line-length
@@ -52251,9 +52274,11 @@ Scripts/Source/LC088_VigilanceQuestScript.psc:345:123:assignment-operator-spacin
 Scripts/Source/LC088_VigilanceQuestScript.psc:346:40:slow-functions
 Scripts/Source/LC088_VigilanceQuestScript.psc:358:7:exclamation-spacing
 Scripts/Source/LC088_VigilanceQuestScript.psc:396:121:line-length
+Scripts/Source/LC088_VigilanceQuestScript.psc:397:1:unregistered-remote-event
 Scripts/Source/LC088_VigilanceQuestScript.psc:401:1:unchecked-cast
 Scripts/Source/LC088_VigilanceQuestScript.psc:401:121:line-length
 Scripts/Source/LC088_VigilanceQuestScript.psc:406:121:line-length
+Scripts/Source/LC088_VigilanceQuestScript.psc:408:1:unregistered-remote-event
 Scripts/Source/LC088_VigilanceQuestScript.psc:411:1:unchecked-cast
 Scripts/Source/LC088_VigilanceQuestScript.psc:420:23:unresolved-script
 Scripts/Source/LC088_VigilanceQuestScript.psc:422:32:unresolved-script
@@ -52645,6 +52670,7 @@ Scripts/Source/LC107CredTankSystemRefScript.psc:145:15:forbidden-functions
 Scripts/Source/LC107CredTankSystemRefScript.psc:147:15:forbidden-functions
 Scripts/Source/LC107CredTankSystemRefScript.psc:169:1:indentation
 Scripts/Source/LC107CredTankSystemRefScript.psc:170:1:indentation
+Scripts/Source/LC107CredTankSystemRefScript.psc:180:1:unregistered-remote-event
 Scripts/Source/LC107HullBreachExplosionSourceScript.psc:5:1:indentation
 Scripts/Source/LC107HullBreachExplosionSourceScript.psc:6:1:indentation
 Scripts/Source/LC107HullBreachExplosionSourceScript.psc:10:1:indentation
@@ -53577,12 +53603,15 @@ Scripts/Source/LC165QuestScript.psc:1181:11:forbidden-functions
 Scripts/Source/LC165QuestScript.psc:1184:70:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:1184:70:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:1189:31:unresolved-script
+Scripts/Source/LC165QuestScript.psc:1197:1:unregistered-remote-event
 Scripts/Source/LC165QuestScript.psc:1199:44:unresolved-script
 Scripts/Source/LC165QuestScript.psc:1199:107:unresolved-script
 Scripts/Source/LC165QuestScript.psc:1199:121:line-length
+Scripts/Source/LC165QuestScript.psc:1204:1:unregistered-remote-event
 Scripts/Source/LC165QuestScript.psc:1206:44:unresolved-script
 Scripts/Source/LC165QuestScript.psc:1206:107:unresolved-script
 Scripts/Source/LC165QuestScript.psc:1206:121:line-length
+Scripts/Source/LC165QuestScript.psc:1211:1:unregistered-remote-event
 Scripts/Source/LC165QuestScript.psc:1213:44:unresolved-script
 Scripts/Source/LC165QuestScript.psc:1213:107:unresolved-script
 Scripts/Source/LC165QuestScript.psc:1213:121:line-length
@@ -53778,6 +53807,7 @@ Scripts/Source/LC165QuestScript.psc:1800:56:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:1801:62:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:1801:62:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:1812:8:forbidden-functions
+Scripts/Source/LC165QuestScript.psc:1824:1:unregistered-remote-event
 Scripts/Source/LC165QuestScript.psc:1833:1:semicolon
 Scripts/Source/LC165QuestScript.psc:1840:121:line-length
 Scripts/Source/LC165QuestScript.psc:1840:173:unresolved-script
@@ -55051,6 +55081,7 @@ Scripts/Source/LegendaryItemQuestScript.psc:236:8:forbidden-functions
 Scripts/Source/LegendaryMagicEffectEventListenScript.psc:10:55:trailing-whitespace
 Scripts/Source/LegendaryMagicEffectEventListenScript.psc:17:121:line-length
 Scripts/Source/LegendaryMagicEffectEventListenScript.psc:21:121:line-length
+Scripts/Source/LegendaryMagicEffectEventListenScript.psc:26:1:unregistered-remote-event
 Scripts/Source/LegendaryMagicEffectEventListenScript.psc:27:8:forbidden-functions
 Scripts/Source/LegendaryMagicEffectEventListenScript.psc:38:1:trailing-whitespace
 Scripts/Source/LegendaryMagicEffectEventListenScript.psc:39:121:line-length
@@ -55110,6 +55141,8 @@ Scripts/Source/LegendaryOnHitEffectStaggerScript.psc:26:1:place-at-me
 Scripts/Source/LegendaryOnHitEffectStaggerScript.psc:29:9:forbidden-functions
 Scripts/Source/LegendaryOnHitEffectStaggerScript.psc:30:1:place-at-me
 Scripts/Source/ListenForArtifact.psc:8:1:indentation
+Scripts/Source/ListenForArtifact.psc:13:1:unregistered-remote-event
+Scripts/Source/ListenForArtifact.psc:17:1:unregistered-remote-event
 Scripts/Source/LoadElevatorFloorNamesScript.psc:4:1:indentation
 Scripts/Source/LoadElevatorFloorNamesScript.psc:5:1:indentation
 Scripts/Source/LoadElevatorFloorNamesScript.psc:6:1:indentation
@@ -56028,6 +56061,7 @@ Scripts/Source/MQ104APlayerShipScript.psc:18:1:indentation
 Scripts/Source/MQ104APlayerShipScript.psc:19:1:indentation
 Scripts/Source/MQ104AScript.psc:7:1:indentation
 Scripts/Source/MQ104AScript.psc:7:1:none-form-usage
+Scripts/Source/MQ104AScript.psc:10:1:unregistered-remote-event
 Scripts/Source/MQ104AScript.psc:11:1:indentation
 Scripts/Source/MQ104AScript.psc:12:1:indentation
 Scripts/Source/MQ104AScript.psc:12:1:none-form-usage
@@ -58207,6 +58241,7 @@ Scripts/Source/MQ403QuestScript.psc:57:1:none-form-usage
 Scripts/Source/MQ403QuestScript.psc:58:1:indentation
 Scripts/Source/MQ403QuestScript.psc:58:1:none-form-usage
 Scripts/Source/MQ403QuestScript.psc:61:1:cyclomatic-complexity
+Scripts/Source/MQ403QuestScript.psc:61:1:unregistered-remote-event
 Scripts/Source/MQ403QuestScript.psc:62:1:indentation
 Scripts/Source/MQ403QuestScript.psc:62:1:none-form-usage
 Scripts/Source/MQ403QuestScript.psc:63:1:indentation
@@ -58603,6 +58638,7 @@ Scripts/Source/MQ_TempleQuestScript.psc:100:1:indentation
 Scripts/Source/MQ_TempleQuestScript.psc:101:1:indentation
 Scripts/Source/MQ_TempleQuestScript.psc:101:33:forbidden-functions
 Scripts/Source/MQ_TempleQuestScript.psc:104:1:cyclomatic-complexity
+Scripts/Source/MQ_TempleQuestScript.psc:104:1:unregistered-remote-event
 Scripts/Source/MQ_TempleQuestScript.psc:105:1:indentation
 Scripts/Source/MQ_TempleQuestScript.psc:105:1:none-form-usage
 Scripts/Source/MQ_TempleQuestScript.psc:106:1:indentation
@@ -58779,12 +58815,14 @@ Scripts/Source/MQ_Temple_SubScript.psc:176:1:indentation
 Scripts/Source/MQ_Temple_SubScript.psc:177:1:indentation
 Scripts/Source/MQ_Temple_SubScript.psc:178:1:indentation
 Scripts/Source/MQ_Temple_SubScript.psc:179:1:indentation
+Scripts/Source/MQ_Temple_SubScript.psc:182:1:unregistered-remote-event
 Scripts/Source/MQ_Temple_SubScript.psc:183:1:indentation
 Scripts/Source/MQ_Temple_SubScript.psc:183:1:none-form-usage
 Scripts/Source/MQ_Temple_SubScript.psc:184:1:indentation
 Scripts/Source/MQ_Temple_SubScript.psc:185:1:indentation
 Scripts/Source/MQ_Temple_SubScript.psc:185:1:unchecked-cast
 Scripts/Source/MQ_Temple_SubScript.psc:186:1:indentation
+Scripts/Source/MQ_Temple_SubScript.psc:189:1:unregistered-remote-event
 Scripts/Source/MQ_Temple_SubScript.psc:190:1:indentation
 Scripts/Source/MQ_Temple_SubScript.psc:190:121:line-length
 Scripts/Source/MQ_Temple_SubScript.psc:191:1:indentation
@@ -59711,6 +59749,7 @@ Scripts/Source/MS05QuestScript.psc:9:27:forbidden-functions
 Scripts/Source/MS05QuestScript.psc:10:1:indentation
 Scripts/Source/MS05QuestScript.psc:15:1:indentation
 Scripts/Source/MS05QuestScript.psc:21:121:line-length
+Scripts/Source/MS05QuestScript.psc:22:1:unregistered-remote-event
 Scripts/Source/MS05QuestScript.psc:23:1:indentation
 Scripts/Source/MS05QuestScript.psc:24:1:indentation
 Scripts/Source/MS05QuestScript.psc:25:1:indentation
@@ -59724,6 +59763,7 @@ Scripts/Source/MS05QuestScript.psc:31:1:indentation
 Scripts/Source/MS05QuestScript.psc:32:1:indentation
 Scripts/Source/MS05RewardScript.psc:11:1:indentation
 Scripts/Source/MS05RewardScript.psc:15:115:trailing-whitespace
+Scripts/Source/MS05RewardScript.psc:16:1:unregistered-remote-event
 Scripts/Source/MS05RewardScript.psc:18:1:indentation
 Scripts/Source/MS05RewardScript.psc:18:11:forbidden-functions
 Scripts/Source/MS05RewardScript.psc:20:1:indentation
@@ -60648,6 +60688,7 @@ Scripts/Source/MissionCargoQuestScript.psc:325:8:forbidden-functions
 Scripts/Source/MissionCargoQuestScript.psc:330:8:forbidden-functions
 Scripts/Source/MissionCargoQuestScript.psc:332:1:indentation
 Scripts/Source/MissionCargoQuestScript.psc:337:8:forbidden-functions
+Scripts/Source/MissionCargoQuestScript.psc:340:1:unregistered-remote-event
 Scripts/Source/MissionCargoQuestScript.psc:341:1:indentation
 Scripts/Source/MissionCargoQuestScript.psc:341:11:forbidden-functions
 Scripts/Source/MissionCargoQuestScript.psc:346:51:unresolved-script
@@ -61335,6 +61376,7 @@ Scripts/Source/MissionPiracyQuestScript.psc:244:121:line-length
 Scripts/Source/MissionPiracyQuestScript.psc:247:1:indentation
 Scripts/Source/MissionPiracyQuestScript.psc:247:61:unresolved-script
 Scripts/Source/MissionPiracyQuestScript.psc:250:1:indentation
+Scripts/Source/MissionPiracyQuestScript.psc:255:1:unregistered-remote-event
 Scripts/Source/MissionPiracyQuestScript.psc:256:1:indentation
 Scripts/Source/MissionPiracyQuestScript.psc:257:1:indentation
 Scripts/Source/MissionPiracyQuestScript.psc:257:58:unresolved-script
@@ -61490,6 +61532,7 @@ Scripts/Source/MissionRescueQuestScript.psc:69:1:indentation
 Scripts/Source/MissionRescueQuestScript.psc:69:45:unresolved-script
 Scripts/Source/MissionRescueQuestScript.psc:70:1:indentation
 Scripts/Source/MissionRescueQuestScript.psc:71:1:indentation
+Scripts/Source/MissionRescueQuestScript.psc:74:1:unregistered-remote-event
 Scripts/Source/MissionRescueQuestScript.psc:75:1:indentation
 Scripts/Source/MissionRescueQuestScript.psc:76:1:indentation
 Scripts/Source/MissionRescueQuestScript.psc:76:58:unresolved-script
@@ -61888,6 +61931,7 @@ Scripts/Source/MissionSupplyScript.psc:281:1:indentation
 Scripts/Source/MissionSupplyScript.psc:282:1:indentation
 Scripts/Source/MissionSupplyScript.psc:282:30:unresolved-script
 Scripts/Source/MissionSupplyScript.psc:283:1:indentation
+Scripts/Source/MissionSupplyScript.psc:286:1:unregistered-remote-event
 Scripts/Source/MissionSupplyScript.psc:288:1:indentation
 Scripts/Source/MissionSupplyScript.psc:289:8:forbidden-functions
 Scripts/Source/MissionSupplyScript.psc:291:1:indentation
@@ -61917,6 +61961,7 @@ Scripts/Source/MissionSupplyScript.psc:308:1:indentation
 Scripts/Source/MissionSupplyScript.psc:309:1:indentation
 Scripts/Source/MissionSupplyScript.psc:310:1:indentation
 Scripts/Source/MissionSupplyScript.psc:311:1:indentation
+Scripts/Source/MissionSupplyScript.psc:314:1:unregistered-remote-event
 Scripts/Source/MissionSupplyScript.psc:316:1:indentation
 Scripts/Source/MissionSupplyScript.psc:317:1:indentation
 Scripts/Source/MissionSupplyScript.psc:318:1:indentation
@@ -62119,6 +62164,7 @@ Scripts/Source/MissionSurveyTraitScript.psc:19:1:indentation
 Scripts/Source/MissionSurveyTraitScript.psc:21:1:indentation
 Scripts/Source/MissionSurveyTraitScript.psc:22:1:indentation
 Scripts/Source/MissionSurveyTraitScript.psc:26:8:forbidden-functions
+Scripts/Source/MissionSurveyTraitScript.psc:34:1:unregistered-remote-event
 Scripts/Source/MissionSurveyTraitScript.psc:36:1:indentation
 Scripts/Source/MissionSurveyTraitScript.psc:37:8:forbidden-functions
 Scripts/Source/MissionSurveyTraitScript.psc:39:1:indentation
@@ -63685,6 +63731,7 @@ Scripts/Source/OE_AustinF_CECSuperfan_Script.psc:40:1:indentation
 Scripts/Source/OE_AustinF_CECSuperfan_Script.psc:41:1:indentation
 Scripts/Source/OE_AustinF_CECSuperfan_Script.psc:41:11:forbidden-functions
 Scripts/Source/OE_AustinF_PvG_Script.psc:8:1:indentation
+Scripts/Source/OE_AustinF_PvG_Script.psc:11:1:unregistered-remote-event
 Scripts/Source/OE_AustinF_PvG_Script.psc:12:1:indentation
 Scripts/Source/OE_AustinF_PvG_Script.psc:12:1:none-form-usage
 Scripts/Source/OE_AustinF_PvG_Script.psc:13:1:indentation
@@ -63867,6 +63914,7 @@ Scripts/Source/OE_CiviliansScript.psc:155:1:indentation
 Scripts/Source/OE_CiviliansScript.psc:156:1:indentation
 Scripts/Source/OE_CiviliansScript.psc:157:1:indentation
 Scripts/Source/OE_CiviliansScript.psc:158:1:trailing-whitespace
+Scripts/Source/OE_CiviliansScript.psc:161:1:unregistered-remote-event
 Scripts/Source/OE_CiviliansScript.psc:164:1:indentation
 Scripts/Source/OE_CiviliansScript.psc:164:1:unchecked-cast
 Scripts/Source/OE_CiviliansScript.psc:165:1:indentation
@@ -66020,6 +66068,7 @@ Scripts/Source/OutpostCargoLinkLightScript.psc:17:1:indentation
 Scripts/Source/OutpostCargoLinkLightScript.psc:18:1:indentation
 Scripts/Source/OutpostCargoLinkLightScript.psc:19:1:indentation
 Scripts/Source/OutpostCargoLinkLightScript.psc:20:1:indentation
+Scripts/Source/OutpostCargoLinkLightScript.psc:23:1:unregistered-remote-event
 Scripts/Source/OutpostCargoLinkLightScript.psc:24:8:forbidden-functions
 Scripts/Source/OutpostCargoLinkLightScript.psc:26:1:indentation
 Scripts/Source/OutpostCargoLinkLightScript.psc:26:5:strict-boolean
@@ -66471,6 +66520,7 @@ Scripts/Source/OutpostHarvesterFaunaScript.psc:340:1:indentation
 Scripts/Source/OutpostHarvesterFaunaScript.psc:341:1:indentation
 Scripts/Source/OutpostHarvesterFloraPlanterScript.psc:22:1:indentation
 Scripts/Source/OutpostHarvesterFloraPlanterScript.psc:27:1:indentation
+Scripts/Source/OutpostHarvesterFloraPlanterScript.psc:30:1:unregistered-remote-event
 Scripts/Source/OutpostHarvesterFloraPlanterScript.psc:32:8:forbidden-functions
 Scripts/Source/OutpostHarvesterFloraPlanterScript.psc:33:1:indentation
 Scripts/Source/OutpostHarvesterFloraPlanterScript.psc:40:1:indentation
@@ -68112,6 +68162,7 @@ Scripts/Source/RAD03QuestScript.psc:38:1:indentation
 Scripts/Source/RAD03QuestScript.psc:39:1:indentation
 Scripts/Source/RAD03QuestScript.psc:40:1:indentation
 Scripts/Source/RAD03QuestScript.psc:44:121:line-length
+Scripts/Source/RAD03QuestScript.psc:45:1:unregistered-remote-event
 Scripts/Source/RAD03QuestScript.psc:46:1:indentation
 Scripts/Source/RAD03QuestScript.psc:47:1:indentation
 Scripts/Source/RAD03QuestScript.psc:48:1:indentation
@@ -68123,6 +68174,7 @@ Scripts/Source/RAD04QuestScript.psc:7:1:indentation
 Scripts/Source/RAD04QuestScript.psc:7:27:forbidden-functions
 Scripts/Source/RAD04QuestScript.psc:8:1:indentation
 Scripts/Source/RAD04QuestScript.psc:11:121:line-length
+Scripts/Source/RAD04QuestScript.psc:12:1:unregistered-remote-event
 Scripts/Source/RAD04QuestScript.psc:13:1:indentation
 Scripts/Source/RAD04QuestScript.psc:14:1:indentation
 Scripts/Source/RAD04QuestScript.psc:15:1:indentation
@@ -68309,6 +68361,7 @@ Scripts/Source/REAliasScript.psc:118:10:forbidden-functions
 Scripts/Source/REAliasScript.psc:119:1:indentation
 Scripts/Source/REAliasScript.psc:120:1:indentation
 Scripts/Source/REAliasWeaponOutScript.psc:6:8:forbidden-functions
+Scripts/Source/REAliasWeaponOutScript.psc:10:1:unregistered-remote-event
 Scripts/Source/REAliasWeaponOutScript.psc:11:8:forbidden-functions
 Scripts/Source/REAssaultQuestScript.psc:4:121:line-length
 Scripts/Source/REAssaultQuestScript.psc:39:1:cyclomatic-complexity
@@ -68659,6 +68712,7 @@ Scripts/Source/REScript.psc:182:9:forbidden-functions
 Scripts/Source/REScript.psc:182:72:unresolved-script
 Scripts/Source/REScript.psc:194:8:forbidden-functions
 Scripts/Source/REScript.psc:203:1:indentation
+Scripts/Source/REScript.psc:224:1:unregistered-remote-event
 Scripts/Source/REScript.psc:229:1:cyclomatic-complexity
 Scripts/Source/REScript.psc:229:1:nesting-depth
 Scripts/Source/REScript.psc:233:56:forbidden-functions
@@ -69336,6 +69390,7 @@ Scripts/Source/RI07_DeMarcusAliasScript.psc:20:1:indentation
 Scripts/Source/RI07_DeMarcusAliasScript.psc:21:1:indentation
 Scripts/Source/RI07_DeMarcusAliasScript.psc:23:1:indentation
 Scripts/Source/RI07_IDCardReadersScript.psc:8:1:indentation
+Scripts/Source/RI07_IDCardReadersScript.psc:11:1:unregistered-remote-event
 Scripts/Source/RI07_IDCardReadersScript.psc:12:1:trailing-whitespace
 Scripts/Source/RI07_IDCardReadersScript.psc:13:1:indentation
 Scripts/Source/RI07_IDCardReadersScript.psc:15:1:indentation
@@ -70767,6 +70822,7 @@ Scripts/Source/RQScript.psc:174:121:line-length
 Scripts/Source/RQScript.psc:176:40:unresolved-script
 Scripts/Source/RQScript.psc:178:1:unchecked-cast
 Scripts/Source/RQScript.psc:178:9:forbidden-functions
+Scripts/Source/RQScript.psc:182:1:unregistered-remote-event
 Scripts/Source/RQScript.psc:184:121:line-length
 Scripts/Source/RQScript.psc:185:1:indentation
 Scripts/Source/RQScript.psc:185:1:unchecked-cast
@@ -70914,6 +70970,7 @@ Scripts/Source/RQ_DeliverScript.psc:49:32:slow-functions
 Scripts/Source/RQ_DeliverScript.psc:49:43:unresolved-script
 Scripts/Source/RQ_DeliverScript.psc:50:1:indentation
 Scripts/Source/RQ_DeliverScript.psc:51:1:indentation
+Scripts/Source/RQ_DeliverScript.psc:54:1:unregistered-remote-event
 Scripts/Source/RQ_DeliverScript.psc:56:1:indentation
 Scripts/Source/RQ_DeliverScript.psc:57:1:indentation
 Scripts/Source/RQ_DeliverScript.psc:63:1:indentation
@@ -76945,6 +77002,7 @@ Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:142:1:indentation
 Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:143:1:indentation
 Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:145:1:indentation
 Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:146:1:indentation
+Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:149:1:unregistered-remote-event
 Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:150:1:indentation
 Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:150:57:trailing-whitespace
 Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:151:1:indentation
@@ -86474,9 +86532,11 @@ Scripts/Source/SQ_OutpostAttackScript.psc:96:1:indentation
 Scripts/Source/SQ_OutpostAttackScript.psc:97:1:indentation
 Scripts/Source/SQ_OutpostAttackScript.psc:98:1:indentation
 Scripts/Source/SQ_OutpostAttackScript.psc:99:1:indentation
+Scripts/Source/SQ_OutpostAttackScript.psc:102:1:unregistered-remote-event
 Scripts/Source/SQ_OutpostAttackScript.psc:103:8:forbidden-functions
 Scripts/Source/SQ_OutpostAttackScript.psc:104:1:indentation
 Scripts/Source/SQ_OutpostAttackScript.psc:108:1:indentation
+Scripts/Source/SQ_OutpostAttackScript.psc:112:1:unregistered-remote-event
 Scripts/Source/SQ_OutpostAttackScript.psc:113:8:forbidden-functions
 Scripts/Source/SQ_OutpostAttackScript.psc:117:121:line-length
 Scripts/Source/SQ_OutpostAttackScript.psc:118:1:indentation
@@ -90104,6 +90164,7 @@ Scripts/Source/SecuritySystemScript.psc:5:1:indentation
 Scripts/Source/SecuritySystemScript.psc:6:1:indentation
 Scripts/Source/SecuritySystemScript.psc:10:1:indentation
 Scripts/Source/SecuritySystemScript.psc:11:1:indentation
+Scripts/Source/SecuritySystemScript.psc:14:1:unregistered-remote-event
 Scripts/Source/SecuritySystemScript.psc:15:1:indentation
 Scripts/Source/SecuritySystemScript.psc:16:1:indentation
 Scripts/Source/SecuritySystemScript.psc:17:1:indentation
@@ -90115,6 +90176,7 @@ Scripts/Source/SecuritySystemScript.psc:23:1:indentation
 Scripts/Source/SecuritySystemScript.psc:23:5:empty-body
 Scripts/Source/SecuritySystemScript.psc:24:1:indentation
 Scripts/Source/SecuritySystemScript.psc:25:1:indentation
+Scripts/Source/SecuritySystemScript.psc:28:1:unregistered-remote-event
 Scripts/Source/SecuritySystemScript.psc:29:1:indentation
 Scripts/Source/SecuritySystemScript.psc:30:1:indentation
 Scripts/Source/SecuritySystemScript.psc:31:1:indentation
@@ -90773,6 +90835,8 @@ Scripts/Source/ShuttleBayDoorManagerScript.psc:21:35:unresolved-script
 Scripts/Source/ShuttleBayDoorScript.psc:2:121:line-length
 Scripts/Source/ShuttleBayDoorScript.psc:5:42:forbidden-functions
 Scripts/Source/ShuttleBayDoorScript.psc:7:9:forbidden-functions
+Scripts/Source/ShuttleBayDoorScript.psc:14:1:unregistered-remote-event
+Scripts/Source/ShuttleBayDoorScript.psc:18:1:unregistered-remote-event
 Scripts/Source/SignalReceiverScript.psc:6:1:indentation
 Scripts/Source/SignalReceiverScript.psc:7:1:indentation
 Scripts/Source/SignalReceiverScript.psc:9:1:indentation
@@ -93252,11 +93316,14 @@ Scripts/Source/TestJeffBBossBattleControlScript.psc:22:1:indentation
 Scripts/Source/TestJeffBBossBattleControlScript.psc:23:1:indentation
 Scripts/Source/TestJeffBBossBattleControlScript.psc:24:1:indentation
 Scripts/Source/TestJeffBBossBattleControlScript.psc:25:1:indentation
+Scripts/Source/TestJeffBBossBattleControlScript.psc:30:1:unregistered-remote-event
 Scripts/Source/TestJeffBBossBattleControlScript.psc:31:1:indentation
 Scripts/Source/TestJeffBBossBattleControlScript.psc:32:1:indentation
 Scripts/Source/TestJeffBBossBattleControlScript.psc:32:1:none-form-usage
+Scripts/Source/TestJeffBBossBattleControlScript.psc:37:1:unregistered-remote-event
 Scripts/Source/TestJeffBBossBattleControlScript.psc:38:1:indentation
 Scripts/Source/TestJeffBBossBattleControlScript.psc:39:1:indentation
+Scripts/Source/TestJeffBBossBattleControlScript.psc:44:1:unregistered-remote-event
 Scripts/Source/TestJeffBBossBattleControlScript.psc:45:1:indentation
 Scripts/Source/TestJeffBBossBattleControlScript.psc:46:1:indentation
 Scripts/Source/TestJeffBBossBattleControlScript.psc:47:1:indentation
@@ -93465,6 +93532,7 @@ Scripts/Source/TestKenPlayerShipScript.psc:13:8:forbidden-functions
 Scripts/Source/TestKenPlayerShipScript.psc:15:36:forbidden-functions
 Scripts/Source/TestKenPlayerShipScript.psc:16:8:forbidden-functions
 Scripts/Source/TestKenPlayerShipScript.psc:17:1:none-form-usage
+Scripts/Source/TestKenPlayerShipScript.psc:21:1:unregistered-remote-event
 Scripts/Source/TestKenPlayerShipScript.psc:22:8:forbidden-functions
 Scripts/Source/TestKenPlayerShipScript.psc:24:9:forbidden-functions
 Scripts/Source/TestKenPlayerShipScript.psc:25:1:none-form-usage
@@ -93520,6 +93588,7 @@ Scripts/Source/TestKurtArtifactTempleQuestScript.psc:46:1:indentation
 Scripts/Source/TestKurtArtifactTempleQuestScript.psc:50:1:indentation
 Scripts/Source/TestKurtArtifactTempleQuestScript.psc:51:1:indentation
 Scripts/Source/TestKurtArtifactTempleQuestScript.psc:51:1:none-form-usage
+Scripts/Source/TestKurtArtifactTempleQuestScript.psc:54:1:unregistered-remote-event
 Scripts/Source/TestKurtArtifactTempleQuestScript.psc:55:1:indentation
 Scripts/Source/TestKurtArtifactTempleQuestScript.psc:55:1:none-form-usage
 Scripts/Source/TestKurtArtifactTempleQuestScript.psc:56:1:indentation
@@ -95073,6 +95142,7 @@ Scripts/Source/TestSteveCQuestScript.psc:500:1:argument-naming
 Scripts/Source/TestSteveCQuestScript.psc:500:121:line-length
 Scripts/Source/TestSteveCQuestScript.psc:501:1:indentation
 Scripts/Source/TestSteveCQuestScript.psc:502:8:forbidden-functions
+Scripts/Source/TestSteveCQuestScript.psc:512:1:unregistered-remote-event
 Scripts/Source/TestSteveCQuestScript.psc:513:8:forbidden-functions
 Scripts/Source/TestSteveCQuestScript.psc:517:8:forbidden-functions
 Scripts/Source/TestSteveCQuestScript.psc:521:1:none-form-usage
@@ -96382,6 +96452,7 @@ Scripts/Source/UC01_OrientationDisplayScript.psc:14:1:unchecked-cast
 Scripts/Source/UC01_OrientationDisplayScript.psc:15:1:indentation
 Scripts/Source/UC01_OrientationDisplayScript.psc:15:1:none-form-usage
 Scripts/Source/UC01_OrientationDisplayScript.psc:16:1:indentation
+Scripts/Source/UC01_OrientationDisplayScript.psc:19:1:unregistered-remote-event
 Scripts/Source/UC01_OrientationDisplayScript.psc:19:121:line-length
 Scripts/Source/UC01_OrientationDisplayScript.psc:20:1:indentation
 Scripts/Source/UC01_OrientationDisplayScript.psc:22:1:indentation
@@ -97936,6 +98007,7 @@ Scripts/Source/UC04_QuestScript.psc:129:1:indentation
 Scripts/Source/UC04_QuestScript.psc:136:1:indentation
 Scripts/Source/UC04_QuestScript.psc:140:1:indentation
 Scripts/Source/UC04_QuestScript.psc:143:1:nesting-depth
+Scripts/Source/UC04_QuestScript.psc:143:1:unregistered-remote-event
 Scripts/Source/UC04_QuestScript.psc:144:1:indentation
 Scripts/Source/UC04_QuestScript.psc:145:1:indentation
 Scripts/Source/UC04_QuestScript.psc:145:53:exclamation-spacing
@@ -100390,6 +100462,7 @@ Scripts/Source/UCR04QuestScript.psc:208:1:indentation
 Scripts/Source/UCR04QuestScript.psc:209:1:indentation
 Scripts/Source/UCR04QuestScript.psc:210:1:indentation
 Scripts/Source/UCR04QuestScript.psc:211:1:indentation
+Scripts/Source/UCR04QuestScript.psc:214:1:unregistered-remote-event
 Scripts/Source/UCR04QuestScript.psc:215:1:indentation
 Scripts/Source/UCR04QuestScript.psc:217:1:indentation
 Scripts/Source/UCR04QuestScript.psc:218:1:indentation
@@ -101481,11 +101554,13 @@ Scripts/Source/rq_scantraitscript.psc:75:43:unresolved-script
 Scripts/Source/rq_scantraitscript.psc:76:1:indentation
 Scripts/Source/rq_scantraitscript.psc:77:1:indentation
 Scripts/Source/rq_scantraitscript.psc:78:1:indentation
+Scripts/Source/rq_scantraitscript.psc:81:1:unregistered-remote-event
 Scripts/Source/rq_scantraitscript.psc:83:1:indentation
 Scripts/Source/rq_scantraitscript.psc:85:1:indentation
 Scripts/Source/rq_scantraitscript.psc:86:1:indentation
 Scripts/Source/rq_scantraitscript.psc:87:1:indentation
 Scripts/Source/rq_scantraitscript.psc:88:1:indentation
+Scripts/Source/rq_scantraitscript.psc:92:1:unregistered-remote-event
 Scripts/Source/rq_scantraitscript.psc:94:1:indentation
 Scripts/Source/rq_scantraitscript.psc:95:1:indentation
 Scripts/Source/rq_scantraitscript.psc:96:1:indentation

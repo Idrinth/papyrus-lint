@@ -1688,6 +1688,7 @@ Scripts/Source/BEBlockPilotSeatScript.psc:29:1:none-form-usage
 Scripts/Source/BEBlockPilotSeatScript.psc:34:1:identifier-casing
 Scripts/Source/BEBlockPilotSeatScript.psc:34:1:identifier-casing
 Scripts/Source/BEBlockPilotSeatScript.psc:34:1:identifier-casing
+Scripts/Source/BEBlockPilotSeatScript.psc:34:1:unregistered-remote-event
 Scripts/Source/BEBlockPilotSeatScript.psc:35:1:identifier-casing
 Scripts/Source/BEBlockPilotSeatScript.psc:38:9:final-newline
 Scripts/Source/BEBlockPilotSeatScriptObjRef.psc:2:121:line-length
@@ -1797,6 +1798,7 @@ Scripts/Source/BEDebugScript.psc:94:1:function-length
 Scripts/Source/BEDebugScript.psc:94:1:identifier-casing
 Scripts/Source/BEDebugScript.psc:94:1:identifier-casing
 Scripts/Source/BEDebugScript.psc:94:1:identifier-casing
+Scripts/Source/BEDebugScript.psc:94:1:unregistered-remote-event
 Scripts/Source/BEDebugScript.psc:95:1:identifier-casing
 Scripts/Source/BEDebugScript.psc:96:1:identifier-casing
 Scripts/Source/BEDebugScript.psc:97:8:forbidden-functions
@@ -1908,6 +1910,7 @@ Scripts/Source/BEObjectiveBlockPilotSeatScript.psc:25:37:trailing-whitespace
 Scripts/Source/BEObjectiveBlockPilotSeatScript.psc:30:1:identifier-casing
 Scripts/Source/BEObjectiveBlockPilotSeatScript.psc:30:1:identifier-casing
 Scripts/Source/BEObjectiveBlockPilotSeatScript.psc:30:1:identifier-casing
+Scripts/Source/BEObjectiveBlockPilotSeatScript.psc:30:1:unregistered-remote-event
 Scripts/Source/BEObjectiveBlockPilotSeatScript.psc:36:1:function-length
 Scripts/Source/BEObjectiveBlockPilotSeatScript.psc:36:1:identifier-casing
 Scripts/Source/BEObjectiveBlockPilotSeatScript.psc:39:10:forbidden-functions
@@ -2635,14 +2638,17 @@ Scripts/Source/BEScript.psc:1131:62:exclamation-spacing
 Scripts/Source/BEScript.psc:1146:1:identifier-casing
 Scripts/Source/BEScript.psc:1146:1:identifier-casing
 Scripts/Source/BEScript.psc:1146:1:identifier-casing
+Scripts/Source/BEScript.psc:1146:1:unregistered-remote-event
 Scripts/Source/BEScript.psc:1147:1:identifier-casing
 Scripts/Source/BEScript.psc:1155:1:identifier-casing
 Scripts/Source/BEScript.psc:1155:1:identifier-casing
 Scripts/Source/BEScript.psc:1155:1:identifier-casing
+Scripts/Source/BEScript.psc:1155:1:unregistered-remote-event
 Scripts/Source/BEScript.psc:1156:1:identifier-casing
 Scripts/Source/BEScript.psc:1164:1:identifier-casing
 Scripts/Source/BEScript.psc:1164:1:identifier-casing
 Scripts/Source/BEScript.psc:1164:1:identifier-casing
+Scripts/Source/BEScript.psc:1164:1:unregistered-remote-event
 Scripts/Source/BEScript.psc:1165:1:identifier-casing
 Scripts/Source/BEScript.psc:1173:1:argument-naming
 Scripts/Source/BEScript.psc:1173:1:function-override
@@ -2673,11 +2679,13 @@ Scripts/Source/BEScript.psc:1222:1:function-length
 Scripts/Source/BEScript.psc:1222:1:identifier-casing
 Scripts/Source/BEScript.psc:1222:1:identifier-casing
 Scripts/Source/BEScript.psc:1222:1:identifier-casing
+Scripts/Source/BEScript.psc:1222:1:unregistered-remote-event
 Scripts/Source/BEScript.psc:1230:9:forbidden-functions
 Scripts/Source/BEScript.psc:1234:11:forbidden-functions
 Scripts/Source/BEScript.psc:1241:1:identifier-casing
 Scripts/Source/BEScript.psc:1241:1:identifier-casing
 Scripts/Source/BEScript.psc:1241:1:identifier-casing
+Scripts/Source/BEScript.psc:1241:1:unregistered-remote-event
 Scripts/Source/BEScript.psc:1243:9:forbidden-functions
 Scripts/Source/BEScript.psc:1248:1:function-length
 Scripts/Source/BEScript.psc:1278:1:cyclomatic-complexity
@@ -5016,6 +5024,7 @@ Scripts/Source/COM_CompanionQuestScript.psc:163:121:line-length
 Scripts/Source/COM_CompanionQuestScript.psc:169:1:identifier-casing
 Scripts/Source/COM_CompanionQuestScript.psc:169:1:identifier-casing
 Scripts/Source/COM_CompanionQuestScript.psc:169:1:identifier-casing
+Scripts/Source/COM_CompanionQuestScript.psc:169:1:unregistered-remote-event
 Scripts/Source/COM_CompanionQuestScript.psc:172:70:unresolved-script
 Scripts/Source/COM_CompanionQuestScript.psc:179:1:identifier-casing
 Scripts/Source/COM_CompanionQuestScript.psc:179:1:identifier-casing
@@ -11380,6 +11389,7 @@ Scripts/Source/DefaultAliasOnBecomePlayerShip.psc:16:1:indentation
 Scripts/Source/DefaultAliasOnBecomePlayerShip.psc:19:1:identifier-casing
 Scripts/Source/DefaultAliasOnBecomePlayerShip.psc:19:1:identifier-casing
 Scripts/Source/DefaultAliasOnBecomePlayerShip.psc:19:1:identifier-casing
+Scripts/Source/DefaultAliasOnBecomePlayerShip.psc:19:1:unregistered-remote-event
 Scripts/Source/DefaultAliasOnBecomePlayerShip.psc:20:1:identifier-casing
 Scripts/Source/DefaultAliasOnBecomePlayerShip.psc:22:1:indentation
 Scripts/Source/DefaultAliasOnBecomePlayerShip.psc:23:1:trailing-whitespace
@@ -12640,6 +12650,7 @@ Scripts/Source/DefaultCaptiveAlias.psc:114:4:strict-boolean
 Scripts/Source/DefaultCaptiveAlias.psc:123:1:identifier-casing
 Scripts/Source/DefaultCaptiveAlias.psc:123:1:identifier-casing
 Scripts/Source/DefaultCaptiveAlias.psc:123:1:identifier-casing
+Scripts/Source/DefaultCaptiveAlias.psc:123:1:unregistered-remote-event
 Scripts/Source/DefaultCaptiveAlias.psc:124:1:identifier-casing
 Scripts/Source/DefaultCaptiveAlias.psc:125:1:identifier-casing
 Scripts/Source/DefaultCaptiveAlias.psc:126:1:identifier-casing
@@ -12728,6 +12739,7 @@ Scripts/Source/DefaultCaptiveWoundedAlias.psc:115:4:strict-boolean
 Scripts/Source/DefaultCaptiveWoundedAlias.psc:123:1:identifier-casing
 Scripts/Source/DefaultCaptiveWoundedAlias.psc:123:1:identifier-casing
 Scripts/Source/DefaultCaptiveWoundedAlias.psc:123:1:identifier-casing
+Scripts/Source/DefaultCaptiveWoundedAlias.psc:123:1:unregistered-remote-event
 Scripts/Source/DefaultCaptiveWoundedAlias.psc:124:1:identifier-casing
 Scripts/Source/DefaultCaptiveWoundedAlias.psc:125:1:identifier-casing
 Scripts/Source/DefaultCaptiveWoundedAlias.psc:126:1:identifier-casing
@@ -12883,6 +12895,7 @@ Scripts/Source/DefaultCollectionAliasOnDeath.psc:37:23:boolean-simplification
 Scripts/Source/DefaultCollectionAliasOnDeath.psc:42:1:identifier-casing
 Scripts/Source/DefaultCollectionAliasOnDeath.psc:42:1:identifier-casing
 Scripts/Source/DefaultCollectionAliasOnDeath.psc:42:1:identifier-casing
+Scripts/Source/DefaultCollectionAliasOnDeath.psc:42:1:unregistered-remote-event
 Scripts/Source/DefaultCollectionAliasOnDeath.psc:43:1:identifier-casing
 Scripts/Source/DefaultCollectionAliasOnDeath.psc:46:37:forbidden-functions
 Scripts/Source/DefaultCollectionAliasOnDeath.psc:47:1:indentation
@@ -13607,6 +13620,7 @@ Scripts/Source/DefaultCrowdEventMember.psc:72:1:identifier-casing
 Scripts/Source/DefaultCrowdEventMember.psc:72:1:identifier-casing
 Scripts/Source/DefaultCrowdEventMember.psc:72:1:identifier-casing
 Scripts/Source/DefaultCrowdEventMember.psc:72:1:nesting-depth
+Scripts/Source/DefaultCrowdEventMember.psc:72:1:unregistered-remote-event
 Scripts/Source/DefaultCrowdEventMember.psc:76:5:exclamation-spacing
 Scripts/Source/DefaultCrowdEventMember.psc:76:35:unresolved-script
 Scripts/Source/DefaultCrowdEventMember.psc:79:10:forbidden-functions
@@ -16922,10 +16936,12 @@ Scripts/Source/DefaultSurveyTraitQuestScript.psc:34:1:function-override
 Scripts/Source/DefaultSurveyTraitQuestScript.psc:40:1:identifier-casing
 Scripts/Source/DefaultSurveyTraitQuestScript.psc:40:1:identifier-casing
 Scripts/Source/DefaultSurveyTraitQuestScript.psc:40:1:identifier-casing
+Scripts/Source/DefaultSurveyTraitQuestScript.psc:40:1:unregistered-remote-event
 Scripts/Source/DefaultSurveyTraitQuestScript.psc:41:1:indentation
 Scripts/Source/DefaultSurveyTraitQuestScript.psc:44:1:identifier-casing
 Scripts/Source/DefaultSurveyTraitQuestScript.psc:44:1:identifier-casing
 Scripts/Source/DefaultSurveyTraitQuestScript.psc:44:1:identifier-casing
+Scripts/Source/DefaultSurveyTraitQuestScript.psc:44:1:unregistered-remote-event
 Scripts/Source/DefaultSurveyTraitQuestScript.psc:45:1:indentation
 Scripts/Source/DefaultSurveyTraitQuestScript.psc:48:1:cyclomatic-complexity
 Scripts/Source/DefaultSurveyTraitQuestScript.psc:48:1:function-length
@@ -20221,6 +20237,7 @@ Scripts/Source/ExpandingBiomassScript.psc:134:1:indentation
 Scripts/Source/ExpandingBiomassScript.psc:137:1:identifier-casing
 Scripts/Source/ExpandingBiomassScript.psc:137:1:identifier-casing
 Scripts/Source/ExpandingBiomassScript.psc:137:1:identifier-casing
+Scripts/Source/ExpandingBiomassScript.psc:137:1:unregistered-remote-event
 Scripts/Source/ExpandingBiomassScript.psc:138:1:indentation
 Scripts/Source/ExpandingBiomassScript.psc:141:1:identifier-casing
 Scripts/Source/ExpandingBiomassScript.psc:142:1:indentation
@@ -20364,6 +20381,7 @@ Scripts/Source/ExtendSecuritySystemScript.psc:4:1:function-override
 Scripts/Source/ExtendSecuritySystemScript.psc:4:1:identifier-casing
 Scripts/Source/ExtendSecuritySystemScript.psc:4:1:identifier-casing
 Scripts/Source/ExtendSecuritySystemScript.psc:4:1:identifier-casing
+Scripts/Source/ExtendSecuritySystemScript.psc:4:1:unregistered-remote-event
 Scripts/Source/ExtendSecuritySystemScript.psc:5:1:identifier-casing
 Scripts/Source/ExtendSecuritySystemScript.psc:5:1:indentation
 Scripts/Source/ExtendSecuritySystemScript.psc:6:1:indentation
@@ -81131,6 +81149,7 @@ Scripts/Source/GenericSwitchScript.psc:42:6:exclamation-spacing
 Scripts/Source/GenericSwitchScript.psc:49:1:identifier-casing
 Scripts/Source/GenericSwitchScript.psc:49:1:identifier-casing
 Scripts/Source/GenericSwitchScript.psc:49:1:identifier-casing
+Scripts/Source/GenericSwitchScript.psc:49:1:unregistered-remote-event
 Scripts/Source/GenericSwitchScript.psc:53:1:function-length
 Scripts/Source/GenericSwitchScript.psc:53:1:identifier-casing
 Scripts/Source/GenericSwitchScript.psc:55:1:identifier-casing
@@ -81138,6 +81157,7 @@ Scripts/Source/GenericSwitchScript.psc:64:9:forbidden-functions
 Scripts/Source/GenericSwitchScript.psc:69:1:identifier-casing
 Scripts/Source/GenericSwitchScript.psc:69:1:identifier-casing
 Scripts/Source/GenericSwitchScript.psc:69:1:identifier-casing
+Scripts/Source/GenericSwitchScript.psc:69:1:unregistered-remote-event
 Scripts/Source/GenericSwitchScript.psc:73:1:function-length
 Scripts/Source/GenericSwitchScript.psc:73:1:identifier-casing
 Scripts/Source/GenericSwitchScript.psc:75:1:identifier-casing
@@ -81974,6 +81994,7 @@ Scripts/Source/Hope01_ChangeLocation_Script.psc:36:1:indentation
 Scripts/Source/Hope01_ChangeLocation_Script.psc:39:1:identifier-casing
 Scripts/Source/Hope01_ChangeLocation_Script.psc:39:1:identifier-casing
 Scripts/Source/Hope01_ChangeLocation_Script.psc:39:1:identifier-casing
+Scripts/Source/Hope01_ChangeLocation_Script.psc:39:1:unregistered-remote-event
 Scripts/Source/Hope01_ChangeLocation_Script.psc:40:1:indentation
 Scripts/Source/Hope01_ChangeLocation_Script.psc:40:11:forbidden-functions
 Scripts/Source/Hope01_ChangeLocation_Script.psc:44:7:trailing-whitespace
@@ -82579,6 +82600,7 @@ Scripts/Source/LC008SlaytonAlarm.psc:12:1:function-override
 Scripts/Source/LC008SlaytonAlarm.psc:12:1:identifier-casing
 Scripts/Source/LC008SlaytonAlarm.psc:12:1:identifier-casing
 Scripts/Source/LC008SlaytonAlarm.psc:12:1:identifier-casing
+Scripts/Source/LC008SlaytonAlarm.psc:12:1:unregistered-remote-event
 Scripts/Source/LC008SlaytonAlarm.psc:13:1:identifier-casing
 Scripts/Source/LC008SlaytonAlarm.psc:13:1:indentation
 Scripts/Source/LC008SlaytonAlarm.psc:14:1:indentation
@@ -84308,6 +84330,7 @@ Scripts/Source/LC088_KeyReactorScript.psc:11:1:identifier-casing
 Scripts/Source/LC088_KeyReactorScript.psc:16:1:identifier-casing
 Scripts/Source/LC088_KeyReactorScript.psc:16:1:identifier-casing
 Scripts/Source/LC088_KeyReactorScript.psc:16:1:identifier-casing
+Scripts/Source/LC088_KeyReactorScript.psc:16:1:unregistered-remote-event
 Scripts/Source/LC088_KeyReactorScript.psc:17:1:identifier-casing
 Scripts/Source/LC088_KeyReactorScript.psc:21:9:final-newline
 Scripts/Source/LC088_Key_RestrainingRefScript.psc:1:12:type-casing
@@ -85655,6 +85678,7 @@ Scripts/Source/LC088_VigilanceQuestScript.psc:396:121:line-length
 Scripts/Source/LC088_VigilanceQuestScript.psc:397:1:identifier-casing
 Scripts/Source/LC088_VigilanceQuestScript.psc:397:1:identifier-casing
 Scripts/Source/LC088_VigilanceQuestScript.psc:397:1:identifier-casing
+Scripts/Source/LC088_VigilanceQuestScript.psc:397:1:unregistered-remote-event
 Scripts/Source/LC088_VigilanceQuestScript.psc:398:1:identifier-casing
 Scripts/Source/LC088_VigilanceQuestScript.psc:399:1:identifier-casing
 Scripts/Source/LC088_VigilanceQuestScript.psc:400:1:identifier-casing
@@ -85664,6 +85688,7 @@ Scripts/Source/LC088_VigilanceQuestScript.psc:406:121:line-length
 Scripts/Source/LC088_VigilanceQuestScript.psc:408:1:identifier-casing
 Scripts/Source/LC088_VigilanceQuestScript.psc:408:1:identifier-casing
 Scripts/Source/LC088_VigilanceQuestScript.psc:408:1:identifier-casing
+Scripts/Source/LC088_VigilanceQuestScript.psc:408:1:unregistered-remote-event
 Scripts/Source/LC088_VigilanceQuestScript.psc:409:1:identifier-casing
 Scripts/Source/LC088_VigilanceQuestScript.psc:410:1:identifier-casing
 Scripts/Source/LC088_VigilanceQuestScript.psc:411:1:unchecked-cast
@@ -86391,6 +86416,7 @@ Scripts/Source/LC107CredTankSystemRefScript.psc:170:1:indentation
 Scripts/Source/LC107CredTankSystemRefScript.psc:180:1:identifier-casing
 Scripts/Source/LC107CredTankSystemRefScript.psc:180:1:identifier-casing
 Scripts/Source/LC107CredTankSystemRefScript.psc:180:1:identifier-casing
+Scripts/Source/LC107CredTankSystemRefScript.psc:180:1:unregistered-remote-event
 Scripts/Source/LC107CredTankSystemRefScript.psc:182:9:final-newline
 Scripts/Source/LC107HullBreachExplosionSourceScript.psc:5:1:indentation
 Scripts/Source/LC107HullBreachExplosionSourceScript.psc:6:1:indentation
@@ -88214,6 +88240,7 @@ Scripts/Source/LC165QuestScript.psc:1189:31:unresolved-script
 Scripts/Source/LC165QuestScript.psc:1197:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:1197:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:1197:1:identifier-casing
+Scripts/Source/LC165QuestScript.psc:1197:1:unregistered-remote-event
 Scripts/Source/LC165QuestScript.psc:1198:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:1199:44:unresolved-script
 Scripts/Source/LC165QuestScript.psc:1199:107:unresolved-script
@@ -88221,6 +88248,7 @@ Scripts/Source/LC165QuestScript.psc:1199:121:line-length
 Scripts/Source/LC165QuestScript.psc:1204:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:1204:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:1204:1:identifier-casing
+Scripts/Source/LC165QuestScript.psc:1204:1:unregistered-remote-event
 Scripts/Source/LC165QuestScript.psc:1205:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:1206:44:unresolved-script
 Scripts/Source/LC165QuestScript.psc:1206:107:unresolved-script
@@ -88228,6 +88256,7 @@ Scripts/Source/LC165QuestScript.psc:1206:121:line-length
 Scripts/Source/LC165QuestScript.psc:1211:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:1211:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:1211:1:identifier-casing
+Scripts/Source/LC165QuestScript.psc:1211:1:unregistered-remote-event
 Scripts/Source/LC165QuestScript.psc:1212:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:1213:44:unresolved-script
 Scripts/Source/LC165QuestScript.psc:1213:107:unresolved-script
@@ -88595,6 +88624,7 @@ Scripts/Source/LC165QuestScript.psc:1816:1:unnecessary-function
 Scripts/Source/LC165QuestScript.psc:1824:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:1824:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:1824:1:identifier-casing
+Scripts/Source/LC165QuestScript.psc:1824:1:unregistered-remote-event
 Scripts/Source/LC165QuestScript.psc:1833:1:semicolon
 Scripts/Source/LC165QuestScript.psc:1838:1:function-length
 Scripts/Source/LC165QuestScript.psc:1838:1:identifier-casing
@@ -90603,6 +90633,7 @@ Scripts/Source/LegendaryMagicEffectEventListenScript.psc:26:1:function-length
 Scripts/Source/LegendaryMagicEffectEventListenScript.psc:26:1:identifier-casing
 Scripts/Source/LegendaryMagicEffectEventListenScript.psc:26:1:identifier-casing
 Scripts/Source/LegendaryMagicEffectEventListenScript.psc:26:1:identifier-casing
+Scripts/Source/LegendaryMagicEffectEventListenScript.psc:26:1:unregistered-remote-event
 Scripts/Source/LegendaryMagicEffectEventListenScript.psc:27:8:forbidden-functions
 Scripts/Source/LegendaryMagicEffectEventListenScript.psc:38:1:trailing-whitespace
 Scripts/Source/LegendaryMagicEffectEventListenScript.psc:39:121:line-length
@@ -90745,9 +90776,11 @@ Scripts/Source/ListenForArtifact.psc:8:1:indentation
 Scripts/Source/ListenForArtifact.psc:13:1:identifier-casing
 Scripts/Source/ListenForArtifact.psc:13:1:identifier-casing
 Scripts/Source/ListenForArtifact.psc:13:1:identifier-casing
+Scripts/Source/ListenForArtifact.psc:13:1:unregistered-remote-event
 Scripts/Source/ListenForArtifact.psc:17:1:identifier-casing
 Scripts/Source/ListenForArtifact.psc:17:1:identifier-casing
 Scripts/Source/ListenForArtifact.psc:17:1:identifier-casing
+Scripts/Source/ListenForArtifact.psc:17:1:unregistered-remote-event
 Scripts/Source/ListenForArtifact.psc:27:48:final-newline
 Scripts/Source/LoadElevatorFloorNamesScript.psc:4:1:indentation
 Scripts/Source/LoadElevatorFloorNamesScript.psc:5:1:indentation
@@ -92112,6 +92145,7 @@ Scripts/Source/MQ104AScript.psc:7:1:none-form-usage
 Scripts/Source/MQ104AScript.psc:10:1:identifier-casing
 Scripts/Source/MQ104AScript.psc:10:1:identifier-casing
 Scripts/Source/MQ104AScript.psc:10:1:identifier-casing
+Scripts/Source/MQ104AScript.psc:10:1:unregistered-remote-event
 Scripts/Source/MQ104AScript.psc:11:1:indentation
 Scripts/Source/MQ104AScript.psc:12:1:indentation
 Scripts/Source/MQ104AScript.psc:12:1:none-form-usage
@@ -95258,6 +95292,7 @@ Scripts/Source/MQ403QuestScript.psc:61:1:function-length
 Scripts/Source/MQ403QuestScript.psc:61:1:identifier-casing
 Scripts/Source/MQ403QuestScript.psc:61:1:identifier-casing
 Scripts/Source/MQ403QuestScript.psc:61:1:identifier-casing
+Scripts/Source/MQ403QuestScript.psc:61:1:unregistered-remote-event
 Scripts/Source/MQ403QuestScript.psc:62:1:indentation
 Scripts/Source/MQ403QuestScript.psc:62:1:none-form-usage
 Scripts/Source/MQ403QuestScript.psc:63:1:indentation
@@ -95752,6 +95787,7 @@ Scripts/Source/MQ_TempleQuestScript.psc:104:1:function-length
 Scripts/Source/MQ_TempleQuestScript.psc:104:1:identifier-casing
 Scripts/Source/MQ_TempleQuestScript.psc:104:1:identifier-casing
 Scripts/Source/MQ_TempleQuestScript.psc:104:1:identifier-casing
+Scripts/Source/MQ_TempleQuestScript.psc:104:1:unregistered-remote-event
 Scripts/Source/MQ_TempleQuestScript.psc:105:1:indentation
 Scripts/Source/MQ_TempleQuestScript.psc:105:1:none-form-usage
 Scripts/Source/MQ_TempleQuestScript.psc:106:1:indentation
@@ -95971,6 +96007,7 @@ Scripts/Source/MQ_Temple_SubScript.psc:179:1:indentation
 Scripts/Source/MQ_Temple_SubScript.psc:182:1:identifier-casing
 Scripts/Source/MQ_Temple_SubScript.psc:182:1:identifier-casing
 Scripts/Source/MQ_Temple_SubScript.psc:182:1:identifier-casing
+Scripts/Source/MQ_Temple_SubScript.psc:182:1:unregistered-remote-event
 Scripts/Source/MQ_Temple_SubScript.psc:183:1:indentation
 Scripts/Source/MQ_Temple_SubScript.psc:183:1:none-form-usage
 Scripts/Source/MQ_Temple_SubScript.psc:184:1:indentation
@@ -95980,6 +96017,7 @@ Scripts/Source/MQ_Temple_SubScript.psc:186:1:indentation
 Scripts/Source/MQ_Temple_SubScript.psc:189:1:identifier-casing
 Scripts/Source/MQ_Temple_SubScript.psc:189:1:identifier-casing
 Scripts/Source/MQ_Temple_SubScript.psc:189:1:identifier-casing
+Scripts/Source/MQ_Temple_SubScript.psc:189:1:unregistered-remote-event
 Scripts/Source/MQ_Temple_SubScript.psc:190:1:indentation
 Scripts/Source/MQ_Temple_SubScript.psc:190:121:line-length
 Scripts/Source/MQ_Temple_SubScript.psc:191:1:identifier-casing
@@ -97124,6 +97162,7 @@ Scripts/Source/MS05QuestScript.psc:21:121:line-length
 Scripts/Source/MS05QuestScript.psc:22:1:identifier-casing
 Scripts/Source/MS05QuestScript.psc:22:1:identifier-casing
 Scripts/Source/MS05QuestScript.psc:22:1:identifier-casing
+Scripts/Source/MS05QuestScript.psc:22:1:unregistered-remote-event
 Scripts/Source/MS05QuestScript.psc:23:1:identifier-casing
 Scripts/Source/MS05QuestScript.psc:23:1:indentation
 Scripts/Source/MS05QuestScript.psc:24:1:identifier-casing
@@ -97146,6 +97185,7 @@ Scripts/Source/MS05RewardScript.psc:15:115:trailing-whitespace
 Scripts/Source/MS05RewardScript.psc:16:1:identifier-casing
 Scripts/Source/MS05RewardScript.psc:16:1:identifier-casing
 Scripts/Source/MS05RewardScript.psc:16:1:identifier-casing
+Scripts/Source/MS05RewardScript.psc:16:1:unregistered-remote-event
 Scripts/Source/MS05RewardScript.psc:18:1:indentation
 Scripts/Source/MS05RewardScript.psc:18:11:forbidden-functions
 Scripts/Source/MS05RewardScript.psc:20:1:indentation
@@ -98582,6 +98622,7 @@ Scripts/Source/MissionCargoQuestScript.psc:337:8:forbidden-functions
 Scripts/Source/MissionCargoQuestScript.psc:340:1:identifier-casing
 Scripts/Source/MissionCargoQuestScript.psc:340:1:identifier-casing
 Scripts/Source/MissionCargoQuestScript.psc:340:1:identifier-casing
+Scripts/Source/MissionCargoQuestScript.psc:340:1:unregistered-remote-event
 Scripts/Source/MissionCargoQuestScript.psc:341:1:indentation
 Scripts/Source/MissionCargoQuestScript.psc:341:11:forbidden-functions
 Scripts/Source/MissionCargoQuestScript.psc:345:1:identifier-casing
@@ -99584,6 +99625,7 @@ Scripts/Source/MissionPiracyQuestScript.psc:250:1:indentation
 Scripts/Source/MissionPiracyQuestScript.psc:255:1:identifier-casing
 Scripts/Source/MissionPiracyQuestScript.psc:255:1:identifier-casing
 Scripts/Source/MissionPiracyQuestScript.psc:255:1:identifier-casing
+Scripts/Source/MissionPiracyQuestScript.psc:255:1:unregistered-remote-event
 Scripts/Source/MissionPiracyQuestScript.psc:256:1:identifier-casing
 Scripts/Source/MissionPiracyQuestScript.psc:256:1:indentation
 Scripts/Source/MissionPiracyQuestScript.psc:257:1:identifier-casing
@@ -99841,6 +99883,7 @@ Scripts/Source/MissionRescueQuestScript.psc:74:1:function-length
 Scripts/Source/MissionRescueQuestScript.psc:74:1:identifier-casing
 Scripts/Source/MissionRescueQuestScript.psc:74:1:identifier-casing
 Scripts/Source/MissionRescueQuestScript.psc:74:1:identifier-casing
+Scripts/Source/MissionRescueQuestScript.psc:74:1:unregistered-remote-event
 Scripts/Source/MissionRescueQuestScript.psc:75:1:identifier-casing
 Scripts/Source/MissionRescueQuestScript.psc:75:1:indentation
 Scripts/Source/MissionRescueQuestScript.psc:76:1:identifier-casing
@@ -100329,6 +100372,7 @@ Scripts/Source/MissionSupplyScript.psc:286:1:function-length
 Scripts/Source/MissionSupplyScript.psc:286:1:identifier-casing
 Scripts/Source/MissionSupplyScript.psc:286:1:identifier-casing
 Scripts/Source/MissionSupplyScript.psc:286:1:identifier-casing
+Scripts/Source/MissionSupplyScript.psc:286:1:unregistered-remote-event
 Scripts/Source/MissionSupplyScript.psc:287:1:identifier-casing
 Scripts/Source/MissionSupplyScript.psc:288:1:identifier-casing
 Scripts/Source/MissionSupplyScript.psc:288:1:indentation
@@ -100367,6 +100411,7 @@ Scripts/Source/MissionSupplyScript.psc:311:1:indentation
 Scripts/Source/MissionSupplyScript.psc:314:1:identifier-casing
 Scripts/Source/MissionSupplyScript.psc:314:1:identifier-casing
 Scripts/Source/MissionSupplyScript.psc:314:1:identifier-casing
+Scripts/Source/MissionSupplyScript.psc:314:1:unregistered-remote-event
 Scripts/Source/MissionSupplyScript.psc:315:1:identifier-casing
 Scripts/Source/MissionSupplyScript.psc:315:1:unused-local-variable
 Scripts/Source/MissionSupplyScript.psc:316:1:identifier-casing
@@ -100644,6 +100689,7 @@ Scripts/Source/MissionSurveyTraitScript.psc:26:8:forbidden-functions
 Scripts/Source/MissionSurveyTraitScript.psc:34:1:identifier-casing
 Scripts/Source/MissionSurveyTraitScript.psc:34:1:identifier-casing
 Scripts/Source/MissionSurveyTraitScript.psc:34:1:identifier-casing
+Scripts/Source/MissionSurveyTraitScript.psc:34:1:unregistered-remote-event
 Scripts/Source/MissionSurveyTraitScript.psc:35:1:identifier-casing
 Scripts/Source/MissionSurveyTraitScript.psc:36:1:identifier-casing
 Scripts/Source/MissionSurveyTraitScript.psc:36:1:indentation
@@ -102714,6 +102760,7 @@ Scripts/Source/OE_AustinF_PvG_Script.psc:8:1:indentation
 Scripts/Source/OE_AustinF_PvG_Script.psc:11:1:identifier-casing
 Scripts/Source/OE_AustinF_PvG_Script.psc:11:1:identifier-casing
 Scripts/Source/OE_AustinF_PvG_Script.psc:11:1:identifier-casing
+Scripts/Source/OE_AustinF_PvG_Script.psc:11:1:unregistered-remote-event
 Scripts/Source/OE_AustinF_PvG_Script.psc:12:1:indentation
 Scripts/Source/OE_AustinF_PvG_Script.psc:12:1:none-form-usage
 Scripts/Source/OE_AustinF_PvG_Script.psc:13:1:indentation
@@ -102962,6 +103009,7 @@ Scripts/Source/OE_CiviliansScript.psc:161:1:function-length
 Scripts/Source/OE_CiviliansScript.psc:161:1:identifier-casing
 Scripts/Source/OE_CiviliansScript.psc:161:1:identifier-casing
 Scripts/Source/OE_CiviliansScript.psc:161:1:identifier-casing
+Scripts/Source/OE_CiviliansScript.psc:161:1:unregistered-remote-event
 Scripts/Source/OE_CiviliansScript.psc:163:1:useless-downcast
 Scripts/Source/OE_CiviliansScript.psc:164:1:indentation
 Scripts/Source/OE_CiviliansScript.psc:164:1:unchecked-cast
@@ -106241,6 +106289,7 @@ Scripts/Source/OutpostCargoLinkLightScript.psc:20:1:indentation
 Scripts/Source/OutpostCargoLinkLightScript.psc:23:1:identifier-casing
 Scripts/Source/OutpostCargoLinkLightScript.psc:23:1:identifier-casing
 Scripts/Source/OutpostCargoLinkLightScript.psc:23:1:identifier-casing
+Scripts/Source/OutpostCargoLinkLightScript.psc:23:1:unregistered-remote-event
 Scripts/Source/OutpostCargoLinkLightScript.psc:24:8:forbidden-functions
 Scripts/Source/OutpostCargoLinkLightScript.psc:25:1:identifier-casing
 Scripts/Source/OutpostCargoLinkLightScript.psc:26:1:indentation
@@ -106829,6 +106878,7 @@ Scripts/Source/OutpostHarvesterFloraPlanterScript.psc:27:1:indentation
 Scripts/Source/OutpostHarvesterFloraPlanterScript.psc:30:1:identifier-casing
 Scripts/Source/OutpostHarvesterFloraPlanterScript.psc:30:1:identifier-casing
 Scripts/Source/OutpostHarvesterFloraPlanterScript.psc:30:1:identifier-casing
+Scripts/Source/OutpostHarvesterFloraPlanterScript.psc:30:1:unregistered-remote-event
 Scripts/Source/OutpostHarvesterFloraPlanterScript.psc:31:1:identifier-casing
 Scripts/Source/OutpostHarvesterFloraPlanterScript.psc:32:8:forbidden-functions
 Scripts/Source/OutpostHarvesterFloraPlanterScript.psc:33:1:indentation
@@ -109367,6 +109417,7 @@ Scripts/Source/RAD03QuestScript.psc:44:121:line-length
 Scripts/Source/RAD03QuestScript.psc:45:1:identifier-casing
 Scripts/Source/RAD03QuestScript.psc:45:1:identifier-casing
 Scripts/Source/RAD03QuestScript.psc:45:1:identifier-casing
+Scripts/Source/RAD03QuestScript.psc:45:1:unregistered-remote-event
 Scripts/Source/RAD03QuestScript.psc:46:1:identifier-casing
 Scripts/Source/RAD03QuestScript.psc:46:1:indentation
 Scripts/Source/RAD03QuestScript.psc:47:1:indentation
@@ -109386,6 +109437,7 @@ Scripts/Source/RAD04QuestScript.psc:11:121:line-length
 Scripts/Source/RAD04QuestScript.psc:12:1:identifier-casing
 Scripts/Source/RAD04QuestScript.psc:12:1:identifier-casing
 Scripts/Source/RAD04QuestScript.psc:12:1:identifier-casing
+Scripts/Source/RAD04QuestScript.psc:12:1:unregistered-remote-event
 Scripts/Source/RAD04QuestScript.psc:13:1:identifier-casing
 Scripts/Source/RAD04QuestScript.psc:13:1:indentation
 Scripts/Source/RAD04QuestScript.psc:14:1:indentation
@@ -109652,6 +109704,7 @@ Scripts/Source/REAliasWeaponOutScript.psc:6:8:forbidden-functions
 Scripts/Source/REAliasWeaponOutScript.psc:10:1:identifier-casing
 Scripts/Source/REAliasWeaponOutScript.psc:10:1:identifier-casing
 Scripts/Source/REAliasWeaponOutScript.psc:10:1:identifier-casing
+Scripts/Source/REAliasWeaponOutScript.psc:10:1:unregistered-remote-event
 Scripts/Source/REAliasWeaponOutScript.psc:11:8:forbidden-functions
 Scripts/Source/REAliasWeaponOutScript.psc:14:9:final-newline
 Scripts/Source/REAssaultQuestScript.psc:4:121:line-length
@@ -110124,6 +110177,7 @@ Scripts/Source/REScript.psc:213:1:identifier-casing
 Scripts/Source/REScript.psc:224:1:identifier-casing
 Scripts/Source/REScript.psc:224:1:identifier-casing
 Scripts/Source/REScript.psc:224:1:identifier-casing
+Scripts/Source/REScript.psc:224:1:unregistered-remote-event
 Scripts/Source/REScript.psc:229:1:cyclomatic-complexity
 Scripts/Source/REScript.psc:229:1:function-length
 Scripts/Source/REScript.psc:229:1:nesting-depth
@@ -111027,6 +111081,7 @@ Scripts/Source/RI07_IDCardReadersScript.psc:8:1:indentation
 Scripts/Source/RI07_IDCardReadersScript.psc:11:1:identifier-casing
 Scripts/Source/RI07_IDCardReadersScript.psc:11:1:identifier-casing
 Scripts/Source/RI07_IDCardReadersScript.psc:11:1:identifier-casing
+Scripts/Source/RI07_IDCardReadersScript.psc:11:1:unregistered-remote-event
 Scripts/Source/RI07_IDCardReadersScript.psc:12:1:trailing-whitespace
 Scripts/Source/RI07_IDCardReadersScript.psc:13:1:indentation
 Scripts/Source/RI07_IDCardReadersScript.psc:15:1:indentation
@@ -113035,6 +113090,7 @@ Scripts/Source/RQScript.psc:178:9:forbidden-functions
 Scripts/Source/RQScript.psc:182:1:identifier-casing
 Scripts/Source/RQScript.psc:182:1:identifier-casing
 Scripts/Source/RQScript.psc:182:1:identifier-casing
+Scripts/Source/RQScript.psc:182:1:unregistered-remote-event
 Scripts/Source/RQScript.psc:184:1:identifier-casing
 Scripts/Source/RQScript.psc:184:121:line-length
 Scripts/Source/RQScript.psc:185:1:identifier-casing
@@ -113305,6 +113361,7 @@ Scripts/Source/RQ_DeliverScript.psc:54:1:function-override
 Scripts/Source/RQ_DeliverScript.psc:54:1:identifier-casing
 Scripts/Source/RQ_DeliverScript.psc:54:1:identifier-casing
 Scripts/Source/RQ_DeliverScript.psc:54:1:identifier-casing
+Scripts/Source/RQ_DeliverScript.psc:54:1:unregistered-remote-event
 Scripts/Source/RQ_DeliverScript.psc:56:1:indentation
 Scripts/Source/RQ_DeliverScript.psc:57:1:indentation
 Scripts/Source/RQ_DeliverScript.psc:62:1:function-length
@@ -122903,6 +122960,7 @@ Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:149:1:identifier-casing
 Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:149:1:identifier-casing
 Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:149:1:identifier-casing
 Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:149:1:identifier-casing
+Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:149:1:unregistered-remote-event
 Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:150:1:indentation
 Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:150:57:trailing-whitespace
 Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:151:1:indentation
@@ -136579,6 +136637,7 @@ Scripts/Source/SQ_OutpostAttackScript.psc:99:1:indentation
 Scripts/Source/SQ_OutpostAttackScript.psc:102:1:identifier-casing
 Scripts/Source/SQ_OutpostAttackScript.psc:102:1:identifier-casing
 Scripts/Source/SQ_OutpostAttackScript.psc:102:1:identifier-casing
+Scripts/Source/SQ_OutpostAttackScript.psc:102:1:unregistered-remote-event
 Scripts/Source/SQ_OutpostAttackScript.psc:103:8:forbidden-functions
 Scripts/Source/SQ_OutpostAttackScript.psc:104:1:indentation
 Scripts/Source/SQ_OutpostAttackScript.psc:107:1:unnecessary-function
@@ -136586,6 +136645,7 @@ Scripts/Source/SQ_OutpostAttackScript.psc:108:1:indentation
 Scripts/Source/SQ_OutpostAttackScript.psc:112:1:identifier-casing
 Scripts/Source/SQ_OutpostAttackScript.psc:112:1:identifier-casing
 Scripts/Source/SQ_OutpostAttackScript.psc:112:1:identifier-casing
+Scripts/Source/SQ_OutpostAttackScript.psc:112:1:unregistered-remote-event
 Scripts/Source/SQ_OutpostAttackScript.psc:113:8:forbidden-functions
 Scripts/Source/SQ_OutpostAttackScript.psc:117:1:identifier-casing
 Scripts/Source/SQ_OutpostAttackScript.psc:117:1:identifier-casing
@@ -141916,6 +141976,7 @@ Scripts/Source/SecuritySystemScript.psc:11:1:indentation
 Scripts/Source/SecuritySystemScript.psc:14:1:identifier-casing
 Scripts/Source/SecuritySystemScript.psc:14:1:identifier-casing
 Scripts/Source/SecuritySystemScript.psc:14:1:identifier-casing
+Scripts/Source/SecuritySystemScript.psc:14:1:unregistered-remote-event
 Scripts/Source/SecuritySystemScript.psc:15:1:indentation
 Scripts/Source/SecuritySystemScript.psc:16:1:indentation
 Scripts/Source/SecuritySystemScript.psc:17:1:indentation
@@ -141933,6 +141994,7 @@ Scripts/Source/SecuritySystemScript.psc:25:1:indentation
 Scripts/Source/SecuritySystemScript.psc:28:1:identifier-casing
 Scripts/Source/SecuritySystemScript.psc:28:1:identifier-casing
 Scripts/Source/SecuritySystemScript.psc:28:1:identifier-casing
+Scripts/Source/SecuritySystemScript.psc:28:1:unregistered-remote-event
 Scripts/Source/SecuritySystemScript.psc:29:1:indentation
 Scripts/Source/SecuritySystemScript.psc:30:1:indentation
 Scripts/Source/SecuritySystemScript.psc:31:1:indentation
@@ -142828,9 +142890,11 @@ Scripts/Source/ShuttleBayDoorScript.psc:7:9:forbidden-functions
 Scripts/Source/ShuttleBayDoorScript.psc:14:1:identifier-casing
 Scripts/Source/ShuttleBayDoorScript.psc:14:1:identifier-casing
 Scripts/Source/ShuttleBayDoorScript.psc:14:1:identifier-casing
+Scripts/Source/ShuttleBayDoorScript.psc:14:1:unregistered-remote-event
 Scripts/Source/ShuttleBayDoorScript.psc:18:1:identifier-casing
 Scripts/Source/ShuttleBayDoorScript.psc:18:1:identifier-casing
 Scripts/Source/ShuttleBayDoorScript.psc:18:1:identifier-casing
+Scripts/Source/ShuttleBayDoorScript.psc:18:1:unregistered-remote-event
 Scripts/Source/ShuttleBayDoorScript.psc:20:9:final-newline
 Scripts/Source/SignalReceiverScript.psc:6:1:indentation
 Scripts/Source/SignalReceiverScript.psc:7:1:indentation
@@ -146642,17 +146706,20 @@ Scripts/Source/TestJeffBBossBattleControlScript.psc:25:1:indentation
 Scripts/Source/TestJeffBBossBattleControlScript.psc:30:1:identifier-casing
 Scripts/Source/TestJeffBBossBattleControlScript.psc:30:1:identifier-casing
 Scripts/Source/TestJeffBBossBattleControlScript.psc:30:1:identifier-casing
+Scripts/Source/TestJeffBBossBattleControlScript.psc:30:1:unregistered-remote-event
 Scripts/Source/TestJeffBBossBattleControlScript.psc:31:1:indentation
 Scripts/Source/TestJeffBBossBattleControlScript.psc:32:1:indentation
 Scripts/Source/TestJeffBBossBattleControlScript.psc:32:1:none-form-usage
 Scripts/Source/TestJeffBBossBattleControlScript.psc:37:1:identifier-casing
 Scripts/Source/TestJeffBBossBattleControlScript.psc:37:1:identifier-casing
 Scripts/Source/TestJeffBBossBattleControlScript.psc:37:1:identifier-casing
+Scripts/Source/TestJeffBBossBattleControlScript.psc:37:1:unregistered-remote-event
 Scripts/Source/TestJeffBBossBattleControlScript.psc:38:1:indentation
 Scripts/Source/TestJeffBBossBattleControlScript.psc:39:1:indentation
 Scripts/Source/TestJeffBBossBattleControlScript.psc:44:1:identifier-casing
 Scripts/Source/TestJeffBBossBattleControlScript.psc:44:1:identifier-casing
 Scripts/Source/TestJeffBBossBattleControlScript.psc:44:1:identifier-casing
+Scripts/Source/TestJeffBBossBattleControlScript.psc:44:1:unregistered-remote-event
 Scripts/Source/TestJeffBBossBattleControlScript.psc:45:1:indentation
 Scripts/Source/TestJeffBBossBattleControlScript.psc:46:1:indentation
 Scripts/Source/TestJeffBBossBattleControlScript.psc:47:1:indentation
@@ -147005,6 +147072,7 @@ Scripts/Source/TestKenPlayerShipScript.psc:17:1:none-form-usage
 Scripts/Source/TestKenPlayerShipScript.psc:21:1:identifier-casing
 Scripts/Source/TestKenPlayerShipScript.psc:21:1:identifier-casing
 Scripts/Source/TestKenPlayerShipScript.psc:21:1:identifier-casing
+Scripts/Source/TestKenPlayerShipScript.psc:21:1:unregistered-remote-event
 Scripts/Source/TestKenPlayerShipScript.psc:22:8:forbidden-functions
 Scripts/Source/TestKenPlayerShipScript.psc:24:9:forbidden-functions
 Scripts/Source/TestKenPlayerShipScript.psc:25:1:none-form-usage
@@ -147113,6 +147181,7 @@ Scripts/Source/TestKurtArtifactTempleQuestScript.psc:51:1:none-form-usage
 Scripts/Source/TestKurtArtifactTempleQuestScript.psc:54:1:identifier-casing
 Scripts/Source/TestKurtArtifactTempleQuestScript.psc:54:1:identifier-casing
 Scripts/Source/TestKurtArtifactTempleQuestScript.psc:54:1:identifier-casing
+Scripts/Source/TestKurtArtifactTempleQuestScript.psc:54:1:unregistered-remote-event
 Scripts/Source/TestKurtArtifactTempleQuestScript.psc:55:1:indentation
 Scripts/Source/TestKurtArtifactTempleQuestScript.psc:55:1:none-form-usage
 Scripts/Source/TestKurtArtifactTempleQuestScript.psc:56:1:indentation
@@ -149570,6 +149639,7 @@ Scripts/Source/TestSteveCQuestScript.psc:508:1:unnecessary-function
 Scripts/Source/TestSteveCQuestScript.psc:512:1:identifier-casing
 Scripts/Source/TestSteveCQuestScript.psc:512:1:identifier-casing
 Scripts/Source/TestSteveCQuestScript.psc:512:1:identifier-casing
+Scripts/Source/TestSteveCQuestScript.psc:512:1:unregistered-remote-event
 Scripts/Source/TestSteveCQuestScript.psc:513:8:forbidden-functions
 Scripts/Source/TestSteveCQuestScript.psc:516:1:identifier-casing
 Scripts/Source/TestSteveCQuestScript.psc:516:1:unnecessary-function
@@ -151413,6 +151483,7 @@ Scripts/Source/UC01_OrientationDisplayScript.psc:16:1:indentation
 Scripts/Source/UC01_OrientationDisplayScript.psc:19:1:identifier-casing
 Scripts/Source/UC01_OrientationDisplayScript.psc:19:1:identifier-casing
 Scripts/Source/UC01_OrientationDisplayScript.psc:19:1:identifier-casing
+Scripts/Source/UC01_OrientationDisplayScript.psc:19:1:unregistered-remote-event
 Scripts/Source/UC01_OrientationDisplayScript.psc:19:121:line-length
 Scripts/Source/UC01_OrientationDisplayScript.psc:20:1:indentation
 Scripts/Source/UC01_OrientationDisplayScript.psc:22:1:indentation
@@ -153536,6 +153607,7 @@ Scripts/Source/UC04_QuestScript.psc:143:1:identifier-casing
 Scripts/Source/UC04_QuestScript.psc:143:1:identifier-casing
 Scripts/Source/UC04_QuestScript.psc:143:1:identifier-casing
 Scripts/Source/UC04_QuestScript.psc:143:1:nesting-depth
+Scripts/Source/UC04_QuestScript.psc:143:1:unregistered-remote-event
 Scripts/Source/UC04_QuestScript.psc:144:1:indentation
 Scripts/Source/UC04_QuestScript.psc:145:1:indentation
 Scripts/Source/UC04_QuestScript.psc:145:53:exclamation-spacing
@@ -156774,6 +156846,7 @@ Scripts/Source/UCR04QuestScript.psc:214:1:function-length
 Scripts/Source/UCR04QuestScript.psc:214:1:identifier-casing
 Scripts/Source/UCR04QuestScript.psc:214:1:identifier-casing
 Scripts/Source/UCR04QuestScript.psc:214:1:identifier-casing
+Scripts/Source/UCR04QuestScript.psc:214:1:unregistered-remote-event
 Scripts/Source/UCR04QuestScript.psc:215:1:identifier-casing
 Scripts/Source/UCR04QuestScript.psc:215:1:indentation
 Scripts/Source/UCR04QuestScript.psc:217:1:indentation
@@ -158417,6 +158490,7 @@ Scripts/Source/rq_scantraitscript.psc:78:1:indentation
 Scripts/Source/rq_scantraitscript.psc:81:1:identifier-casing
 Scripts/Source/rq_scantraitscript.psc:81:1:identifier-casing
 Scripts/Source/rq_scantraitscript.psc:81:1:identifier-casing
+Scripts/Source/rq_scantraitscript.psc:81:1:unregistered-remote-event
 Scripts/Source/rq_scantraitscript.psc:82:1:identifier-casing
 Scripts/Source/rq_scantraitscript.psc:83:1:identifier-casing
 Scripts/Source/rq_scantraitscript.psc:83:1:indentation
@@ -158427,6 +158501,7 @@ Scripts/Source/rq_scantraitscript.psc:88:1:indentation
 Scripts/Source/rq_scantraitscript.psc:92:1:identifier-casing
 Scripts/Source/rq_scantraitscript.psc:92:1:identifier-casing
 Scripts/Source/rq_scantraitscript.psc:92:1:identifier-casing
+Scripts/Source/rq_scantraitscript.psc:92:1:unregistered-remote-event
 Scripts/Source/rq_scantraitscript.psc:93:1:identifier-casing
 Scripts/Source/rq_scantraitscript.psc:93:1:unused-local-variable
 Scripts/Source/rq_scantraitscript.psc:94:1:identifier-casing
