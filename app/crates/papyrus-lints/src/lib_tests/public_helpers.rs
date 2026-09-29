@@ -72,11 +72,9 @@ fn remote_event_registrations_returns_lowercase_literal_leaves() {
         "    RegisterForRemoteEvent(akTarget, \"ONDEATH\")\n",
         "EndEvent\n",
     );
-    let script = papyrus_parser::parse_with_mode(
-        source,
-        papyrus_parser::parser::GameEdition::Fallout4,
-    )
-    .expect("test source should parse");
+    let script =
+        papyrus_parser::parse_with_mode(source, papyrus_parser::parser::GameEdition::Fallout4)
+            .expect("test source should parse");
 
     let regs = remote_event_registrations(&script);
 

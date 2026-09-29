@@ -254,9 +254,7 @@ impl papyrus_lints::ExternalSignatures for SharedFunctionTable<'_> {
             |table| table.registers_remote_event_cached(type_name, event_name),
             |table| {
                 papyrus_lints::ExternalSignatures::registers_remote_event(
-                    table,
-                    type_name,
-                    event_name,
+                    table, type_name, event_name,
                 )
             },
         )

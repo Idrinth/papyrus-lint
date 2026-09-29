@@ -5,6 +5,8 @@
 //! registers them. A handler with no registration in this script or its
 //! ancestry is dead code. Registration is matched case-insensitively by
 //! event-name leaf (`"OnCellAttach"` covers `Event ObjectReference.OnCellAttach`).
+//! Only unqualified `RegisterForRemoteEvent(...)` and `self.RegisterForRemoteEvent(...)`
+//! count for this script; a call on another receiver registers that other script.
 //!
 //! Per-script registrations are indexed on the project function table (see
 //! [`remote_event_registrations`]) so ancestry checks are a cheap
@@ -202,13 +204,17 @@ fn split_remote_event(name: &str) -> Option<(&str, &str)> {
     Some((type_name, event))
 }
 
+/// Whether `callee` is a bare `RegisterForRemoteEvent(...)` call, or one
+/// explicitly qualified with `self.RegisterForRemoteEvent(...)`. A call on
+/// any other receiver registers that other script, not this one.
 fn is_register_for_remote_event(callee: &Expr) -> bool {
-    let name = match callee {
-        Expr::Identifier(name) => name.as_str(),
-        Expr::Member { property, .. } => property.as_str(),
-        _ => return false,
-    };
-    name.eq_ignore_ascii_case(REGISTER)
+    match callee {
+        Expr::Identifier(name) => name.eq_ignore_ascii_case(REGISTER),
+        Expr::Member { object, property } => {
+            matches!(**object, Expr::Self_) && property.eq_ignore_ascii_case(REGISTER)
+        }
+        _ => false,
+    }
 }
 
 fn registered_event_name(args: &[Expr]) -> Option<String> {

@@ -37,7 +37,6 @@ fn lint_fo4(source: &str, config: &Config) -> Vec<Diagnostic> {
     crate::lint(source, config)
 }
 
-
 #[test]
 fn flags_remote_handler_without_registration() {
     let diagnostics = check(
@@ -85,11 +84,20 @@ fn flags_when_registered_event_name_does_not_match() {
 }
 
 #[test]
-fn flags_qualified_register_call_on_receiver() {
+fn does_not_flag_when_self_registers_matching_event() {
     let diagnostics = check(
         "ScriptName Example\n\nEvent OnInit()\n    self.RegisterForRemoteEvent(akTarget, \"OnCellAttach\")\nEndEvent\n\nEvent ObjectReference.OnCellAttach(ObjectReference akSender)\nEndEvent\n",
     );
     assert!(diagnostics.is_empty());
+}
+
+#[test]
+fn flags_when_register_call_is_on_foreign_receiver() {
+    let diagnostics = check(
+        "ScriptName Example\n\nEvent OnInit()\n    other.RegisterForRemoteEvent(akTarget, \"OnDeath\")\nEndEvent\n\nEvent Actor.OnDeath(Actor akSender, Actor akKiller)\nEndEvent\n",
+    );
+    assert_eq!(diagnostics.len(), 1);
+    assert!(diagnostics[0].message.contains("Actor.OnDeath"));
 }
 
 #[test]
@@ -210,9 +218,7 @@ impl ExternalSignatures for AncestryRegistrations {
             if visited.contains(&name) {
                 return None;
             }
-            let Some((events, opaque)) = self.scripts.get(&name) else {
-                return None;
-            };
+            let (events, opaque) = self.scripts.get(&name)?;
             saw_any = true;
             if *opaque || events.iter().any(|event| event == &event_key) {
                 return Some(true);
@@ -285,4 +291,21 @@ fn remote_event_registrations_collects_literals_and_opaque() {
     let regs = remote_event_registrations(&opaque);
     assert!(regs.events.is_empty());
     assert!(regs.opaque);
+}
+
+#[test]
+fn remote_event_registrations_counts_self_but_not_foreign_receiver() {
+    let self_call = parse_fo4(
+        "ScriptName Example\n\nEvent OnInit()\n    self.RegisterForRemoteEvent(akTarget, \"OnDeath\")\nEndEvent\n",
+    );
+    let regs = remote_event_registrations(&self_call);
+    assert!(regs.events.contains("ondeath"));
+    assert!(!regs.opaque);
+
+    let foreign = parse_fo4(
+        "ScriptName Example\n\nEvent OnInit()\n    other.RegisterForRemoteEvent(akTarget, \"OnDeath\")\n    Parent.RegisterForRemoteEvent(akTarget, \"OnCellAttach\")\nEndEvent\n",
+    );
+    let regs = remote_event_registrations(&foreign);
+    assert!(regs.events.is_empty());
+    assert!(!regs.opaque);
 }

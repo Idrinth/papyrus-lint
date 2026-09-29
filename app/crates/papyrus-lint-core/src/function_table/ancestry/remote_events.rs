@@ -20,9 +20,7 @@ impl FunctionTable {
                 return None;
             }
             self.ensure_loaded(&name);
-            let Some(script) = self.scripts.get(&name).and_then(Option::as_ref) else {
-                return None;
-            };
+            let script = self.scripts.get(&name).and_then(Option::as_ref)?;
             saw_any = true;
             if script_covers_remote_event(script, &event_key) {
                 return Some(true);
