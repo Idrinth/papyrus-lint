@@ -108,11 +108,11 @@ fn executable_adjacent_base_config_overrides_a_selected_preset() {
 
     // The base's own settings win, even over the preset's own values...
     assert!(generated.contains("semicolon: true\n"));
-    assert!(generated.contains("  property_sorting: true\n"));
+    assert!(generated.contains("  property_sorting: true # "));
     // ...while every other rule/setting still falls back to the
     // selected preset rather than the hardcoded built-in default.
     assert!(generated.contains("cyclomatic_complexity_warning: 99\n"));
-    assert!(generated.contains("  trailing_whitespace: false\n"));
+    assert!(generated.contains("  trailing_whitespace: false # "));
 }
 
 #[test]

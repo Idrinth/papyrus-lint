@@ -54,7 +54,14 @@ def _write_inputs(root: Path) -> None:
     (root / "schema").mkdir()
     config_dir.joinpath("lint-settings.yaml").write_text(yaml.safe_dump(settings, sort_keys=False), encoding="utf-8")
     rules_dir.joinpath("line-length.json").write_text(
-        json.dumps({"id": "line-length", "name": "Line length"}), encoding="utf-8"
+        json.dumps(
+            {
+                "id": "line-length",
+                "name": "Line length",
+                "description": "Flags overly long lines.",
+            }
+        ),
+        encoding="utf-8",
     )
 
 
@@ -70,11 +77,15 @@ class DefaultConfigTests(unittest.TestCase):
             json.loads(path.read_text(encoding="utf-8")) for path in sorted((ROOT / "shared/rules").glob("*.json"))
         ]
         text = render_default_yaml(settings, rules)
-        self.assertTrue(text.startswith("# game"))
+        self.assertTrue(text.startswith("# Target game."))
         self.assertIn("\ngame: skyrim\n", text)
         self.assertIn("\ncompiler_path: null\n", text)
         self.assertIn("\nrules:\n", text)
-        self.assertIn("  member_chain_none_usage: false\n", text)
+        self.assertIn(
+            "  line_length: true # Flags lines that exceed the configured maximum character count.\n",
+            text,
+        )
+        self.assertIn("  member_chain_none_usage: false # ", text)
         self.assertEqual(text.count("\nrules:\n"), 1)
         rules_block = text.split("\nrules:\n", 1)[1].strip().splitlines()
         keys = [line.split(":", 1)[0].strip() for line in rules_block if line.strip()]
@@ -157,7 +168,10 @@ class DefaultConfigTests(unittest.TestCase):
             destination = write_default_yaml(root)
 
             self.assertEqual(config_dir / "papyrus-lint.default.yaml", destination)
-            self.assertIn("  line_length: true", destination.read_text(encoding="utf-8"))
+            self.assertIn(
+                "  line_length: true # Flags overly long lines.",
+                destination.read_text(encoding="utf-8"),
+            )
 
 
 class GenerateDefaultConfigMainTests(unittest.TestCase):

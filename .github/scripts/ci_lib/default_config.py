@@ -3,8 +3,8 @@
 Source of truth:
   - shared/configuration/lint-settings.yaml (project_settings, settings,
     rules_yaml_comment)
-  - shared/rules.json (or shared/rules/*.json) for each rule's
-    enabled_by_default
+  - shared/rules.json (or shared/rules/*.json) for each rule's description
+    and enabled_by_default
 
 Rules in the generated default YAML are ordered alphabetically by config key.
 Settings UI order follows declaration order in lint-settings.yaml.
@@ -115,8 +115,9 @@ def render_default_yaml(settings: dict, rules: list[dict]) -> str:
     lines.append(_comment_block(settings["rules_yaml_comment"]))
     lines.append("rules:")
     for key in order:
-        enabled = by_key[key].get("enabled_by_default", True)
-        lines.append(f"  {key}: {'true' if enabled else 'false'}")
+        rule = by_key[key]
+        enabled = rule.get("enabled_by_default", True)
+        lines.append(f"  {key}: {'true' if enabled else 'false'} # {rule['description']}")
     lines.append("")
     return "\n".join(lines)
 
