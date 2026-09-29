@@ -158,7 +158,8 @@
     "unused_import",
     "event_signature_mismatch",
     "circular_dependency",
-    "undefined_event"
+    "undefined_event",
+    "boolean_simplification"
   ],
   "settings": [
     {

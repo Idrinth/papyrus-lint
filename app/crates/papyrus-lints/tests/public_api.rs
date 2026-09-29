@@ -200,6 +200,12 @@ fn every_published_fixable_rule_works_through_the_filtered_public_api() {
             "ScriptName Example Extends ParentScript\n\nFunction DoThing(ObjectReference akRef)\nEndFunction\n",
             &default_config,
         ),
+        (
+            "boolean-simplification",
+            "ScriptName Example\n\nFunction Test(Bool ready)\n    If ready == true\n    EndIf\n    If ready == false\n    EndIf\nEndFunction\n",
+            "ScriptName Example\n\nFunction Test(Bool ready)\n    If ready\n    EndIf\n    If ! ready\n    EndIf\nEndFunction\n",
+            &default_config,
+        ),
     ];
 
     let exercised: HashSet<_> = cases.iter().map(|(rule, ..)| *rule).collect();

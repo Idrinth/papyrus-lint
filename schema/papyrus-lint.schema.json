@@ -642,6 +642,11 @@
           "description": "Warns about event handlers whose names are not defined anywhere in the script's ancestry, excluding engine-handled scripts and remote events.",
           "type": "boolean",
           "default": true
+        },
+        "boolean_simplification": {
+          "description": "Flags a Bool compared with == or != against true or false, since the value or its negation already says the same thing. The fix rewrites it to the value or '! value'.",
+          "type": "boolean",
+          "default": true
         }
       }
     }
