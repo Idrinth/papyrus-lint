@@ -45,6 +45,8 @@ export function renderConfigTypes(
   settings: LintSettingSource[],
 ): string;
 
+export function loadYamlFile(filePath: string): { settings: LintSettingSource[]; [key: string]: unknown };
+
 export function writeConfigTypes(options: {
   rulesDir: string;
   defaultYamlPath: string;
