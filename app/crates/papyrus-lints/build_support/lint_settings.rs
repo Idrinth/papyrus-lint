@@ -17,6 +17,7 @@ const RUST_TYPES: &[&str] = &[
     "NamedArguments",
     "MagicNumbers",
     "Hungarian",
+    "EncodingEnforced",
     "LineEndingsMode",
 ];
 
