@@ -74,9 +74,33 @@ fn matches_variable_name_case_insensitively() {
 }
 
 #[test]
-fn does_not_flag_function_parameters() {
+fn flags_parameter_overwritten_before_incoming_value_is_read() {
     let diagnostics =
-        check("ScriptName Example\n\nFunction Test(Int total)\n    total = 1\n    total = 2\nEndFunction\n");
+        check("ScriptName Example\n\nFunction Test(Int total)\n    total = 1\n    Debug.Trace(total)\nEndFunction\n");
+
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!(diagnostics[0].line, 3);
+    assert_eq!(diagnostics[0].rule, RULE);
+    assert!(diagnostics[0].message.starts_with("[warning]"));
+    assert!(diagnostics[0].message.contains("'total'"));
+    assert!(diagnostics[0].message.contains("incoming"));
+}
+
+#[test]
+fn flags_parameter_assignment_overwritten_before_read() {
+    let diagnostics =
+        check("ScriptName Example\n\nFunction Test(Int total)\n    Debug.Trace(total)\n    total = 1\n    total = 2\n    Debug.Trace(total)\nEndFunction\n");
+
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!(diagnostics[0].line, 5);
+    assert!(diagnostics[0].message.contains("parameter"));
+    assert!(diagnostics[0].message.contains("'total'"));
+}
+
+#[test]
+fn does_not_flag_parameter_read_before_it_is_assigned() {
+    let diagnostics =
+        check("ScriptName Example\n\nFunction Test(Int total)\n    Debug.Trace(total)\n    total = 1\nEndFunction\n");
 
     assert!(diagnostics.is_empty());
 }

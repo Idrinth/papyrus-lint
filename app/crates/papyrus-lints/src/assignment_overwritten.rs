@@ -1,14 +1,17 @@
-//! Flags a write to a local variable that is overwritten by a later
-//! assignment with no read of that value in between.
+//! Flags a write to a local variable or function parameter that is
+//! overwritten by a later assignment with no read of that value in
+//! between.
 //!
 //! This works from the parsed AST rather than raw tokens, since it needs
-//! to tell a local's declaration and write sites apart from an actual
+//! to tell a name's declaration and write sites apart from an actual
 //! read of it; a script that doesn't parse cleanly is left unchecked
-//! rather than guessed at. Only function/event locals are tracked —
-//! parameters and script properties are out of scope. Papyrus has no
-//! block scoping, so a local declared inside an `If`/`While` body is
-//! still matched by name (case-insensitively) for the rest of its
-//! enclosing function.
+//! rather than guessed at. Function/event locals and parameters are
+//! tracked; script properties are out of scope. A parameter starts the
+//! function holding the incoming argument, so assigning over it before
+//! that value is read is the same kind of dead store as overwriting a
+//! local. Papyrus has no block scoping, so a local declared inside an
+//! `If`/`While` body is still matched by name (case-insensitively) for
+//! the rest of its enclosing function.
 
 use std::collections::{HashMap, HashSet};
 
@@ -47,8 +50,8 @@ pub fn visitor() -> LintVisitor {
     LintVisitor::Ast(Box::new(Collect::default()))
 }
 
-/// Checks `source` for a local-variable write overwritten before it is
-/// read. Flagged as a `[warning]`.
+/// Checks `source` for a local-variable or parameter write overwritten
+/// before it is read. Flagged as a `[warning]`.
 ///
 /// A write inside a CreationKit fragment-code wrapper (see
 /// [`fragment_code`]), outside of its `;BEGIN CODE`/`;END CODE` markers,
@@ -68,12 +71,14 @@ pub fn check(
 struct PendingWrite {
     line: usize,
     name: String,
+    incoming_parameter: bool,
 }
 
 type Pending = HashMap<String, PendingWrite>;
 
 struct Analysis<'a> {
-    locals: &'a HashSet<String>,
+    tracked: &'a HashSet<String>,
+    parameters: &'a HashSet<String>,
     pending: &'a mut Pending,
     /// Incoming writes from the current control-flow split. Overwriting
     /// one of these on a single branch is not enough to flag it; see
@@ -86,17 +91,34 @@ struct Analysis<'a> {
 }
 
 fn check_function(function: &FunctionDecl, protected: &[bool], diagnostics: &mut Vec<Diagnostic>) {
-    let locals = collect_local_names(&function.body);
-    if locals.is_empty() {
+    let parameters: HashSet<String> = function
+        .params
+        .iter()
+        .map(|param| param.name.to_lowercase())
+        .collect();
+    let mut tracked = collect_local_names(&function.body);
+    tracked.extend(parameters.iter().cloned());
+    if tracked.is_empty() {
         return;
     }
 
     let mut pending = Pending::new();
+    for param in &function.params {
+        pending.insert(
+            param.name.to_lowercase(),
+            PendingWrite {
+                line: function.line,
+                name: param.name.clone(),
+                incoming_parameter: true,
+            },
+        );
+    }
     let suppressed = Pending::new();
     let mut suppressed_reads = HashSet::new();
     let mut emitted = HashSet::new();
     let mut analysis = Analysis {
-        locals: &locals,
+        tracked: &tracked,
+        parameters: &parameters,
         pending: &mut pending,
         suppressed: &suppressed,
         suppressed_reads: &mut suppressed_reads,
@@ -203,7 +225,8 @@ fn walk_stmt(stmt: &Stmt, analysis: &mut Analysis<'_>) {
             let loop_suppressed = analysis.pending.clone();
             let mut loop_reads = HashSet::new();
             let mut loop_analysis = Analysis {
-                locals: analysis.locals,
+                tracked: analysis.tracked,
+                parameters: analysis.parameters,
                 pending: &mut loop_pending,
                 suppressed: &loop_suppressed,
                 suppressed_reads: &mut loop_reads,
@@ -240,7 +263,8 @@ fn handle_split(
         let mut state = entry.clone();
         let mut branch_reads = HashSet::new();
         let mut branch_analysis = Analysis {
-            locals: analysis.locals,
+            tracked: analysis.tracked,
+            parameters: analysis.parameters,
             pending: &mut state,
             suppressed: &entry,
             suppressed_reads: &mut branch_reads,
@@ -260,7 +284,8 @@ fn handle_split(
         let mut state = entry.clone();
         let mut else_reads = HashSet::new();
         let mut else_analysis = Analysis {
-            locals: analysis.locals,
+            tracked: analysis.tracked,
+            parameters: analysis.parameters,
             pending: &mut state,
             suppressed: &entry,
             suppressed_reads: &mut else_reads,
@@ -290,7 +315,8 @@ fn handle_try_lock(
     let mut taken = entry.clone();
     let mut taken_reads = HashSet::new();
     let mut taken_analysis = Analysis {
-        locals: analysis.locals,
+        tracked: analysis.tracked,
+        parameters: analysis.parameters,
         pending: &mut taken,
         suppressed: &entry,
         suppressed_reads: &mut taken_reads,
@@ -309,7 +335,8 @@ fn handle_try_lock(
         let mut alternate = entry.clone();
         let mut else_reads = HashSet::new();
         let mut else_analysis = Analysis {
-            locals: analysis.locals,
+            tracked: analysis.tracked,
+            parameters: analysis.parameters,
             pending: &mut alternate,
             suppressed: &entry,
             suppressed_reads: &mut else_reads,
@@ -362,12 +389,13 @@ fn apply_split_exit(
 
 fn record_write(name: &str, line: usize, analysis: &mut Analysis<'_>) {
     let key = name.to_lowercase();
-    if !analysis.locals.contains(&key) {
+    if !analysis.tracked.contains(&key) {
         return;
     }
     let next = PendingWrite {
         line,
         name: name.to_string(),
+        incoming_parameter: false,
     };
     if let Some(previous) = analysis.pending.insert(key.clone(), next) {
         let suppressed = analysis
@@ -392,13 +420,22 @@ fn emit_overwrite(write: &PendingWrite, analysis: &mut Analysis<'_>) {
     if !analysis.emitted.insert(write.line) {
         return;
     }
+    let kind = if write.incoming_parameter {
+        "Parameter"
+    } else if analysis.parameters.contains(&write.name.to_lowercase()) {
+        "Assignment to parameter"
+    } else {
+        "Assignment to local variable"
+    };
+    let suffix = if write.incoming_parameter {
+        "its incoming value is read"
+    } else {
+        "its value is read"
+    };
     analysis.diagnostics.push(Diagnostic {
         line: write.line,
         column: 1,
-        message: format!(
-            "[warning] Assignment to local variable '{}' is overwritten before its value is read",
-            write.name
-        ),
+        message: format!("[warning] {kind} '{}' is overwritten before {suffix}", write.name),
         rule: RULE,
     });
 }
