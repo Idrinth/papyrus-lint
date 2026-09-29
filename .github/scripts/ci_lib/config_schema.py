@@ -1,15 +1,16 @@
-"""Generate schema/papyrus-lint.schema.json from lint-settings + rules.
-
-The written file is a git-ignored Pages/docs artifact; lint-settings + rules
-are the source of truth.
-"""
+"""Generate schema/papyrus-lint.schema.json from lint-settings + rules."""
 
 from __future__ import annotations
 
 import json
 from pathlib import Path
 
-from .default_config import config_key_for, load_lint_settings, load_rules
+from .default_config import (
+    alphabetical_rule_keys,
+    config_key_for,
+    load_lint_settings,
+    load_rules,
+)
 
 SCHEMA_ID = "https://papyrus-lint.idrinth.de/schema/papyrus-lint.schema.json"
 
@@ -18,8 +19,9 @@ def _setting_schema(setting: dict) -> dict:
     schema = dict(setting.get("schema") or {})
     schema.pop("description_extra", None)
     if "description" not in schema:
-        comment = setting.get("yaml_comment") or setting.get("doc") or setting["key"]
-        schema["description"] = " ".join(comment.split())
+        yaml_meta = setting.get("yaml") or {}
+        comment = yaml_meta.get("comment") or setting.get("doc") or setting["key"]
+        schema["description"] = " ".join(str(comment).split())
     return schema
 
 
@@ -38,20 +40,15 @@ def render_schema(settings: dict, rules: list[dict]) -> dict:
         properties[setting["key"]] = _setting_schema(setting)
 
     by_key = {config_key_for(rule["id"]): rule for rule in rules}
-    order = settings["rule_order"]
-    missing = [key for key in order if key not in by_key]
-    if missing:
-        raise ValueError(f"rule_order lists unknown keys: {missing}")
-    extra = sorted(set(by_key) - set(order))
-    if extra:
-        raise ValueError(f"rule_order is missing keys: {extra}")
+    order = alphabetical_rule_keys(rules)
 
     rule_props = {}
     for key in order:
         rule = by_key[key]
         enabled = rule.get("enabled_by_default", True)
         rule_props[key] = {
-            # Prefer the short display name; rule docs live in
+            # Prefer the short display name so the generated schema stays a
+            # manageable size for API-based commits; rule docs live in
             # shared/rules/<id>.json and the website.
             "description": rule.get("name") or key,
             "type": "boolean",
