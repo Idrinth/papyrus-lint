@@ -1,5 +1,7 @@
 name: regen-schema-once
 on:
+  push:
+    branches: [feat/redundant-condition]
   workflow_dispatch:
 jobs:
   regen:
@@ -9,7 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.ref_name }}
+          ref: feat/redundant-condition
           token: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/setup-python@v5
         with:
