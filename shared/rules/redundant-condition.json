@@ -1,0 +1,15 @@
+{
+  "id": "redundant-condition",
+  "name": "Redundant condition",
+  "category": "Bugprone",
+  "visitor": "ast",
+  "tags": [
+    "correctness",
+    "maintainability"
+  ],
+  "severity": "warning",
+  "importance": "medium",
+  "fixable": false,
+  "description": "Flags a compound condition clause that is dominated or duplicated by another clause on the same identifier.",
+  "definition": "Flags, as a `[warning]`, a clause in a compound `&&` / `||` condition that is redundant given another clause on the same local or property identifier with a constant numeric threshold (e.g. `x > 10 && x > 5`, where `x > 5` is implied by `x > 10`, or `x == 5 || x == 5`). Only direct relational comparisons (`==`, `<`, `<=`, `>`, `>=`) against a numeric literal, plus identical identifier/property clauses, are checked; calls, aliases, and mixed identifiers are left unflagged rather than guessed at."
+}

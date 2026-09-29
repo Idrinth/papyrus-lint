@@ -1,0 +1,15 @@
+{
+  "id": "boolean-simplification",
+  "name": "Boolean simplification",
+  "category": "Other",
+  "visitor": "ast",
+  "tags": [
+    "style"
+  ],
+  "severity": "info",
+  "importance": "low",
+  "fixable": true,
+  "repair_order": 22,
+  "description": "Flags a Bool compared with == or != against true or false, since the value or its negation already says the same thing. The fix rewrites it to the value or '! value'.",
+  "definition": "Flags, as an `[info]`, a `==` or `!=` comparison between a `Bool` value and a `true`/`false` literal (in either order), including `!=`. `flag == true` and `flag != false` are the same as `flag`; `flag == false` and `flag != true` are the same as `! flag`. Only an operand whose type is known to be `Bool` is rewritten: a local, parameter, property, script variable, literal, cast, comparison, or logical expression. A call, member access, or any other operand whose type can't be determined locally is left alone, and so is a non-`Bool` operand (an `Int` compared with `true` belongs to the strict-boolean and type rules, not this one). A comparison inside a full property's Get/Set block is not checked, because those blocks are not part of the parsed AST. Automatically fixable: the fix replaces the comparison with the value or with `! value` (one space after `!`, parentheses when the negated expression needs them) and folds a comparison of two boolean literals down to `true` or `false`."
+}
