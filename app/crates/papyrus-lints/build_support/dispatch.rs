@@ -1,9 +1,9 @@
 use super::metadata::{self, RuleMetadata, NO_SOURCE_CHECK_IDS};
 use super::renderer::Renderer;
 use super::{default_config_order, BuildContext};
-use std::collections::BTreeSet;
+use std::collections::{BTreeSet, HashMap};
 
-pub fn compile(context: &BuildContext, rules: &[RuleMetadata]) {
+pub fn compile(context: &BuildContext, rules: &[RuleMetadata], repair_order: &[String]) {
     let relative = "shared/configuration/papyrus-lint.default.yaml";
     let source = context.load_text(relative, "default config");
     let order = default_config_order(&source, &context.input(relative))
@@ -12,7 +12,7 @@ pub fn compile(context: &BuildContext, rules: &[RuleMetadata]) {
         metadata::order_by_config(rules, &order).unwrap_or_else(|error| panic!("{error}"));
     lint_modules(context, rules);
     rules_struct(context, &ordered);
-    rules_dispatch(context, rules);
+    rules_dispatch(context, rules, repair_order);
 }
 
 /// Writes `$OUT_DIR/lint_modules.rs` with a `mod` for every rule that has a
@@ -100,7 +100,7 @@ fn rules_struct(context: &BuildContext, rules: &[&RuleMetadata]) {
     context.write("rules_struct.rs", "Rules struct", &out.finish());
 }
 
-fn rules_dispatch(context: &BuildContext, rules: &[RuleMetadata]) {
+fn rules_dispatch(context: &BuildContext, rules: &[RuleMetadata], repair_order: &[String]) {
     let modules: BTreeSet<_> = rules
         .iter()
         .filter(|rule| !NO_SOURCE_CHECK_IDS.contains(&rule.id.as_str()))
@@ -166,17 +166,22 @@ fn rules_dispatch(context: &BuildContext, rules: &[RuleMetadata]) {
     out.blank();
     out.line("/// Applies every self-contained automatic fix whose ruleset is enabled.");
     out.line("/// Generated from `shared/rules.json` by `build.rs`. Do not edit by hand.");
-    out.line("/// Repair order is `repair_order` in that file (not rule-id order),");
+    out.line("/// Repair order is `shared/rule-order.yaml` (not rule-id order),");
     out.line("/// because later fixes see earlier rewrites.");
     out.line("#[allow(clippy::too_many_lines)]");
     out.line("pub fn apply_repairs(source: &str, config: &Config, applies: impl Fn(&str) -> bool) -> String {");
     out.line("    let rules = &config.rules;");
     out.line("    let mut source = source.to_string();");
-    let mut repairs: Vec<_> = rules
+    let by_id: HashMap<_, _> =
+        rules.iter().map(|rule| (rule.id.as_str(), rule)).collect();
+    let repairs: Vec<_> = repair_order
         .iter()
-        .filter(|rule| rule.repair_order.is_some())
+        .map(|id| {
+            *by_id.get(id.as_str()).unwrap_or_else(|| {
+                panic!("shared/rule-order.yaml lists `{id}` but shared/rules.json has no matching id")
+            })
+        })
         .collect();
-    repairs.sort_by_key(|rule| rule.repair_order);
     for rule in repairs {
         let key = metadata::config_key(&rule.id);
         let module = metadata::module_name(&rule.id);
