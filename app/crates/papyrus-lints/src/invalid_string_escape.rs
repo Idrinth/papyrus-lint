@@ -50,7 +50,19 @@ impl TokenLint for Collect {
         if !matches!(token.kind, TokenKind::StringLiteral(_)) {
             return;
         }
-        let offset = self.line_starts[token.line - 1] + token.col - 1;
+        let Some(line_start) = token
+            .line
+            .checked_sub(1)
+            .and_then(|line| self.line_starts.get(line))
+        else {
+            return;
+        };
+        let Some(column) = token.col.checked_sub(1) else {
+            return;
+        };
+        let Some(offset) = line_start.checked_add(column) else {
+            return;
+        };
         visit_escapes_in_string(ctx.source, token.col, offset, |column, letter| {
             self.store.emit(
                 token.line,
