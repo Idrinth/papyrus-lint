@@ -1,0 +1,15 @@
+{
+  "id": "duplicate-import",
+  "name": "Duplicate import",
+  "category": "Other",
+  "visitor": "ast",
+  "tags": [
+    "maintainability"
+  ],
+  "severity": "warning",
+  "importance": "low",
+  "fixable": true,
+  "repair_order": 23,
+  "description": "Flags a repeated Import of the same script (case-insensitive). Distinct from unused-import, which removes imports that are never referenced; a used import listed twice is still a duplicate. The fix drops later duplicates and keeps the first.",
+  "definition": "Flags, as a `[warning]`, a repeated `Import` of the same script name (compared case-insensitively, since Papyrus identifiers are case-insensitive). `Import Utility` twice — or `Import Utility` then `Import utility` — is clutter and can confuse readers about intended dependencies. Distinct from `unused-import`: that rule flags an import whose `Global` functions are never called unqualified (and only with project context); this rule flags a duplicate listing even when the imported script *is* used. Automatically fixable: the fix drops later duplicate `Import` lines and keeps the first occurrence."
+}

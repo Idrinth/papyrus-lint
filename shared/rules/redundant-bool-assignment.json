@@ -9,7 +9,7 @@
   "severity": "info",
   "importance": "low",
   "fixable": true,
-  "repair_order": 23,
+  "repair_order": 24,
   "description": "Flags an If/Else that only assigns true in one branch and false in the other to the same target, since a direct boolean expression says the same thing. The fix rewrites it to a single assignment.",
   "definition": "Flags, as an `[info]`, an `If`/`Else` (no `ElseIf`) whose then and else bodies are each exactly one plain `=` assignment of a `true`/`false` literal to the same target (e.g. `If x > 5` / `bResult = true` / `Else` / `bResult = false` / `EndIf`), since that is the same as `bResult = x > 5`. Branches with any extra statement, an `ElseIf`, missing `Else`, assignments to different targets, compound assignments, or non-boolean literals are left alone. When the then branch assigns `false` and the else assigns `true`, the preferred form negates the condition (`bResult = ! (x > 5)`, or unwraps an already-negated condition). Automatically fixable: the fix replaces the whole `If`…`EndIf` with a single assignment of the condition (or its negation) to the shared target, preserving the `If` line's indentation and the target's original spelling."
 }
