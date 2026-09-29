@@ -1,9 +1,22 @@
 use super::*;
 use crate::lint::ProjectLintContext;
+use tauri::test::{get_ipc_response, mock_builder, mock_context, noop_assets, INVOKE_KEY};
 use tempfile::tempdir;
 
 #[cfg(unix)]
 use papyrus_lint_core::compile_diagnostics;
+
+fn invoke_request(command: &str, body: serde_json::Value) -> tauri::webview::InvokeRequest {
+    tauri::webview::InvokeRequest {
+        cmd: command.into(),
+        callback: tauri::ipc::CallbackFn(0),
+        error: tauri::ipc::CallbackFn(1),
+        url: "tauri://localhost".parse().unwrap(),
+        body: tauri::ipc::InvokeBody::Json(body),
+        headers: Default::default(),
+        invoke_key: INVOKE_KEY.to_string(),
+    }
+}
 
 #[test]
 fn repair_psc_file_persists_fixes_and_returns_only_remaining_findings() {
@@ -955,5 +968,126 @@ fn repair_psc_file_merges_in_compiler_reported_errors_when_enabled() {
     assert_eq!(
         std::fs::read_to_string(path).unwrap(),
         "ScriptName Example\n"
+    );
+}
+
+#[test]
+fn repair_commands_accept_frontend_payloads_over_ipc() {
+    let dir = tempdir().unwrap();
+    let path = dir.path().join("Example.psc");
+    let source = "ScriptName Example  \n\nFunction Run(Int left,Int right)\nEndFunction\n";
+    std::fs::write(&path, source).unwrap();
+    let path = path.to_string_lossy().into_owned();
+    let context = ProjectLintContext {
+        root: dir.path().to_string_lossy().into_owned(),
+        ..Default::default()
+    };
+    let app = crate::configure_builder(mock_builder())
+        .build(mock_context(noop_assets()))
+        .unwrap();
+    let webview = tauri::WebviewWindowBuilder::new(&app, "repair-test", Default::default())
+        .build()
+        .unwrap();
+
+    let preview = get_ipc_response(
+        &webview,
+        invoke_request(
+            "preview_repair_psc_file",
+            serde_json::json!({ "path": path, "context": context }),
+        ),
+    )
+    .unwrap()
+    .deserialize::<String>()
+    .unwrap();
+    assert!(preview.contains("-ScriptName Example  "));
+    assert!(preview.contains("+ScriptName Example"));
+    assert_eq!(std::fs::read_to_string(&path).unwrap(), source);
+
+    let line_preview = get_ipc_response(
+        &webview,
+        invoke_request(
+            "preview_repair_psc_line",
+            serde_json::json!({
+                "path": path,
+                "context": context,
+                "rule": "comma-spacing",
+                "line": 3,
+            }),
+        ),
+    )
+    .unwrap()
+    .deserialize::<Option<String>>()
+    .unwrap();
+    assert_eq!(
+        line_preview.as_deref(),
+        Some("Function Run(Int left, Int right)")
+    );
+
+    let diagnostics = get_ipc_response(
+        &webview,
+        invoke_request(
+            "repair_psc_file_rule",
+            serde_json::json!({
+                "path": path,
+                "context": context,
+                "rule": "trailing-whitespace",
+            }),
+        ),
+    )
+    .unwrap()
+    .deserialize::<serde_json::Value>()
+    .unwrap();
+    assert!(diagnostics
+        .as_array()
+        .unwrap()
+        .iter()
+        .all(|diagnostic| { diagnostic["rule"].as_str() != Some("trailing-whitespace") }));
+    assert_eq!(
+        std::fs::read_to_string(path).unwrap(),
+        "ScriptName Example\n\nFunction Run(Int left,Int right)\nEndFunction\n"
+    );
+}
+
+#[test]
+fn repair_commands_reject_malformed_frontend_payloads_over_ipc() {
+    let app = crate::configure_builder(mock_builder())
+        .build(mock_context(noop_assets()))
+        .unwrap();
+    let webview = tauri::WebviewWindowBuilder::new(&app, "repair-error-test", Default::default())
+        .build()
+        .unwrap();
+
+    let missing_context = get_ipc_response(
+        &webview,
+        invoke_request(
+            "repair_psc_file",
+            serde_json::json!({ "path": "Example.psc" }),
+        ),
+    )
+    .expect_err("a missing project context should be rejected");
+    assert!(
+        missing_context
+            .as_str()
+            .is_some_and(|message| message.contains("missing required key context")),
+        "{missing_context}"
+    );
+
+    let invalid_line = get_ipc_response(
+        &webview,
+        invoke_request(
+            "add_nodiscard_comment_to_psc_line",
+            serde_json::json!({
+                "path": "Example.psc",
+                "context": ProjectLintContext::default(),
+                "line": "third",
+            }),
+        ),
+    )
+    .expect_err("a non-numeric line should be rejected");
+    assert!(
+        invalid_line
+            .as_str()
+            .is_some_and(|message| message.contains("invalid type")),
+        "{invalid_line}"
     );
 }
