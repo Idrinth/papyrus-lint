@@ -1,1 +1,722 @@
-{"project_settings":[{"key":"compiler_path","yaml_default":"null","yaml_comment":"Path to PapyrusCompiler.exe, o","schema":{"description":"Path to PapyrusCompiler.exe, or null/omit to auto-detect it.","type":["string","null"],"default":null}},{"key":"additional_script_roots","yaml_default":"[]","yaml_comment":"Extra directories (relative to","schema":{"description":"Extra directories (relative to the project root, or absolute) to search for .psc files, besides scripts/source and source/scripts. Used for linting, cross-script resolution, and the compiler -i path.","type":"array","items":{"type":"string","minLength":1},"default":[]}},{"key":"lookup_script_roots","yaml_default":"[]","yaml_comment":"Extra directories searched onl","schema":{"description":"Extra directories searched only as a fallback when resolving other scripts for analysis (argument/return types, Extends, autocompletion). Scripts found only here are never linted, and these directories are ignored by conflicting-script-versions.","type":"array","items":{"type":"string","minLength":1},"default":[]}},{"key":"compile_check","yaml_default":"false","yaml_comment":"true, false; also runs Papyrus","schema":{"description":"Also run PapyrusCompiler.exe (into a throwaway temporary directory) as part of linting a .psc, reporting its errors alongside the lint engine. Requires compiler_path to be set or auto-detected.","type":"boolean","default":false}},{"key":"strict_achlist_scope","yaml_default":"false","yaml_comment":"true enables strict cross-scri","schema":{"description":"When true, restrict cross-script resolution and conflicting-script-versions to an achlist's listed entries only. When false (the default), parent directories of listed entries are also search roots.","type":"boolean","default":false}}],"rules_yaml_comment":"Each rule accepts true or false","rule_order":["line_length","trailing_whitespace","final_newline","comma_spacing","forbidden_functions","deprecated_functions","formid_hex_notation","get_form_from_file_skyrim_esm","get_form_from_file_load_index","slow_functions","unused_getter","unused_nodiscard","unused_property","semicolon","float_int_conversion","int_division_to_float","strict_boolean","argument_types","return_types","function_override","argument_naming","argument_override_types","numeric_comparison","indentation","cyclomatic_complexity","unreachable_statement","static_condition","redundant_condition","unreachable_elseif","division_by_zero","empty_body","duplicate_conditional_body","unused_local_variable","variable_used_before_assignment","none_form_usage","member_chain_none_usage","local_variable_shadowing","parameter_reassignment","chain_whitespace","exclamation_spacing","identifier_casing","type_casing","named_arguments","operator_spacing","assignment_operator_spacing","property_sorting","explicit_return","unchecked_form_parameter","unchecked_array_element","unchecked_cast","useless_downcast","impossible_cast","unresolved_script","non_global_function_call","member_access","register_for_update_in_on_update","static_function_call_via_instance","short_wait_interval","state_function_signature","goto_state","get_state_comparison","unused_state","too_many_states","multiple_auto_states","conflicting_script_versions","stale_compiled_output","script_filename_mismatch","unused_disable","magic_numbers","native_function_usage","repeated_getvalue","global_variable_setvalue","global_variable_increment","setvalue_in_loop","invariant_loop_condition","script_name_collision","array_bounds","array_size_range","array_used_before_new","readonly_property_write","default_property_value","unguarded_self_recursion","self_assignment","debug_side_effects","unnecessary_function","unknown_actor_value","repeated_setoutfit","place_at_me","missing_doc_comment","invalid_random_range","float_equality","missing_update_handler","unused_import","event_signature_mismatch","circular_dependency","undefined_event"],"settings":[{"key":"game","rust_type":"Game","rust_default":"Game::default()","yaml_default":"skyrim","yaml_comment":"Target game. Currently support","ts_type":"Game","ts_alias":"Game","doc":"The game whose Papyrus dialect","ui":{"mount":"lint-config-game","id":"game-select","widget":"game","label":"Target game","title":"The game whose Papyrus dialect","options":[{"value":"skyrim","label":"Skyrim"},{"value":"fallout4","label":"Fallout 4"},{"value":"starfield","label":"Starfield"}],"fill_selects":["config-picker-game-select"],"ui_order":0},"schema":{"description":"Game whose Papyrus dialect and runtime APIs the project targets.","type":"string","enum":["skyrim","fallout4","starfield"],"default":"skyrim"}},{"key":"semicolon","rust_type":"bool","rust_default":"false","yaml_default":"false","yaml_comment":"true, false","ts_type":"boolean","doc":"Whether lines are required to ","ui":{"mount":"lint-config-settings","id":"semicolon-style","widget":"bool-select","label":"Trailing semicolons","true_value":"require","false_value":"forbid","options":[{"value":"forbid","label":"Remove where possible"},{"value":"require","label":"Add to non-empty lines"}],"ui_order":10},"schema":{"description":"Whether lines are required to end in a semicolon (true) or must not (false).","type":"boolean","default":false}},{"key":"indentation","rust_type":"Indentation","rust_default":"Indentation::default()","yaml_default":"tab","yaml_comment":"tab, space","ts_type":"\"tab\" | \"space\"","doc":"The indentation style enforced","ui":{"mount":"lint-config-settings","group":"indentation","group_kind":"indentation","group_prefix":"Indentation","id":"indentation-style","widget":"mapped-select","aria_label":"Indentation style","options":[{"value":"tabs","label":"Tabs","config":"tab"},{"value":"spaces","label":"Spaces","config":"space"}],"enables_key":"indentation_width","enables_when":"space","ui_order":20},"schema":{"description":"Expected indentation style, read by the indentation lint and automatic fix.","type":"string","enum":["tab","space"],"default":"tab"}},{"key":"indentation_width","rust_type":"usize","rust_default":"4","yaml_default":"4","yaml_comment":"Non-negative integer; used onl","ts_type":"number","doc":"The number of spaces per inden","ui":{"mount":"lint-config-settings","group":"indentation","group_kind":"indentation","id":"indentation-width","widget":"number","label":"Width","min":1,"max":16,"clamp_min":1,"clamp_max":16,"treat_zero_as_empty":true,"disabled_by_default":true,"ui_order":30},"schema":{"description":"Spaces per indentation level. Used only when indentation is space. The engine clamps this to 1..16.","type":"integer","minimum":1,"maximum":16,"default":4}},{"key":"max_line_length","rust_type":"usize","rust_default":"120","yaml_default":"120","yaml_comment":"Non-negative integer; maximum ","ts_type":"number","doc":"The maximum number of characte","ui":{"mount":"lint-config-settings","id":"max-line-length","widget":"number","label":"Maximum line length","min":1,"clamp_min":1,"treat_zero_as_empty":true,"ui_order":40},"schema":{"description":"Non-negative integer; maximum characters allowed on one line","type":"integer","minimum":0,"default":120}},{"key":"identifier_casing","rust_type":"IdentifierCasing","rust_default":"IdentifierCasing::default()","yaml_default":"PascalCase","yaml_comment":"camelCase, PascalCase, snake_c","ts_type":"IdentifierCasingStyle","ts_alias":"IdentifierCasingStyle","doc":"The casing style enforced by t","ui":{"mount":"lint-config-settings","id":"identifier-casing-style","widget":"select","label":"Identifier casing","options":[{"value":"camelCase","label":"camelCase"},{"value":"PascalCase","label":"PascalCase"},{"value":"snake_case","label":"snake_case"},{"value":"CONSTANT_CASE","label":"CONSTANT_CASE"}],"ui_order":60},"schema":{"description":"Casing style declared identifiers must match (functions, events, properties, states, parameters, locals).","type":"string","enum":["camelCase","PascalCase","snake_case","CONSTANT_CASE"],"default":"PascalCase"}},{"key":"cyclomatic_complexity_warning","rust_type":"usize","rust_default":"10","yaml_default":"10","yaml_comment":"Non-negative integer","ts_type":"number","doc":"The cyclomatic complexity a fu","ui":{"mount":"lint-config-settings","group":"cyclomatic","group_kind":"fieldset","group_legend":"Cyclomatic complexity threshol","row":true,"id":"cyclomatic-complexity-warning","widget":"number","label":"Warning at","min":1,"clamp_min":1,"treat_zero_as_empty":true,"ui_order":90},"schema":{"description":"Cyclomatic complexity at which the cyclomatic-complexity lint reports a warning.","type":"integer","minimum":0,"default":10}},{"key":"cyclomatic_complexity_error","rust_type":"usize","rust_default":"20","yaml_default":"20","yaml_comment":"Non-negative integer","ts_type":"number","doc":"The cyclomatic complexity a fu","ui":{"mount":"lint-config-settings","group":"cyclomatic","group_kind":"fieldset","row":true,"id":"cyclomatic-complexity-error","widget":"number","label":"Error at","min":1,"clamp_min":1,"clamp_min_from":"cyclomatic_complexity_warning","treat_zero_as_empty":true,"ui_order":100},"schema":{"description":"Cyclomatic complexity at which the cyclomatic-complexity lint reports an error. A value below cyclomatic_complexity_warning is treated as equal to it.","type":"integer","minimum":0,"default":20}},{"key":"type_casing","rust_type":"TypeCasing","rust_default":"TypeCasing::default()","yaml_default":"PascalCase","yaml_comment":"PascalCase, camelCase, lowerca","ts_type":"TypeCasingStyle","ts_alias":"TypeCasingStyle","doc":"The casing convention required","ui":{"mount":"lint-config-settings","id":"type-casing-style","widget":"select","label":"Type name casing","options":[{"value":"PascalCase","label":"PascalCase"},{"value":"camelCase","label":"camelCase"},{"value":"lowercase","label":"lowercase"},{"value":"UPPERCASE","label":"UPPERCASE"}],"ui_order":50},"schema":{"description":"Casing convention for a script's declared type name (the identifier following ScriptName).","type":"string","enum":["PascalCase","camelCase","lowercase","UPPERCASE"],"default":"PascalCase"}},{"key":"named_arguments","rust_type":"NamedArguments","rust_default":"NamedArguments::default()","yaml_default":"never","yaml_comment":"always, instead_of_defaults, n","ts_type":"NamedArgumentsStyle","ts_alias":"NamedArgumentsStyle","doc":"How strongly the \"Prefer named","ui":{"mount":"lint-config-settings","id":"named-arguments-style","widget":"select","label":"Prefer named arguments","options":[{"value":"never","label":"Never"},{"value":"instead_of_defaults","label":"Instead of defaults"},{"value":"always","label":"Always"}],"ui_order":70},"schema":{"description":"How strongly a positional call argument should be passed by name instead.","type":"string","enum":["always","instead_of_defaults","never"],"default":"never"}},{"key":"min_wait_interval","rust_type":"f64","rust_default":"0.1","yaml_default":"0.1","yaml_comment":"Non-negative number","ts_type":"number","doc":"The interval/duration argument","ui":{"mount":"lint-config-settings","group":"wait","group_kind":"fieldset","group_legend":"Short wait/update interval thr","row":true,"id":"min-wait-interval","widget":"number","label":"Minimum interval","min":0,"step":0.01,"clamp_min":0,"ui_order":110},"schema":{"description":"Interval/duration argument a Utility.Wait / RegisterForUpdate / RegisterForSingleUpdate / RegisterForUpdateGameTime / RegisterForSingleUpdateGameTime call can go below before short-wait-interval flags it.","type":"number","minimum":0,"default":0.1}},{"key":"magic_numbers","rust_type":"MagicNumbers","rust_default":"MagicNumbers::default()","yaml_default":"loose","yaml_comment":"loose, strict","ts_type":"MagicNumbersMode","ts_alias":"MagicNumbersMode","doc":"Whether the \"Magic numbers\" li","ui":{"mount":"lint-config-settings","id":"magic-numbers-mode","widget":"select","label":"Magic numbers","options":[{"value":"loose","label":"Loose (exempt Wait/RegisterFor* interval"},{"value":"strict","label":"Strict (check every call argument)"}],"ui_order":80},"schema":{"description":"Whether the magic-numbers lint also flags Wait/RegisterFor* interval arguments (strict) or leaves them unflagged (loose).","type":"string","enum":["loose","strict"],"default":"loose"}},{"key":"fail_on_warning","rust_type":"bool","rust_default":"false","yaml_default":"false","yaml_comment":"true, false","ts_type":"boolean","doc":"Whether the CLI (see `papyrus-","ui":{"mount":"lint-config-settings","group":"fail-levels","group_kind":"fieldset","group_legend":"CLI failure levels","id":"fail-on-warning","widget":"checkbox","checkbox_label":"Fail on warning","title":"Whether the CLI treats a [warn","ui_order":120},"schema":{"description":"Whether the CLI treats a warning-level diagnostic as a non-zero exit. Has no effect on the desktop app.","type":"boolean","default":false}},{"key":"fail_on_info","rust_type":"bool","rust_default":"false","yaml_default":"false","yaml_comment":"true, false","ts_type":"boolean","doc":"Like [`Self::fail_on_warning`]","ui":{"mount":"lint-config-settings","group":"fail-levels","group_kind":"fieldset","id":"fail-on-info","widget":"checkbox","checkbox_label":"Fail on info","title":"Whether the CLI treats an [inf","ui_order":130},"schema":{"description":"Whether the CLI treats an info-level diagnostic as a non-zero exit. Has no effect on the desktop app.","type":"boolean","default":false}},{"key":"bool_like_int","rust_type":"bool","rust_default":"true","yaml_default":"true","yaml_comment":"true, false","ts_type":"boolean","doc":"Whether the \"Strict boolean ch","ui":{"mount":"lint-config-settings","group":"bool-like","group_kind":"fieldset","group_legend":"Strict boolean check","id":"bool-like-int","widget":"checkbox","checkbox_label":"Allow 1/0 as bool-like","title":"Whether the \"Strict boolean ch","ui_order":140},"schema":{"description":"Whether strict-boolean accepts the Int literals 1 and 0 used directly as If/ElseIf/While conditions.","type":"boolean","default":true}},{"key":"treat_form_as_bool_for_returns","rust_type":"bool","rust_default":"false","yaml_default":"false","yaml_comment":"true allows a Bool function to","ts_type":"boolean","doc":"Whether the \"Return type check","ui":{"mount":"lint-config-settings","group":"treat-form-as-bool","group_kind":"fieldset","group_legend":"Return type check","id":"treat-form-as-bool-for-returns","widget":"checkbox","checkbox_label":"Treat Forms as Bool for return","title":"Whether the Return type check ","ui_order":145},"schema":{"description":"Whether return-types accepts a non-array Form value returned from a Bool function, relying on Papyrus's implicit None/existing Form conversion.","type":"boolean","default":false}},{"key":"assume_auto_properties_filled","rust_type":"bool","rust_default":"false","yaml_default":"false","yaml_comment":"true, false; true treats an Au","ts_type":"boolean","doc":"Whether the \"None used as an e","ui":{"mount":"lint-config-settings","group":"assume-auto","group_kind":"fieldset","group_legend":"None used as an existing Form","id":"assume-auto-properties-filled","widget":"checkbox","checkbox_label":"Assume Auto properties are fil","title":"Whether the \"None used as an e","ui_order":150},"schema":{"description":"Whether none-form-usage treats a script-level Auto/AutoReadOnly property as already filled in by the time a function runs, instead of possibly None.","type":"boolean","default":false}}]}
+{
+  "project_settings": [
+    {
+      "key": "compiler_path",
+      "yaml_default": "null",
+      "yaml_comment": "Path to PapyrusCompiler.exe, o",
+      "schema": {
+        "description": "Path to PapyrusCompiler.exe, or null/omit to auto-detect it.",
+        "type": [
+          "string",
+          "null"
+        ],
+        "default": null
+      }
+    },
+    {
+      "key": "additional_script_roots",
+      "yaml_default": "[]",
+      "yaml_comment": "Extra directories (relative to",
+      "schema": {
+        "description": "Extra directories (relative to the project root, or absolute) to search for .psc files, besides scripts/source and source/scripts. Used for linting, cross-script resolution, and the compiler -i path.",
+        "type": "array",
+        "items": {
+          "type": "string",
+          "minLength": 1
+        },
+        "default": []
+      }
+    },
+    {
+      "key": "lookup_script_roots",
+      "yaml_default": "[]",
+      "yaml_comment": "Extra directories searched onl",
+      "schema": {
+        "description": "Extra directories searched only as a fallback when resolving other scripts for analysis (argument/return types, Extends, autocompletion). Scripts found only here are never linted, and these directories are ignored by conflicting-script-versions.",
+        "type": "array",
+        "items": {
+          "type": "string",
+          "minLength": 1
+        },
+        "default": []
+      }
+    },
+    {
+      "key": "compile_check",
+      "yaml_default": "false",
+      "yaml_comment": "true, false; also runs Papyrus",
+      "schema": {
+        "description": "Also run PapyrusCompiler.exe (into a throwaway temporary directory) as part of linting a .psc, reporting its errors alongside the lint engine. Requires compiler_path to be set or auto-detected.",
+        "type": "boolean",
+        "default": false
+      }
+    },
+    {
+      "key": "strict_achlist_scope",
+      "yaml_default": "false",
+      "yaml_comment": "true enables strict cross-scri",
+      "schema": {
+        "description": "When true, restrict cross-script resolution and conflicting-script-versions to an achlist's listed entries only. When false (the default), parent directories of listed entries are also search roots.",
+        "type": "boolean",
+        "default": false
+      }
+    }
+  ],
+  "rules_yaml_comment": "Each rule accepts true or false",
+  "rule_order": [
+    "line_length",
+    "trailing_whitespace",
+    "final_newline",
+    "comma_spacing",
+    "forbidden_functions",
+    "deprecated_functions",
+    "formid_hex_notation",
+    "get_form_from_file_skyrim_esm",
+    "get_form_from_file_load_index",
+    "slow_functions",
+    "unused_getter",
+    "unused_nodiscard",
+    "unused_property",
+    "semicolon",
+    "float_int_conversion",
+    "int_division_to_float",
+    "strict_boolean",
+    "argument_types",
+    "return_types",
+    "function_override",
+    "argument_naming",
+    "argument_override_types",
+    "numeric_comparison",
+    "indentation",
+    "cyclomatic_complexity",
+    "unreachable_statement",
+    "static_condition",
+    "redundant_condition",
+    "unreachable_elseif",
+    "division_by_zero",
+    "empty_body",
+    "duplicate_conditional_body",
+    "unused_local_variable",
+    "variable_used_before_assignment",
+    "none_form_usage",
+    "member_chain_none_usage",
+    "local_variable_shadowing",
+    "parameter_reassignment",
+    "chain_whitespace",
+    "exclamation_spacing",
+    "identifier_casing",
+    "type_casing",
+    "named_arguments",
+    "operator_spacing",
+    "assignment_operator_spacing",
+    "property_sorting",
+    "explicit_return",
+    "unchecked_form_parameter",
+    "unchecked_array_element",
+    "unchecked_cast",
+    "useless_downcast",
+    "impossible_cast",
+    "unresolved_script",
+    "non_global_function_call",
+    "member_access",
+    "register_for_update_in_on_update",
+    "static_function_call_via_instance",
+    "short_wait_interval",
+    "state_function_signature",
+    "goto_state",
+    "get_state_comparison",
+    "unused_state",
+    "too_many_states",
+    "multiple_auto_states",
+    "conflicting_script_versions",
+    "stale_compiled_output",
+    "script_filename_mismatch",
+    "unused_disable",
+    "magic_numbers",
+    "native_function_usage",
+    "repeated_getvalue",
+    "global_variable_setvalue",
+    "global_variable_increment",
+    "setvalue_in_loop",
+    "invariant_loop_condition",
+    "script_name_collision",
+    "array_bounds",
+    "array_size_range",
+    "array_used_before_new",
+    "readonly_property_write",
+    "default_property_value",
+    "unguarded_self_recursion",
+    "self_assignment",
+    "debug_side_effects",
+    "unnecessary_function",
+    "unknown_actor_value",
+    "repeated_setoutfit",
+    "place_at_me",
+    "missing_doc_comment",
+    "invalid_random_range",
+    "float_equality",
+    "missing_update_handler",
+    "unused_import",
+    "event_signature_mismatch",
+    "circular_dependency",
+    "undefined_event"
+  ],
+  "settings": [
+    {
+      "key": "game",
+      "rust_type": "Game",
+      "rust_default": "Game::default()",
+      "yaml_default": "skyrim",
+      "yaml_comment": "Target game. Currently support",
+      "ts_type": "Game",
+      "ts_alias": "Game",
+      "doc": "The game whose Papyrus dialect",
+      "ui": {
+        "mount": "lint-config-game",
+        "id": "game-select",
+        "widget": "game",
+        "label": "Target game",
+        "title": "The game whose Papyrus dialect",
+        "options": [
+          {
+            "value": "skyrim",
+            "label": "Skyrim"
+          },
+          {
+            "value": "fallout4",
+            "label": "Fallout 4"
+          },
+          {
+            "value": "starfield",
+            "label": "Starfield"
+          }
+        ],
+        "fill_selects": [
+          "config-picker-game-select"
+        ],
+        "ui_order": 0
+      },
+      "schema": {
+        "description": "Game whose Papyrus dialect and runtime APIs the project targets.",
+        "type": "string",
+        "enum": [
+          "skyrim",
+          "fallout4",
+          "starfield"
+        ],
+        "default": "skyrim"
+      }
+    },
+    {
+      "key": "semicolon",
+      "rust_type": "bool",
+      "rust_default": "false",
+      "yaml_default": "false",
+      "yaml_comment": "true, false",
+      "ts_type": "boolean",
+      "doc": "Whether lines are required to ",
+      "ui": {
+        "mount": "lint-config-settings",
+        "id": "semicolon-style",
+        "widget": "bool-select",
+        "label": "Trailing semicolons",
+        "true_value": "require",
+        "false_value": "forbid",
+        "options": [
+          {
+            "value": "forbid",
+            "label": "Remove where possible"
+          },
+          {
+            "value": "require",
+            "label": "Add to non-empty lines"
+          }
+        ],
+        "ui_order": 10
+      },
+      "schema": {
+        "description": "Whether lines are required to end in a semicolon (true) or must not (false).",
+        "type": "boolean",
+        "default": false
+      }
+    },
+    {
+      "key": "indentation",
+      "rust_type": "Indentation",
+      "rust_default": "Indentation::default()",
+      "yaml_default": "tab",
+      "yaml_comment": "tab, space",
+      "ts_type": "\"tab\" | \"space\"",
+      "doc": "The indentation style enforced",
+      "ui": {
+        "mount": "lint-config-settings",
+        "group": "indentation",
+        "group_kind": "indentation",
+        "group_prefix": "Indentation",
+        "id": "indentation-style",
+        "widget": "mapped-select",
+        "aria_label": "Indentation style",
+        "options": [
+          {
+            "value": "tabs",
+            "label": "Tabs",
+            "config": "tab"
+          },
+          {
+            "value": "spaces",
+            "label": "Spaces",
+            "config": "space"
+          }
+        ],
+        "enables_key": "indentation_width",
+        "enables_when": "space",
+        "ui_order": 20
+      },
+      "schema": {
+        "description": "Expected indentation style, read by the indentation lint and automatic fix.",
+        "type": "string",
+        "enum": [
+          "tab",
+          "space"
+        ],
+        "default": "tab"
+      }
+    },
+    {
+      "key": "indentation_width",
+      "rust_type": "usize",
+      "rust_default": "4",
+      "yaml_default": "4",
+      "yaml_comment": "Non-negative integer; used onl",
+      "ts_type": "number",
+      "doc": "The number of spaces per inden",
+      "ui": {
+        "mount": "lint-config-settings",
+        "group": "indentation",
+        "group_kind": "indentation",
+        "id": "indentation-width",
+        "widget": "number",
+        "label": "Width",
+        "min": 1,
+        "max": 16,
+        "clamp_min": 1,
+        "clamp_max": 16,
+        "treat_zero_as_empty": true,
+        "disabled_by_default": true,
+        "ui_order": 30
+      },
+      "schema": {
+        "description": "Spaces per indentation level. Used only when indentation is space. The engine clamps this to 1..16.",
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 16,
+        "default": 4
+      }
+    },
+    {
+      "key": "max_line_length",
+      "rust_type": "usize",
+      "rust_default": "120",
+      "yaml_default": "120",
+      "yaml_comment": "Non-negative integer; maximum ",
+      "ts_type": "number",
+      "doc": "The maximum number of characte",
+      "ui": {
+        "mount": "lint-config-settings",
+        "id": "max-line-length",
+        "widget": "number",
+        "label": "Maximum line length",
+        "min": 1,
+        "clamp_min": 1,
+        "treat_zero_as_empty": true,
+        "ui_order": 40
+      },
+      "schema": {
+        "description": "Non-negative integer; maximum characters allowed on one line",
+        "type": "integer",
+        "minimum": 0,
+        "default": 120
+      }
+    },
+    {
+      "key": "identifier_casing",
+      "rust_type": "IdentifierCasing",
+      "rust_default": "IdentifierCasing::default()",
+      "yaml_default": "PascalCase",
+      "yaml_comment": "camelCase, PascalCase, snake_c",
+      "ts_type": "IdentifierCasingStyle",
+      "ts_alias": "IdentifierCasingStyle",
+      "doc": "The casing style enforced by t",
+      "ui": {
+        "mount": "lint-config-settings",
+        "id": "identifier-casing-style",
+        "widget": "select",
+        "label": "Identifier casing",
+        "options": [
+          {
+            "value": "camelCase",
+            "label": "camelCase"
+          },
+          {
+            "value": "PascalCase",
+            "label": "PascalCase"
+          },
+          {
+            "value": "snake_case",
+            "label": "snake_case"
+          },
+          {
+            "value": "CONSTANT_CASE",
+            "label": "CONSTANT_CASE"
+          }
+        ],
+        "ui_order": 60
+      },
+      "schema": {
+        "description": "Casing style declared identifiers must match (functions, events, properties, states, parameters, locals).",
+        "type": "string",
+        "enum": [
+          "camelCase",
+          "PascalCase",
+          "snake_case",
+          "CONSTANT_CASE"
+        ],
+        "default": "PascalCase"
+      }
+    },
+    {
+      "key": "cyclomatic_complexity_warning",
+      "rust_type": "usize",
+      "rust_default": "10",
+      "yaml_default": "10",
+      "yaml_comment": "Non-negative integer",
+      "ts_type": "number",
+      "doc": "The cyclomatic complexity a fu",
+      "ui": {
+        "mount": "lint-config-settings",
+        "group": "cyclomatic",
+        "group_kind": "fieldset",
+        "group_legend": "Cyclomatic complexity threshol",
+        "row": true,
+        "id": "cyclomatic-complexity-warning",
+        "widget": "number",
+        "label": "Warning at",
+        "min": 1,
+        "clamp_min": 1,
+        "treat_zero_as_empty": true,
+        "ui_order": 90
+      },
+      "schema": {
+        "description": "Cyclomatic complexity at which the cyclomatic-complexity lint reports a warning.",
+        "type": "integer",
+        "minimum": 0,
+        "default": 10
+      }
+    },
+    {
+      "key": "cyclomatic_complexity_error",
+      "rust_type": "usize",
+      "rust_default": "20",
+      "yaml_default": "20",
+      "yaml_comment": "Non-negative integer",
+      "ts_type": "number",
+      "doc": "The cyclomatic complexity a fu",
+      "ui": {
+        "mount": "lint-config-settings",
+        "group": "cyclomatic",
+        "group_kind": "fieldset",
+        "row": true,
+        "id": "cyclomatic-complexity-error",
+        "widget": "number",
+        "label": "Error at",
+        "min": 1,
+        "clamp_min": 1,
+        "clamp_min_from": "cyclomatic_complexity_warning",
+        "treat_zero_as_empty": true,
+        "ui_order": 100
+      },
+      "schema": {
+        "description": "Cyclomatic complexity at which the cyclomatic-complexity lint reports an error. A value below cyclomatic_complexity_warning is treated as equal to it.",
+        "type": "integer",
+        "minimum": 0,
+        "default": 20
+      }
+    },
+    {
+      "key": "type_casing",
+      "rust_type": "TypeCasing",
+      "rust_default": "TypeCasing::default()",
+      "yaml_default": "PascalCase",
+      "yaml_comment": "PascalCase, camelCase, lowerca",
+      "ts_type": "TypeCasingStyle",
+      "ts_alias": "TypeCasingStyle",
+      "doc": "The casing convention required",
+      "ui": {
+        "mount": "lint-config-settings",
+        "id": "type-casing-style",
+        "widget": "select",
+        "label": "Type name casing",
+        "options": [
+          {
+            "value": "PascalCase",
+            "label": "PascalCase"
+          },
+          {
+            "value": "camelCase",
+            "label": "camelCase"
+          },
+          {
+            "value": "lowercase",
+            "label": "lowercase"
+          },
+          {
+            "value": "UPPERCASE",
+            "label": "UPPERCASE"
+          }
+        ],
+        "ui_order": 50
+      },
+      "schema": {
+        "description": "Casing convention for a script's declared type name (the identifier following ScriptName).",
+        "type": "string",
+        "enum": [
+          "PascalCase",
+          "camelCase",
+          "lowercase",
+          "UPPERCASE"
+        ],
+        "default": "PascalCase"
+      }
+    },
+    {
+      "key": "named_arguments",
+      "rust_type": "NamedArguments",
+      "rust_default": "NamedArguments::default()",
+      "yaml_default": "never",
+      "yaml_comment": "always, instead_of_defaults, n",
+      "ts_type": "NamedArgumentsStyle",
+      "ts_alias": "NamedArgumentsStyle",
+      "doc": "How strongly the \"Prefer named",
+      "ui": {
+        "mount": "lint-config-settings",
+        "id": "named-arguments-style",
+        "widget": "select",
+        "label": "Prefer named arguments",
+        "options": [
+          {
+            "value": "never",
+            "label": "Never"
+          },
+          {
+            "value": "instead_of_defaults",
+            "label": "Instead of defaults"
+          },
+          {
+            "value": "always",
+            "label": "Always"
+          }
+        ],
+        "ui_order": 70
+      },
+      "schema": {
+        "description": "How strongly a positional call argument should be passed by name instead.",
+        "type": "string",
+        "enum": [
+          "always",
+          "instead_of_defaults",
+          "never"
+        ],
+        "default": "never"
+      }
+    },
+    {
+      "key": "min_wait_interval",
+      "rust_type": "f64",
+      "rust_default": "0.1",
+      "yaml_default": "0.1",
+      "yaml_comment": "Non-negative number",
+      "ts_type": "number",
+      "doc": "The interval/duration argument",
+      "ui": {
+        "mount": "lint-config-settings",
+        "group": "wait",
+        "group_kind": "fieldset",
+        "group_legend": "Short wait/update interval thr",
+        "row": true,
+        "id": "min-wait-interval",
+        "widget": "number",
+        "label": "Minimum interval",
+        "min": 0,
+        "step": 0.01,
+        "clamp_min": 0,
+        "ui_order": 110
+      },
+      "schema": {
+        "description": "Interval/duration argument a Utility.Wait / RegisterForUpdate / RegisterForSingleUpdate / RegisterForUpdateGameTime / RegisterForSingleUpdateGameTime call can go below before short-wait-interval flags it.",
+        "type": "number",
+        "minimum": 0,
+        "default": 0.1
+      }
+    },
+    {
+      "key": "magic_numbers",
+      "rust_type": "MagicNumbers",
+      "rust_default": "MagicNumbers::default()",
+      "yaml_default": "loose",
+      "yaml_comment": "loose, strict",
+      "ts_type": "MagicNumbersMode",
+      "ts_alias": "MagicNumbersMode",
+      "doc": "Whether the \"Magic numbers\" li",
+      "ui": {
+        "mount": "lint-config-settings",
+        "id": "magic-numbers-mode",
+        "widget": "select",
+        "label": "Magic numbers",
+        "options": [
+          {
+            "value": "loose",
+            "label": "Loose (exempt Wait/RegisterFor* interval"
+          },
+          {
+            "value": "strict",
+            "label": "Strict (check every call argument)"
+          }
+        ],
+        "ui_order": 80
+      },
+      "schema": {
+        "description": "Whether the magic-numbers lint also flags Wait/RegisterFor* interval arguments (strict) or leaves them unflagged (loose).",
+        "type": "string",
+        "enum": [
+          "loose",
+          "strict"
+        ],
+        "default": "loose"
+      }
+    },
+    {
+      "key": "fail_on_warning",
+      "rust_type": "bool",
+      "rust_default": "false",
+      "yaml_default": "false",
+      "yaml_comment": "true, false",
+      "ts_type": "boolean",
+      "doc": "Whether the CLI (see `papyrus-",
+      "ui": {
+        "mount": "lint-config-settings",
+        "group": "fail-levels",
+        "group_kind": "fieldset",
+        "group_legend": "CLI failure levels",
+        "id": "fail-on-warning",
+        "widget": "checkbox",
+        "checkbox_label": "Fail on warning",
+        "title": "Whether the CLI treats a [warn",
+        "ui_order": 120
+      },
+      "schema": {
+        "description": "Whether the CLI treats a warning-level diagnostic as a non-zero exit. Has no effect on the desktop app.",
+        "type": "boolean",
+        "default": false
+      }
+    },
+    {
+      "key": "fail_on_info",
+      "rust_type": "bool",
+      "rust_default": "false",
+      "yaml_default": "false",
+      "yaml_comment": "true, false",
+      "ts_type": "boolean",
+      "doc": "Like [`Self::fail_on_warning`]",
+      "ui": {
+        "mount": "lint-config-settings",
+        "group": "fail-levels",
+        "group_kind": "fieldset",
+        "id": "fail-on-info",
+        "widget": "checkbox",
+        "checkbox_label": "Fail on info",
+        "title": "Whether the CLI treats an [inf",
+        "ui_order": 130
+      },
+      "schema": {
+        "description": "Whether the CLI treats an info-level diagnostic as a non-zero exit. Has no effect on the desktop app.",
+        "type": "boolean",
+        "default": false
+      }
+    },
+    {
+      "key": "bool_like_int",
+      "rust_type": "bool",
+      "rust_default": "true",
+      "yaml_default": "true",
+      "yaml_comment": "true, false",
+      "ts_type": "boolean",
+      "doc": "Whether the \"Strict boolean ch",
+      "ui": {
+        "mount": "lint-config-settings",
+        "group": "bool-like",
+        "group_kind": "fieldset",
+        "group_legend": "Strict boolean check",
+        "id": "bool-like-int",
+        "widget": "checkbox",
+        "checkbox_label": "Allow 1/0 as bool-like",
+        "title": "Whether the \"Strict boolean ch",
+        "ui_order": 140
+      },
+      "schema": {
+        "description": "Whether strict-boolean accepts the Int literals 1 and 0 used directly as If/ElseIf/While conditions.",
+        "type": "boolean",
+        "default": true
+      }
+    },
+    {
+      "key": "treat_form_as_bool_for_returns",
+      "rust_type": "bool",
+      "rust_default": "false",
+      "yaml_default": "false",
+      "yaml_comment": "true allows a Bool function to",
+      "ts_type": "boolean",
+      "doc": "Whether the \"Return type check",
+      "ui": {
+        "mount": "lint-config-settings",
+        "group": "treat-form-as-bool",
+        "group_kind": "fieldset",
+        "group_legend": "Return type check",
+        "id": "treat-form-as-bool-for-returns",
+        "widget": "checkbox",
+        "checkbox_label": "Treat Forms as Bool for return",
+        "title": "Whether the Return type check ",
+        "ui_order": 145
+      },
+      "schema": {
+        "description": "Whether return-types accepts a non-array Form value returned from a Bool function, relying on Papyrus's implicit None/existing Form conversion.",
+        "type": "boolean",
+        "default": false
+      }
+    },
+    {
+      "key": "assume_auto_properties_filled",
+      "rust_type": "bool",
+      "rust_default": "false",
+      "yaml_default": "false",
+      "yaml_comment": "true, false; true treats an Au",
+      "ts_type": "boolean",
+      "doc": "Whether the \"None used as an e",
+      "ui": {
+        "mount": "lint-config-settings",
+        "group": "assume-auto",
+        "group_kind": "fieldset",
+        "group_legend": "None used as an existing Form",
+        "id": "assume-auto-properties-filled",
+        "widget": "checkbox",
+        "checkbox_label": "Assume Auto properties are fil",
+        "title": "Whether the \"None used as an e",
+        "ui_order": 150
+      },
+      "schema": {
+        "description": "Whether none-form-usage treats a script-level Auto/AutoReadOnly property as already filled in by the time a function runs, instead of possibly None.",
+        "type": "boolean",
+        "default": false
+      }
+    }
+  ]
+}
