@@ -15,6 +15,7 @@ fn reports(config: &papyrus_lints::Config, source: &str, rule: &str) -> bool {
 #[test]
 fn standard_preset_turns_off_purely_stylistic_rules_but_keeps_formatting() {
     let config = initialized_preset(Preset::Standard);
+    assert_eq!(config.parameter_count_max, 7);
 
     assert!(!reports(
         &config,
@@ -37,6 +38,7 @@ fn standard_preset_turns_off_purely_stylistic_rules_but_keeps_formatting() {
 #[test]
 fn careful_preset_relaxes_complexity_thresholds_and_disables_formatting() {
     let config = initialized_preset(Preset::Careful);
+    assert_eq!(config.parameter_count_max, 10);
     let moderately_complex = "ScriptName Example\n\nFunction Test()\n\
         If true\n    EndIf\n    If true\n    EndIf\n    If true\n    EndIf\n\
         If true\n    EndIf\n    If true\n    EndIf\n    If true\n    EndIf\n\

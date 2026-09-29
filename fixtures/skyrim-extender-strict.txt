@@ -256,6 +256,7 @@ Scripts/Source/Actor.psc:430:1:identifier-casing
 Scripts/Source/Actor.psc:430:1:identifier-casing
 Scripts/Source/Actor.psc:430:1:identifier-casing
 Scripts/Source/Actor.psc:430:1:identifier-casing
+Scripts/Source/Actor.psc:430:1:parameter-count
 Scripts/Source/Actor.psc:430:121:line-length
 Scripts/Source/Actor.psc:433:1:identifier-casing
 Scripts/Source/Actor.psc:436:1:identifier-casing
@@ -751,6 +752,7 @@ Scripts/Source/Cell.psc:25:1:identifier-casing
 Scripts/Source/Cell.psc:25:1:identifier-casing
 Scripts/Source/Cell.psc:25:1:identifier-casing
 Scripts/Source/Cell.psc:25:1:identifier-casing
+Scripts/Source/Cell.psc:25:1:parameter-count
 Scripts/Source/Cell.psc:28:1:indentation
 Scripts/Source/Cell.psc:29:1:identifier-casing
 Scripts/Source/Cell.psc:29:1:identifier-casing
@@ -1307,6 +1309,7 @@ Scripts/Source/Game.psc:13:1:identifier-casing
 Scripts/Source/Game.psc:13:1:identifier-casing
 Scripts/Source/Game.psc:13:1:identifier-casing
 Scripts/Source/Game.psc:13:1:identifier-casing
+Scripts/Source/Game.psc:13:1:parameter-count
 Scripts/Source/Game.psc:13:121:line-length
 Scripts/Source/Game.psc:16:1:identifier-casing
 Scripts/Source/Game.psc:16:1:identifier-casing
@@ -1324,6 +1327,7 @@ Scripts/Source/Game.psc:28:1:identifier-casing
 Scripts/Source/Game.psc:28:1:identifier-casing
 Scripts/Source/Game.psc:28:1:identifier-casing
 Scripts/Source/Game.psc:28:1:identifier-casing
+Scripts/Source/Game.psc:28:1:parameter-count
 Scripts/Source/Game.psc:28:121:line-length
 Scripts/Source/Game.psc:29:1:indentation
 Scripts/Source/Game.psc:29:121:line-length
@@ -1339,6 +1343,7 @@ Scripts/Source/Game.psc:32:1:identifier-casing
 Scripts/Source/Game.psc:32:1:identifier-casing
 Scripts/Source/Game.psc:32:1:identifier-casing
 Scripts/Source/Game.psc:32:1:indentation
+Scripts/Source/Game.psc:32:1:parameter-count
 Scripts/Source/Game.psc:32:121:line-length
 Scripts/Source/Game.psc:33:1:indentation
 Scripts/Source/Game.psc:33:121:line-length
@@ -1835,6 +1840,7 @@ Scripts/Source/GameData.psc:19:1:identifier-casing
 Scripts/Source/GameData.psc:19:1:identifier-casing
 Scripts/Source/GameData.psc:19:1:identifier-casing
 Scripts/Source/GameData.psc:19:1:identifier-casing
+Scripts/Source/GameData.psc:19:1:parameter-count
 Scripts/Source/GameData.psc:19:121:line-length
 Scripts/Source/GameData.psc:20:1:trailing-whitespace
 Scripts/Source/GameData.psc:21:1:identifier-casing
@@ -1844,6 +1850,7 @@ Scripts/Source/GameData.psc:21:1:identifier-casing
 Scripts/Source/GameData.psc:21:1:identifier-casing
 Scripts/Source/GameData.psc:21:1:identifier-casing
 Scripts/Source/GameData.psc:21:1:identifier-casing
+Scripts/Source/GameData.psc:21:1:parameter-count
 Scripts/Source/GameData.psc:21:121:line-length
 Scripts/Source/GameData.psc:22:1:trailing-whitespace
 Scripts/Source/GameData.psc:23:1:identifier-casing
@@ -2393,6 +2400,7 @@ Scripts/Source/ObjectReference.psc:486:1:identifier-casing
 Scripts/Source/ObjectReference.psc:486:1:identifier-casing
 Scripts/Source/ObjectReference.psc:486:1:identifier-casing
 Scripts/Source/ObjectReference.psc:486:1:identifier-casing
+Scripts/Source/ObjectReference.psc:486:1:parameter-count
 Scripts/Source/ObjectReference.psc:486:121:line-length
 Scripts/Source/ObjectReference.psc:489:1:identifier-casing
 Scripts/Source/ObjectReference.psc:489:1:identifier-casing
@@ -2416,6 +2424,7 @@ Scripts/Source/ObjectReference.psc:498:1:identifier-casing
 Scripts/Source/ObjectReference.psc:498:1:identifier-casing
 Scripts/Source/ObjectReference.psc:498:1:identifier-casing
 Scripts/Source/ObjectReference.psc:498:1:identifier-casing
+Scripts/Source/ObjectReference.psc:498:1:parameter-count
 Scripts/Source/ObjectReference.psc:498:121:line-length
 Scripts/Source/ObjectReference.psc:501:1:identifier-casing
 Scripts/Source/ObjectReference.psc:501:1:identifier-casing
@@ -2468,6 +2477,7 @@ Scripts/Source/ObjectReference.psc:582:1:identifier-casing
 Scripts/Source/ObjectReference.psc:582:1:identifier-casing
 Scripts/Source/ObjectReference.psc:582:1:identifier-casing
 Scripts/Source/ObjectReference.psc:582:1:identifier-casing
+Scripts/Source/ObjectReference.psc:582:1:parameter-count
 Scripts/Source/ObjectReference.psc:582:121:line-length
 Scripts/Source/ObjectReference.psc:585:1:identifier-casing
 Scripts/Source/ObjectReference.psc:585:1:identifier-casing
@@ -2478,6 +2488,7 @@ Scripts/Source/ObjectReference.psc:585:1:identifier-casing
 Scripts/Source/ObjectReference.psc:585:1:identifier-casing
 Scripts/Source/ObjectReference.psc:585:1:identifier-casing
 Scripts/Source/ObjectReference.psc:585:1:identifier-casing
+Scripts/Source/ObjectReference.psc:585:1:parameter-count
 Scripts/Source/ObjectReference.psc:585:121:line-length
 Scripts/Source/ObjectReference.psc:588:1:identifier-casing
 Scripts/Source/ObjectReference.psc:588:1:identifier-casing
@@ -2646,6 +2657,7 @@ Scripts/Source/Quest.psc:12:1:identifier-casing
 Scripts/Source/Quest.psc:12:1:identifier-casing
 Scripts/Source/Quest.psc:12:1:identifier-casing
 Scripts/Source/Quest.psc:12:1:identifier-casing
+Scripts/Source/Quest.psc:12:1:parameter-count
 Scripts/Source/Quest.psc:12:121:line-length
 Scripts/Source/Quest.psc:17:1:numeric-comparison
 Scripts/Source/Quest.psc:18:63:exclamation-spacing
@@ -2930,6 +2942,7 @@ Scripts/Source/SpawnerTask.psc:47:1:identifier-casing
 Scripts/Source/SpawnerTask.psc:47:1:identifier-casing
 Scripts/Source/SpawnerTask.psc:47:1:identifier-casing
 Scripts/Source/SpawnerTask.psc:47:1:identifier-casing
+Scripts/Source/SpawnerTask.psc:47:1:parameter-count
 Scripts/Source/SpawnerTask.psc:47:121:line-length
 Scripts/Source/SpawnerTask.psc:52:1:semicolon
 Scripts/Source/SpawnerTask.psc:53:1:identifier-casing
@@ -3222,6 +3235,7 @@ Scripts/Source/WornObject.psc:50:1:identifier-casing
 Scripts/Source/WornObject.psc:50:1:identifier-casing
 Scripts/Source/WornObject.psc:50:1:identifier-casing
 Scripts/Source/WornObject.psc:50:1:identifier-casing
+Scripts/Source/WornObject.psc:50:1:parameter-count
 Scripts/Source/WornObject.psc:50:121:line-length
 Scripts/Source/WornObject.psc:53:1:identifier-casing
 Scripts/Source/WornObject.psc:53:1:identifier-casing

@@ -213,6 +213,7 @@ Scripts/Source/Achievements_CompanionsAndEliteCrew.psc:46:1:identifier-casing
 Scripts/Source/Achievements_CompanionsAndEliteCrew.psc:46:1:identifier-casing
 Scripts/Source/Achievements_CompanionsAndEliteCrew.psc:46:1:identifier-casing
 Scripts/Source/Achievements_CompanionsAndEliteCrew.psc:46:1:identifier-casing
+Scripts/Source/Achievements_CompanionsAndEliteCrew.psc:46:1:parameter-count
 Scripts/Source/Achievements_CompanionsAndEliteCrew.psc:46:1:unnecessary-function
 Scripts/Source/Achievements_CompanionsAndEliteCrew.psc:46:121:line-length
 Scripts/Source/Achievements_CompanionsAndEliteCrew.psc:47:1:indentation
@@ -222,6 +223,7 @@ Scripts/Source/Achievements_CompanionsAndEliteCrew.psc:50:1:identifier-casing
 Scripts/Source/Achievements_CompanionsAndEliteCrew.psc:50:1:identifier-casing
 Scripts/Source/Achievements_CompanionsAndEliteCrew.psc:50:1:identifier-casing
 Scripts/Source/Achievements_CompanionsAndEliteCrew.psc:50:1:identifier-casing
+Scripts/Source/Achievements_CompanionsAndEliteCrew.psc:50:1:parameter-count
 Scripts/Source/Achievements_CompanionsAndEliteCrew.psc:50:1:unnecessary-function
 Scripts/Source/Achievements_CompanionsAndEliteCrew.psc:50:121:line-length
 Scripts/Source/Achievements_CompanionsAndEliteCrew.psc:51:1:indentation
@@ -2643,6 +2645,7 @@ Scripts/Source/BEScript.psc:1278:1:identifier-casing
 Scripts/Source/BEScript.psc:1278:1:identifier-casing
 Scripts/Source/BEScript.psc:1278:1:identifier-casing
 Scripts/Source/BEScript.psc:1278:1:identifier-casing
+Scripts/Source/BEScript.psc:1278:1:parameter-count
 Scripts/Source/BEScript.psc:1278:121:line-length
 Scripts/Source/BEScript.psc:1278:165:assignment-operator-spacing
 Scripts/Source/BEScript.psc:1278:165:assignment-operator-spacing
@@ -4651,6 +4654,7 @@ Scripts/Source/COM_CREW_GiveItemActorScript.psc:95:1:identifier-casing
 Scripts/Source/COM_CREW_GiveItemActorScript.psc:95:1:identifier-casing
 Scripts/Source/COM_CREW_GiveItemActorScript.psc:95:1:identifier-casing
 Scripts/Source/COM_CREW_GiveItemActorScript.psc:95:1:identifier-casing
+Scripts/Source/COM_CREW_GiveItemActorScript.psc:95:1:parameter-count
 Scripts/Source/COM_CREW_GiveItemActorScript.psc:95:1:unnecessary-function
 Scripts/Source/COM_CREW_GiveItemActorScript.psc:95:121:line-length
 Scripts/Source/COM_CREW_GiveItemActorScript.psc:96:121:line-length
@@ -4659,6 +4663,7 @@ Scripts/Source/COM_CREW_GiveItemActorScript.psc:99:1:identifier-casing
 Scripts/Source/COM_CREW_GiveItemActorScript.psc:99:1:identifier-casing
 Scripts/Source/COM_CREW_GiveItemActorScript.psc:99:1:identifier-casing
 Scripts/Source/COM_CREW_GiveItemActorScript.psc:99:1:identifier-casing
+Scripts/Source/COM_CREW_GiveItemActorScript.psc:99:1:parameter-count
 Scripts/Source/COM_CREW_GiveItemActorScript.psc:99:1:unnecessary-function
 Scripts/Source/COM_CREW_GiveItemActorScript.psc:99:121:line-length
 Scripts/Source/COM_CREW_GiveItemActorScript.psc:100:121:line-length
@@ -4676,6 +4681,7 @@ Scripts/Source/COM_CommentTriggerQuestScript.psc:27:1:identifier-casing
 Scripts/Source/COM_CommentTriggerQuestScript.psc:27:1:identifier-casing
 Scripts/Source/COM_CommentTriggerQuestScript.psc:27:1:identifier-casing
 Scripts/Source/COM_CommentTriggerQuestScript.psc:27:1:identifier-casing
+Scripts/Source/COM_CommentTriggerQuestScript.psc:27:1:parameter-count
 Scripts/Source/COM_CommentTriggerQuestScript.psc:27:1:unnecessary-function
 Scripts/Source/COM_CommentTriggerQuestScript.psc:27:121:line-length
 Scripts/Source/COM_CommentTriggerQuestScript.psc:28:1:indentation
@@ -4685,6 +4691,7 @@ Scripts/Source/COM_CommentTriggerQuestScript.psc:31:1:identifier-casing
 Scripts/Source/COM_CommentTriggerQuestScript.psc:31:1:identifier-casing
 Scripts/Source/COM_CommentTriggerQuestScript.psc:31:1:identifier-casing
 Scripts/Source/COM_CommentTriggerQuestScript.psc:31:1:identifier-casing
+Scripts/Source/COM_CommentTriggerQuestScript.psc:31:1:parameter-count
 Scripts/Source/COM_CommentTriggerQuestScript.psc:31:1:unnecessary-function
 Scripts/Source/COM_CommentTriggerQuestScript.psc:31:121:line-length
 Scripts/Source/COM_CommentTriggerQuestScript.psc:32:1:indentation
@@ -4750,6 +4757,7 @@ Scripts/Source/COM_CommentTriggerScript.psc:136:1:identifier-casing
 Scripts/Source/COM_CommentTriggerScript.psc:136:1:identifier-casing
 Scripts/Source/COM_CommentTriggerScript.psc:136:1:identifier-casing
 Scripts/Source/COM_CommentTriggerScript.psc:136:1:identifier-casing
+Scripts/Source/COM_CommentTriggerScript.psc:136:1:parameter-count
 Scripts/Source/COM_CommentTriggerScript.psc:136:1:unnecessary-function
 Scripts/Source/COM_CommentTriggerScript.psc:136:121:line-length
 Scripts/Source/COM_CommentTriggerScript.psc:137:1:indentation
@@ -4759,6 +4767,7 @@ Scripts/Source/COM_CommentTriggerScript.psc:141:1:identifier-casing
 Scripts/Source/COM_CommentTriggerScript.psc:141:1:identifier-casing
 Scripts/Source/COM_CommentTriggerScript.psc:141:1:identifier-casing
 Scripts/Source/COM_CommentTriggerScript.psc:141:1:identifier-casing
+Scripts/Source/COM_CommentTriggerScript.psc:141:1:parameter-count
 Scripts/Source/COM_CommentTriggerScript.psc:141:1:unnecessary-function
 Scripts/Source/COM_CommentTriggerScript.psc:141:121:line-length
 Scripts/Source/COM_CommentTriggerScript.psc:142:1:indentation
@@ -4785,6 +4794,7 @@ Scripts/Source/COM_CommitmentGiftScript.psc:22:1:identifier-casing
 Scripts/Source/COM_CommitmentGiftScript.psc:22:1:identifier-casing
 Scripts/Source/COM_CommitmentGiftScript.psc:22:1:identifier-casing
 Scripts/Source/COM_CommitmentGiftScript.psc:22:1:identifier-casing
+Scripts/Source/COM_CommitmentGiftScript.psc:22:1:parameter-count
 Scripts/Source/COM_CommitmentGiftScript.psc:22:1:unnecessary-function
 Scripts/Source/COM_CommitmentGiftScript.psc:22:121:line-length
 Scripts/Source/COM_CommitmentGiftScript.psc:23:1:indentation
@@ -4794,6 +4804,7 @@ Scripts/Source/COM_CommitmentGiftScript.psc:27:1:identifier-casing
 Scripts/Source/COM_CommitmentGiftScript.psc:27:1:identifier-casing
 Scripts/Source/COM_CommitmentGiftScript.psc:27:1:identifier-casing
 Scripts/Source/COM_CommitmentGiftScript.psc:27:1:identifier-casing
+Scripts/Source/COM_CommitmentGiftScript.psc:27:1:parameter-count
 Scripts/Source/COM_CommitmentGiftScript.psc:27:1:unnecessary-function
 Scripts/Source/COM_CommitmentGiftScript.psc:27:121:line-length
 Scripts/Source/COM_CommitmentGiftScript.psc:28:1:indentation
@@ -4813,6 +4824,7 @@ Scripts/Source/COM_CommitmentGift_ActivatorScript.psc:18:1:identifier-casing
 Scripts/Source/COM_CommitmentGift_ActivatorScript.psc:18:1:identifier-casing
 Scripts/Source/COM_CommitmentGift_ActivatorScript.psc:18:1:identifier-casing
 Scripts/Source/COM_CommitmentGift_ActivatorScript.psc:18:1:identifier-casing
+Scripts/Source/COM_CommitmentGift_ActivatorScript.psc:18:1:parameter-count
 Scripts/Source/COM_CommitmentGift_ActivatorScript.psc:18:1:unnecessary-function
 Scripts/Source/COM_CommitmentGift_ActivatorScript.psc:18:121:line-length
 Scripts/Source/COM_CommitmentGift_ActivatorScript.psc:19:1:indentation
@@ -4822,6 +4834,7 @@ Scripts/Source/COM_CommitmentGift_ActivatorScript.psc:23:1:identifier-casing
 Scripts/Source/COM_CommitmentGift_ActivatorScript.psc:23:1:identifier-casing
 Scripts/Source/COM_CommitmentGift_ActivatorScript.psc:23:1:identifier-casing
 Scripts/Source/COM_CommitmentGift_ActivatorScript.psc:23:1:identifier-casing
+Scripts/Source/COM_CommitmentGift_ActivatorScript.psc:23:1:parameter-count
 Scripts/Source/COM_CommitmentGift_ActivatorScript.psc:23:1:unnecessary-function
 Scripts/Source/COM_CommitmentGift_ActivatorScript.psc:23:121:line-length
 Scripts/Source/COM_CommitmentGift_ActivatorScript.psc:24:1:indentation
@@ -4995,6 +5008,7 @@ Scripts/Source/COM_CompanionQuestScript.psc:602:1:identifier-casing
 Scripts/Source/COM_CompanionQuestScript.psc:602:1:identifier-casing
 Scripts/Source/COM_CompanionQuestScript.psc:602:1:identifier-casing
 Scripts/Source/COM_CompanionQuestScript.psc:602:1:identifier-casing
+Scripts/Source/COM_CompanionQuestScript.psc:602:1:parameter-count
 Scripts/Source/COM_CompanionQuestScript.psc:602:1:unnecessary-function
 Scripts/Source/COM_CompanionQuestScript.psc:602:121:line-length
 Scripts/Source/COM_CompanionQuestScript.psc:603:121:line-length
@@ -5003,6 +5017,7 @@ Scripts/Source/COM_CompanionQuestScript.psc:606:1:identifier-casing
 Scripts/Source/COM_CompanionQuestScript.psc:606:1:identifier-casing
 Scripts/Source/COM_CompanionQuestScript.psc:606:1:identifier-casing
 Scripts/Source/COM_CompanionQuestScript.psc:606:1:identifier-casing
+Scripts/Source/COM_CompanionQuestScript.psc:606:1:parameter-count
 Scripts/Source/COM_CompanionQuestScript.psc:606:1:unnecessary-function
 Scripts/Source/COM_CompanionQuestScript.psc:606:121:line-length
 Scripts/Source/COM_CompanionQuestScript.psc:607:121:line-length
@@ -5124,6 +5139,7 @@ Scripts/Source/COM_CoraHandlerQuestScript.psc:84:1:identifier-casing
 Scripts/Source/COM_CoraHandlerQuestScript.psc:84:1:identifier-casing
 Scripts/Source/COM_CoraHandlerQuestScript.psc:84:1:identifier-casing
 Scripts/Source/COM_CoraHandlerQuestScript.psc:84:1:identifier-casing
+Scripts/Source/COM_CoraHandlerQuestScript.psc:84:1:parameter-count
 Scripts/Source/COM_CoraHandlerQuestScript.psc:84:1:unnecessary-function
 Scripts/Source/COM_CoraHandlerQuestScript.psc:84:121:line-length
 Scripts/Source/COM_CoraHandlerQuestScript.psc:85:1:indentation
@@ -5133,6 +5149,7 @@ Scripts/Source/COM_CoraHandlerQuestScript.psc:88:1:identifier-casing
 Scripts/Source/COM_CoraHandlerQuestScript.psc:88:1:identifier-casing
 Scripts/Source/COM_CoraHandlerQuestScript.psc:88:1:identifier-casing
 Scripts/Source/COM_CoraHandlerQuestScript.psc:88:1:identifier-casing
+Scripts/Source/COM_CoraHandlerQuestScript.psc:88:1:parameter-count
 Scripts/Source/COM_CoraHandlerQuestScript.psc:88:1:unnecessary-function
 Scripts/Source/COM_CoraHandlerQuestScript.psc:88:121:line-length
 Scripts/Source/COM_CoraHandlerQuestScript.psc:89:1:indentation
@@ -5148,6 +5165,7 @@ Scripts/Source/COM_IncrementFlirtTopicScript.psc:20:1:identifier-casing
 Scripts/Source/COM_IncrementFlirtTopicScript.psc:20:1:identifier-casing
 Scripts/Source/COM_IncrementFlirtTopicScript.psc:20:1:identifier-casing
 Scripts/Source/COM_IncrementFlirtTopicScript.psc:20:1:identifier-casing
+Scripts/Source/COM_IncrementFlirtTopicScript.psc:20:1:parameter-count
 Scripts/Source/COM_IncrementFlirtTopicScript.psc:20:1:unnecessary-function
 Scripts/Source/COM_IncrementFlirtTopicScript.psc:20:121:line-length
 Scripts/Source/COM_IncrementFlirtTopicScript.psc:21:121:line-length
@@ -5156,6 +5174,7 @@ Scripts/Source/COM_IncrementFlirtTopicScript.psc:24:1:identifier-casing
 Scripts/Source/COM_IncrementFlirtTopicScript.psc:24:1:identifier-casing
 Scripts/Source/COM_IncrementFlirtTopicScript.psc:24:1:identifier-casing
 Scripts/Source/COM_IncrementFlirtTopicScript.psc:24:1:identifier-casing
+Scripts/Source/COM_IncrementFlirtTopicScript.psc:24:1:parameter-count
 Scripts/Source/COM_IncrementFlirtTopicScript.psc:24:1:unnecessary-function
 Scripts/Source/COM_IncrementFlirtTopicScript.psc:24:121:line-length
 Scripts/Source/COM_IncrementFlirtTopicScript.psc:25:121:line-length
@@ -5281,6 +5300,7 @@ Scripts/Source/COM_RedeemSecondChanceInfoScript.psc:14:1:identifier-casing
 Scripts/Source/COM_RedeemSecondChanceInfoScript.psc:14:1:identifier-casing
 Scripts/Source/COM_RedeemSecondChanceInfoScript.psc:14:1:identifier-casing
 Scripts/Source/COM_RedeemSecondChanceInfoScript.psc:14:1:identifier-casing
+Scripts/Source/COM_RedeemSecondChanceInfoScript.psc:14:1:parameter-count
 Scripts/Source/COM_RedeemSecondChanceInfoScript.psc:14:1:unnecessary-function
 Scripts/Source/COM_RedeemSecondChanceInfoScript.psc:14:121:line-length
 Scripts/Source/COM_RedeemSecondChanceInfoScript.psc:15:121:line-length
@@ -5289,6 +5309,7 @@ Scripts/Source/COM_RedeemSecondChanceInfoScript.psc:18:1:identifier-casing
 Scripts/Source/COM_RedeemSecondChanceInfoScript.psc:18:1:identifier-casing
 Scripts/Source/COM_RedeemSecondChanceInfoScript.psc:18:1:identifier-casing
 Scripts/Source/COM_RedeemSecondChanceInfoScript.psc:18:1:identifier-casing
+Scripts/Source/COM_RedeemSecondChanceInfoScript.psc:18:1:parameter-count
 Scripts/Source/COM_RedeemSecondChanceInfoScript.psc:18:1:unnecessary-function
 Scripts/Source/COM_RedeemSecondChanceInfoScript.psc:18:121:line-length
 Scripts/Source/COM_RedeemSecondChanceInfoScript.psc:19:121:line-length
@@ -5528,6 +5549,7 @@ Scripts/Source/Cell.psc:34:1:identifier-casing
 Scripts/Source/Cell.psc:34:1:identifier-casing
 Scripts/Source/Cell.psc:34:1:identifier-casing
 Scripts/Source/Cell.psc:34:1:identifier-casing
+Scripts/Source/Cell.psc:34:1:parameter-count
 Scripts/Source/Cell.psc:37:1:indentation
 Scripts/Source/Cell.psc:38:1:identifier-casing
 Scripts/Source/Cell.psc:38:1:identifier-casing
@@ -5949,6 +5971,7 @@ Scripts/Source/CityLife_LVC_AliasScript.psc:51:1:identifier-casing
 Scripts/Source/CityLife_LVC_AliasScript.psc:51:1:identifier-casing
 Scripts/Source/CityLife_LVC_AliasScript.psc:51:1:identifier-casing
 Scripts/Source/CityLife_LVC_AliasScript.psc:51:1:identifier-casing
+Scripts/Source/CityLife_LVC_AliasScript.psc:51:1:parameter-count
 Scripts/Source/CityLife_LVC_AliasScript.psc:51:1:unnecessary-function
 Scripts/Source/CityLife_LVC_AliasScript.psc:51:121:line-length
 Scripts/Source/CityLife_LVC_AliasScript.psc:52:121:line-length
@@ -7083,6 +7106,7 @@ Scripts/Source/CompanionActorScript.psc:111:1:identifier-casing
 Scripts/Source/CompanionActorScript.psc:111:1:identifier-casing
 Scripts/Source/CompanionActorScript.psc:111:1:identifier-casing
 Scripts/Source/CompanionActorScript.psc:111:1:identifier-casing
+Scripts/Source/CompanionActorScript.psc:111:1:parameter-count
 Scripts/Source/CompanionActorScript.psc:111:1:unnecessary-function
 Scripts/Source/CompanionActorScript.psc:111:121:line-length
 Scripts/Source/CompanionActorScript.psc:112:121:line-length
@@ -7091,6 +7115,7 @@ Scripts/Source/CompanionActorScript.psc:115:1:identifier-casing
 Scripts/Source/CompanionActorScript.psc:115:1:identifier-casing
 Scripts/Source/CompanionActorScript.psc:115:1:identifier-casing
 Scripts/Source/CompanionActorScript.psc:115:1:identifier-casing
+Scripts/Source/CompanionActorScript.psc:115:1:parameter-count
 Scripts/Source/CompanionActorScript.psc:115:1:unnecessary-function
 Scripts/Source/CompanionActorScript.psc:115:121:line-length
 Scripts/Source/CompanionActorScript.psc:116:121:line-length
@@ -7395,6 +7420,7 @@ Scripts/Source/CompanionAffinityEventsScript.psc:888:1:identifier-casing
 Scripts/Source/CompanionAffinityEventsScript.psc:888:1:identifier-casing
 Scripts/Source/CompanionAffinityEventsScript.psc:888:1:identifier-casing
 Scripts/Source/CompanionAffinityEventsScript.psc:888:1:identifier-casing
+Scripts/Source/CompanionAffinityEventsScript.psc:888:1:parameter-count
 Scripts/Source/CompanionAffinityEventsScript.psc:888:1:unnecessary-function
 Scripts/Source/CompanionAffinityEventsScript.psc:888:121:line-length
 Scripts/Source/CompanionAffinityEventsScript.psc:889:121:line-length
@@ -7403,6 +7429,7 @@ Scripts/Source/CompanionAffinityEventsScript.psc:892:1:identifier-casing
 Scripts/Source/CompanionAffinityEventsScript.psc:892:1:identifier-casing
 Scripts/Source/CompanionAffinityEventsScript.psc:892:1:identifier-casing
 Scripts/Source/CompanionAffinityEventsScript.psc:892:1:identifier-casing
+Scripts/Source/CompanionAffinityEventsScript.psc:892:1:parameter-count
 Scripts/Source/CompanionAffinityEventsScript.psc:892:1:unnecessary-function
 Scripts/Source/CompanionAffinityEventsScript.psc:892:121:line-length
 Scripts/Source/CompanionAffinityEventsScript.psc:893:121:line-length
@@ -7434,6 +7461,7 @@ Scripts/Source/CompanionAffinityScript.psc:47:1:identifier-casing
 Scripts/Source/CompanionAffinityScript.psc:47:1:identifier-casing
 Scripts/Source/CompanionAffinityScript.psc:47:1:identifier-casing
 Scripts/Source/CompanionAffinityScript.psc:47:1:identifier-casing
+Scripts/Source/CompanionAffinityScript.psc:47:1:parameter-count
 Scripts/Source/CompanionAffinityScript.psc:47:1:unnecessary-function
 Scripts/Source/CompanionAffinityScript.psc:47:121:line-length
 Scripts/Source/CompanionAffinityScript.psc:48:121:line-length
@@ -7442,6 +7470,7 @@ Scripts/Source/CompanionAffinityScript.psc:51:1:identifier-casing
 Scripts/Source/CompanionAffinityScript.psc:51:1:identifier-casing
 Scripts/Source/CompanionAffinityScript.psc:51:1:identifier-casing
 Scripts/Source/CompanionAffinityScript.psc:51:1:identifier-casing
+Scripts/Source/CompanionAffinityScript.psc:51:1:parameter-count
 Scripts/Source/CompanionAffinityScript.psc:51:1:unnecessary-function
 Scripts/Source/CompanionAffinityScript.psc:51:121:line-length
 Scripts/Source/CompanionAffinityScript.psc:52:121:line-length
@@ -7589,6 +7618,7 @@ Scripts/Source/CompanionCrimeResponseScript.psc:248:1:identifier-casing
 Scripts/Source/CompanionCrimeResponseScript.psc:248:1:identifier-casing
 Scripts/Source/CompanionCrimeResponseScript.psc:248:1:identifier-casing
 Scripts/Source/CompanionCrimeResponseScript.psc:248:1:identifier-casing
+Scripts/Source/CompanionCrimeResponseScript.psc:248:1:parameter-count
 Scripts/Source/CompanionCrimeResponseScript.psc:248:1:unnecessary-function
 Scripts/Source/CompanionCrimeResponseScript.psc:248:121:line-length
 Scripts/Source/CompanionCrimeResponseScript.psc:249:121:line-length
@@ -7597,6 +7627,7 @@ Scripts/Source/CompanionCrimeResponseScript.psc:252:1:identifier-casing
 Scripts/Source/CompanionCrimeResponseScript.psc:252:1:identifier-casing
 Scripts/Source/CompanionCrimeResponseScript.psc:252:1:identifier-casing
 Scripts/Source/CompanionCrimeResponseScript.psc:252:1:identifier-casing
+Scripts/Source/CompanionCrimeResponseScript.psc:252:1:parameter-count
 Scripts/Source/CompanionCrimeResponseScript.psc:252:1:unnecessary-function
 Scripts/Source/CompanionCrimeResponseScript.psc:252:121:line-length
 Scripts/Source/CompanionCrimeResponseScript.psc:253:121:line-length
@@ -7621,6 +7652,7 @@ Scripts/Source/CompanionDebugScript.psc:121:1:identifier-casing
 Scripts/Source/CompanionDebugScript.psc:121:1:identifier-casing
 Scripts/Source/CompanionDebugScript.psc:121:1:identifier-casing
 Scripts/Source/CompanionDebugScript.psc:121:1:identifier-casing
+Scripts/Source/CompanionDebugScript.psc:121:1:parameter-count
 Scripts/Source/CompanionDebugScript.psc:121:1:unnecessary-function
 Scripts/Source/CompanionDebugScript.psc:121:121:line-length
 Scripts/Source/CompanionDebugScript.psc:122:121:line-length
@@ -7629,6 +7661,7 @@ Scripts/Source/CompanionDebugScript.psc:125:1:identifier-casing
 Scripts/Source/CompanionDebugScript.psc:125:1:identifier-casing
 Scripts/Source/CompanionDebugScript.psc:125:1:identifier-casing
 Scripts/Source/CompanionDebugScript.psc:125:1:identifier-casing
+Scripts/Source/CompanionDebugScript.psc:125:1:parameter-count
 Scripts/Source/CompanionDebugScript.psc:125:1:unnecessary-function
 Scripts/Source/CompanionDebugScript.psc:125:121:line-length
 Scripts/Source/CompanionDebugScript.psc:126:121:line-length
@@ -7820,6 +7853,7 @@ Scripts/Source/CrewRandomVoiceScript.psc:40:1:identifier-casing
 Scripts/Source/CrewRandomVoiceScript.psc:40:1:identifier-casing
 Scripts/Source/CrewRandomVoiceScript.psc:40:1:identifier-casing
 Scripts/Source/CrewRandomVoiceScript.psc:40:1:identifier-casing
+Scripts/Source/CrewRandomVoiceScript.psc:40:1:parameter-count
 Scripts/Source/CrewRandomVoiceScript.psc:40:1:unnecessary-function
 Scripts/Source/CrewRandomVoiceScript.psc:40:121:line-length
 Scripts/Source/CrewRandomVoiceScript.psc:41:121:line-length
@@ -7828,6 +7862,7 @@ Scripts/Source/CrewRandomVoiceScript.psc:44:1:identifier-casing
 Scripts/Source/CrewRandomVoiceScript.psc:44:1:identifier-casing
 Scripts/Source/CrewRandomVoiceScript.psc:44:1:identifier-casing
 Scripts/Source/CrewRandomVoiceScript.psc:44:1:identifier-casing
+Scripts/Source/CrewRandomVoiceScript.psc:44:1:parameter-count
 Scripts/Source/CrewRandomVoiceScript.psc:44:1:unnecessary-function
 Scripts/Source/CrewRandomVoiceScript.psc:44:121:line-length
 Scripts/Source/CrewRandomVoiceScript.psc:45:121:line-length
@@ -7937,6 +7972,7 @@ Scripts/Source/Crew_RecruitQuestScript.psc:87:1:identifier-casing
 Scripts/Source/Crew_RecruitQuestScript.psc:87:1:identifier-casing
 Scripts/Source/Crew_RecruitQuestScript.psc:87:1:identifier-casing
 Scripts/Source/Crew_RecruitQuestScript.psc:87:1:identifier-casing
+Scripts/Source/Crew_RecruitQuestScript.psc:87:1:parameter-count
 Scripts/Source/Crew_RecruitQuestScript.psc:87:1:unnecessary-function
 Scripts/Source/Crew_RecruitQuestScript.psc:87:121:line-length
 Scripts/Source/Crew_RecruitQuestScript.psc:88:121:line-length
@@ -7945,6 +7981,7 @@ Scripts/Source/Crew_RecruitQuestScript.psc:91:1:identifier-casing
 Scripts/Source/Crew_RecruitQuestScript.psc:91:1:identifier-casing
 Scripts/Source/Crew_RecruitQuestScript.psc:91:1:identifier-casing
 Scripts/Source/Crew_RecruitQuestScript.psc:91:1:identifier-casing
+Scripts/Source/Crew_RecruitQuestScript.psc:91:1:parameter-count
 Scripts/Source/Crew_RecruitQuestScript.psc:91:1:unnecessary-function
 Scripts/Source/Crew_RecruitQuestScript.psc:91:121:line-length
 Scripts/Source/Crew_RecruitQuestScript.psc:92:121:line-length
@@ -8024,6 +8061,7 @@ Scripts/Source/CustomLogs.psc:16:1:indentation
 Scripts/Source/CustomLogs.psc:17:1:indentation
 Scripts/Source/CustomLogs.psc:19:1:indentation
 Scripts/Source/CustomLogs.psc:20:1:indentation
+Scripts/Source/CustomLogs.psc:23:1:parameter-count
 Scripts/Source/CustomLogs.psc:23:85:assignment-operator-spacing
 Scripts/Source/CustomLogs.psc:23:121:line-length
 Scripts/Source/CustomLogs.psc:24:1:identifier-casing
@@ -10207,6 +10245,7 @@ Scripts/Source/Debug.psc:147:1:identifier-casing
 Scripts/Source/Debug.psc:147:1:identifier-casing
 Scripts/Source/Debug.psc:147:1:identifier-casing
 Scripts/Source/Debug.psc:147:1:identifier-casing
+Scripts/Source/Debug.psc:147:1:parameter-count
 Scripts/Source/Debug.psc:147:121:line-length
 Scripts/Source/Debug.psc:148:121:line-length
 Scripts/Source/Debug.psc:150:1:identifier-casing
@@ -11533,6 +11572,7 @@ Scripts/Source/DefaultAliasOnMenuItemRun.psc:42:1:identifier-casing
 Scripts/Source/DefaultAliasOnMenuItemRun.psc:42:1:identifier-casing
 Scripts/Source/DefaultAliasOnMenuItemRun.psc:42:1:identifier-casing
 Scripts/Source/DefaultAliasOnMenuItemRun.psc:42:1:identifier-casing
+Scripts/Source/DefaultAliasOnMenuItemRun.psc:42:1:parameter-count
 Scripts/Source/DefaultAliasOnMenuItemRun.psc:42:121:line-length
 Scripts/Source/DefaultAliasOnMenuItemRun.psc:43:1:identifier-casing
 Scripts/Source/DefaultAliasOnMenuItemRun.psc:44:1:trailing-whitespace
@@ -14626,6 +14666,7 @@ Scripts/Source/DefaultGroupSpawnQuestScript.psc:986:1:identifier-casing
 Scripts/Source/DefaultGroupSpawnQuestScript.psc:986:1:identifier-casing
 Scripts/Source/DefaultGroupSpawnQuestScript.psc:986:1:identifier-casing
 Scripts/Source/DefaultGroupSpawnQuestScript.psc:986:1:indentation
+Scripts/Source/DefaultGroupSpawnQuestScript.psc:986:1:parameter-count
 Scripts/Source/DefaultGroupSpawnQuestScript.psc:986:1:unnecessary-function
 Scripts/Source/DefaultGroupSpawnQuestScript.psc:986:84:assignment-operator-spacing
 Scripts/Source/DefaultGroupSpawnQuestScript.psc:986:84:assignment-operator-spacing
@@ -15832,6 +15873,7 @@ Scripts/Source/DefaultRefOnTriggerEnterMultiActor.psc:29:1:indentation
 Scripts/Source/DefaultRefOnTriggerEnterMultiActor.psc:30:1:indentation
 Scripts/Source/DefaultRefOnTriggerEnterMultiActor.psc:32:1:indentation
 Scripts/Source/DefaultRefOnTriggerEnterMultiActor.psc:33:1:indentation
+Scripts/Source/DefaultRefOnTriggerEnterMultiActor.psc:36:1:parameter-count
 Scripts/Source/DefaultRefOnTriggerEnterMultiActor.psc:36:121:line-length
 Scripts/Source/DefaultRefOnTriggerEnterMultiActor.psc:39:1:indentation
 Scripts/Source/DefaultRefOnTriggerEnterMultiActor.psc:40:1:indentation
@@ -16084,6 +16126,7 @@ Scripts/Source/DefaultScriptFunctions.psc:7:1:indentation
 Scripts/Source/DefaultScriptFunctions.psc:10:121:line-length
 Scripts/Source/DefaultScriptFunctions.psc:11:1:identifier-casing
 Scripts/Source/DefaultScriptFunctions.psc:21:121:line-length
+Scripts/Source/DefaultScriptFunctions.psc:25:1:parameter-count
 Scripts/Source/DefaultScriptFunctions.psc:26:1:indentation
 Scripts/Source/DefaultScriptFunctions.psc:27:1:indentation
 Scripts/Source/DefaultScriptFunctions.psc:28:1:indentation
@@ -16143,6 +16186,7 @@ Scripts/Source/DefaultScriptFunctions.psc:89:2:strict-boolean
 Scripts/Source/DefaultScriptFunctions.psc:92:1:identifier-casing
 Scripts/Source/DefaultScriptFunctions.psc:93:3:strict-boolean
 Scripts/Source/DefaultScriptFunctions.psc:102:121:line-length
+Scripts/Source/DefaultScriptFunctions.psc:107:1:parameter-count
 Scripts/Source/DefaultScriptFunctions.psc:108:1:indentation
 Scripts/Source/DefaultScriptFunctions.psc:109:1:indentation
 Scripts/Source/DefaultScriptFunctions.psc:110:1:indentation
@@ -16192,6 +16236,7 @@ Scripts/Source/DefaultScriptFunctions.psc:164:1:indentation
 Scripts/Source/DefaultScriptFunctions.psc:165:1:indentation
 Scripts/Source/DefaultScriptFunctions.psc:166:1:indentation
 Scripts/Source/DefaultScriptFunctions.psc:170:1:trailing-whitespace
+Scripts/Source/DefaultScriptFunctions.psc:183:1:parameter-count
 Scripts/Source/DefaultScriptFunctions.psc:184:1:indentation
 Scripts/Source/DefaultScriptFunctions.psc:185:1:indentation
 Scripts/Source/DefaultScriptFunctions.psc:186:1:indentation
@@ -16209,6 +16254,7 @@ Scripts/Source/DefaultScriptFunctions.psc:224:1:indentation
 Scripts/Source/DefaultScriptFunctions.psc:226:1:trailing-whitespace
 Scripts/Source/DefaultScriptFunctions.psc:227:1:identifier-casing
 Scripts/Source/DefaultScriptFunctions.psc:227:35:boolean-simplification
+Scripts/Source/DefaultScriptFunctions.psc:235:1:parameter-count
 Scripts/Source/DefaultScriptFunctions.psc:236:1:indentation
 Scripts/Source/DefaultScriptFunctions.psc:237:1:indentation
 Scripts/Source/DefaultScriptFunctions.psc:238:1:indentation
@@ -16228,6 +16274,7 @@ Scripts/Source/DefaultScriptFunctions.psc:261:121:line-length
 Scripts/Source/DefaultScriptFunctions.psc:262:121:line-length
 Scripts/Source/DefaultScriptFunctions.psc:269:121:line-length
 Scripts/Source/DefaultScriptFunctions.psc:280:121:line-length
+Scripts/Source/DefaultScriptFunctions.psc:281:1:parameter-count
 Scripts/Source/DefaultScriptFunctions.psc:282:1:indentation
 Scripts/Source/DefaultScriptFunctions.psc:283:1:indentation
 Scripts/Source/DefaultScriptFunctions.psc:284:1:indentation
@@ -18073,6 +18120,7 @@ Scripts/Source/ENV_AFFL_CureAllEffect.psc:14:1:identifier-casing
 Scripts/Source/ENV_AFFL_CureAllEffect.psc:14:1:identifier-casing
 Scripts/Source/ENV_AFFL_CureAllEffect.psc:14:1:identifier-casing
 Scripts/Source/ENV_AFFL_CureAllEffect.psc:14:1:identifier-casing
+Scripts/Source/ENV_AFFL_CureAllEffect.psc:14:1:parameter-count
 Scripts/Source/ENV_AFFL_CureAllEffect.psc:14:1:unnecessary-function
 Scripts/Source/ENV_AFFL_CureAllEffect.psc:14:121:line-length
 Scripts/Source/ENV_AFFL_CureAllEffect.psc:15:1:indentation
@@ -18082,6 +18130,7 @@ Scripts/Source/ENV_AFFL_CureAllEffect.psc:18:1:identifier-casing
 Scripts/Source/ENV_AFFL_CureAllEffect.psc:18:1:identifier-casing
 Scripts/Source/ENV_AFFL_CureAllEffect.psc:18:1:identifier-casing
 Scripts/Source/ENV_AFFL_CureAllEffect.psc:18:1:identifier-casing
+Scripts/Source/ENV_AFFL_CureAllEffect.psc:18:1:parameter-count
 Scripts/Source/ENV_AFFL_CureAllEffect.psc:18:1:unnecessary-function
 Scripts/Source/ENV_AFFL_CureAllEffect.psc:18:121:line-length
 Scripts/Source/ENV_AFFL_CureAllEffect.psc:19:1:indentation
@@ -18103,6 +18152,7 @@ Scripts/Source/ENV_AFFL_CureRandomAfflictionScript.psc:20:1:identifier-casing
 Scripts/Source/ENV_AFFL_CureRandomAfflictionScript.psc:20:1:identifier-casing
 Scripts/Source/ENV_AFFL_CureRandomAfflictionScript.psc:20:1:identifier-casing
 Scripts/Source/ENV_AFFL_CureRandomAfflictionScript.psc:20:1:identifier-casing
+Scripts/Source/ENV_AFFL_CureRandomAfflictionScript.psc:20:1:parameter-count
 Scripts/Source/ENV_AFFL_CureRandomAfflictionScript.psc:20:1:unnecessary-function
 Scripts/Source/ENV_AFFL_CureRandomAfflictionScript.psc:20:121:line-length
 Scripts/Source/ENV_AFFL_CureRandomAfflictionScript.psc:21:1:indentation
@@ -18112,6 +18162,7 @@ Scripts/Source/ENV_AFFL_CureRandomAfflictionScript.psc:24:1:identifier-casing
 Scripts/Source/ENV_AFFL_CureRandomAfflictionScript.psc:24:1:identifier-casing
 Scripts/Source/ENV_AFFL_CureRandomAfflictionScript.psc:24:1:identifier-casing
 Scripts/Source/ENV_AFFL_CureRandomAfflictionScript.psc:24:1:identifier-casing
+Scripts/Source/ENV_AFFL_CureRandomAfflictionScript.psc:24:1:parameter-count
 Scripts/Source/ENV_AFFL_CureRandomAfflictionScript.psc:24:1:unnecessary-function
 Scripts/Source/ENV_AFFL_CureRandomAfflictionScript.psc:24:121:line-length
 Scripts/Source/ENV_AFFL_CureRandomAfflictionScript.psc:25:1:indentation
@@ -18188,6 +18239,7 @@ Scripts/Source/ENV_AFFL_PainEffectScript.psc:69:1:identifier-casing
 Scripts/Source/ENV_AFFL_PainEffectScript.psc:69:1:identifier-casing
 Scripts/Source/ENV_AFFL_PainEffectScript.psc:69:1:identifier-casing
 Scripts/Source/ENV_AFFL_PainEffectScript.psc:69:1:identifier-casing
+Scripts/Source/ENV_AFFL_PainEffectScript.psc:69:1:parameter-count
 Scripts/Source/ENV_AFFL_PainEffectScript.psc:69:1:unnecessary-function
 Scripts/Source/ENV_AFFL_PainEffectScript.psc:69:121:line-length
 Scripts/Source/ENV_AFFL_PainEffectScript.psc:70:121:line-length
@@ -18196,6 +18248,7 @@ Scripts/Source/ENV_AFFL_PainEffectScript.psc:73:1:identifier-casing
 Scripts/Source/ENV_AFFL_PainEffectScript.psc:73:1:identifier-casing
 Scripts/Source/ENV_AFFL_PainEffectScript.psc:73:1:identifier-casing
 Scripts/Source/ENV_AFFL_PainEffectScript.psc:73:1:identifier-casing
+Scripts/Source/ENV_AFFL_PainEffectScript.psc:73:1:parameter-count
 Scripts/Source/ENV_AFFL_PainEffectScript.psc:73:1:unnecessary-function
 Scripts/Source/ENV_AFFL_PainEffectScript.psc:73:121:line-length
 Scripts/Source/ENV_AFFL_PainEffectScript.psc:74:121:line-length
@@ -18770,6 +18823,7 @@ Scripts/Source/ENV_AfflictionScript.psc:594:1:identifier-casing
 Scripts/Source/ENV_AfflictionScript.psc:594:1:identifier-casing
 Scripts/Source/ENV_AfflictionScript.psc:594:1:identifier-casing
 Scripts/Source/ENV_AfflictionScript.psc:594:1:identifier-casing
+Scripts/Source/ENV_AfflictionScript.psc:594:1:parameter-count
 Scripts/Source/ENV_AfflictionScript.psc:594:1:unnecessary-function
 Scripts/Source/ENV_AfflictionScript.psc:594:121:line-length
 Scripts/Source/ENV_AfflictionScript.psc:595:1:indentation
@@ -18779,6 +18833,7 @@ Scripts/Source/ENV_AfflictionScript.psc:598:1:identifier-casing
 Scripts/Source/ENV_AfflictionScript.psc:598:1:identifier-casing
 Scripts/Source/ENV_AfflictionScript.psc:598:1:identifier-casing
 Scripts/Source/ENV_AfflictionScript.psc:598:1:identifier-casing
+Scripts/Source/ENV_AfflictionScript.psc:598:1:parameter-count
 Scripts/Source/ENV_AfflictionScript.psc:598:1:unnecessary-function
 Scripts/Source/ENV_AfflictionScript.psc:598:121:line-length
 Scripts/Source/ENV_AfflictionScript.psc:599:1:indentation
@@ -18803,6 +18858,7 @@ Scripts/Source/ENV_AfflictionTreatmentEffectScript.psc:20:1:identifier-casing
 Scripts/Source/ENV_AfflictionTreatmentEffectScript.psc:20:1:identifier-casing
 Scripts/Source/ENV_AfflictionTreatmentEffectScript.psc:20:1:identifier-casing
 Scripts/Source/ENV_AfflictionTreatmentEffectScript.psc:20:1:identifier-casing
+Scripts/Source/ENV_AfflictionTreatmentEffectScript.psc:20:1:parameter-count
 Scripts/Source/ENV_AfflictionTreatmentEffectScript.psc:20:1:unnecessary-function
 Scripts/Source/ENV_AfflictionTreatmentEffectScript.psc:20:121:line-length
 Scripts/Source/ENV_AfflictionTreatmentEffectScript.psc:21:1:indentation
@@ -18812,6 +18868,7 @@ Scripts/Source/ENV_AfflictionTreatmentEffectScript.psc:24:1:identifier-casing
 Scripts/Source/ENV_AfflictionTreatmentEffectScript.psc:24:1:identifier-casing
 Scripts/Source/ENV_AfflictionTreatmentEffectScript.psc:24:1:identifier-casing
 Scripts/Source/ENV_AfflictionTreatmentEffectScript.psc:24:1:identifier-casing
+Scripts/Source/ENV_AfflictionTreatmentEffectScript.psc:24:1:parameter-count
 Scripts/Source/ENV_AfflictionTreatmentEffectScript.psc:24:1:unnecessary-function
 Scripts/Source/ENV_AfflictionTreatmentEffectScript.psc:24:121:line-length
 Scripts/Source/ENV_AfflictionTreatmentEffectScript.psc:25:1:indentation
@@ -18842,6 +18899,7 @@ Scripts/Source/ENV_Audio_SealedEnvEffectScript.psc:24:1:identifier-casing
 Scripts/Source/ENV_Audio_SealedEnvEffectScript.psc:24:1:identifier-casing
 Scripts/Source/ENV_Audio_SealedEnvEffectScript.psc:24:1:identifier-casing
 Scripts/Source/ENV_Audio_SealedEnvEffectScript.psc:24:1:identifier-casing
+Scripts/Source/ENV_Audio_SealedEnvEffectScript.psc:24:1:parameter-count
 Scripts/Source/ENV_Audio_SealedEnvEffectScript.psc:24:1:unnecessary-function
 Scripts/Source/ENV_Audio_SealedEnvEffectScript.psc:24:121:line-length
 Scripts/Source/ENV_Audio_SealedEnvEffectScript.psc:25:1:indentation
@@ -18851,6 +18909,7 @@ Scripts/Source/ENV_Audio_SealedEnvEffectScript.psc:28:1:identifier-casing
 Scripts/Source/ENV_Audio_SealedEnvEffectScript.psc:28:1:identifier-casing
 Scripts/Source/ENV_Audio_SealedEnvEffectScript.psc:28:1:identifier-casing
 Scripts/Source/ENV_Audio_SealedEnvEffectScript.psc:28:1:identifier-casing
+Scripts/Source/ENV_Audio_SealedEnvEffectScript.psc:28:1:parameter-count
 Scripts/Source/ENV_Audio_SealedEnvEffectScript.psc:28:1:unnecessary-function
 Scripts/Source/ENV_Audio_SealedEnvEffectScript.psc:28:121:line-length
 Scripts/Source/ENV_Audio_SealedEnvEffectScript.psc:29:1:indentation
@@ -18887,6 +18946,7 @@ Scripts/Source/ENV_DispelEffectScript.psc:20:1:identifier-casing
 Scripts/Source/ENV_DispelEffectScript.psc:20:1:identifier-casing
 Scripts/Source/ENV_DispelEffectScript.psc:20:1:identifier-casing
 Scripts/Source/ENV_DispelEffectScript.psc:20:1:identifier-casing
+Scripts/Source/ENV_DispelEffectScript.psc:20:1:parameter-count
 Scripts/Source/ENV_DispelEffectScript.psc:20:1:unnecessary-function
 Scripts/Source/ENV_DispelEffectScript.psc:20:121:line-length
 Scripts/Source/ENV_DispelEffectScript.psc:21:121:line-length
@@ -18895,6 +18955,7 @@ Scripts/Source/ENV_DispelEffectScript.psc:24:1:identifier-casing
 Scripts/Source/ENV_DispelEffectScript.psc:24:1:identifier-casing
 Scripts/Source/ENV_DispelEffectScript.psc:24:1:identifier-casing
 Scripts/Source/ENV_DispelEffectScript.psc:24:1:identifier-casing
+Scripts/Source/ENV_DispelEffectScript.psc:24:1:parameter-count
 Scripts/Source/ENV_DispelEffectScript.psc:24:1:unnecessary-function
 Scripts/Source/ENV_DispelEffectScript.psc:24:121:line-length
 Scripts/Source/ENV_DispelEffectScript.psc:25:121:line-length
@@ -18978,6 +19039,7 @@ Scripts/Source/ENV_Hazard_ParentScript.psc:153:1:identifier-casing
 Scripts/Source/ENV_Hazard_ParentScript.psc:153:1:identifier-casing
 Scripts/Source/ENV_Hazard_ParentScript.psc:153:1:identifier-casing
 Scripts/Source/ENV_Hazard_ParentScript.psc:153:1:identifier-casing
+Scripts/Source/ENV_Hazard_ParentScript.psc:153:1:parameter-count
 Scripts/Source/ENV_Hazard_ParentScript.psc:153:1:unnecessary-function
 Scripts/Source/ENV_Hazard_ParentScript.psc:153:121:line-length
 Scripts/Source/ENV_Hazard_ParentScript.psc:154:121:line-length
@@ -18986,6 +19048,7 @@ Scripts/Source/ENV_Hazard_ParentScript.psc:157:1:identifier-casing
 Scripts/Source/ENV_Hazard_ParentScript.psc:157:1:identifier-casing
 Scripts/Source/ENV_Hazard_ParentScript.psc:157:1:identifier-casing
 Scripts/Source/ENV_Hazard_ParentScript.psc:157:1:identifier-casing
+Scripts/Source/ENV_Hazard_ParentScript.psc:157:1:parameter-count
 Scripts/Source/ENV_Hazard_ParentScript.psc:157:1:unnecessary-function
 Scripts/Source/ENV_Hazard_ParentScript.psc:157:121:line-length
 Scripts/Source/ENV_Hazard_ParentScript.psc:158:121:line-length
@@ -18994,6 +19057,7 @@ Scripts/Source/ENV_Hazard_ParentScript.psc:161:1:identifier-casing
 Scripts/Source/ENV_Hazard_ParentScript.psc:161:1:identifier-casing
 Scripts/Source/ENV_Hazard_ParentScript.psc:161:1:identifier-casing
 Scripts/Source/ENV_Hazard_ParentScript.psc:161:1:identifier-casing
+Scripts/Source/ENV_Hazard_ParentScript.psc:161:1:parameter-count
 Scripts/Source/ENV_Hazard_ParentScript.psc:161:1:unnecessary-function
 Scripts/Source/ENV_Hazard_ParentScript.psc:161:121:line-length
 Scripts/Source/ENV_Hazard_ParentScript.psc:162:121:line-length
@@ -19027,6 +19091,7 @@ Scripts/Source/ENV_NotSealedLocationDoorScript.psc:25:1:identifier-casing
 Scripts/Source/ENV_NotSealedLocationDoorScript.psc:25:1:identifier-casing
 Scripts/Source/ENV_NotSealedLocationDoorScript.psc:25:1:identifier-casing
 Scripts/Source/ENV_NotSealedLocationDoorScript.psc:25:1:identifier-casing
+Scripts/Source/ENV_NotSealedLocationDoorScript.psc:25:1:parameter-count
 Scripts/Source/ENV_NotSealedLocationDoorScript.psc:25:1:unnecessary-function
 Scripts/Source/ENV_NotSealedLocationDoorScript.psc:25:121:line-length
 Scripts/Source/ENV_NotSealedLocationDoorScript.psc:26:1:indentation
@@ -19036,6 +19101,7 @@ Scripts/Source/ENV_NotSealedLocationDoorScript.psc:29:1:identifier-casing
 Scripts/Source/ENV_NotSealedLocationDoorScript.psc:29:1:identifier-casing
 Scripts/Source/ENV_NotSealedLocationDoorScript.psc:29:1:identifier-casing
 Scripts/Source/ENV_NotSealedLocationDoorScript.psc:29:1:identifier-casing
+Scripts/Source/ENV_NotSealedLocationDoorScript.psc:29:1:parameter-count
 Scripts/Source/ENV_NotSealedLocationDoorScript.psc:29:1:unnecessary-function
 Scripts/Source/ENV_NotSealedLocationDoorScript.psc:29:121:line-length
 Scripts/Source/ENV_NotSealedLocationDoorScript.psc:30:1:indentation
@@ -19138,6 +19204,7 @@ Scripts/Source/ENV_PeriodicEffectScript.psc:392:1:identifier-casing
 Scripts/Source/ENV_PeriodicEffectScript.psc:392:1:identifier-casing
 Scripts/Source/ENV_PeriodicEffectScript.psc:392:1:identifier-casing
 Scripts/Source/ENV_PeriodicEffectScript.psc:392:1:identifier-casing
+Scripts/Source/ENV_PeriodicEffectScript.psc:392:1:parameter-count
 Scripts/Source/ENV_PeriodicEffectScript.psc:392:1:unnecessary-function
 Scripts/Source/ENV_PeriodicEffectScript.psc:392:121:line-length
 Scripts/Source/ENV_PeriodicEffectScript.psc:393:121:line-length
@@ -19146,6 +19213,7 @@ Scripts/Source/ENV_PeriodicEffectScript.psc:396:1:identifier-casing
 Scripts/Source/ENV_PeriodicEffectScript.psc:396:1:identifier-casing
 Scripts/Source/ENV_PeriodicEffectScript.psc:396:1:identifier-casing
 Scripts/Source/ENV_PeriodicEffectScript.psc:396:1:identifier-casing
+Scripts/Source/ENV_PeriodicEffectScript.psc:396:1:parameter-count
 Scripts/Source/ENV_PeriodicEffectScript.psc:396:1:unnecessary-function
 Scripts/Source/ENV_PeriodicEffectScript.psc:396:121:line-length
 Scripts/Source/ENV_PeriodicEffectScript.psc:397:121:line-length
@@ -19161,6 +19229,7 @@ Scripts/Source/ENV_Temp_BiomePackinSpawnScript.psc:22:1:identifier-casing
 Scripts/Source/ENV_Temp_BiomePackinSpawnScript.psc:22:1:identifier-casing
 Scripts/Source/ENV_Temp_BiomePackinSpawnScript.psc:22:1:identifier-casing
 Scripts/Source/ENV_Temp_BiomePackinSpawnScript.psc:22:1:identifier-casing
+Scripts/Source/ENV_Temp_BiomePackinSpawnScript.psc:22:1:parameter-count
 Scripts/Source/ENV_Temp_BiomePackinSpawnScript.psc:22:1:unnecessary-function
 Scripts/Source/ENV_Temp_BiomePackinSpawnScript.psc:22:121:line-length
 Scripts/Source/ENV_Temp_BiomePackinSpawnScript.psc:23:121:line-length
@@ -19169,6 +19238,7 @@ Scripts/Source/ENV_Temp_BiomePackinSpawnScript.psc:26:1:identifier-casing
 Scripts/Source/ENV_Temp_BiomePackinSpawnScript.psc:26:1:identifier-casing
 Scripts/Source/ENV_Temp_BiomePackinSpawnScript.psc:26:1:identifier-casing
 Scripts/Source/ENV_Temp_BiomePackinSpawnScript.psc:26:1:identifier-casing
+Scripts/Source/ENV_Temp_BiomePackinSpawnScript.psc:26:1:parameter-count
 Scripts/Source/ENV_Temp_BiomePackinSpawnScript.psc:26:1:unnecessary-function
 Scripts/Source/ENV_Temp_BiomePackinSpawnScript.psc:26:121:line-length
 Scripts/Source/ENV_Temp_BiomePackinSpawnScript.psc:27:121:line-length
@@ -19191,6 +19261,7 @@ Scripts/Source/ENV_Tutorial_EffectScript.psc:24:1:identifier-casing
 Scripts/Source/ENV_Tutorial_EffectScript.psc:24:1:identifier-casing
 Scripts/Source/ENV_Tutorial_EffectScript.psc:24:1:identifier-casing
 Scripts/Source/ENV_Tutorial_EffectScript.psc:24:1:identifier-casing
+Scripts/Source/ENV_Tutorial_EffectScript.psc:24:1:parameter-count
 Scripts/Source/ENV_Tutorial_EffectScript.psc:24:1:unnecessary-function
 Scripts/Source/ENV_Tutorial_EffectScript.psc:24:121:line-length
 Scripts/Source/ENV_Tutorial_EffectScript.psc:25:1:indentation
@@ -19200,6 +19271,7 @@ Scripts/Source/ENV_Tutorial_EffectScript.psc:28:1:identifier-casing
 Scripts/Source/ENV_Tutorial_EffectScript.psc:28:1:identifier-casing
 Scripts/Source/ENV_Tutorial_EffectScript.psc:28:1:identifier-casing
 Scripts/Source/ENV_Tutorial_EffectScript.psc:28:1:identifier-casing
+Scripts/Source/ENV_Tutorial_EffectScript.psc:28:1:parameter-count
 Scripts/Source/ENV_Tutorial_EffectScript.psc:28:1:unnecessary-function
 Scripts/Source/ENV_Tutorial_EffectScript.psc:28:121:line-length
 Scripts/Source/ENV_Tutorial_EffectScript.psc:29:1:indentation
@@ -80139,7 +80211,9 @@ Scripts/Source/Game.psc:137:121:line-length
 Scripts/Source/Game.psc:138:121:line-length
 Scripts/Source/Game.psc:139:121:line-length
 Scripts/Source/Game.psc:140:121:line-length
+Scripts/Source/Game.psc:141:1:parameter-count
 Scripts/Source/Game.psc:141:121:line-length
+Scripts/Source/Game.psc:143:1:parameter-count
 Scripts/Source/Game.psc:143:121:line-length
 Scripts/Source/Game.psc:144:1:identifier-casing
 Scripts/Source/Game.psc:144:121:line-length
@@ -80188,6 +80262,7 @@ Scripts/Source/Game.psc:396:1:identifier-casing
 Scripts/Source/Game.psc:396:1:identifier-casing
 Scripts/Source/Game.psc:396:1:identifier-casing
 Scripts/Source/Game.psc:396:1:identifier-casing
+Scripts/Source/Game.psc:396:1:parameter-count
 Scripts/Source/Game.psc:397:1:indentation
 Scripts/Source/Game.psc:399:1:indentation
 Scripts/Source/Game.psc:400:1:identifier-casing
@@ -80198,6 +80273,7 @@ Scripts/Source/Game.psc:400:1:identifier-casing
 Scripts/Source/Game.psc:400:1:identifier-casing
 Scripts/Source/Game.psc:400:1:identifier-casing
 Scripts/Source/Game.psc:400:1:indentation
+Scripts/Source/Game.psc:400:1:parameter-count
 Scripts/Source/Game.psc:400:121:line-length
 Scripts/Source/Game.psc:401:1:indentation
 Scripts/Source/Game.psc:403:1:indentation
@@ -80214,6 +80290,7 @@ Scripts/Source/Game.psc:411:1:identifier-casing
 Scripts/Source/Game.psc:411:1:identifier-casing
 Scripts/Source/Game.psc:411:1:identifier-casing
 Scripts/Source/Game.psc:411:1:indentation
+Scripts/Source/Game.psc:411:1:parameter-count
 Scripts/Source/Game.psc:411:121:line-length
 Scripts/Source/Game.psc:413:1:indentation
 Scripts/Source/Game.psc:414:1:identifier-casing
@@ -81189,6 +81266,7 @@ Scripts/Source/HazardBase.psc:53:1:identifier-casing
 Scripts/Source/HazardBase.psc:53:1:identifier-casing
 Scripts/Source/HazardBase.psc:53:1:identifier-casing
 Scripts/Source/HazardBase.psc:53:1:identifier-casing
+Scripts/Source/HazardBase.psc:53:1:parameter-count
 Scripts/Source/HazardBase.psc:53:121:line-length
 Scripts/Source/HazardBase.psc:54:121:line-length
 Scripts/Source/HazardBase.psc:55:1:indentation
@@ -81422,6 +81500,7 @@ Scripts/Source/Home_SetStageOnUnlock_CollScript.psc:30:1:identifier-casing
 Scripts/Source/Home_SetStageOnUnlock_CollScript.psc:30:1:identifier-casing
 Scripts/Source/Home_SetStageOnUnlock_CollScript.psc:30:1:identifier-casing
 Scripts/Source/Home_SetStageOnUnlock_CollScript.psc:30:1:identifier-casing
+Scripts/Source/Home_SetStageOnUnlock_CollScript.psc:30:1:parameter-count
 Scripts/Source/Home_SetStageOnUnlock_CollScript.psc:30:1:unnecessary-function
 Scripts/Source/Home_SetStageOnUnlock_CollScript.psc:30:121:line-length
 Scripts/Source/Home_SetStageOnUnlock_CollScript.psc:31:121:line-length
@@ -81721,6 +81800,7 @@ Scripts/Source/InputEnableLayer.psc:15:1:identifier-casing
 Scripts/Source/InputEnableLayer.psc:15:1:identifier-casing
 Scripts/Source/InputEnableLayer.psc:15:1:identifier-casing
 Scripts/Source/InputEnableLayer.psc:15:1:identifier-casing
+Scripts/Source/InputEnableLayer.psc:15:1:parameter-count
 Scripts/Source/InputEnableLayer.psc:15:121:line-length
 Scripts/Source/InputEnableLayer.psc:16:121:line-length
 Scripts/Source/InputEnableLayer.psc:18:1:indentation
@@ -81800,6 +81880,7 @@ Scripts/Source/InputEnableLayer.psc:82:1:identifier-casing
 Scripts/Source/InputEnableLayer.psc:82:1:identifier-casing
 Scripts/Source/InputEnableLayer.psc:82:1:identifier-casing
 Scripts/Source/InputEnableLayer.psc:82:1:indentation
+Scripts/Source/InputEnableLayer.psc:82:1:parameter-count
 Scripts/Source/InputEnableLayer.psc:82:121:line-length
 Scripts/Source/InputEnableLayer.psc:83:1:indentation
 Scripts/Source/InputEnableLayer.psc:83:121:line-length
@@ -83194,6 +83275,7 @@ Scripts/Source/LC088QuestScript.psc:37:1:identifier-casing
 Scripts/Source/LC088QuestScript.psc:37:1:identifier-casing
 Scripts/Source/LC088QuestScript.psc:37:1:identifier-casing
 Scripts/Source/LC088QuestScript.psc:37:1:identifier-casing
+Scripts/Source/LC088QuestScript.psc:37:1:parameter-count
 Scripts/Source/LC088QuestScript.psc:37:65:assignment-operator-spacing
 Scripts/Source/LC088QuestScript.psc:37:65:assignment-operator-spacing
 Scripts/Source/LC088QuestScript.psc:37:83:assignment-operator-spacing
@@ -83223,6 +83305,7 @@ Scripts/Source/LC088QuestScript.psc:45:1:identifier-casing
 Scripts/Source/LC088QuestScript.psc:45:1:identifier-casing
 Scripts/Source/LC088QuestScript.psc:45:1:identifier-casing
 Scripts/Source/LC088QuestScript.psc:45:1:identifier-casing
+Scripts/Source/LC088QuestScript.psc:45:1:parameter-count
 Scripts/Source/LC088QuestScript.psc:45:55:assignment-operator-spacing
 Scripts/Source/LC088QuestScript.psc:45:55:assignment-operator-spacing
 Scripts/Source/LC088QuestScript.psc:45:74:assignment-operator-spacing
@@ -83247,6 +83330,7 @@ Scripts/Source/LC088QuestScript.psc:52:1:identifier-casing
 Scripts/Source/LC088QuestScript.psc:52:1:identifier-casing
 Scripts/Source/LC088QuestScript.psc:52:1:identifier-casing
 Scripts/Source/LC088QuestScript.psc:52:1:identifier-casing
+Scripts/Source/LC088QuestScript.psc:52:1:parameter-count
 Scripts/Source/LC088QuestScript.psc:52:49:assignment-operator-spacing
 Scripts/Source/LC088QuestScript.psc:52:49:assignment-operator-spacing
 Scripts/Source/LC088QuestScript.psc:52:68:assignment-operator-spacing
@@ -83270,6 +83354,7 @@ Scripts/Source/LC088QuestScript.psc:59:1:identifier-casing
 Scripts/Source/LC088QuestScript.psc:59:1:identifier-casing
 Scripts/Source/LC088QuestScript.psc:59:1:identifier-casing
 Scripts/Source/LC088QuestScript.psc:59:1:identifier-casing
+Scripts/Source/LC088QuestScript.psc:59:1:parameter-count
 Scripts/Source/LC088QuestScript.psc:59:44:assignment-operator-spacing
 Scripts/Source/LC088QuestScript.psc:59:44:assignment-operator-spacing
 Scripts/Source/LC088QuestScript.psc:59:63:assignment-operator-spacing
@@ -87150,6 +87235,7 @@ Scripts/Source/LC165QuestScript.psc:762:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:762:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:762:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:762:1:identifier-casing
+Scripts/Source/LC165QuestScript.psc:762:1:parameter-count
 Scripts/Source/LC165QuestScript.psc:762:1:unnecessary-function
 Scripts/Source/LC165QuestScript.psc:762:81:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:762:81:assignment-operator-spacing
@@ -87181,6 +87267,7 @@ Scripts/Source/LC165QuestScript.psc:766:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:766:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:766:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:766:1:identifier-casing
+Scripts/Source/LC165QuestScript.psc:766:1:parameter-count
 Scripts/Source/LC165QuestScript.psc:766:1:unnecessary-function
 Scripts/Source/LC165QuestScript.psc:766:75:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:766:75:assignment-operator-spacing
@@ -87213,6 +87300,7 @@ Scripts/Source/LC165QuestScript.psc:770:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:770:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:770:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:770:1:identifier-casing
+Scripts/Source/LC165QuestScript.psc:770:1:parameter-count
 Scripts/Source/LC165QuestScript.psc:770:105:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:770:105:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:770:121:line-length
@@ -87244,6 +87332,7 @@ Scripts/Source/LC165QuestScript.psc:786:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:786:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:786:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:786:1:identifier-casing
+Scripts/Source/LC165QuestScript.psc:786:1:parameter-count
 Scripts/Source/LC165QuestScript.psc:786:1:unnecessary-function
 Scripts/Source/LC165QuestScript.psc:786:99:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:786:99:assignment-operator-spacing
@@ -87283,6 +87372,7 @@ Scripts/Source/LC165QuestScript.psc:814:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:814:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:814:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:814:1:identifier-casing
+Scripts/Source/LC165QuestScript.psc:814:1:parameter-count
 Scripts/Source/LC165QuestScript.psc:814:113:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:814:113:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:814:121:line-length
@@ -87305,6 +87395,7 @@ Scripts/Source/LC165QuestScript.psc:827:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:827:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:827:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:827:1:identifier-casing
+Scripts/Source/LC165QuestScript.psc:827:1:parameter-count
 Scripts/Source/LC165QuestScript.psc:827:107:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:827:107:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:827:121:line-length
@@ -87329,6 +87420,7 @@ Scripts/Source/LC165QuestScript.psc:850:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:850:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:850:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:850:1:identifier-casing
+Scripts/Source/LC165QuestScript.psc:850:1:parameter-count
 Scripts/Source/LC165QuestScript.psc:850:116:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:850:116:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:850:121:line-length
@@ -87351,6 +87443,7 @@ Scripts/Source/LC165QuestScript.psc:863:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:863:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:863:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:863:1:identifier-casing
+Scripts/Source/LC165QuestScript.psc:863:1:parameter-count
 Scripts/Source/LC165QuestScript.psc:863:110:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:863:110:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:863:121:line-length
@@ -87380,6 +87473,7 @@ Scripts/Source/LC165QuestScript.psc:911:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:911:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:911:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:911:1:identifier-casing
+Scripts/Source/LC165QuestScript.psc:911:1:parameter-count
 Scripts/Source/LC165QuestScript.psc:911:121:line-length
 Scripts/Source/LC165QuestScript.psc:912:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:912:92:assignment-operator-spacing
@@ -87430,6 +87524,7 @@ Scripts/Source/LC165QuestScript.psc:1005:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:1005:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:1005:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:1005:1:identifier-casing
+Scripts/Source/LC165QuestScript.psc:1005:1:parameter-count
 Scripts/Source/LC165QuestScript.psc:1005:65:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:1005:65:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:1005:88:assignment-operator-spacing
@@ -87572,6 +87667,7 @@ Scripts/Source/LC165QuestScript.psc:1247:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:1247:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:1247:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:1247:1:identifier-casing
+Scripts/Source/LC165QuestScript.psc:1247:1:parameter-count
 Scripts/Source/LC165QuestScript.psc:1247:70:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:1247:70:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:1247:96:assignment-operator-spacing
@@ -87595,6 +87691,7 @@ Scripts/Source/LC165QuestScript.psc:1265:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:1265:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:1265:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:1265:1:identifier-casing
+Scripts/Source/LC165QuestScript.psc:1265:1:parameter-count
 Scripts/Source/LC165QuestScript.psc:1265:91:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:1265:91:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:1265:117:assignment-operator-spacing
@@ -87653,6 +87750,7 @@ Scripts/Source/LC165QuestScript.psc:1351:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:1351:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:1351:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:1351:1:identifier-casing
+Scripts/Source/LC165QuestScript.psc:1351:1:parameter-count
 Scripts/Source/LC165QuestScript.psc:1351:1:unnecessary-function
 Scripts/Source/LC165QuestScript.psc:1351:121:line-length
 Scripts/Source/LC165QuestScript.psc:1351:178:assignment-operator-spacing
@@ -87687,6 +87785,7 @@ Scripts/Source/LC165QuestScript.psc:1374:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:1374:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:1374:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:1374:1:identifier-casing
+Scripts/Source/LC165QuestScript.psc:1374:1:parameter-count
 Scripts/Source/LC165QuestScript.psc:1374:121:line-length
 Scripts/Source/LC165QuestScript.psc:1374:159:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:1374:159:assignment-operator-spacing
@@ -88151,6 +88250,7 @@ Scripts/Source/LC165QuestScript.psc:2305:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:2305:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:2305:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:2305:1:identifier-casing
+Scripts/Source/LC165QuestScript.psc:2305:1:parameter-count
 Scripts/Source/LC165QuestScript.psc:2305:121:line-length
 Scripts/Source/LC165QuestScript.psc:2305:188:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:2305:188:assignment-operator-spacing
@@ -89836,6 +89936,7 @@ Scripts/Source/LegendaryMagicEffectEventListenScript.psc:43:121:line-length
 Scripts/Source/LegendaryMagicEffectEventListenScript.psc:43:176:trailing-whitespace
 Scripts/Source/LegendaryMagicEffectEventListenScript.psc:47:9:forbidden-functions
 Scripts/Source/LegendaryMagicEffectEventListenScript.psc:47:121:line-length
+Scripts/Source/LegendaryMagicEffectEventListenScript.psc:52:1:parameter-count
 Scripts/Source/LegendaryMagicEffectEventListenScript.psc:52:121:line-length
 Scripts/Source/LegendaryMagicEffectEventListenScript.psc:55:8:forbidden-functions
 Scripts/Source/LegendaryMagicEffectEventListenScript.psc:56:8:forbidden-functions
@@ -93459,6 +93560,7 @@ Scripts/Source/MQ207CShiftingQuestScript.psc:165:1:identifier-casing
 Scripts/Source/MQ207CShiftingQuestScript.psc:165:1:identifier-casing
 Scripts/Source/MQ207CShiftingQuestScript.psc:165:1:identifier-casing
 Scripts/Source/MQ207CShiftingQuestScript.psc:165:1:identifier-casing
+Scripts/Source/MQ207CShiftingQuestScript.psc:165:1:parameter-count
 Scripts/Source/MQ207CShiftingQuestScript.psc:165:65:assignment-operator-spacing
 Scripts/Source/MQ207CShiftingQuestScript.psc:165:65:assignment-operator-spacing
 Scripts/Source/MQ207CShiftingQuestScript.psc:165:100:assignment-operator-spacing
@@ -96178,6 +96280,7 @@ Scripts/Source/MS03JunoQuestScript.psc:42:1:identifier-casing
 Scripts/Source/MS03JunoQuestScript.psc:42:1:identifier-casing
 Scripts/Source/MS03JunoQuestScript.psc:42:1:identifier-casing
 Scripts/Source/MS03JunoQuestScript.psc:42:1:identifier-casing
+Scripts/Source/MS03JunoQuestScript.psc:42:1:parameter-count
 Scripts/Source/MS03JunoQuestScript.psc:42:1:unnecessary-function
 Scripts/Source/MS03JunoQuestScript.psc:42:121:line-length
 Scripts/Source/MS03JunoQuestScript.psc:43:121:line-length
@@ -96186,6 +96289,7 @@ Scripts/Source/MS03JunoQuestScript.psc:46:1:identifier-casing
 Scripts/Source/MS03JunoQuestScript.psc:46:1:identifier-casing
 Scripts/Source/MS03JunoQuestScript.psc:46:1:identifier-casing
 Scripts/Source/MS03JunoQuestScript.psc:46:1:identifier-casing
+Scripts/Source/MS03JunoQuestScript.psc:46:1:parameter-count
 Scripts/Source/MS03JunoQuestScript.psc:46:1:unnecessary-function
 Scripts/Source/MS03JunoQuestScript.psc:46:121:line-length
 Scripts/Source/MS03JunoQuestScript.psc:47:121:line-length
@@ -96985,6 +97089,7 @@ Scripts/Source/Message.psc:5:1:identifier-casing
 Scripts/Source/Message.psc:5:1:identifier-casing
 Scripts/Source/Message.psc:5:1:identifier-casing
 Scripts/Source/Message.psc:5:1:identifier-casing
+Scripts/Source/Message.psc:5:1:parameter-count
 Scripts/Source/Message.psc:5:121:line-length
 Scripts/Source/Message.psc:9:1:identifier-casing
 Scripts/Source/Message.psc:9:1:identifier-casing
@@ -96992,6 +97097,7 @@ Scripts/Source/Message.psc:9:1:identifier-casing
 Scripts/Source/Message.psc:9:1:identifier-casing
 Scripts/Source/Message.psc:9:1:identifier-casing
 Scripts/Source/Message.psc:9:1:identifier-casing
+Scripts/Source/Message.psc:9:1:parameter-count
 Scripts/Source/Message.psc:9:112:assignment-operator-spacing
 Scripts/Source/Message.psc:9:112:assignment-operator-spacing
 Scripts/Source/Message.psc:9:121:line-length
@@ -97097,6 +97203,7 @@ Scripts/Source/MissionBoardActivatorScript.psc:102:1:identifier-casing
 Scripts/Source/MissionBoardActivatorScript.psc:102:1:identifier-casing
 Scripts/Source/MissionBoardActivatorScript.psc:102:1:identifier-casing
 Scripts/Source/MissionBoardActivatorScript.psc:102:1:identifier-casing
+Scripts/Source/MissionBoardActivatorScript.psc:102:1:parameter-count
 Scripts/Source/MissionBoardActivatorScript.psc:102:1:unnecessary-function
 Scripts/Source/MissionBoardActivatorScript.psc:102:121:line-length
 Scripts/Source/MissionBoardActivatorScript.psc:103:121:line-length
@@ -97105,6 +97212,7 @@ Scripts/Source/MissionBoardActivatorScript.psc:106:1:identifier-casing
 Scripts/Source/MissionBoardActivatorScript.psc:106:1:identifier-casing
 Scripts/Source/MissionBoardActivatorScript.psc:106:1:identifier-casing
 Scripts/Source/MissionBoardActivatorScript.psc:106:1:identifier-casing
+Scripts/Source/MissionBoardActivatorScript.psc:106:1:parameter-count
 Scripts/Source/MissionBoardActivatorScript.psc:106:1:unnecessary-function
 Scripts/Source/MissionBoardActivatorScript.psc:106:121:line-length
 Scripts/Source/MissionBoardActivatorScript.psc:107:121:line-length
@@ -97127,6 +97235,7 @@ Scripts/Source/MissionBoardCargoContainerScript.psc:26:1:identifier-casing
 Scripts/Source/MissionBoardCargoContainerScript.psc:26:1:identifier-casing
 Scripts/Source/MissionBoardCargoContainerScript.psc:26:1:identifier-casing
 Scripts/Source/MissionBoardCargoContainerScript.psc:26:1:identifier-casing
+Scripts/Source/MissionBoardCargoContainerScript.psc:26:1:parameter-count
 Scripts/Source/MissionBoardCargoContainerScript.psc:26:1:unnecessary-function
 Scripts/Source/MissionBoardCargoContainerScript.psc:26:121:line-length
 Scripts/Source/MissionBoardCargoContainerScript.psc:27:121:line-length
@@ -97135,6 +97244,7 @@ Scripts/Source/MissionBoardCargoContainerScript.psc:30:1:identifier-casing
 Scripts/Source/MissionBoardCargoContainerScript.psc:30:1:identifier-casing
 Scripts/Source/MissionBoardCargoContainerScript.psc:30:1:identifier-casing
 Scripts/Source/MissionBoardCargoContainerScript.psc:30:1:identifier-casing
+Scripts/Source/MissionBoardCargoContainerScript.psc:30:1:parameter-count
 Scripts/Source/MissionBoardCargoContainerScript.psc:30:1:unnecessary-function
 Scripts/Source/MissionBoardCargoContainerScript.psc:30:121:line-length
 Scripts/Source/MissionBoardCargoContainerScript.psc:31:121:line-length
@@ -97150,6 +97260,7 @@ Scripts/Source/MissionBoardPassengerSourceScript.psc:30:1:identifier-casing
 Scripts/Source/MissionBoardPassengerSourceScript.psc:30:1:identifier-casing
 Scripts/Source/MissionBoardPassengerSourceScript.psc:30:1:identifier-casing
 Scripts/Source/MissionBoardPassengerSourceScript.psc:30:1:identifier-casing
+Scripts/Source/MissionBoardPassengerSourceScript.psc:30:1:parameter-count
 Scripts/Source/MissionBoardPassengerSourceScript.psc:30:1:unnecessary-function
 Scripts/Source/MissionBoardPassengerSourceScript.psc:30:121:line-length
 Scripts/Source/MissionBoardPassengerSourceScript.psc:31:121:line-length
@@ -97158,6 +97269,7 @@ Scripts/Source/MissionBoardPassengerSourceScript.psc:34:1:identifier-casing
 Scripts/Source/MissionBoardPassengerSourceScript.psc:34:1:identifier-casing
 Scripts/Source/MissionBoardPassengerSourceScript.psc:34:1:identifier-casing
 Scripts/Source/MissionBoardPassengerSourceScript.psc:34:1:identifier-casing
+Scripts/Source/MissionBoardPassengerSourceScript.psc:34:1:parameter-count
 Scripts/Source/MissionBoardPassengerSourceScript.psc:34:1:unnecessary-function
 Scripts/Source/MissionBoardPassengerSourceScript.psc:34:121:line-length
 Scripts/Source/MissionBoardPassengerSourceScript.psc:35:121:line-length
@@ -97212,6 +97324,7 @@ Scripts/Source/MissionBoardSupplyActivatorScript.psc:47:1:identifier-casing
 Scripts/Source/MissionBoardSupplyActivatorScript.psc:47:1:identifier-casing
 Scripts/Source/MissionBoardSupplyActivatorScript.psc:47:1:identifier-casing
 Scripts/Source/MissionBoardSupplyActivatorScript.psc:47:1:identifier-casing
+Scripts/Source/MissionBoardSupplyActivatorScript.psc:47:1:parameter-count
 Scripts/Source/MissionBoardSupplyActivatorScript.psc:47:1:unnecessary-function
 Scripts/Source/MissionBoardSupplyActivatorScript.psc:47:121:line-length
 Scripts/Source/MissionBoardSupplyActivatorScript.psc:48:121:line-length
@@ -97220,6 +97333,7 @@ Scripts/Source/MissionBoardSupplyActivatorScript.psc:51:1:identifier-casing
 Scripts/Source/MissionBoardSupplyActivatorScript.psc:51:1:identifier-casing
 Scripts/Source/MissionBoardSupplyActivatorScript.psc:51:1:identifier-casing
 Scripts/Source/MissionBoardSupplyActivatorScript.psc:51:1:identifier-casing
+Scripts/Source/MissionBoardSupplyActivatorScript.psc:51:1:parameter-count
 Scripts/Source/MissionBoardSupplyActivatorScript.psc:51:1:unnecessary-function
 Scripts/Source/MissionBoardSupplyActivatorScript.psc:51:121:line-length
 Scripts/Source/MissionBoardSupplyActivatorScript.psc:52:121:line-length
@@ -97267,6 +97381,7 @@ Scripts/Source/MissionBountyQuestScript.psc:37:1:identifier-casing
 Scripts/Source/MissionBountyQuestScript.psc:37:1:identifier-casing
 Scripts/Source/MissionBountyQuestScript.psc:37:1:identifier-casing
 Scripts/Source/MissionBountyQuestScript.psc:37:1:identifier-casing
+Scripts/Source/MissionBountyQuestScript.psc:37:1:parameter-count
 Scripts/Source/MissionBountyQuestScript.psc:37:1:unnecessary-function
 Scripts/Source/MissionBountyQuestScript.psc:37:121:line-length
 Scripts/Source/MissionBountyQuestScript.psc:38:121:line-length
@@ -97275,6 +97390,7 @@ Scripts/Source/MissionBountyQuestScript.psc:41:1:identifier-casing
 Scripts/Source/MissionBountyQuestScript.psc:41:1:identifier-casing
 Scripts/Source/MissionBountyQuestScript.psc:41:1:identifier-casing
 Scripts/Source/MissionBountyQuestScript.psc:41:1:identifier-casing
+Scripts/Source/MissionBountyQuestScript.psc:41:1:parameter-count
 Scripts/Source/MissionBountyQuestScript.psc:41:1:unnecessary-function
 Scripts/Source/MissionBountyQuestScript.psc:41:121:line-length
 Scripts/Source/MissionBountyQuestScript.psc:42:121:line-length
@@ -97359,6 +97475,7 @@ Scripts/Source/MissionBountySpaceScript.psc:76:1:identifier-casing
 Scripts/Source/MissionBountySpaceScript.psc:76:1:identifier-casing
 Scripts/Source/MissionBountySpaceScript.psc:76:1:identifier-casing
 Scripts/Source/MissionBountySpaceScript.psc:76:1:identifier-casing
+Scripts/Source/MissionBountySpaceScript.psc:76:1:parameter-count
 Scripts/Source/MissionBountySpaceScript.psc:76:1:unnecessary-function
 Scripts/Source/MissionBountySpaceScript.psc:76:121:line-length
 Scripts/Source/MissionBountySpaceScript.psc:77:121:line-length
@@ -97367,6 +97484,7 @@ Scripts/Source/MissionBountySpaceScript.psc:80:1:identifier-casing
 Scripts/Source/MissionBountySpaceScript.psc:80:1:identifier-casing
 Scripts/Source/MissionBountySpaceScript.psc:80:1:identifier-casing
 Scripts/Source/MissionBountySpaceScript.psc:80:1:identifier-casing
+Scripts/Source/MissionBountySpaceScript.psc:80:1:parameter-count
 Scripts/Source/MissionBountySpaceScript.psc:80:1:unnecessary-function
 Scripts/Source/MissionBountySpaceScript.psc:80:121:line-length
 Scripts/Source/MissionBountySpaceScript.psc:81:121:line-length
@@ -97434,6 +97552,7 @@ Scripts/Source/MissionCargoParentScript.psc:61:1:identifier-casing
 Scripts/Source/MissionCargoParentScript.psc:61:1:identifier-casing
 Scripts/Source/MissionCargoParentScript.psc:61:1:identifier-casing
 Scripts/Source/MissionCargoParentScript.psc:61:1:identifier-casing
+Scripts/Source/MissionCargoParentScript.psc:61:1:parameter-count
 Scripts/Source/MissionCargoParentScript.psc:61:1:unnecessary-function
 Scripts/Source/MissionCargoParentScript.psc:61:121:line-length
 Scripts/Source/MissionCargoParentScript.psc:62:121:line-length
@@ -97442,6 +97561,7 @@ Scripts/Source/MissionCargoParentScript.psc:65:1:identifier-casing
 Scripts/Source/MissionCargoParentScript.psc:65:1:identifier-casing
 Scripts/Source/MissionCargoParentScript.psc:65:1:identifier-casing
 Scripts/Source/MissionCargoParentScript.psc:65:1:identifier-casing
+Scripts/Source/MissionCargoParentScript.psc:65:1:parameter-count
 Scripts/Source/MissionCargoParentScript.psc:65:1:unnecessary-function
 Scripts/Source/MissionCargoParentScript.psc:65:121:line-length
 Scripts/Source/MissionCargoParentScript.psc:66:121:line-length
@@ -98182,6 +98302,7 @@ Scripts/Source/MissionParentScript.psc:412:1:identifier-casing
 Scripts/Source/MissionParentScript.psc:412:1:identifier-casing
 Scripts/Source/MissionParentScript.psc:412:1:identifier-casing
 Scripts/Source/MissionParentScript.psc:412:1:identifier-casing
+Scripts/Source/MissionParentScript.psc:412:1:parameter-count
 Scripts/Source/MissionParentScript.psc:412:1:unnecessary-function
 Scripts/Source/MissionParentScript.psc:412:121:line-length
 Scripts/Source/MissionParentScript.psc:413:121:line-length
@@ -98190,6 +98311,7 @@ Scripts/Source/MissionParentScript.psc:416:1:identifier-casing
 Scripts/Source/MissionParentScript.psc:416:1:identifier-casing
 Scripts/Source/MissionParentScript.psc:416:1:identifier-casing
 Scripts/Source/MissionParentScript.psc:416:1:identifier-casing
+Scripts/Source/MissionParentScript.psc:416:1:parameter-count
 Scripts/Source/MissionParentScript.psc:416:1:unnecessary-function
 Scripts/Source/MissionParentScript.psc:416:121:line-length
 Scripts/Source/MissionParentScript.psc:417:121:line-length
@@ -99719,6 +99841,7 @@ Scripts/Source/MissionSurveyTraitScript.psc:106:9:forbidden-functions
 Scripts/Source/MissionSurveyTraitScript.psc:109:33:unresolved-script
 Scripts/Source/ModLegendaryConsecutiveHitsScript.psc:1:91:trailing-whitespace
 Scripts/Source/ModLegendaryConsecutiveHitsScript.psc:9:1:function-override
+Scripts/Source/ModLegendaryConsecutiveHitsScript.psc:9:1:parameter-count
 Scripts/Source/ModLegendaryConsecutiveHitsScript.psc:9:121:line-length
 Scripts/Source/ModLegendaryConsecutiveHitsScript.psc:10:8:forbidden-functions
 Scripts/Source/ModLegendaryConsecutiveHitsScript.psc:11:8:forbidden-functions
@@ -102065,6 +102188,7 @@ Scripts/Source/OE_CiviliansScript.psc:257:1:identifier-casing
 Scripts/Source/OE_CiviliansScript.psc:257:1:identifier-casing
 Scripts/Source/OE_CiviliansScript.psc:257:1:identifier-casing
 Scripts/Source/OE_CiviliansScript.psc:257:1:identifier-casing
+Scripts/Source/OE_CiviliansScript.psc:257:1:parameter-count
 Scripts/Source/OE_CiviliansScript.psc:257:1:unnecessary-function
 Scripts/Source/OE_CiviliansScript.psc:257:121:line-length
 Scripts/Source/OE_CiviliansScript.psc:258:121:line-length
@@ -102073,6 +102197,7 @@ Scripts/Source/OE_CiviliansScript.psc:261:1:identifier-casing
 Scripts/Source/OE_CiviliansScript.psc:261:1:identifier-casing
 Scripts/Source/OE_CiviliansScript.psc:261:1:identifier-casing
 Scripts/Source/OE_CiviliansScript.psc:261:1:identifier-casing
+Scripts/Source/OE_CiviliansScript.psc:261:1:parameter-count
 Scripts/Source/OE_CiviliansScript.psc:261:1:unnecessary-function
 Scripts/Source/OE_CiviliansScript.psc:261:121:line-length
 Scripts/Source/OE_CiviliansScript.psc:262:121:line-length
@@ -102153,6 +102278,7 @@ Scripts/Source/OE_DialogueAVScript.psc:39:1:identifier-casing
 Scripts/Source/OE_DialogueAVScript.psc:39:1:identifier-casing
 Scripts/Source/OE_DialogueAVScript.psc:39:1:identifier-casing
 Scripts/Source/OE_DialogueAVScript.psc:39:1:identifier-casing
+Scripts/Source/OE_DialogueAVScript.psc:39:1:parameter-count
 Scripts/Source/OE_DialogueAVScript.psc:39:1:unnecessary-function
 Scripts/Source/OE_DialogueAVScript.psc:39:121:line-length
 Scripts/Source/OE_DialogueAVScript.psc:40:121:line-length
@@ -102161,6 +102287,7 @@ Scripts/Source/OE_DialogueAVScript.psc:43:1:identifier-casing
 Scripts/Source/OE_DialogueAVScript.psc:43:1:identifier-casing
 Scripts/Source/OE_DialogueAVScript.psc:43:1:identifier-casing
 Scripts/Source/OE_DialogueAVScript.psc:43:1:identifier-casing
+Scripts/Source/OE_DialogueAVScript.psc:43:1:parameter-count
 Scripts/Source/OE_DialogueAVScript.psc:43:1:unnecessary-function
 Scripts/Source/OE_DialogueAVScript.psc:43:121:line-length
 Scripts/Source/OE_DialogueAVScript.psc:44:121:line-length
@@ -102324,6 +102451,7 @@ Scripts/Source/OE_LocksAndKeysScript.psc:93:1:identifier-casing
 Scripts/Source/OE_LocksAndKeysScript.psc:93:1:identifier-casing
 Scripts/Source/OE_LocksAndKeysScript.psc:93:1:identifier-casing
 Scripts/Source/OE_LocksAndKeysScript.psc:93:1:identifier-casing
+Scripts/Source/OE_LocksAndKeysScript.psc:93:1:parameter-count
 Scripts/Source/OE_LocksAndKeysScript.psc:93:1:unnecessary-function
 Scripts/Source/OE_LocksAndKeysScript.psc:93:121:line-length
 Scripts/Source/OE_LocksAndKeysScript.psc:94:121:line-length
@@ -102332,6 +102460,7 @@ Scripts/Source/OE_LocksAndKeysScript.psc:97:1:identifier-casing
 Scripts/Source/OE_LocksAndKeysScript.psc:97:1:identifier-casing
 Scripts/Source/OE_LocksAndKeysScript.psc:97:1:identifier-casing
 Scripts/Source/OE_LocksAndKeysScript.psc:97:1:identifier-casing
+Scripts/Source/OE_LocksAndKeysScript.psc:97:1:parameter-count
 Scripts/Source/OE_LocksAndKeysScript.psc:97:1:unnecessary-function
 Scripts/Source/OE_LocksAndKeysScript.psc:97:121:line-length
 Scripts/Source/OE_LocksAndKeysScript.psc:98:121:line-length
@@ -102375,6 +102504,7 @@ Scripts/Source/OE_MissionTerminalQuestScript.psc:39:1:identifier-casing
 Scripts/Source/OE_MissionTerminalQuestScript.psc:39:1:identifier-casing
 Scripts/Source/OE_MissionTerminalQuestScript.psc:39:1:identifier-casing
 Scripts/Source/OE_MissionTerminalQuestScript.psc:39:1:identifier-casing
+Scripts/Source/OE_MissionTerminalQuestScript.psc:39:1:parameter-count
 Scripts/Source/OE_MissionTerminalQuestScript.psc:39:1:unnecessary-function
 Scripts/Source/OE_MissionTerminalQuestScript.psc:39:121:line-length
 Scripts/Source/OE_MissionTerminalQuestScript.psc:40:121:line-length
@@ -102383,6 +102513,7 @@ Scripts/Source/OE_MissionTerminalQuestScript.psc:43:1:identifier-casing
 Scripts/Source/OE_MissionTerminalQuestScript.psc:43:1:identifier-casing
 Scripts/Source/OE_MissionTerminalQuestScript.psc:43:1:identifier-casing
 Scripts/Source/OE_MissionTerminalQuestScript.psc:43:1:identifier-casing
+Scripts/Source/OE_MissionTerminalQuestScript.psc:43:1:parameter-count
 Scripts/Source/OE_MissionTerminalQuestScript.psc:43:1:unnecessary-function
 Scripts/Source/OE_MissionTerminalQuestScript.psc:43:121:line-length
 Scripts/Source/OE_MissionTerminalQuestScript.psc:44:121:line-length
@@ -103811,6 +103942,7 @@ Scripts/Source/OE_ShipsAddonScript.psc:1130:1:identifier-casing
 Scripts/Source/OE_ShipsAddonScript.psc:1130:1:identifier-casing
 Scripts/Source/OE_ShipsAddonScript.psc:1130:1:identifier-casing
 Scripts/Source/OE_ShipsAddonScript.psc:1130:1:identifier-casing
+Scripts/Source/OE_ShipsAddonScript.psc:1130:1:parameter-count
 Scripts/Source/OE_ShipsAddonScript.psc:1130:1:unnecessary-function
 Scripts/Source/OE_ShipsAddonScript.psc:1130:109:assignment-operator-spacing
 Scripts/Source/OE_ShipsAddonScript.psc:1130:109:assignment-operator-spacing
@@ -103824,6 +103956,7 @@ Scripts/Source/OE_ShipsAddonScript.psc:1134:1:identifier-casing
 Scripts/Source/OE_ShipsAddonScript.psc:1134:1:identifier-casing
 Scripts/Source/OE_ShipsAddonScript.psc:1134:1:identifier-casing
 Scripts/Source/OE_ShipsAddonScript.psc:1134:1:identifier-casing
+Scripts/Source/OE_ShipsAddonScript.psc:1134:1:parameter-count
 Scripts/Source/OE_ShipsAddonScript.psc:1134:1:unnecessary-function
 Scripts/Source/OE_ShipsAddonScript.psc:1134:107:assignment-operator-spacing
 Scripts/Source/OE_ShipsAddonScript.psc:1134:107:assignment-operator-spacing
@@ -104077,6 +104210,7 @@ Scripts/Source/ObjectReference.psc:215:1:identifier-casing
 Scripts/Source/ObjectReference.psc:215:1:identifier-casing
 Scripts/Source/ObjectReference.psc:215:1:identifier-casing
 Scripts/Source/ObjectReference.psc:215:1:identifier-casing
+Scripts/Source/ObjectReference.psc:215:1:parameter-count
 Scripts/Source/ObjectReference.psc:215:121:line-length
 Scripts/Source/ObjectReference.psc:218:1:identifier-casing
 Scripts/Source/ObjectReference.psc:218:1:identifier-casing
@@ -104088,6 +104222,7 @@ Scripts/Source/ObjectReference.psc:221:1:identifier-casing
 Scripts/Source/ObjectReference.psc:221:1:identifier-casing
 Scripts/Source/ObjectReference.psc:221:1:identifier-casing
 Scripts/Source/ObjectReference.psc:221:1:identifier-casing
+Scripts/Source/ObjectReference.psc:221:1:parameter-count
 Scripts/Source/ObjectReference.psc:224:1:identifier-casing
 Scripts/Source/ObjectReference.psc:227:1:identifier-casing
 Scripts/Source/ObjectReference.psc:230:1:identifier-casing
@@ -104257,6 +104392,7 @@ Scripts/Source/ObjectReference.psc:826:1:identifier-casing
 Scripts/Source/ObjectReference.psc:826:1:identifier-casing
 Scripts/Source/ObjectReference.psc:826:1:identifier-casing
 Scripts/Source/ObjectReference.psc:826:1:identifier-casing
+Scripts/Source/ObjectReference.psc:826:1:parameter-count
 Scripts/Source/ObjectReference.psc:826:121:line-length
 Scripts/Source/ObjectReference.psc:834:121:line-length
 Scripts/Source/ObjectReference.psc:835:1:identifier-casing
@@ -104275,6 +104411,7 @@ Scripts/Source/ObjectReference.psc:841:1:identifier-casing
 Scripts/Source/ObjectReference.psc:841:1:identifier-casing
 Scripts/Source/ObjectReference.psc:841:1:identifier-casing
 Scripts/Source/ObjectReference.psc:841:1:identifier-casing
+Scripts/Source/ObjectReference.psc:841:1:parameter-count
 Scripts/Source/ObjectReference.psc:841:121:line-length
 Scripts/Source/ObjectReference.psc:845:1:identifier-casing
 Scripts/Source/ObjectReference.psc:845:1:identifier-casing
@@ -104286,6 +104423,7 @@ Scripts/Source/ObjectReference.psc:845:1:identifier-casing
 Scripts/Source/ObjectReference.psc:845:1:identifier-casing
 Scripts/Source/ObjectReference.psc:845:1:identifier-casing
 Scripts/Source/ObjectReference.psc:845:1:identifier-casing
+Scripts/Source/ObjectReference.psc:845:1:parameter-count
 Scripts/Source/ObjectReference.psc:845:121:line-length
 Scripts/Source/ObjectReference.psc:849:1:identifier-casing
 Scripts/Source/ObjectReference.psc:849:1:identifier-casing
@@ -104299,6 +104437,7 @@ Scripts/Source/ObjectReference.psc:849:1:identifier-casing
 Scripts/Source/ObjectReference.psc:849:1:identifier-casing
 Scripts/Source/ObjectReference.psc:849:1:identifier-casing
 Scripts/Source/ObjectReference.psc:849:1:identifier-casing
+Scripts/Source/ObjectReference.psc:849:1:parameter-count
 Scripts/Source/ObjectReference.psc:849:121:line-length
 Scripts/Source/ObjectReference.psc:850:1:identifier-casing
 Scripts/Source/ObjectReference.psc:854:1:indentation
@@ -104311,6 +104450,7 @@ Scripts/Source/ObjectReference.psc:863:1:identifier-casing
 Scripts/Source/ObjectReference.psc:863:1:identifier-casing
 Scripts/Source/ObjectReference.psc:863:1:identifier-casing
 Scripts/Source/ObjectReference.psc:863:1:identifier-casing
+Scripts/Source/ObjectReference.psc:863:1:parameter-count
 Scripts/Source/ObjectReference.psc:863:121:line-length
 Scripts/Source/ObjectReference.psc:866:1:identifier-casing
 Scripts/Source/ObjectReference.psc:866:1:identifier-casing
@@ -104319,6 +104459,7 @@ Scripts/Source/ObjectReference.psc:866:1:identifier-casing
 Scripts/Source/ObjectReference.psc:866:1:identifier-casing
 Scripts/Source/ObjectReference.psc:866:1:identifier-casing
 Scripts/Source/ObjectReference.psc:866:1:identifier-casing
+Scripts/Source/ObjectReference.psc:866:1:parameter-count
 Scripts/Source/ObjectReference.psc:866:121:line-length
 Scripts/Source/ObjectReference.psc:868:121:line-length
 Scripts/Source/ObjectReference.psc:869:1:identifier-casing
@@ -104328,6 +104469,7 @@ Scripts/Source/ObjectReference.psc:869:1:identifier-casing
 Scripts/Source/ObjectReference.psc:869:1:identifier-casing
 Scripts/Source/ObjectReference.psc:869:1:identifier-casing
 Scripts/Source/ObjectReference.psc:869:1:identifier-casing
+Scripts/Source/ObjectReference.psc:869:1:parameter-count
 Scripts/Source/ObjectReference.psc:869:121:line-length
 Scripts/Source/ObjectReference.psc:873:1:identifier-casing
 Scripts/Source/ObjectReference.psc:873:1:identifier-casing
@@ -104335,6 +104477,7 @@ Scripts/Source/ObjectReference.psc:873:1:identifier-casing
 Scripts/Source/ObjectReference.psc:873:1:identifier-casing
 Scripts/Source/ObjectReference.psc:873:1:identifier-casing
 Scripts/Source/ObjectReference.psc:873:1:identifier-casing
+Scripts/Source/ObjectReference.psc:873:1:parameter-count
 Scripts/Source/ObjectReference.psc:873:121:line-length
 Scripts/Source/ObjectReference.psc:876:1:identifier-casing
 Scripts/Source/ObjectReference.psc:876:1:identifier-casing
@@ -104356,6 +104499,7 @@ Scripts/Source/ObjectReference.psc:888:1:identifier-casing
 Scripts/Source/ObjectReference.psc:888:1:identifier-casing
 Scripts/Source/ObjectReference.psc:888:1:identifier-casing
 Scripts/Source/ObjectReference.psc:888:1:identifier-casing
+Scripts/Source/ObjectReference.psc:888:1:parameter-count
 Scripts/Source/ObjectReference.psc:888:121:line-length
 Scripts/Source/ObjectReference.psc:891:1:identifier-casing
 Scripts/Source/ObjectReference.psc:891:1:identifier-casing
@@ -104379,6 +104523,7 @@ Scripts/Source/ObjectReference.psc:909:1:identifier-casing
 Scripts/Source/ObjectReference.psc:909:1:identifier-casing
 Scripts/Source/ObjectReference.psc:909:1:identifier-casing
 Scripts/Source/ObjectReference.psc:909:1:identifier-casing
+Scripts/Source/ObjectReference.psc:909:1:parameter-count
 Scripts/Source/ObjectReference.psc:909:121:line-length
 Scripts/Source/ObjectReference.psc:912:1:identifier-casing
 Scripts/Source/ObjectReference.psc:912:1:identifier-casing
@@ -104522,6 +104667,7 @@ Scripts/Source/ObjectReference.psc:1148:1:identifier-casing
 Scripts/Source/ObjectReference.psc:1148:1:identifier-casing
 Scripts/Source/ObjectReference.psc:1148:1:identifier-casing
 Scripts/Source/ObjectReference.psc:1148:1:identifier-casing
+Scripts/Source/ObjectReference.psc:1148:1:parameter-count
 Scripts/Source/ObjectReference.psc:1148:121:line-length
 Scripts/Source/ObjectReference.psc:1151:1:identifier-casing
 Scripts/Source/ObjectReference.psc:1151:1:identifier-casing
@@ -104553,6 +104699,7 @@ Scripts/Source/ObjectReference.psc:1186:1:identifier-casing
 Scripts/Source/ObjectReference.psc:1186:1:identifier-casing
 Scripts/Source/ObjectReference.psc:1186:1:identifier-casing
 Scripts/Source/ObjectReference.psc:1186:1:identifier-casing
+Scripts/Source/ObjectReference.psc:1186:1:parameter-count
 Scripts/Source/ObjectReference.psc:1186:121:line-length
 Scripts/Source/ObjectReference.psc:1189:1:identifier-casing
 Scripts/Source/ObjectReference.psc:1189:1:identifier-casing
@@ -104650,6 +104797,7 @@ Scripts/Source/ObjectReference.psc:1429:1:identifier-casing
 Scripts/Source/ObjectReference.psc:1429:1:identifier-casing
 Scripts/Source/ObjectReference.psc:1429:1:identifier-casing
 Scripts/Source/ObjectReference.psc:1429:1:identifier-casing
+Scripts/Source/ObjectReference.psc:1429:1:parameter-count
 Scripts/Source/ObjectReference.psc:1429:80:assignment-operator-spacing
 Scripts/Source/ObjectReference.psc:1429:80:assignment-operator-spacing
 Scripts/Source/ObjectReference.psc:1429:99:assignment-operator-spacing
@@ -105089,6 +105237,7 @@ Scripts/Source/OutpostBeaconScript.psc:99:1:identifier-casing
 Scripts/Source/OutpostBeaconScript.psc:99:1:identifier-casing
 Scripts/Source/OutpostBeaconScript.psc:99:1:identifier-casing
 Scripts/Source/OutpostBeaconScript.psc:99:1:identifier-casing
+Scripts/Source/OutpostBeaconScript.psc:99:1:parameter-count
 Scripts/Source/OutpostBeaconScript.psc:99:1:unnecessary-function
 Scripts/Source/OutpostBeaconScript.psc:99:121:line-length
 Scripts/Source/OutpostBeaconScript.psc:100:121:line-length
@@ -105096,6 +105245,7 @@ Scripts/Source/OutpostBeaconScript.psc:103:1:identifier-casing
 Scripts/Source/OutpostBeaconScript.psc:103:1:identifier-casing
 Scripts/Source/OutpostBeaconScript.psc:103:1:identifier-casing
 Scripts/Source/OutpostBeaconScript.psc:103:1:identifier-casing
+Scripts/Source/OutpostBeaconScript.psc:103:1:parameter-count
 Scripts/Source/OutpostBeaconScript.psc:103:1:unnecessary-function
 Scripts/Source/OutpostBeaconScript.psc:103:121:line-length
 Scripts/Source/OutpostBeaconScript.psc:104:121:line-length
@@ -106384,6 +106534,7 @@ Scripts/Source/OutpostTutorialScript.psc:350:1:identifier-casing
 Scripts/Source/OutpostTutorialScript.psc:350:1:identifier-casing
 Scripts/Source/OutpostTutorialScript.psc:350:1:identifier-casing
 Scripts/Source/OutpostTutorialScript.psc:350:1:identifier-casing
+Scripts/Source/OutpostTutorialScript.psc:350:1:parameter-count
 Scripts/Source/OutpostTutorialScript.psc:350:121:line-length
 Scripts/Source/OutpostTutorialScript.psc:351:1:identifier-casing
 Scripts/Source/OutpostTutorialScript.psc:352:12:comma-spacing
@@ -106402,6 +106553,7 @@ Scripts/Source/OutpostTutorialScript.psc:403:1:identifier-casing
 Scripts/Source/OutpostTutorialScript.psc:403:1:identifier-casing
 Scripts/Source/OutpostTutorialScript.psc:403:1:identifier-casing
 Scripts/Source/OutpostTutorialScript.psc:403:1:identifier-casing
+Scripts/Source/OutpostTutorialScript.psc:403:1:parameter-count
 Scripts/Source/OutpostTutorialScript.psc:403:121:line-length
 Scripts/Source/OutpostTutorialScript.psc:408:12:comma-spacing
 Scripts/Source/OutpostTutorialScript.psc:408:121:line-length
@@ -106534,6 +106686,7 @@ Scripts/Source/OutpostTutorialScript.psc:717:1:identifier-casing
 Scripts/Source/OutpostTutorialScript.psc:717:1:identifier-casing
 Scripts/Source/OutpostTutorialScript.psc:717:1:identifier-casing
 Scripts/Source/OutpostTutorialScript.psc:717:1:identifier-casing
+Scripts/Source/OutpostTutorialScript.psc:717:1:parameter-count
 Scripts/Source/OutpostTutorialScript.psc:717:1:unnecessary-function
 Scripts/Source/OutpostTutorialScript.psc:717:121:line-length
 Scripts/Source/OutpostTutorialScript.psc:718:1:indentation
@@ -106684,6 +106837,7 @@ Scripts/Source/PEO/PEO_SustenanceCastWatchScript.psc:78:1:identifier-casing
 Scripts/Source/PEO/PEO_SustenanceCastWatchScript.psc:78:1:identifier-casing
 Scripts/Source/PEO/PEO_SustenanceCastWatchScript.psc:78:1:identifier-casing
 Scripts/Source/PEO/PEO_SustenanceCastWatchScript.psc:78:1:identifier-casing
+Scripts/Source/PEO/PEO_SustenanceCastWatchScript.psc:78:1:parameter-count
 Scripts/Source/PEO/PEO_SustenanceCastWatchScript.psc:78:1:unnecessary-function
 Scripts/Source/PEO/PEO_SustenanceCastWatchScript.psc:78:121:line-length
 Scripts/Source/PEO/PEO_SustenanceCastWatchScript.psc:79:1:indentation
@@ -106693,6 +106847,7 @@ Scripts/Source/PEO/PEO_SustenanceCastWatchScript.psc:82:1:identifier-casing
 Scripts/Source/PEO/PEO_SustenanceCastWatchScript.psc:82:1:identifier-casing
 Scripts/Source/PEO/PEO_SustenanceCastWatchScript.psc:82:1:identifier-casing
 Scripts/Source/PEO/PEO_SustenanceCastWatchScript.psc:82:1:identifier-casing
+Scripts/Source/PEO/PEO_SustenanceCastWatchScript.psc:82:1:parameter-count
 Scripts/Source/PEO/PEO_SustenanceCastWatchScript.psc:82:1:unnecessary-function
 Scripts/Source/PEO/PEO_SustenanceCastWatchScript.psc:82:121:line-length
 Scripts/Source/PEO/PEO_SustenanceCastWatchScript.psc:83:1:indentation
@@ -107070,6 +107225,7 @@ Scripts/Source/PEO/SQ_PEO_QuestScript.psc:366:1:identifier-casing
 Scripts/Source/PEO/SQ_PEO_QuestScript.psc:366:1:identifier-casing
 Scripts/Source/PEO/SQ_PEO_QuestScript.psc:366:1:identifier-casing
 Scripts/Source/PEO/SQ_PEO_QuestScript.psc:366:1:identifier-casing
+Scripts/Source/PEO/SQ_PEO_QuestScript.psc:366:1:parameter-count
 Scripts/Source/PEO/SQ_PEO_QuestScript.psc:366:1:unnecessary-function
 Scripts/Source/PEO/SQ_PEO_QuestScript.psc:366:121:line-length
 Scripts/Source/PEO/SQ_PEO_QuestScript.psc:367:1:indentation
@@ -107079,6 +107235,7 @@ Scripts/Source/PEO/SQ_PEO_QuestScript.psc:370:1:identifier-casing
 Scripts/Source/PEO/SQ_PEO_QuestScript.psc:370:1:identifier-casing
 Scripts/Source/PEO/SQ_PEO_QuestScript.psc:370:1:identifier-casing
 Scripts/Source/PEO/SQ_PEO_QuestScript.psc:370:1:identifier-casing
+Scripts/Source/PEO/SQ_PEO_QuestScript.psc:370:1:parameter-count
 Scripts/Source/PEO/SQ_PEO_QuestScript.psc:370:1:unnecessary-function
 Scripts/Source/PEO/SQ_PEO_QuestScript.psc:370:121:line-length
 Scripts/Source/PEO/SQ_PEO_QuestScript.psc:371:1:indentation
@@ -107872,6 +108029,7 @@ Scripts/Source/Quest.psc:13:1:identifier-casing
 Scripts/Source/Quest.psc:13:1:identifier-casing
 Scripts/Source/Quest.psc:13:1:identifier-casing
 Scripts/Source/Quest.psc:13:1:identifier-casing
+Scripts/Source/Quest.psc:13:1:parameter-count
 Scripts/Source/Quest.psc:13:121:line-length
 Scripts/Source/Quest.psc:16:8:forbidden-functions
 Scripts/Source/Quest.psc:16:121:line-length
@@ -108454,6 +108612,7 @@ Scripts/Source/REAliasScript.psc:112:1:identifier-casing
 Scripts/Source/REAliasScript.psc:112:1:identifier-casing
 Scripts/Source/REAliasScript.psc:112:1:identifier-casing
 Scripts/Source/REAliasScript.psc:112:1:indentation
+Scripts/Source/REAliasScript.psc:112:1:parameter-count
 Scripts/Source/REAliasScript.psc:112:84:assignment-operator-spacing
 Scripts/Source/REAliasScript.psc:112:84:assignment-operator-spacing
 Scripts/Source/REAliasScript.psc:112:106:assignment-operator-spacing
@@ -108743,6 +108902,7 @@ Scripts/Source/RECollectionAliasScript.psc:192:1:identifier-casing
 Scripts/Source/RECollectionAliasScript.psc:192:1:identifier-casing
 Scripts/Source/RECollectionAliasScript.psc:192:1:identifier-casing
 Scripts/Source/RECollectionAliasScript.psc:192:1:indentation
+Scripts/Source/RECollectionAliasScript.psc:192:1:parameter-count
 Scripts/Source/RECollectionAliasScript.psc:192:84:assignment-operator-spacing
 Scripts/Source/RECollectionAliasScript.psc:192:84:assignment-operator-spacing
 Scripts/Source/RECollectionAliasScript.psc:192:106:assignment-operator-spacing
@@ -109029,6 +109189,7 @@ Scripts/Source/REScript.psc:396:1:identifier-casing
 Scripts/Source/REScript.psc:396:1:identifier-casing
 Scripts/Source/REScript.psc:396:1:identifier-casing
 Scripts/Source/REScript.psc:396:1:indentation
+Scripts/Source/REScript.psc:396:1:parameter-count
 Scripts/Source/REScript.psc:396:1:unnecessary-function
 Scripts/Source/REScript.psc:396:84:assignment-operator-spacing
 Scripts/Source/REScript.psc:396:84:assignment-operator-spacing
@@ -109239,6 +109400,7 @@ Scripts/Source/RETriggerScript.psc:215:1:identifier-casing
 Scripts/Source/RETriggerScript.psc:215:1:identifier-casing
 Scripts/Source/RETriggerScript.psc:215:1:identifier-casing
 Scripts/Source/RETriggerScript.psc:215:1:indentation
+Scripts/Source/RETriggerScript.psc:215:1:parameter-count
 Scripts/Source/RETriggerScript.psc:215:1:unnecessary-function
 Scripts/Source/RETriggerScript.psc:215:84:assignment-operator-spacing
 Scripts/Source/RETriggerScript.psc:215:84:assignment-operator-spacing
@@ -109289,6 +109451,7 @@ Scripts/Source/RETriggerSecondaryScript.psc:47:1:identifier-casing
 Scripts/Source/RETriggerSecondaryScript.psc:47:1:identifier-casing
 Scripts/Source/RETriggerSecondaryScript.psc:47:1:identifier-casing
 Scripts/Source/RETriggerSecondaryScript.psc:47:1:indentation
+Scripts/Source/RETriggerSecondaryScript.psc:47:1:parameter-count
 Scripts/Source/RETriggerSecondaryScript.psc:47:84:assignment-operator-spacing
 Scripts/Source/RETriggerSecondaryScript.psc:47:84:assignment-operator-spacing
 Scripts/Source/RETriggerSecondaryScript.psc:47:106:assignment-operator-spacing
@@ -111968,6 +112131,7 @@ Scripts/Source/RQScript.psc:471:1:identifier-casing
 Scripts/Source/RQScript.psc:471:1:identifier-casing
 Scripts/Source/RQScript.psc:471:1:identifier-casing
 Scripts/Source/RQScript.psc:471:1:identifier-casing
+Scripts/Source/RQScript.psc:471:1:parameter-count
 Scripts/Source/RQScript.psc:471:1:unnecessary-function
 Scripts/Source/RQScript.psc:471:121:line-length
 Scripts/Source/RQScript.psc:472:121:line-length
@@ -111976,6 +112140,7 @@ Scripts/Source/RQScript.psc:475:1:identifier-casing
 Scripts/Source/RQScript.psc:475:1:identifier-casing
 Scripts/Source/RQScript.psc:475:1:identifier-casing
 Scripts/Source/RQScript.psc:475:1:identifier-casing
+Scripts/Source/RQScript.psc:475:1:parameter-count
 Scripts/Source/RQScript.psc:475:1:unnecessary-function
 Scripts/Source/RQScript.psc:475:121:line-length
 Scripts/Source/RQScript.psc:476:121:line-length
@@ -112318,6 +112483,7 @@ Scripts/Source/RQ_ParentScript.psc:10:1:indentation
 Scripts/Source/RQ_ParentScript.psc:12:1:identifier-casing
 Scripts/Source/RQ_ParentScript.psc:12:1:indentation
 Scripts/Source/RQ_ParentScript.psc:16:1:identifier-casing
+Scripts/Source/RQ_ParentScript.psc:16:1:parameter-count
 Scripts/Source/RQ_ParentScript.psc:17:1:indentation
 Scripts/Source/RQ_ParentScript.psc:18:1:indentation
 Scripts/Source/RQ_ParentScript.psc:19:1:indentation
@@ -112336,6 +112502,7 @@ Scripts/Source/RQ_ParentScript.psc:41:1:parameter-reassignment
 Scripts/Source/RQ_ParentScript.psc:44:1:parameter-reassignment
 Scripts/Source/RQ_ParentScript.psc:46:121:line-length
 Scripts/Source/RQ_ParentScript.psc:49:1:identifier-casing
+Scripts/Source/RQ_ParentScript.psc:49:1:parameter-count
 Scripts/Source/RQ_ParentScript.psc:50:1:indentation
 Scripts/Source/RQ_ParentScript.psc:51:1:indentation
 Scripts/Source/RQ_ParentScript.psc:52:1:indentation
@@ -112505,6 +112672,7 @@ Scripts/Source/RQ_SetStageOnExternalScene.psc:39:1:identifier-casing
 Scripts/Source/RQ_SetStageOnExternalScene.psc:39:1:identifier-casing
 Scripts/Source/RQ_SetStageOnExternalScene.psc:39:1:identifier-casing
 Scripts/Source/RQ_SetStageOnExternalScene.psc:39:1:identifier-casing
+Scripts/Source/RQ_SetStageOnExternalScene.psc:39:1:parameter-count
 Scripts/Source/RQ_SetStageOnExternalScene.psc:39:1:unnecessary-function
 Scripts/Source/RQ_SetStageOnExternalScene.psc:39:121:line-length
 Scripts/Source/RQ_SetStageOnExternalScene.psc:40:121:line-length
@@ -112513,6 +112681,7 @@ Scripts/Source/RQ_SetStageOnExternalScene.psc:43:1:identifier-casing
 Scripts/Source/RQ_SetStageOnExternalScene.psc:43:1:identifier-casing
 Scripts/Source/RQ_SetStageOnExternalScene.psc:43:1:identifier-casing
 Scripts/Source/RQ_SetStageOnExternalScene.psc:43:1:identifier-casing
+Scripts/Source/RQ_SetStageOnExternalScene.psc:43:1:parameter-count
 Scripts/Source/RQ_SetStageOnExternalScene.psc:43:1:unnecessary-function
 Scripts/Source/RQ_SetStageOnExternalScene.psc:43:121:line-length
 Scripts/Source/RQ_SetStageOnExternalScene.psc:44:121:line-length
@@ -112744,6 +112913,7 @@ Scripts/Source/Rad01_LIST_QuestScript.psc:36:1:identifier-casing
 Scripts/Source/Rad01_LIST_QuestScript.psc:36:1:identifier-casing
 Scripts/Source/Rad01_LIST_QuestScript.psc:36:1:identifier-casing
 Scripts/Source/Rad01_LIST_QuestScript.psc:36:1:identifier-casing
+Scripts/Source/Rad01_LIST_QuestScript.psc:36:1:parameter-count
 Scripts/Source/Rad01_LIST_QuestScript.psc:36:1:unnecessary-function
 Scripts/Source/Rad01_LIST_QuestScript.psc:36:121:line-length
 Scripts/Source/Rad01_LIST_QuestScript.psc:37:121:line-length
@@ -112752,6 +112922,7 @@ Scripts/Source/Rad01_LIST_QuestScript.psc:40:1:identifier-casing
 Scripts/Source/Rad01_LIST_QuestScript.psc:40:1:identifier-casing
 Scripts/Source/Rad01_LIST_QuestScript.psc:40:1:identifier-casing
 Scripts/Source/Rad01_LIST_QuestScript.psc:40:1:identifier-casing
+Scripts/Source/Rad01_LIST_QuestScript.psc:40:1:parameter-count
 Scripts/Source/Rad01_LIST_QuestScript.psc:40:1:unnecessary-function
 Scripts/Source/Rad01_LIST_QuestScript.psc:40:121:line-length
 Scripts/Source/Rad01_LIST_QuestScript.psc:41:121:line-length
@@ -112781,6 +112952,7 @@ Scripts/Source/Rad01_MoveRefsQuestScript.psc:98:1:identifier-casing
 Scripts/Source/Rad01_MoveRefsQuestScript.psc:98:1:identifier-casing
 Scripts/Source/Rad01_MoveRefsQuestScript.psc:98:1:identifier-casing
 Scripts/Source/Rad01_MoveRefsQuestScript.psc:98:1:identifier-casing
+Scripts/Source/Rad01_MoveRefsQuestScript.psc:98:1:parameter-count
 Scripts/Source/Rad01_MoveRefsQuestScript.psc:98:1:unnecessary-function
 Scripts/Source/Rad01_MoveRefsQuestScript.psc:98:121:line-length
 Scripts/Source/Rad01_MoveRefsQuestScript.psc:99:121:line-length
@@ -112789,6 +112961,7 @@ Scripts/Source/Rad01_MoveRefsQuestScript.psc:102:1:identifier-casing
 Scripts/Source/Rad01_MoveRefsQuestScript.psc:102:1:identifier-casing
 Scripts/Source/Rad01_MoveRefsQuestScript.psc:102:1:identifier-casing
 Scripts/Source/Rad01_MoveRefsQuestScript.psc:102:1:identifier-casing
+Scripts/Source/Rad01_MoveRefsQuestScript.psc:102:1:parameter-count
 Scripts/Source/Rad01_MoveRefsQuestScript.psc:102:1:unnecessary-function
 Scripts/Source/Rad01_MoveRefsQuestScript.psc:102:121:line-length
 Scripts/Source/Rad01_MoveRefsQuestScript.psc:103:121:line-length
@@ -120430,6 +120603,7 @@ Scripts/Source/SFBGS003/SFBGS003_AddBountyScannerCrimes.psc:77:1:identifier-casi
 Scripts/Source/SFBGS003/SFBGS003_AddBountyScannerCrimes.psc:77:1:identifier-casing
 Scripts/Source/SFBGS003/SFBGS003_AddBountyScannerCrimes.psc:77:1:identifier-casing
 Scripts/Source/SFBGS003/SFBGS003_AddBountyScannerCrimes.psc:77:1:identifier-casing
+Scripts/Source/SFBGS003/SFBGS003_AddBountyScannerCrimes.psc:77:1:parameter-count
 Scripts/Source/SFBGS003/SFBGS003_AddBountyScannerCrimes.psc:77:1:unnecessary-function
 Scripts/Source/SFBGS003/SFBGS003_AddBountyScannerCrimes.psc:77:121:line-length
 Scripts/Source/SFBGS003/SFBGS003_AddBountyScannerCrimes.psc:78:121:line-length
@@ -120438,6 +120612,7 @@ Scripts/Source/SFBGS003/SFBGS003_AddBountyScannerCrimes.psc:81:1:identifier-casi
 Scripts/Source/SFBGS003/SFBGS003_AddBountyScannerCrimes.psc:81:1:identifier-casing
 Scripts/Source/SFBGS003/SFBGS003_AddBountyScannerCrimes.psc:81:1:identifier-casing
 Scripts/Source/SFBGS003/SFBGS003_AddBountyScannerCrimes.psc:81:1:identifier-casing
+Scripts/Source/SFBGS003/SFBGS003_AddBountyScannerCrimes.psc:81:1:parameter-count
 Scripts/Source/SFBGS003/SFBGS003_AddBountyScannerCrimes.psc:81:1:unnecessary-function
 Scripts/Source/SFBGS003/SFBGS003_AddBountyScannerCrimes.psc:81:121:line-length
 Scripts/Source/SFBGS003/SFBGS003_AddBountyScannerCrimes.psc:82:121:line-length
@@ -120719,6 +120894,7 @@ Scripts/Source/SFBGS003/SFBGS003_SQ_BountyMission_AliasScript.psc:197:1:identifi
 Scripts/Source/SFBGS003/SFBGS003_SQ_BountyMission_AliasScript.psc:197:1:identifier-casing
 Scripts/Source/SFBGS003/SFBGS003_SQ_BountyMission_AliasScript.psc:197:1:identifier-casing
 Scripts/Source/SFBGS003/SFBGS003_SQ_BountyMission_AliasScript.psc:197:1:identifier-casing
+Scripts/Source/SFBGS003/SFBGS003_SQ_BountyMission_AliasScript.psc:197:1:parameter-count
 Scripts/Source/SFBGS003/SFBGS003_SQ_BountyMission_AliasScript.psc:197:1:unnecessary-function
 Scripts/Source/SFBGS003/SFBGS003_SQ_BountyMission_AliasScript.psc:197:121:line-length
 Scripts/Source/SFBGS003/SFBGS003_SQ_BountyMission_AliasScript.psc:198:121:line-length
@@ -120727,6 +120903,7 @@ Scripts/Source/SFBGS003/SFBGS003_SQ_BountyMission_AliasScript.psc:201:1:identifi
 Scripts/Source/SFBGS003/SFBGS003_SQ_BountyMission_AliasScript.psc:201:1:identifier-casing
 Scripts/Source/SFBGS003/SFBGS003_SQ_BountyMission_AliasScript.psc:201:1:identifier-casing
 Scripts/Source/SFBGS003/SFBGS003_SQ_BountyMission_AliasScript.psc:201:1:identifier-casing
+Scripts/Source/SFBGS003/SFBGS003_SQ_BountyMission_AliasScript.psc:201:1:parameter-count
 Scripts/Source/SFBGS003/SFBGS003_SQ_BountyMission_AliasScript.psc:201:1:unnecessary-function
 Scripts/Source/SFBGS003/SFBGS003_SQ_BountyMission_AliasScript.psc:201:121:line-length
 Scripts/Source/SFBGS003/SFBGS003_SQ_BountyMission_AliasScript.psc:202:121:line-length
@@ -120952,6 +121129,7 @@ Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:186:1:identifier-ca
 Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:186:1:identifier-casing
 Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:186:1:identifier-casing
 Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:186:1:identifier-casing
+Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:186:1:parameter-count
 Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:186:1:unnecessary-function
 Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:186:121:line-length
 Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:187:121:line-length
@@ -120960,6 +121138,7 @@ Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:190:1:identifier-ca
 Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:190:1:identifier-casing
 Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:190:1:identifier-casing
 Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:190:1:identifier-casing
+Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:190:1:parameter-count
 Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:190:1:unnecessary-function
 Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:190:121:line-length
 Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:191:121:line-length
@@ -121039,6 +121218,7 @@ Scripts/Source/SFBGS003/SFBGS003_SQ_WantedPostersQuestScript.psc:86:1:identifier
 Scripts/Source/SFBGS003/SFBGS003_SQ_WantedPostersQuestScript.psc:86:1:identifier-casing
 Scripts/Source/SFBGS003/SFBGS003_SQ_WantedPostersQuestScript.psc:86:1:identifier-casing
 Scripts/Source/SFBGS003/SFBGS003_SQ_WantedPostersQuestScript.psc:86:1:identifier-casing
+Scripts/Source/SFBGS003/SFBGS003_SQ_WantedPostersQuestScript.psc:86:1:parameter-count
 Scripts/Source/SFBGS003/SFBGS003_SQ_WantedPostersQuestScript.psc:86:1:unnecessary-function
 Scripts/Source/SFBGS003/SFBGS003_SQ_WantedPostersQuestScript.psc:86:121:line-length
 Scripts/Source/SFBGS003/SFBGS003_SQ_WantedPostersQuestScript.psc:87:1:indentation
@@ -121048,6 +121228,7 @@ Scripts/Source/SFBGS003/SFBGS003_SQ_WantedPostersQuestScript.psc:90:1:identifier
 Scripts/Source/SFBGS003/SFBGS003_SQ_WantedPostersQuestScript.psc:90:1:identifier-casing
 Scripts/Source/SFBGS003/SFBGS003_SQ_WantedPostersQuestScript.psc:90:1:identifier-casing
 Scripts/Source/SFBGS003/SFBGS003_SQ_WantedPostersQuestScript.psc:90:1:identifier-casing
+Scripts/Source/SFBGS003/SFBGS003_SQ_WantedPostersQuestScript.psc:90:1:parameter-count
 Scripts/Source/SFBGS003/SFBGS003_SQ_WantedPostersQuestScript.psc:90:1:unnecessary-function
 Scripts/Source/SFBGS003/SFBGS003_SQ_WantedPostersQuestScript.psc:90:121:line-length
 Scripts/Source/SFBGS003/SFBGS003_SQ_WantedPostersQuestScript.psc:91:1:indentation
@@ -121107,6 +121288,7 @@ Scripts/Source/SFBGS003/SFBGS003_ShutdownQuestScript.psc:61:1:identifier-casing
 Scripts/Source/SFBGS003/SFBGS003_ShutdownQuestScript.psc:61:1:identifier-casing
 Scripts/Source/SFBGS003/SFBGS003_ShutdownQuestScript.psc:61:1:identifier-casing
 Scripts/Source/SFBGS003/SFBGS003_ShutdownQuestScript.psc:61:1:identifier-casing
+Scripts/Source/SFBGS003/SFBGS003_ShutdownQuestScript.psc:61:1:parameter-count
 Scripts/Source/SFBGS003/SFBGS003_ShutdownQuestScript.psc:61:1:unnecessary-function
 Scripts/Source/SFBGS003/SFBGS003_ShutdownQuestScript.psc:61:121:line-length
 Scripts/Source/SFBGS003/SFBGS003_ShutdownQuestScript.psc:62:121:line-length
@@ -121115,6 +121297,7 @@ Scripts/Source/SFBGS003/SFBGS003_ShutdownQuestScript.psc:65:1:identifier-casing
 Scripts/Source/SFBGS003/SFBGS003_ShutdownQuestScript.psc:65:1:identifier-casing
 Scripts/Source/SFBGS003/SFBGS003_ShutdownQuestScript.psc:65:1:identifier-casing
 Scripts/Source/SFBGS003/SFBGS003_ShutdownQuestScript.psc:65:1:identifier-casing
+Scripts/Source/SFBGS003/SFBGS003_ShutdownQuestScript.psc:65:1:parameter-count
 Scripts/Source/SFBGS003/SFBGS003_ShutdownQuestScript.psc:65:1:unnecessary-function
 Scripts/Source/SFBGS003/SFBGS003_ShutdownQuestScript.psc:65:121:line-length
 Scripts/Source/SFBGS003/SFBGS003_ShutdownQuestScript.psc:66:121:line-length
@@ -121168,6 +121351,7 @@ Scripts/Source/SFBGS003/SFBGS003_WantedPosterQuestScript.psc:61:1:identifier-cas
 Scripts/Source/SFBGS003/SFBGS003_WantedPosterQuestScript.psc:61:1:identifier-casing
 Scripts/Source/SFBGS003/SFBGS003_WantedPosterQuestScript.psc:61:1:identifier-casing
 Scripts/Source/SFBGS003/SFBGS003_WantedPosterQuestScript.psc:61:1:identifier-casing
+Scripts/Source/SFBGS003/SFBGS003_WantedPosterQuestScript.psc:61:1:parameter-count
 Scripts/Source/SFBGS003/SFBGS003_WantedPosterQuestScript.psc:61:1:unnecessary-function
 Scripts/Source/SFBGS003/SFBGS003_WantedPosterQuestScript.psc:61:121:line-length
 Scripts/Source/SFBGS003/SFBGS003_WantedPosterQuestScript.psc:62:1:indentation
@@ -121177,6 +121361,7 @@ Scripts/Source/SFBGS003/SFBGS003_WantedPosterQuestScript.psc:65:1:identifier-cas
 Scripts/Source/SFBGS003/SFBGS003_WantedPosterQuestScript.psc:65:1:identifier-casing
 Scripts/Source/SFBGS003/SFBGS003_WantedPosterQuestScript.psc:65:1:identifier-casing
 Scripts/Source/SFBGS003/SFBGS003_WantedPosterQuestScript.psc:65:1:identifier-casing
+Scripts/Source/SFBGS003/SFBGS003_WantedPosterQuestScript.psc:65:1:parameter-count
 Scripts/Source/SFBGS003/SFBGS003_WantedPosterQuestScript.psc:65:1:unnecessary-function
 Scripts/Source/SFBGS003/SFBGS003_WantedPosterQuestScript.psc:65:121:line-length
 Scripts/Source/SFBGS003/SFBGS003_WantedPosterQuestScript.psc:66:1:indentation
@@ -121194,6 +121379,7 @@ Scripts/Source/SFBGS003/SFBGS003_WantedPosterRefScript.psc:17:1:identifier-casin
 Scripts/Source/SFBGS003/SFBGS003_WantedPosterRefScript.psc:17:1:identifier-casing
 Scripts/Source/SFBGS003/SFBGS003_WantedPosterRefScript.psc:17:1:identifier-casing
 Scripts/Source/SFBGS003/SFBGS003_WantedPosterRefScript.psc:17:1:identifier-casing
+Scripts/Source/SFBGS003/SFBGS003_WantedPosterRefScript.psc:17:1:parameter-count
 Scripts/Source/SFBGS003/SFBGS003_WantedPosterRefScript.psc:17:1:unnecessary-function
 Scripts/Source/SFBGS003/SFBGS003_WantedPosterRefScript.psc:17:121:line-length
 Scripts/Source/SFBGS003/SFBGS003_WantedPosterRefScript.psc:18:1:indentation
@@ -121203,6 +121389,7 @@ Scripts/Source/SFBGS003/SFBGS003_WantedPosterRefScript.psc:21:1:identifier-casin
 Scripts/Source/SFBGS003/SFBGS003_WantedPosterRefScript.psc:21:1:identifier-casing
 Scripts/Source/SFBGS003/SFBGS003_WantedPosterRefScript.psc:21:1:identifier-casing
 Scripts/Source/SFBGS003/SFBGS003_WantedPosterRefScript.psc:21:1:identifier-casing
+Scripts/Source/SFBGS003/SFBGS003_WantedPosterRefScript.psc:21:1:parameter-count
 Scripts/Source/SFBGS003/SFBGS003_WantedPosterRefScript.psc:21:1:unnecessary-function
 Scripts/Source/SFBGS003/SFBGS003_WantedPosterRefScript.psc:21:121:line-length
 Scripts/Source/SFBGS003/SFBGS003_WantedPosterRefScript.psc:22:1:indentation
@@ -121804,6 +121991,7 @@ Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:364:1:identifier-casing
 Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:364:1:identifier-casing
 Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:364:1:identifier-casing
 Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:364:1:identifier-casing
+Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:364:1:parameter-count
 Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:364:1:unnecessary-function
 Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:364:121:line-length
 Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:365:121:line-length
@@ -121812,6 +122000,7 @@ Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:368:1:identifier-casing
 Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:368:1:identifier-casing
 Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:368:1:identifier-casing
 Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:368:1:identifier-casing
+Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:368:1:parameter-count
 Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:368:1:unnecessary-function
 Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:368:121:line-length
 Scripts/Source/SFBGS003_SQ_BountyTarget_AliasScript.psc:369:121:line-length
@@ -122225,6 +122414,7 @@ Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:345:1:identifier-casing
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:345:1:identifier-casing
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:345:1:identifier-casing
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:345:1:identifier-casing
+Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:345:1:parameter-count
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:345:1:unnecessary-function
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:345:121:line-length
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:346:121:line-length
@@ -122233,6 +122423,7 @@ Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:349:1:identifier-casing
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:349:1:identifier-casing
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:349:1:identifier-casing
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:349:1:identifier-casing
+Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:349:1:parameter-count
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:349:1:unnecessary-function
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:349:121:line-length
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:350:121:line-length
@@ -130744,6 +130935,7 @@ Scripts/Source/SQ_ActorRolesScript.psc:286:1:indentation
 Scripts/Source/SQ_ActorRolesScript.psc:288:121:line-length
 Scripts/Source/SQ_ActorRolesScript.psc:291:1:identifier-casing
 Scripts/Source/SQ_ActorRolesScript.psc:291:1:identifier-casing
+Scripts/Source/SQ_ActorRolesScript.psc:291:1:parameter-count
 Scripts/Source/SQ_ActorRolesScript.psc:291:121:line-length
 Scripts/Source/SQ_ActorRolesScript.psc:292:121:line-length
 Scripts/Source/SQ_ActorRolesScript.psc:296:121:line-length
@@ -130767,6 +130959,7 @@ Scripts/Source/SQ_ActorRolesScript.psc:359:1:identifier-casing
 Scripts/Source/SQ_ActorRolesScript.psc:359:1:identifier-casing
 Scripts/Source/SQ_ActorRolesScript.psc:359:1:identifier-casing
 Scripts/Source/SQ_ActorRolesScript.psc:359:1:identifier-casing
+Scripts/Source/SQ_ActorRolesScript.psc:359:1:parameter-count
 Scripts/Source/SQ_ActorRolesScript.psc:359:121:line-length
 Scripts/Source/SQ_ActorRolesScript.psc:360:1:identifier-casing
 Scripts/Source/SQ_ActorRolesScript.psc:360:1:indentation
@@ -130781,6 +130974,7 @@ Scripts/Source/SQ_ActorRolesScript.psc:368:1:identifier-casing
 Scripts/Source/SQ_ActorRolesScript.psc:368:1:identifier-casing
 Scripts/Source/SQ_ActorRolesScript.psc:368:1:identifier-casing
 Scripts/Source/SQ_ActorRolesScript.psc:368:1:identifier-casing
+Scripts/Source/SQ_ActorRolesScript.psc:368:1:parameter-count
 Scripts/Source/SQ_ActorRolesScript.psc:368:121:line-length
 Scripts/Source/SQ_ActorRolesScript.psc:369:1:identifier-casing
 Scripts/Source/SQ_ActorRolesScript.psc:369:1:indentation
@@ -130802,6 +130996,7 @@ Scripts/Source/SQ_AirlockAliasScript.psc:18:1:identifier-casing
 Scripts/Source/SQ_AirlockAliasScript.psc:18:1:identifier-casing
 Scripts/Source/SQ_AirlockAliasScript.psc:18:1:identifier-casing
 Scripts/Source/SQ_AirlockAliasScript.psc:18:1:identifier-casing
+Scripts/Source/SQ_AirlockAliasScript.psc:18:1:parameter-count
 Scripts/Source/SQ_AirlockAliasScript.psc:18:1:unnecessary-function
 Scripts/Source/SQ_AirlockAliasScript.psc:18:121:line-length
 Scripts/Source/SQ_AirlockAliasScript.psc:19:1:indentation
@@ -130811,6 +131006,7 @@ Scripts/Source/SQ_AirlockAliasScript.psc:22:1:identifier-casing
 Scripts/Source/SQ_AirlockAliasScript.psc:22:1:identifier-casing
 Scripts/Source/SQ_AirlockAliasScript.psc:22:1:identifier-casing
 Scripts/Source/SQ_AirlockAliasScript.psc:22:1:identifier-casing
+Scripts/Source/SQ_AirlockAliasScript.psc:22:1:parameter-count
 Scripts/Source/SQ_AirlockAliasScript.psc:22:1:unnecessary-function
 Scripts/Source/SQ_AirlockAliasScript.psc:22:121:line-length
 Scripts/Source/SQ_AirlockAliasScript.psc:23:1:indentation
@@ -130865,6 +131061,7 @@ Scripts/Source/SQ_Airlock_DoorwayVolumeScript.psc:56:1:identifier-casing
 Scripts/Source/SQ_Airlock_DoorwayVolumeScript.psc:56:1:identifier-casing
 Scripts/Source/SQ_Airlock_DoorwayVolumeScript.psc:56:1:identifier-casing
 Scripts/Source/SQ_Airlock_DoorwayVolumeScript.psc:56:1:identifier-casing
+Scripts/Source/SQ_Airlock_DoorwayVolumeScript.psc:56:1:parameter-count
 Scripts/Source/SQ_Airlock_DoorwayVolumeScript.psc:56:1:unnecessary-function
 Scripts/Source/SQ_Airlock_DoorwayVolumeScript.psc:56:121:line-length
 Scripts/Source/SQ_Airlock_DoorwayVolumeScript.psc:57:1:indentation
@@ -130874,6 +131071,7 @@ Scripts/Source/SQ_Airlock_DoorwayVolumeScript.psc:60:1:identifier-casing
 Scripts/Source/SQ_Airlock_DoorwayVolumeScript.psc:60:1:identifier-casing
 Scripts/Source/SQ_Airlock_DoorwayVolumeScript.psc:60:1:identifier-casing
 Scripts/Source/SQ_Airlock_DoorwayVolumeScript.psc:60:1:identifier-casing
+Scripts/Source/SQ_Airlock_DoorwayVolumeScript.psc:60:1:parameter-count
 Scripts/Source/SQ_Airlock_DoorwayVolumeScript.psc:60:1:unnecessary-function
 Scripts/Source/SQ_Airlock_DoorwayVolumeScript.psc:60:121:line-length
 Scripts/Source/SQ_Airlock_DoorwayVolumeScript.psc:61:1:indentation
@@ -130911,6 +131109,7 @@ Scripts/Source/SQ_Airlock_InsideVolumeScript.psc:37:1:identifier-casing
 Scripts/Source/SQ_Airlock_InsideVolumeScript.psc:37:1:identifier-casing
 Scripts/Source/SQ_Airlock_InsideVolumeScript.psc:37:1:identifier-casing
 Scripts/Source/SQ_Airlock_InsideVolumeScript.psc:37:1:identifier-casing
+Scripts/Source/SQ_Airlock_InsideVolumeScript.psc:37:1:parameter-count
 Scripts/Source/SQ_Airlock_InsideVolumeScript.psc:37:1:unnecessary-function
 Scripts/Source/SQ_Airlock_InsideVolumeScript.psc:37:121:line-length
 Scripts/Source/SQ_Airlock_InsideVolumeScript.psc:38:1:indentation
@@ -130920,6 +131119,7 @@ Scripts/Source/SQ_Airlock_InsideVolumeScript.psc:41:1:identifier-casing
 Scripts/Source/SQ_Airlock_InsideVolumeScript.psc:41:1:identifier-casing
 Scripts/Source/SQ_Airlock_InsideVolumeScript.psc:41:1:identifier-casing
 Scripts/Source/SQ_Airlock_InsideVolumeScript.psc:41:1:identifier-casing
+Scripts/Source/SQ_Airlock_InsideVolumeScript.psc:41:1:parameter-count
 Scripts/Source/SQ_Airlock_InsideVolumeScript.psc:41:1:unnecessary-function
 Scripts/Source/SQ_Airlock_InsideVolumeScript.psc:41:121:line-length
 Scripts/Source/SQ_Airlock_InsideVolumeScript.psc:42:1:indentation
@@ -130994,6 +131194,7 @@ Scripts/Source/SQ_Airlock_QuestScript.psc:85:1:identifier-casing
 Scripts/Source/SQ_Airlock_QuestScript.psc:85:1:identifier-casing
 Scripts/Source/SQ_Airlock_QuestScript.psc:85:1:identifier-casing
 Scripts/Source/SQ_Airlock_QuestScript.psc:85:1:identifier-casing
+Scripts/Source/SQ_Airlock_QuestScript.psc:85:1:parameter-count
 Scripts/Source/SQ_Airlock_QuestScript.psc:85:1:unnecessary-function
 Scripts/Source/SQ_Airlock_QuestScript.psc:85:121:line-length
 Scripts/Source/SQ_Airlock_QuestScript.psc:86:1:indentation
@@ -131003,6 +131204,7 @@ Scripts/Source/SQ_Airlock_QuestScript.psc:89:1:identifier-casing
 Scripts/Source/SQ_Airlock_QuestScript.psc:89:1:identifier-casing
 Scripts/Source/SQ_Airlock_QuestScript.psc:89:1:identifier-casing
 Scripts/Source/SQ_Airlock_QuestScript.psc:89:1:identifier-casing
+Scripts/Source/SQ_Airlock_QuestScript.psc:89:1:parameter-count
 Scripts/Source/SQ_Airlock_QuestScript.psc:89:1:unnecessary-function
 Scripts/Source/SQ_Airlock_QuestScript.psc:89:121:line-length
 Scripts/Source/SQ_Airlock_QuestScript.psc:90:1:indentation
@@ -131404,6 +131606,7 @@ Scripts/Source/SQ_COM_CREW_GiveItemQuestScript.psc:59:1:identifier-casing
 Scripts/Source/SQ_COM_CREW_GiveItemQuestScript.psc:59:1:identifier-casing
 Scripts/Source/SQ_COM_CREW_GiveItemQuestScript.psc:59:1:identifier-casing
 Scripts/Source/SQ_COM_CREW_GiveItemQuestScript.psc:59:1:identifier-casing
+Scripts/Source/SQ_COM_CREW_GiveItemQuestScript.psc:59:1:parameter-count
 Scripts/Source/SQ_COM_CREW_GiveItemQuestScript.psc:59:1:unnecessary-function
 Scripts/Source/SQ_COM_CREW_GiveItemQuestScript.psc:59:121:line-length
 Scripts/Source/SQ_COM_CREW_GiveItemQuestScript.psc:60:121:line-length
@@ -131412,6 +131615,7 @@ Scripts/Source/SQ_COM_CREW_GiveItemQuestScript.psc:63:1:identifier-casing
 Scripts/Source/SQ_COM_CREW_GiveItemQuestScript.psc:63:1:identifier-casing
 Scripts/Source/SQ_COM_CREW_GiveItemQuestScript.psc:63:1:identifier-casing
 Scripts/Source/SQ_COM_CREW_GiveItemQuestScript.psc:63:1:identifier-casing
+Scripts/Source/SQ_COM_CREW_GiveItemQuestScript.psc:63:1:parameter-count
 Scripts/Source/SQ_COM_CREW_GiveItemQuestScript.psc:63:1:unnecessary-function
 Scripts/Source/SQ_COM_CREW_GiveItemQuestScript.psc:63:121:line-length
 Scripts/Source/SQ_COM_CREW_GiveItemQuestScript.psc:64:121:line-length
@@ -131445,6 +131649,7 @@ Scripts/Source/SQ_CaptiveScript.psc:59:1:identifier-casing
 Scripts/Source/SQ_CaptiveScript.psc:59:1:identifier-casing
 Scripts/Source/SQ_CaptiveScript.psc:59:1:identifier-casing
 Scripts/Source/SQ_CaptiveScript.psc:59:1:identifier-casing
+Scripts/Source/SQ_CaptiveScript.psc:59:1:parameter-count
 Scripts/Source/SQ_CaptiveScript.psc:59:1:unnecessary-function
 Scripts/Source/SQ_CaptiveScript.psc:59:121:line-length
 Scripts/Source/SQ_CaptiveScript.psc:60:121:line-length
@@ -131453,6 +131658,7 @@ Scripts/Source/SQ_CaptiveScript.psc:63:1:identifier-casing
 Scripts/Source/SQ_CaptiveScript.psc:63:1:identifier-casing
 Scripts/Source/SQ_CaptiveScript.psc:63:1:identifier-casing
 Scripts/Source/SQ_CaptiveScript.psc:63:1:identifier-casing
+Scripts/Source/SQ_CaptiveScript.psc:63:1:parameter-count
 Scripts/Source/SQ_CaptiveScript.psc:63:1:unnecessary-function
 Scripts/Source/SQ_CaptiveScript.psc:63:121:line-length
 Scripts/Source/SQ_CaptiveScript.psc:64:121:line-length
@@ -132034,6 +132240,7 @@ Scripts/Source/SQ_Companions_ActiveCompanionScript.psc:147:1:identifier-casing
 Scripts/Source/SQ_Companions_ActiveCompanionScript.psc:147:1:identifier-casing
 Scripts/Source/SQ_Companions_ActiveCompanionScript.psc:147:1:identifier-casing
 Scripts/Source/SQ_Companions_ActiveCompanionScript.psc:147:1:identifier-casing
+Scripts/Source/SQ_Companions_ActiveCompanionScript.psc:147:1:parameter-count
 Scripts/Source/SQ_Companions_ActiveCompanionScript.psc:147:1:unnecessary-function
 Scripts/Source/SQ_Companions_ActiveCompanionScript.psc:147:121:line-length
 Scripts/Source/SQ_Companions_ActiveCompanionScript.psc:148:1:indentation
@@ -132043,6 +132250,7 @@ Scripts/Source/SQ_Companions_ActiveCompanionScript.psc:151:1:identifier-casing
 Scripts/Source/SQ_Companions_ActiveCompanionScript.psc:151:1:identifier-casing
 Scripts/Source/SQ_Companions_ActiveCompanionScript.psc:151:1:identifier-casing
 Scripts/Source/SQ_Companions_ActiveCompanionScript.psc:151:1:identifier-casing
+Scripts/Source/SQ_Companions_ActiveCompanionScript.psc:151:1:parameter-count
 Scripts/Source/SQ_Companions_ActiveCompanionScript.psc:151:1:unnecessary-function
 Scripts/Source/SQ_Companions_ActiveCompanionScript.psc:151:121:line-length
 Scripts/Source/SQ_Companions_ActiveCompanionScript.psc:152:1:indentation
@@ -132405,6 +132613,7 @@ Scripts/Source/SQ_Crew_SpawnManagerScript.psc:86:1:identifier-casing
 Scripts/Source/SQ_Crew_SpawnManagerScript.psc:86:1:identifier-casing
 Scripts/Source/SQ_Crew_SpawnManagerScript.psc:86:1:identifier-casing
 Scripts/Source/SQ_Crew_SpawnManagerScript.psc:86:1:identifier-casing
+Scripts/Source/SQ_Crew_SpawnManagerScript.psc:86:1:parameter-count
 Scripts/Source/SQ_Crew_SpawnManagerScript.psc:86:1:unnecessary-function
 Scripts/Source/SQ_Crew_SpawnManagerScript.psc:86:121:line-length
 Scripts/Source/SQ_Crew_SpawnManagerScript.psc:87:121:line-length
@@ -132413,6 +132622,7 @@ Scripts/Source/SQ_Crew_SpawnManagerScript.psc:90:1:identifier-casing
 Scripts/Source/SQ_Crew_SpawnManagerScript.psc:90:1:identifier-casing
 Scripts/Source/SQ_Crew_SpawnManagerScript.psc:90:1:identifier-casing
 Scripts/Source/SQ_Crew_SpawnManagerScript.psc:90:1:identifier-casing
+Scripts/Source/SQ_Crew_SpawnManagerScript.psc:90:1:parameter-count
 Scripts/Source/SQ_Crew_SpawnManagerScript.psc:90:1:unnecessary-function
 Scripts/Source/SQ_Crew_SpawnManagerScript.psc:90:121:line-length
 Scripts/Source/SQ_Crew_SpawnManagerScript.psc:91:121:line-length
@@ -132444,6 +132654,7 @@ Scripts/Source/SQ_DoctorsScript.psc:66:1:identifier-casing
 Scripts/Source/SQ_DoctorsScript.psc:66:1:identifier-casing
 Scripts/Source/SQ_DoctorsScript.psc:66:1:identifier-casing
 Scripts/Source/SQ_DoctorsScript.psc:66:1:identifier-casing
+Scripts/Source/SQ_DoctorsScript.psc:66:1:parameter-count
 Scripts/Source/SQ_DoctorsScript.psc:66:1:unnecessary-function
 Scripts/Source/SQ_DoctorsScript.psc:66:121:line-length
 Scripts/Source/SQ_DoctorsScript.psc:67:121:line-length
@@ -132452,6 +132663,7 @@ Scripts/Source/SQ_DoctorsScript.psc:70:1:identifier-casing
 Scripts/Source/SQ_DoctorsScript.psc:70:1:identifier-casing
 Scripts/Source/SQ_DoctorsScript.psc:70:1:identifier-casing
 Scripts/Source/SQ_DoctorsScript.psc:70:1:identifier-casing
+Scripts/Source/SQ_DoctorsScript.psc:70:1:parameter-count
 Scripts/Source/SQ_DoctorsScript.psc:70:1:unnecessary-function
 Scripts/Source/SQ_DoctorsScript.psc:70:121:line-length
 Scripts/Source/SQ_DoctorsScript.psc:71:121:line-length
@@ -132907,6 +133119,7 @@ Scripts/Source/SQ_ENV_AfflictionsScript.psc:512:1:identifier-casing
 Scripts/Source/SQ_ENV_AfflictionsScript.psc:512:1:identifier-casing
 Scripts/Source/SQ_ENV_AfflictionsScript.psc:512:1:identifier-casing
 Scripts/Source/SQ_ENV_AfflictionsScript.psc:512:1:identifier-casing
+Scripts/Source/SQ_ENV_AfflictionsScript.psc:512:1:parameter-count
 Scripts/Source/SQ_ENV_AfflictionsScript.psc:512:1:unnecessary-function
 Scripts/Source/SQ_ENV_AfflictionsScript.psc:512:121:line-length
 Scripts/Source/SQ_ENV_AfflictionsScript.psc:513:1:indentation
@@ -132916,6 +133129,7 @@ Scripts/Source/SQ_ENV_AfflictionsScript.psc:516:1:identifier-casing
 Scripts/Source/SQ_ENV_AfflictionsScript.psc:516:1:identifier-casing
 Scripts/Source/SQ_ENV_AfflictionsScript.psc:516:1:identifier-casing
 Scripts/Source/SQ_ENV_AfflictionsScript.psc:516:1:identifier-casing
+Scripts/Source/SQ_ENV_AfflictionsScript.psc:516:1:parameter-count
 Scripts/Source/SQ_ENV_AfflictionsScript.psc:516:1:unnecessary-function
 Scripts/Source/SQ_ENV_AfflictionsScript.psc:516:121:line-length
 Scripts/Source/SQ_ENV_AfflictionsScript.psc:517:1:indentation
@@ -133234,6 +133448,7 @@ Scripts/Source/SQ_EnvScript.psc:144:1:identifier-casing
 Scripts/Source/SQ_EnvScript.psc:144:1:identifier-casing
 Scripts/Source/SQ_EnvScript.psc:144:1:identifier-casing
 Scripts/Source/SQ_EnvScript.psc:144:1:identifier-casing
+Scripts/Source/SQ_EnvScript.psc:144:1:parameter-count
 Scripts/Source/SQ_EnvScript.psc:144:1:unnecessary-function
 Scripts/Source/SQ_EnvScript.psc:144:121:line-length
 Scripts/Source/SQ_EnvScript.psc:145:1:indentation
@@ -133243,6 +133458,7 @@ Scripts/Source/SQ_EnvScript.psc:148:1:identifier-casing
 Scripts/Source/SQ_EnvScript.psc:148:1:identifier-casing
 Scripts/Source/SQ_EnvScript.psc:148:1:identifier-casing
 Scripts/Source/SQ_EnvScript.psc:148:1:identifier-casing
+Scripts/Source/SQ_EnvScript.psc:148:1:parameter-count
 Scripts/Source/SQ_EnvScript.psc:148:1:unnecessary-function
 Scripts/Source/SQ_EnvScript.psc:148:121:line-length
 Scripts/Source/SQ_EnvScript.psc:149:1:indentation
@@ -133501,6 +133717,7 @@ Scripts/Source/SQ_Env_TutorialQuestScript.psc:281:1:identifier-casing
 Scripts/Source/SQ_Env_TutorialQuestScript.psc:281:1:identifier-casing
 Scripts/Source/SQ_Env_TutorialQuestScript.psc:281:1:identifier-casing
 Scripts/Source/SQ_Env_TutorialQuestScript.psc:281:1:identifier-casing
+Scripts/Source/SQ_Env_TutorialQuestScript.psc:281:1:parameter-count
 Scripts/Source/SQ_Env_TutorialQuestScript.psc:281:1:unnecessary-function
 Scripts/Source/SQ_Env_TutorialQuestScript.psc:281:121:line-length
 Scripts/Source/SQ_Env_TutorialQuestScript.psc:282:1:indentation
@@ -133510,6 +133727,7 @@ Scripts/Source/SQ_Env_TutorialQuestScript.psc:285:1:identifier-casing
 Scripts/Source/SQ_Env_TutorialQuestScript.psc:285:1:identifier-casing
 Scripts/Source/SQ_Env_TutorialQuestScript.psc:285:1:identifier-casing
 Scripts/Source/SQ_Env_TutorialQuestScript.psc:285:1:identifier-casing
+Scripts/Source/SQ_Env_TutorialQuestScript.psc:285:1:parameter-count
 Scripts/Source/SQ_Env_TutorialQuestScript.psc:285:1:unnecessary-function
 Scripts/Source/SQ_Env_TutorialQuestScript.psc:285:121:line-length
 Scripts/Source/SQ_Env_TutorialQuestScript.psc:286:1:indentation
@@ -133706,6 +133924,7 @@ Scripts/Source/SQ_FollowersScript.psc:487:50:unresolved-script
 Scripts/Source/SQ_FollowersScript.psc:489:39:slow-functions
 Scripts/Source/SQ_FollowersScript.psc:489:50:unresolved-script
 Scripts/Source/SQ_FollowersScript.psc:494:1:cyclomatic-complexity
+Scripts/Source/SQ_FollowersScript.psc:494:1:parameter-count
 Scripts/Source/SQ_FollowersScript.psc:494:121:line-length
 Scripts/Source/SQ_FollowersScript.psc:495:1:indentation
 Scripts/Source/SQ_FollowersScript.psc:496:1:indentation
@@ -133787,6 +134006,7 @@ Scripts/Source/SQ_Followers_ActiveFollowersScript.psc:152:1:identifier-casing
 Scripts/Source/SQ_Followers_ActiveFollowersScript.psc:152:1:identifier-casing
 Scripts/Source/SQ_Followers_ActiveFollowersScript.psc:152:1:identifier-casing
 Scripts/Source/SQ_Followers_ActiveFollowersScript.psc:152:1:identifier-casing
+Scripts/Source/SQ_Followers_ActiveFollowersScript.psc:152:1:parameter-count
 Scripts/Source/SQ_Followers_ActiveFollowersScript.psc:152:1:unnecessary-function
 Scripts/Source/SQ_Followers_ActiveFollowersScript.psc:152:121:line-length
 Scripts/Source/SQ_Followers_ActiveFollowersScript.psc:153:121:line-length
@@ -133795,6 +134015,7 @@ Scripts/Source/SQ_Followers_ActiveFollowersScript.psc:156:1:identifier-casing
 Scripts/Source/SQ_Followers_ActiveFollowersScript.psc:156:1:identifier-casing
 Scripts/Source/SQ_Followers_ActiveFollowersScript.psc:156:1:identifier-casing
 Scripts/Source/SQ_Followers_ActiveFollowersScript.psc:156:1:identifier-casing
+Scripts/Source/SQ_Followers_ActiveFollowersScript.psc:156:1:parameter-count
 Scripts/Source/SQ_Followers_ActiveFollowersScript.psc:156:1:unnecessary-function
 Scripts/Source/SQ_Followers_ActiveFollowersScript.psc:156:121:line-length
 Scripts/Source/SQ_Followers_ActiveFollowersScript.psc:157:121:line-length
@@ -133997,6 +134218,7 @@ Scripts/Source/SQ_GroupOccupationScript.psc:67:1:identifier-casing
 Scripts/Source/SQ_GroupOccupationScript.psc:67:1:identifier-casing
 Scripts/Source/SQ_GroupOccupationScript.psc:67:1:identifier-casing
 Scripts/Source/SQ_GroupOccupationScript.psc:67:1:identifier-casing
+Scripts/Source/SQ_GroupOccupationScript.psc:67:1:parameter-count
 Scripts/Source/SQ_GroupOccupationScript.psc:67:1:unnecessary-function
 Scripts/Source/SQ_GroupOccupationScript.psc:67:121:line-length
 Scripts/Source/SQ_GroupOccupationScript.psc:68:121:line-length
@@ -134005,6 +134227,7 @@ Scripts/Source/SQ_GroupOccupationScript.psc:71:1:identifier-casing
 Scripts/Source/SQ_GroupOccupationScript.psc:71:1:identifier-casing
 Scripts/Source/SQ_GroupOccupationScript.psc:71:1:identifier-casing
 Scripts/Source/SQ_GroupOccupationScript.psc:71:1:identifier-casing
+Scripts/Source/SQ_GroupOccupationScript.psc:71:1:parameter-count
 Scripts/Source/SQ_GroupOccupationScript.psc:71:1:unnecessary-function
 Scripts/Source/SQ_GroupOccupationScript.psc:71:121:line-length
 Scripts/Source/SQ_GroupOccupationScript.psc:72:121:line-length
@@ -134145,6 +134368,7 @@ Scripts/Source/SQ_GroupScript.psc:217:1:identifier-casing
 Scripts/Source/SQ_GroupScript.psc:217:64:unresolved-script
 Scripts/Source/SQ_GroupScript.psc:226:1:cyclomatic-complexity
 Scripts/Source/SQ_GroupScript.psc:226:1:identifier-casing
+Scripts/Source/SQ_GroupScript.psc:226:1:parameter-count
 Scripts/Source/SQ_GroupScript.psc:226:121:line-length
 Scripts/Source/SQ_GroupScript.psc:228:1:trailing-whitespace
 Scripts/Source/SQ_GroupScript.psc:239:1:parameter-reassignment
@@ -134223,6 +134447,7 @@ Scripts/Source/SQ_GroupScript.psc:512:1:identifier-casing
 Scripts/Source/SQ_GroupScript.psc:512:1:identifier-casing
 Scripts/Source/SQ_GroupScript.psc:512:1:identifier-casing
 Scripts/Source/SQ_GroupScript.psc:512:1:identifier-casing
+Scripts/Source/SQ_GroupScript.psc:512:1:parameter-count
 Scripts/Source/SQ_GroupScript.psc:512:1:unnecessary-function
 Scripts/Source/SQ_GroupScript.psc:512:121:line-length
 Scripts/Source/SQ_GroupScript.psc:513:121:line-length
@@ -134231,6 +134456,7 @@ Scripts/Source/SQ_GroupScript.psc:516:1:identifier-casing
 Scripts/Source/SQ_GroupScript.psc:516:1:identifier-casing
 Scripts/Source/SQ_GroupScript.psc:516:1:identifier-casing
 Scripts/Source/SQ_GroupScript.psc:516:1:identifier-casing
+Scripts/Source/SQ_GroupScript.psc:516:1:parameter-count
 Scripts/Source/SQ_GroupScript.psc:516:1:unnecessary-function
 Scripts/Source/SQ_GroupScript.psc:516:121:line-length
 Scripts/Source/SQ_GroupScript.psc:517:121:line-length
@@ -134370,6 +134596,7 @@ Scripts/Source/SQ_Groups_QuestScript.psc:249:1:identifier-casing
 Scripts/Source/SQ_Groups_QuestScript.psc:249:1:identifier-casing
 Scripts/Source/SQ_Groups_QuestScript.psc:249:1:identifier-casing
 Scripts/Source/SQ_Groups_QuestScript.psc:249:1:identifier-casing
+Scripts/Source/SQ_Groups_QuestScript.psc:249:1:parameter-count
 Scripts/Source/SQ_Groups_QuestScript.psc:249:1:unnecessary-function
 Scripts/Source/SQ_Groups_QuestScript.psc:249:121:line-length
 Scripts/Source/SQ_Groups_QuestScript.psc:250:121:line-length
@@ -134378,6 +134605,7 @@ Scripts/Source/SQ_Groups_QuestScript.psc:253:1:identifier-casing
 Scripts/Source/SQ_Groups_QuestScript.psc:253:1:identifier-casing
 Scripts/Source/SQ_Groups_QuestScript.psc:253:1:identifier-casing
 Scripts/Source/SQ_Groups_QuestScript.psc:253:1:identifier-casing
+Scripts/Source/SQ_Groups_QuestScript.psc:253:1:parameter-count
 Scripts/Source/SQ_Groups_QuestScript.psc:253:1:unnecessary-function
 Scripts/Source/SQ_Groups_QuestScript.psc:253:121:line-length
 Scripts/Source/SQ_Groups_QuestScript.psc:254:121:line-length
@@ -134455,6 +134683,7 @@ Scripts/Source/SQ_HotelierTriggerScript.psc:94:1:identifier-casing
 Scripts/Source/SQ_HotelierTriggerScript.psc:94:1:identifier-casing
 Scripts/Source/SQ_HotelierTriggerScript.psc:94:1:identifier-casing
 Scripts/Source/SQ_HotelierTriggerScript.psc:94:1:identifier-casing
+Scripts/Source/SQ_HotelierTriggerScript.psc:94:1:parameter-count
 Scripts/Source/SQ_HotelierTriggerScript.psc:94:1:unnecessary-function
 Scripts/Source/SQ_HotelierTriggerScript.psc:94:121:line-length
 Scripts/Source/SQ_HotelierTriggerScript.psc:95:1:indentation
@@ -134464,6 +134693,7 @@ Scripts/Source/SQ_HotelierTriggerScript.psc:98:1:identifier-casing
 Scripts/Source/SQ_HotelierTriggerScript.psc:98:1:identifier-casing
 Scripts/Source/SQ_HotelierTriggerScript.psc:98:1:identifier-casing
 Scripts/Source/SQ_HotelierTriggerScript.psc:98:1:identifier-casing
+Scripts/Source/SQ_HotelierTriggerScript.psc:98:1:parameter-count
 Scripts/Source/SQ_HotelierTriggerScript.psc:98:1:unnecessary-function
 Scripts/Source/SQ_HotelierTriggerScript.psc:98:121:line-length
 Scripts/Source/SQ_HotelierTriggerScript.psc:99:1:indentation
@@ -134568,6 +134798,7 @@ Scripts/Source/SQ_HoteliersActorScript.psc:110:1:identifier-casing
 Scripts/Source/SQ_HoteliersActorScript.psc:110:1:identifier-casing
 Scripts/Source/SQ_HoteliersActorScript.psc:110:1:identifier-casing
 Scripts/Source/SQ_HoteliersActorScript.psc:110:1:identifier-casing
+Scripts/Source/SQ_HoteliersActorScript.psc:110:1:parameter-count
 Scripts/Source/SQ_HoteliersActorScript.psc:110:1:unnecessary-function
 Scripts/Source/SQ_HoteliersActorScript.psc:110:121:line-length
 Scripts/Source/SQ_HoteliersActorScript.psc:111:1:indentation
@@ -134577,6 +134808,7 @@ Scripts/Source/SQ_HoteliersActorScript.psc:114:1:identifier-casing
 Scripts/Source/SQ_HoteliersActorScript.psc:114:1:identifier-casing
 Scripts/Source/SQ_HoteliersActorScript.psc:114:1:identifier-casing
 Scripts/Source/SQ_HoteliersActorScript.psc:114:1:identifier-casing
+Scripts/Source/SQ_HoteliersActorScript.psc:114:1:parameter-count
 Scripts/Source/SQ_HoteliersActorScript.psc:114:1:unnecessary-function
 Scripts/Source/SQ_HoteliersActorScript.psc:114:121:line-length
 Scripts/Source/SQ_HoteliersActorScript.psc:115:1:indentation
@@ -134633,6 +134865,7 @@ Scripts/Source/SQ_HoteliersQuestScript.psc:55:1:identifier-casing
 Scripts/Source/SQ_HoteliersQuestScript.psc:55:1:identifier-casing
 Scripts/Source/SQ_HoteliersQuestScript.psc:55:1:identifier-casing
 Scripts/Source/SQ_HoteliersQuestScript.psc:55:1:identifier-casing
+Scripts/Source/SQ_HoteliersQuestScript.psc:55:1:parameter-count
 Scripts/Source/SQ_HoteliersQuestScript.psc:55:1:unnecessary-function
 Scripts/Source/SQ_HoteliersQuestScript.psc:55:121:line-length
 Scripts/Source/SQ_HoteliersQuestScript.psc:56:1:indentation
@@ -134642,6 +134875,7 @@ Scripts/Source/SQ_HoteliersQuestScript.psc:59:1:identifier-casing
 Scripts/Source/SQ_HoteliersQuestScript.psc:59:1:identifier-casing
 Scripts/Source/SQ_HoteliersQuestScript.psc:59:1:identifier-casing
 Scripts/Source/SQ_HoteliersQuestScript.psc:59:1:identifier-casing
+Scripts/Source/SQ_HoteliersQuestScript.psc:59:1:parameter-count
 Scripts/Source/SQ_HoteliersQuestScript.psc:59:1:unnecessary-function
 Scripts/Source/SQ_HoteliersQuestScript.psc:59:121:line-length
 Scripts/Source/SQ_HoteliersQuestScript.psc:60:1:indentation
@@ -136611,6 +136845,7 @@ Scripts/Source/SQ_ParentScript.psc:1090:1:identifier-casing
 Scripts/Source/SQ_ParentScript.psc:1090:1:identifier-casing
 Scripts/Source/SQ_ParentScript.psc:1090:1:identifier-casing
 Scripts/Source/SQ_ParentScript.psc:1090:1:identifier-casing
+Scripts/Source/SQ_ParentScript.psc:1090:1:parameter-count
 Scripts/Source/SQ_ParentScript.psc:1090:1:unnecessary-function
 Scripts/Source/SQ_ParentScript.psc:1090:81:assignment-operator-spacing
 Scripts/Source/SQ_ParentScript.psc:1090:81:assignment-operator-spacing
@@ -137996,6 +138231,7 @@ Scripts/Source/SQ_PlayerShipScript.psc:1266:1:identifier-casing
 Scripts/Source/SQ_PlayerShipScript.psc:1266:1:identifier-casing
 Scripts/Source/SQ_PlayerShipScript.psc:1266:1:identifier-casing
 Scripts/Source/SQ_PlayerShipScript.psc:1266:1:identifier-casing
+Scripts/Source/SQ_PlayerShipScript.psc:1266:1:parameter-count
 Scripts/Source/SQ_PlayerShipScript.psc:1266:1:unnecessary-function
 Scripts/Source/SQ_PlayerShipScript.psc:1266:121:line-length
 Scripts/Source/SQ_PlayerShipScript.psc:1267:121:line-length
@@ -138003,6 +138239,7 @@ Scripts/Source/SQ_PlayerShipScript.psc:1270:1:identifier-casing
 Scripts/Source/SQ_PlayerShipScript.psc:1270:1:identifier-casing
 Scripts/Source/SQ_PlayerShipScript.psc:1270:1:identifier-casing
 Scripts/Source/SQ_PlayerShipScript.psc:1270:1:identifier-casing
+Scripts/Source/SQ_PlayerShipScript.psc:1270:1:parameter-count
 Scripts/Source/SQ_PlayerShipScript.psc:1270:1:unnecessary-function
 Scripts/Source/SQ_PlayerShipScript.psc:1270:121:line-length
 Scripts/Source/SQ_PlayerShipScript.psc:1271:121:line-length
@@ -138063,6 +138300,7 @@ Scripts/Source/SQ_PlayerSleepScript.psc:78:1:identifier-casing
 Scripts/Source/SQ_PlayerSleepScript.psc:78:1:identifier-casing
 Scripts/Source/SQ_PlayerSleepScript.psc:78:1:identifier-casing
 Scripts/Source/SQ_PlayerSleepScript.psc:78:1:identifier-casing
+Scripts/Source/SQ_PlayerSleepScript.psc:78:1:parameter-count
 Scripts/Source/SQ_PlayerSleepScript.psc:78:1:unnecessary-function
 Scripts/Source/SQ_PlayerSleepScript.psc:78:121:line-length
 Scripts/Source/SQ_PlayerSleepScript.psc:79:1:indentation
@@ -138072,6 +138310,7 @@ Scripts/Source/SQ_PlayerSleepScript.psc:82:1:identifier-casing
 Scripts/Source/SQ_PlayerSleepScript.psc:82:1:identifier-casing
 Scripts/Source/SQ_PlayerSleepScript.psc:82:1:identifier-casing
 Scripts/Source/SQ_PlayerSleepScript.psc:82:1:identifier-casing
+Scripts/Source/SQ_PlayerSleepScript.psc:82:1:parameter-count
 Scripts/Source/SQ_PlayerSleepScript.psc:82:1:unnecessary-function
 Scripts/Source/SQ_PlayerSleepScript.psc:82:121:line-length
 Scripts/Source/SQ_PlayerSleepScript.psc:83:1:indentation
@@ -138092,6 +138331,7 @@ Scripts/Source/SQ_PreventRecalcScript.psc:23:1:identifier-casing
 Scripts/Source/SQ_PreventRecalcScript.psc:23:1:identifier-casing
 Scripts/Source/SQ_PreventRecalcScript.psc:23:1:identifier-casing
 Scripts/Source/SQ_PreventRecalcScript.psc:23:1:identifier-casing
+Scripts/Source/SQ_PreventRecalcScript.psc:23:1:parameter-count
 Scripts/Source/SQ_PreventRecalcScript.psc:23:1:unnecessary-function
 Scripts/Source/SQ_PreventRecalcScript.psc:23:121:line-length
 Scripts/Source/SQ_PreventRecalcScript.psc:24:1:indentation
@@ -138101,6 +138341,7 @@ Scripts/Source/SQ_PreventRecalcScript.psc:27:1:identifier-casing
 Scripts/Source/SQ_PreventRecalcScript.psc:27:1:identifier-casing
 Scripts/Source/SQ_PreventRecalcScript.psc:27:1:identifier-casing
 Scripts/Source/SQ_PreventRecalcScript.psc:27:1:identifier-casing
+Scripts/Source/SQ_PreventRecalcScript.psc:27:1:parameter-count
 Scripts/Source/SQ_PreventRecalcScript.psc:27:1:unnecessary-function
 Scripts/Source/SQ_PreventRecalcScript.psc:27:121:line-length
 Scripts/Source/SQ_PreventRecalcScript.psc:28:1:indentation
@@ -139143,6 +139384,7 @@ Scripts/Source/SQ_TraitsQuestScript.psc:371:1:identifier-casing
 Scripts/Source/SQ_TraitsQuestScript.psc:371:1:identifier-casing
 Scripts/Source/SQ_TraitsQuestScript.psc:371:1:identifier-casing
 Scripts/Source/SQ_TraitsQuestScript.psc:371:1:identifier-casing
+Scripts/Source/SQ_TraitsQuestScript.psc:371:1:parameter-count
 Scripts/Source/SQ_TraitsQuestScript.psc:371:1:unnecessary-function
 Scripts/Source/SQ_TraitsQuestScript.psc:371:121:line-length
 Scripts/Source/SQ_TraitsQuestScript.psc:372:121:line-length
@@ -139151,6 +139393,7 @@ Scripts/Source/SQ_TraitsQuestScript.psc:375:1:identifier-casing
 Scripts/Source/SQ_TraitsQuestScript.psc:375:1:identifier-casing
 Scripts/Source/SQ_TraitsQuestScript.psc:375:1:identifier-casing
 Scripts/Source/SQ_TraitsQuestScript.psc:375:1:identifier-casing
+Scripts/Source/SQ_TraitsQuestScript.psc:375:1:parameter-count
 Scripts/Source/SQ_TraitsQuestScript.psc:375:1:unnecessary-function
 Scripts/Source/SQ_TraitsQuestScript.psc:375:121:line-length
 Scripts/Source/SQ_TraitsQuestScript.psc:376:121:line-length
@@ -139790,6 +140033,7 @@ Scripts/Source/ScriptObject.psc:128:1:identifier-casing
 Scripts/Source/ScriptObject.psc:128:1:identifier-casing
 Scripts/Source/ScriptObject.psc:128:1:identifier-casing
 Scripts/Source/ScriptObject.psc:128:1:identifier-casing
+Scripts/Source/ScriptObject.psc:128:1:parameter-count
 Scripts/Source/ScriptObject.psc:128:121:line-length
 Scripts/Source/ScriptObject.psc:129:121:line-length
 Scripts/Source/ScriptObject.psc:132:1:indentation
@@ -139803,6 +140047,7 @@ Scripts/Source/ScriptObject.psc:133:1:identifier-casing
 Scripts/Source/ScriptObject.psc:133:1:identifier-casing
 Scripts/Source/ScriptObject.psc:133:1:identifier-casing
 Scripts/Source/ScriptObject.psc:133:1:indentation
+Scripts/Source/ScriptObject.psc:133:1:parameter-count
 Scripts/Source/ScriptObject.psc:133:121:line-length
 Scripts/Source/ScriptObject.psc:134:1:indentation
 Scripts/Source/ScriptObject.psc:134:121:line-length
@@ -139825,6 +140070,7 @@ Scripts/Source/ScriptObject.psc:143:1:identifier-casing
 Scripts/Source/ScriptObject.psc:143:1:identifier-casing
 Scripts/Source/ScriptObject.psc:143:1:identifier-casing
 Scripts/Source/ScriptObject.psc:143:1:indentation
+Scripts/Source/ScriptObject.psc:143:1:parameter-count
 Scripts/Source/ScriptObject.psc:143:121:line-length
 Scripts/Source/ScriptObject.psc:144:1:indentation
 Scripts/Source/ScriptObject.psc:144:121:line-length
@@ -139847,6 +140093,7 @@ Scripts/Source/ScriptObject.psc:153:1:identifier-casing
 Scripts/Source/ScriptObject.psc:153:1:identifier-casing
 Scripts/Source/ScriptObject.psc:153:1:identifier-casing
 Scripts/Source/ScriptObject.psc:153:1:indentation
+Scripts/Source/ScriptObject.psc:153:1:parameter-count
 Scripts/Source/ScriptObject.psc:153:121:line-length
 Scripts/Source/ScriptObject.psc:154:1:indentation
 Scripts/Source/ScriptObject.psc:154:121:line-length
@@ -140020,6 +140267,7 @@ Scripts/Source/ScriptObject.psc:304:1:identifier-casing
 Scripts/Source/ScriptObject.psc:304:1:identifier-casing
 Scripts/Source/ScriptObject.psc:304:1:identifier-casing
 Scripts/Source/ScriptObject.psc:304:1:indentation
+Scripts/Source/ScriptObject.psc:304:1:parameter-count
 Scripts/Source/ScriptObject.psc:304:121:line-length
 Scripts/Source/ScriptObject.psc:305:1:indentation
 Scripts/Source/ScriptObject.psc:305:121:line-length
@@ -141291,6 +141539,7 @@ Scripts/Source/SignalReceiverScript.psc:358:1:identifier-casing
 Scripts/Source/SignalReceiverScript.psc:358:1:identifier-casing
 Scripts/Source/SignalReceiverScript.psc:358:1:identifier-casing
 Scripts/Source/SignalReceiverScript.psc:358:1:identifier-casing
+Scripts/Source/SignalReceiverScript.psc:358:1:parameter-count
 Scripts/Source/SignalReceiverScript.psc:358:1:unnecessary-function
 Scripts/Source/SignalReceiverScript.psc:358:121:line-length
 Scripts/Source/SignalReceiverScript.psc:359:121:line-length
@@ -141299,6 +141548,7 @@ Scripts/Source/SignalReceiverScript.psc:362:1:identifier-casing
 Scripts/Source/SignalReceiverScript.psc:362:1:identifier-casing
 Scripts/Source/SignalReceiverScript.psc:362:1:identifier-casing
 Scripts/Source/SignalReceiverScript.psc:362:1:identifier-casing
+Scripts/Source/SignalReceiverScript.psc:362:1:parameter-count
 Scripts/Source/SignalReceiverScript.psc:362:1:unnecessary-function
 Scripts/Source/SignalReceiverScript.psc:362:121:line-length
 Scripts/Source/SignalReceiverScript.psc:363:121:line-length
@@ -141390,6 +141640,7 @@ Scripts/Source/SignalSenderScript.psc:183:1:identifier-casing
 Scripts/Source/SignalSenderScript.psc:183:1:identifier-casing
 Scripts/Source/SignalSenderScript.psc:183:1:identifier-casing
 Scripts/Source/SignalSenderScript.psc:183:1:identifier-casing
+Scripts/Source/SignalSenderScript.psc:183:1:parameter-count
 Scripts/Source/SignalSenderScript.psc:183:1:unnecessary-function
 Scripts/Source/SignalSenderScript.psc:183:121:line-length
 Scripts/Source/SignalSenderScript.psc:184:121:line-length
@@ -141398,6 +141649,7 @@ Scripts/Source/SignalSenderScript.psc:187:1:identifier-casing
 Scripts/Source/SignalSenderScript.psc:187:1:identifier-casing
 Scripts/Source/SignalSenderScript.psc:187:1:identifier-casing
 Scripts/Source/SignalSenderScript.psc:187:1:identifier-casing
+Scripts/Source/SignalSenderScript.psc:187:1:parameter-count
 Scripts/Source/SignalSenderScript.psc:187:1:unnecessary-function
 Scripts/Source/SignalSenderScript.psc:187:121:line-length
 Scripts/Source/SignalSenderScript.psc:188:121:line-length
@@ -143047,6 +143299,7 @@ Scripts/Source/TEST_LVCQuestScript.psc:49:1:identifier-casing
 Scripts/Source/TEST_LVCQuestScript.psc:49:1:identifier-casing
 Scripts/Source/TEST_LVCQuestScript.psc:49:1:identifier-casing
 Scripts/Source/TEST_LVCQuestScript.psc:49:1:identifier-casing
+Scripts/Source/TEST_LVCQuestScript.psc:49:1:parameter-count
 Scripts/Source/TEST_LVCQuestScript.psc:49:1:unnecessary-function
 Scripts/Source/TEST_LVCQuestScript.psc:49:121:line-length
 Scripts/Source/TEST_LVCQuestScript.psc:50:121:line-length
@@ -143151,6 +143404,7 @@ Scripts/Source/Temp_FixExistingSaves_CompanionCrime.psc:22:1:identifier-casing
 Scripts/Source/Temp_FixExistingSaves_CompanionCrime.psc:22:1:identifier-casing
 Scripts/Source/Temp_FixExistingSaves_CompanionCrime.psc:22:1:identifier-casing
 Scripts/Source/Temp_FixExistingSaves_CompanionCrime.psc:22:1:identifier-casing
+Scripts/Source/Temp_FixExistingSaves_CompanionCrime.psc:22:1:parameter-count
 Scripts/Source/Temp_FixExistingSaves_CompanionCrime.psc:22:1:unnecessary-function
 Scripts/Source/Temp_FixExistingSaves_CompanionCrime.psc:22:121:line-length
 Scripts/Source/Temp_FixExistingSaves_CompanionCrime.psc:23:121:line-length
@@ -143159,6 +143413,7 @@ Scripts/Source/Temp_FixExistingSaves_CompanionCrime.psc:26:1:identifier-casing
 Scripts/Source/Temp_FixExistingSaves_CompanionCrime.psc:26:1:identifier-casing
 Scripts/Source/Temp_FixExistingSaves_CompanionCrime.psc:26:1:identifier-casing
 Scripts/Source/Temp_FixExistingSaves_CompanionCrime.psc:26:1:identifier-casing
+Scripts/Source/Temp_FixExistingSaves_CompanionCrime.psc:26:1:parameter-count
 Scripts/Source/Temp_FixExistingSaves_CompanionCrime.psc:26:1:unnecessary-function
 Scripts/Source/Temp_FixExistingSaves_CompanionCrime.psc:26:121:line-length
 Scripts/Source/Temp_FixExistingSaves_CompanionCrime.psc:27:121:line-length
@@ -143399,6 +143654,7 @@ Scripts/Source/TerrormorphMindControlEffectScript.psc:126:1:identifier-casing
 Scripts/Source/TerrormorphMindControlEffectScript.psc:126:1:identifier-casing
 Scripts/Source/TerrormorphMindControlEffectScript.psc:126:1:identifier-casing
 Scripts/Source/TerrormorphMindControlEffectScript.psc:126:1:identifier-casing
+Scripts/Source/TerrormorphMindControlEffectScript.psc:126:1:parameter-count
 Scripts/Source/TerrormorphMindControlEffectScript.psc:126:1:unnecessary-function
 Scripts/Source/TerrormorphMindControlEffectScript.psc:126:121:line-length
 Scripts/Source/TerrormorphMindControlEffectScript.psc:127:121:line-length
@@ -145681,6 +145937,7 @@ Scripts/Source/TestLVC_PlayerAliasScript.psc:38:1:identifier-casing
 Scripts/Source/TestLVC_PlayerAliasScript.psc:38:1:identifier-casing
 Scripts/Source/TestLVC_PlayerAliasScript.psc:38:1:identifier-casing
 Scripts/Source/TestLVC_PlayerAliasScript.psc:38:1:identifier-casing
+Scripts/Source/TestLVC_PlayerAliasScript.psc:38:1:parameter-count
 Scripts/Source/TestLVC_PlayerAliasScript.psc:38:1:unnecessary-function
 Scripts/Source/TestLVC_PlayerAliasScript.psc:38:121:line-length
 Scripts/Source/TestLVC_PlayerAliasScript.psc:39:121:line-length
@@ -146692,6 +146949,7 @@ Scripts/Source/TestPlayerCrimeEventScript.psc:18:1:identifier-casing
 Scripts/Source/TestPlayerCrimeEventScript.psc:18:1:identifier-casing
 Scripts/Source/TestPlayerCrimeEventScript.psc:18:1:identifier-casing
 Scripts/Source/TestPlayerCrimeEventScript.psc:18:1:identifier-casing
+Scripts/Source/TestPlayerCrimeEventScript.psc:18:1:parameter-count
 Scripts/Source/TestPlayerCrimeEventScript.psc:18:1:unnecessary-function
 Scripts/Source/TestPlayerCrimeEventScript.psc:18:121:line-length
 Scripts/Source/TestPlayerCrimeEventScript.psc:19:121:line-length
@@ -146700,6 +146958,7 @@ Scripts/Source/TestPlayerCrimeEventScript.psc:22:1:identifier-casing
 Scripts/Source/TestPlayerCrimeEventScript.psc:22:1:identifier-casing
 Scripts/Source/TestPlayerCrimeEventScript.psc:22:1:identifier-casing
 Scripts/Source/TestPlayerCrimeEventScript.psc:22:1:identifier-casing
+Scripts/Source/TestPlayerCrimeEventScript.psc:22:1:parameter-count
 Scripts/Source/TestPlayerCrimeEventScript.psc:22:1:unnecessary-function
 Scripts/Source/TestPlayerCrimeEventScript.psc:22:121:line-length
 Scripts/Source/TestPlayerCrimeEventScript.psc:23:121:line-length
@@ -147860,6 +148119,7 @@ Scripts/Source/TestSteveCQuestScript.psc:689:1:identifier-casing
 Scripts/Source/TestSteveCQuestScript.psc:689:1:identifier-casing
 Scripts/Source/TestSteveCQuestScript.psc:689:1:identifier-casing
 Scripts/Source/TestSteveCQuestScript.psc:689:1:identifier-casing
+Scripts/Source/TestSteveCQuestScript.psc:689:1:parameter-count
 Scripts/Source/TestSteveCQuestScript.psc:689:1:unnecessary-function
 Scripts/Source/TestSteveCQuestScript.psc:689:57:assignment-operator-spacing
 Scripts/Source/TestSteveCQuestScript.psc:689:57:assignment-operator-spacing
@@ -147887,6 +148147,7 @@ Scripts/Source/TestSteveCQuestScript.psc:710:1:identifier-casing
 Scripts/Source/TestSteveCQuestScript.psc:710:1:identifier-casing
 Scripts/Source/TestSteveCQuestScript.psc:710:1:identifier-casing
 Scripts/Source/TestSteveCQuestScript.psc:710:1:identifier-casing
+Scripts/Source/TestSteveCQuestScript.psc:710:1:parameter-count
 Scripts/Source/TestSteveCQuestScript.psc:710:1:unnecessary-function
 Scripts/Source/TestSteveCQuestScript.psc:710:99:assignment-operator-spacing
 Scripts/Source/TestSteveCQuestScript.psc:710:99:assignment-operator-spacing
@@ -147923,6 +148184,7 @@ Scripts/Source/TestSteveCQuestScript.psc:722:1:identifier-casing
 Scripts/Source/TestSteveCQuestScript.psc:722:1:identifier-casing
 Scripts/Source/TestSteveCQuestScript.psc:722:1:identifier-casing
 Scripts/Source/TestSteveCQuestScript.psc:722:1:identifier-casing
+Scripts/Source/TestSteveCQuestScript.psc:722:1:parameter-count
 Scripts/Source/TestSteveCQuestScript.psc:722:107:assignment-operator-spacing
 Scripts/Source/TestSteveCQuestScript.psc:722:107:assignment-operator-spacing
 Scripts/Source/TestSteveCQuestScript.psc:722:121:line-length
@@ -149173,6 +149435,7 @@ Scripts/Source/TriggerAmbushOnMarkerHit.psc:69:1:identifier-casing
 Scripts/Source/TriggerAmbushOnMarkerHit.psc:69:1:identifier-casing
 Scripts/Source/TriggerAmbushOnMarkerHit.psc:69:1:identifier-casing
 Scripts/Source/TriggerAmbushOnMarkerHit.psc:69:1:identifier-casing
+Scripts/Source/TriggerAmbushOnMarkerHit.psc:69:1:parameter-count
 Scripts/Source/TriggerAmbushOnMarkerHit.psc:69:1:unnecessary-function
 Scripts/Source/TriggerAmbushOnMarkerHit.psc:69:121:line-length
 Scripts/Source/TriggerAmbushOnMarkerHit.psc:70:121:line-length
@@ -149286,6 +149549,7 @@ Scripts/Source/UC01QuestScript.psc:119:1:identifier-casing
 Scripts/Source/UC01QuestScript.psc:119:1:identifier-casing
 Scripts/Source/UC01QuestScript.psc:119:1:identifier-casing
 Scripts/Source/UC01QuestScript.psc:119:1:identifier-casing
+Scripts/Source/UC01QuestScript.psc:119:1:parameter-count
 Scripts/Source/UC01QuestScript.psc:119:1:unnecessary-function
 Scripts/Source/UC01QuestScript.psc:119:121:line-length
 Scripts/Source/UC01QuestScript.psc:120:121:line-length
@@ -149346,6 +149610,7 @@ Scripts/Source/UC01_CuttableWallCollScript.psc:23:1:identifier-casing
 Scripts/Source/UC01_CuttableWallCollScript.psc:23:1:identifier-casing
 Scripts/Source/UC01_CuttableWallCollScript.psc:23:1:identifier-casing
 Scripts/Source/UC01_CuttableWallCollScript.psc:23:1:identifier-casing
+Scripts/Source/UC01_CuttableWallCollScript.psc:23:1:parameter-count
 Scripts/Source/UC01_CuttableWallCollScript.psc:23:1:unnecessary-function
 Scripts/Source/UC01_CuttableWallCollScript.psc:23:121:line-length
 Scripts/Source/UC01_CuttableWallCollScript.psc:24:121:line-length
@@ -149448,6 +149713,7 @@ Scripts/Source/UC01_LightManager_TopicScript.psc:31:1:identifier-casing
 Scripts/Source/UC01_LightManager_TopicScript.psc:31:1:identifier-casing
 Scripts/Source/UC01_LightManager_TopicScript.psc:31:1:identifier-casing
 Scripts/Source/UC01_LightManager_TopicScript.psc:31:1:identifier-casing
+Scripts/Source/UC01_LightManager_TopicScript.psc:31:1:parameter-count
 Scripts/Source/UC01_LightManager_TopicScript.psc:31:1:unnecessary-function
 Scripts/Source/UC01_LightManager_TopicScript.psc:31:121:line-length
 Scripts/Source/UC01_LightManager_TopicScript.psc:32:121:line-length
@@ -149514,6 +149780,7 @@ Scripts/Source/UC01_LightTimingRefScript.psc:74:1:identifier-casing
 Scripts/Source/UC01_LightTimingRefScript.psc:74:1:identifier-casing
 Scripts/Source/UC01_LightTimingRefScript.psc:74:1:identifier-casing
 Scripts/Source/UC01_LightTimingRefScript.psc:74:1:identifier-casing
+Scripts/Source/UC01_LightTimingRefScript.psc:74:1:parameter-count
 Scripts/Source/UC01_LightTimingRefScript.psc:74:1:unnecessary-function
 Scripts/Source/UC01_LightTimingRefScript.psc:74:121:line-length
 Scripts/Source/UC01_LightTimingRefScript.psc:75:121:line-length
@@ -149649,6 +149916,7 @@ Scripts/Source/UC01_PowerboxRefScript.psc:47:1:identifier-casing
 Scripts/Source/UC01_PowerboxRefScript.psc:47:1:identifier-casing
 Scripts/Source/UC01_PowerboxRefScript.psc:47:1:identifier-casing
 Scripts/Source/UC01_PowerboxRefScript.psc:47:1:identifier-casing
+Scripts/Source/UC01_PowerboxRefScript.psc:47:1:parameter-count
 Scripts/Source/UC01_PowerboxRefScript.psc:47:1:unnecessary-function
 Scripts/Source/UC01_PowerboxRefScript.psc:47:121:line-length
 Scripts/Source/UC01_PowerboxRefScript.psc:48:121:line-length
@@ -149672,6 +149940,7 @@ Scripts/Source/UC01_ReturnFromSimTriggerScript.psc:20:1:identifier-casing
 Scripts/Source/UC01_ReturnFromSimTriggerScript.psc:20:1:identifier-casing
 Scripts/Source/UC01_ReturnFromSimTriggerScript.psc:20:1:identifier-casing
 Scripts/Source/UC01_ReturnFromSimTriggerScript.psc:20:1:identifier-casing
+Scripts/Source/UC01_ReturnFromSimTriggerScript.psc:20:1:parameter-count
 Scripts/Source/UC01_ReturnFromSimTriggerScript.psc:20:1:unnecessary-function
 Scripts/Source/UC01_ReturnFromSimTriggerScript.psc:20:121:line-length
 Scripts/Source/UC01_ReturnFromSimTriggerScript.psc:21:121:line-length
@@ -149726,6 +149995,7 @@ Scripts/Source/UC01_RockAliasScript.psc:64:1:identifier-casing
 Scripts/Source/UC01_RockAliasScript.psc:64:1:identifier-casing
 Scripts/Source/UC01_RockAliasScript.psc:64:1:identifier-casing
 Scripts/Source/UC01_RockAliasScript.psc:64:1:identifier-casing
+Scripts/Source/UC01_RockAliasScript.psc:64:1:parameter-count
 Scripts/Source/UC01_RockAliasScript.psc:64:1:unnecessary-function
 Scripts/Source/UC01_RockAliasScript.psc:64:121:line-length
 Scripts/Source/UC01_RockAliasScript.psc:65:121:line-length
@@ -149751,6 +150021,7 @@ Scripts/Source/UC01_ShipSimAliasScript.psc:19:1:identifier-casing
 Scripts/Source/UC01_ShipSimAliasScript.psc:19:1:identifier-casing
 Scripts/Source/UC01_ShipSimAliasScript.psc:19:1:identifier-casing
 Scripts/Source/UC01_ShipSimAliasScript.psc:19:1:identifier-casing
+Scripts/Source/UC01_ShipSimAliasScript.psc:19:1:parameter-count
 Scripts/Source/UC01_ShipSimAliasScript.psc:19:1:unnecessary-function
 Scripts/Source/UC01_ShipSimAliasScript.psc:19:121:line-length
 Scripts/Source/UC01_ShipSimAliasScript.psc:20:121:line-length
@@ -149806,6 +150077,7 @@ Scripts/Source/UC01_ShipSim_PilotSeatAliasScript.psc:19:1:identifier-casing
 Scripts/Source/UC01_ShipSim_PilotSeatAliasScript.psc:19:1:identifier-casing
 Scripts/Source/UC01_ShipSim_PilotSeatAliasScript.psc:19:1:identifier-casing
 Scripts/Source/UC01_ShipSim_PilotSeatAliasScript.psc:19:1:identifier-casing
+Scripts/Source/UC01_ShipSim_PilotSeatAliasScript.psc:19:1:parameter-count
 Scripts/Source/UC01_ShipSim_PilotSeatAliasScript.psc:19:1:unnecessary-function
 Scripts/Source/UC01_ShipSim_PilotSeatAliasScript.psc:19:121:line-length
 Scripts/Source/UC01_ShipSim_PilotSeatAliasScript.psc:20:121:line-length
@@ -149820,6 +150092,7 @@ Scripts/Source/UC01_ShipSim_PlayerAliasScript.psc:10:1:identifier-casing
 Scripts/Source/UC01_ShipSim_PlayerAliasScript.psc:10:1:identifier-casing
 Scripts/Source/UC01_ShipSim_PlayerAliasScript.psc:10:1:identifier-casing
 Scripts/Source/UC01_ShipSim_PlayerAliasScript.psc:10:1:identifier-casing
+Scripts/Source/UC01_ShipSim_PlayerAliasScript.psc:10:1:parameter-count
 Scripts/Source/UC01_ShipSim_PlayerAliasScript.psc:10:1:unnecessary-function
 Scripts/Source/UC01_ShipSim_PlayerAliasScript.psc:10:121:line-length
 Scripts/Source/UC01_ShipSim_PlayerAliasScript.psc:11:121:line-length
@@ -150472,6 +150745,7 @@ Scripts/Source/UC01_ShipSimulationQuestScript.psc:632:1:identifier-casing
 Scripts/Source/UC01_ShipSimulationQuestScript.psc:632:1:identifier-casing
 Scripts/Source/UC01_ShipSimulationQuestScript.psc:632:1:identifier-casing
 Scripts/Source/UC01_ShipSimulationQuestScript.psc:632:1:identifier-casing
+Scripts/Source/UC01_ShipSimulationQuestScript.psc:632:1:parameter-count
 Scripts/Source/UC01_ShipSimulationQuestScript.psc:632:1:unnecessary-function
 Scripts/Source/UC01_ShipSimulationQuestScript.psc:632:121:line-length
 Scripts/Source/UC01_ShipSimulationQuestScript.psc:633:121:line-length
@@ -150546,6 +150820,7 @@ Scripts/Source/UC01_VanguardTerminalScript.psc:17:1:identifier-casing
 Scripts/Source/UC01_VanguardTerminalScript.psc:17:1:identifier-casing
 Scripts/Source/UC01_VanguardTerminalScript.psc:17:1:identifier-casing
 Scripts/Source/UC01_VanguardTerminalScript.psc:17:1:identifier-casing
+Scripts/Source/UC01_VanguardTerminalScript.psc:17:1:parameter-count
 Scripts/Source/UC01_VanguardTerminalScript.psc:17:1:unnecessary-function
 Scripts/Source/UC01_VanguardTerminalScript.psc:17:121:line-length
 Scripts/Source/UC01_VanguardTerminalScript.psc:18:121:line-length
@@ -150599,6 +150874,7 @@ Scripts/Source/UC02_FuelTankTriggerCollScript.psc:61:1:identifier-casing
 Scripts/Source/UC02_FuelTankTriggerCollScript.psc:61:1:identifier-casing
 Scripts/Source/UC02_FuelTankTriggerCollScript.psc:61:1:identifier-casing
 Scripts/Source/UC02_FuelTankTriggerCollScript.psc:61:1:identifier-casing
+Scripts/Source/UC02_FuelTankTriggerCollScript.psc:61:1:parameter-count
 Scripts/Source/UC02_FuelTankTriggerCollScript.psc:61:1:unnecessary-function
 Scripts/Source/UC02_FuelTankTriggerCollScript.psc:61:121:line-length
 Scripts/Source/UC02_FuelTankTriggerCollScript.psc:62:121:line-length
@@ -150707,6 +150983,7 @@ Scripts/Source/UC02_PowerBoxScript.psc:78:1:identifier-casing
 Scripts/Source/UC02_PowerBoxScript.psc:78:1:identifier-casing
 Scripts/Source/UC02_PowerBoxScript.psc:78:1:identifier-casing
 Scripts/Source/UC02_PowerBoxScript.psc:78:1:identifier-casing
+Scripts/Source/UC02_PowerBoxScript.psc:78:1:parameter-count
 Scripts/Source/UC02_PowerBoxScript.psc:78:1:unnecessary-function
 Scripts/Source/UC02_PowerBoxScript.psc:78:121:line-length
 Scripts/Source/UC02_PowerBoxScript.psc:79:121:line-length
@@ -151026,6 +151303,7 @@ Scripts/Source/UC02_QuestScript.psc:321:1:identifier-casing
 Scripts/Source/UC02_QuestScript.psc:321:1:identifier-casing
 Scripts/Source/UC02_QuestScript.psc:321:1:identifier-casing
 Scripts/Source/UC02_QuestScript.psc:321:1:identifier-casing
+Scripts/Source/UC02_QuestScript.psc:321:1:parameter-count
 Scripts/Source/UC02_QuestScript.psc:321:1:unnecessary-function
 Scripts/Source/UC02_QuestScript.psc:321:121:line-length
 Scripts/Source/UC02_QuestScript.psc:322:121:line-length
@@ -151177,6 +151455,7 @@ Scripts/Source/UC02_TerrormorphScript.psc:81:1:identifier-casing
 Scripts/Source/UC02_TerrormorphScript.psc:81:1:identifier-casing
 Scripts/Source/UC02_TerrormorphScript.psc:81:1:identifier-casing
 Scripts/Source/UC02_TerrormorphScript.psc:81:1:identifier-casing
+Scripts/Source/UC02_TerrormorphScript.psc:81:1:parameter-count
 Scripts/Source/UC02_TerrormorphScript.psc:81:1:unnecessary-function
 Scripts/Source/UC02_TerrormorphScript.psc:81:121:line-length
 Scripts/Source/UC02_TerrormorphScript.psc:82:121:line-length
@@ -151211,6 +151490,7 @@ Scripts/Source/UC03_AliasMoveRefOnUnload.psc:52:1:identifier-casing
 Scripts/Source/UC03_AliasMoveRefOnUnload.psc:52:1:identifier-casing
 Scripts/Source/UC03_AliasMoveRefOnUnload.psc:52:1:identifier-casing
 Scripts/Source/UC03_AliasMoveRefOnUnload.psc:52:1:identifier-casing
+Scripts/Source/UC03_AliasMoveRefOnUnload.psc:52:1:parameter-count
 Scripts/Source/UC03_AliasMoveRefOnUnload.psc:52:1:unnecessary-function
 Scripts/Source/UC03_AliasMoveRefOnUnload.psc:52:121:line-length
 Scripts/Source/UC03_AliasMoveRefOnUnload.psc:53:121:line-length
@@ -151267,6 +151547,7 @@ Scripts/Source/UC03_PlayerAliasScript.psc:48:1:identifier-casing
 Scripts/Source/UC03_PlayerAliasScript.psc:48:1:identifier-casing
 Scripts/Source/UC03_PlayerAliasScript.psc:48:1:identifier-casing
 Scripts/Source/UC03_PlayerAliasScript.psc:48:1:identifier-casing
+Scripts/Source/UC03_PlayerAliasScript.psc:48:1:parameter-count
 Scripts/Source/UC03_PlayerAliasScript.psc:48:1:unnecessary-function
 Scripts/Source/UC03_PlayerAliasScript.psc:48:121:line-length
 Scripts/Source/UC03_PlayerAliasScript.psc:49:121:line-length
@@ -151291,6 +151572,7 @@ Scripts/Source/UC03_SpaceportGuardRefColl.psc:20:1:identifier-casing
 Scripts/Source/UC03_SpaceportGuardRefColl.psc:20:1:identifier-casing
 Scripts/Source/UC03_SpaceportGuardRefColl.psc:20:1:identifier-casing
 Scripts/Source/UC03_SpaceportGuardRefColl.psc:20:1:identifier-casing
+Scripts/Source/UC03_SpaceportGuardRefColl.psc:20:1:parameter-count
 Scripts/Source/UC03_SpaceportGuardRefColl.psc:20:1:unnecessary-function
 Scripts/Source/UC03_SpaceportGuardRefColl.psc:20:121:line-length
 Scripts/Source/UC03_SpaceportGuardRefColl.psc:21:121:line-length
@@ -151403,6 +151685,7 @@ Scripts/Source/UC04_KilledByPlayerCollScript.psc:23:1:identifier-casing
 Scripts/Source/UC04_KilledByPlayerCollScript.psc:23:1:identifier-casing
 Scripts/Source/UC04_KilledByPlayerCollScript.psc:23:1:identifier-casing
 Scripts/Source/UC04_KilledByPlayerCollScript.psc:23:1:identifier-casing
+Scripts/Source/UC04_KilledByPlayerCollScript.psc:23:1:parameter-count
 Scripts/Source/UC04_KilledByPlayerCollScript.psc:23:1:unnecessary-function
 Scripts/Source/UC04_KilledByPlayerCollScript.psc:23:121:line-length
 Scripts/Source/UC04_KilledByPlayerCollScript.psc:24:121:line-length
@@ -151524,6 +151807,7 @@ Scripts/Source/UC04_PlayerAliasScript.psc:80:1:identifier-casing
 Scripts/Source/UC04_PlayerAliasScript.psc:80:1:identifier-casing
 Scripts/Source/UC04_PlayerAliasScript.psc:80:1:identifier-casing
 Scripts/Source/UC04_PlayerAliasScript.psc:80:1:identifier-casing
+Scripts/Source/UC04_PlayerAliasScript.psc:80:1:parameter-count
 Scripts/Source/UC04_PlayerAliasScript.psc:80:1:unnecessary-function
 Scripts/Source/UC04_PlayerAliasScript.psc:80:121:line-length
 Scripts/Source/UC04_PlayerAliasScript.psc:81:121:line-length
@@ -152029,6 +152313,7 @@ Scripts/Source/UC04_QuestScript.psc:491:1:identifier-casing
 Scripts/Source/UC04_QuestScript.psc:491:1:identifier-casing
 Scripts/Source/UC04_QuestScript.psc:491:1:identifier-casing
 Scripts/Source/UC04_QuestScript.psc:491:1:identifier-casing
+Scripts/Source/UC04_QuestScript.psc:491:1:parameter-count
 Scripts/Source/UC04_QuestScript.psc:491:1:unnecessary-function
 Scripts/Source/UC04_QuestScript.psc:491:121:line-length
 Scripts/Source/UC04_QuestScript.psc:492:121:line-length
@@ -152106,6 +152391,7 @@ Scripts/Source/UC04_TerrormorphAliasScript.psc:10:1:identifier-casing
 Scripts/Source/UC04_TerrormorphAliasScript.psc:10:1:identifier-casing
 Scripts/Source/UC04_TerrormorphAliasScript.psc:10:1:identifier-casing
 Scripts/Source/UC04_TerrormorphAliasScript.psc:10:1:identifier-casing
+Scripts/Source/UC04_TerrormorphAliasScript.psc:10:1:parameter-count
 Scripts/Source/UC04_TerrormorphAliasScript.psc:10:1:unnecessary-function
 Scripts/Source/UC04_TerrormorphAliasScript.psc:10:121:line-length
 Scripts/Source/UC04_TerrormorphAliasScript.psc:11:121:line-length
@@ -152185,6 +152471,7 @@ Scripts/Source/UC04_ThrallAliasScript.psc:72:1:identifier-casing
 Scripts/Source/UC04_ThrallAliasScript.psc:72:1:identifier-casing
 Scripts/Source/UC04_ThrallAliasScript.psc:72:1:identifier-casing
 Scripts/Source/UC04_ThrallAliasScript.psc:72:1:identifier-casing
+Scripts/Source/UC04_ThrallAliasScript.psc:72:1:parameter-count
 Scripts/Source/UC04_ThrallAliasScript.psc:72:1:unnecessary-function
 Scripts/Source/UC04_ThrallAliasScript.psc:72:121:line-length
 Scripts/Source/UC04_ThrallAliasScript.psc:73:121:line-length
@@ -152558,6 +152845,7 @@ Scripts/Source/UC05_QuestScript.psc:252:1:identifier-casing
 Scripts/Source/UC05_QuestScript.psc:252:1:identifier-casing
 Scripts/Source/UC05_QuestScript.psc:252:1:identifier-casing
 Scripts/Source/UC05_QuestScript.psc:252:1:identifier-casing
+Scripts/Source/UC05_QuestScript.psc:252:1:parameter-count
 Scripts/Source/UC05_QuestScript.psc:252:1:unnecessary-function
 Scripts/Source/UC05_QuestScript.psc:252:121:line-length
 Scripts/Source/UC05_QuestScript.psc:253:121:line-length
@@ -152717,6 +153005,7 @@ Scripts/Source/UC06_OrlaseShipAliasScript.psc:71:1:identifier-casing
 Scripts/Source/UC06_OrlaseShipAliasScript.psc:71:1:identifier-casing
 Scripts/Source/UC06_OrlaseShipAliasScript.psc:71:1:identifier-casing
 Scripts/Source/UC06_OrlaseShipAliasScript.psc:71:1:identifier-casing
+Scripts/Source/UC06_OrlaseShipAliasScript.psc:71:1:parameter-count
 Scripts/Source/UC06_OrlaseShipAliasScript.psc:71:1:unnecessary-function
 Scripts/Source/UC06_OrlaseShipAliasScript.psc:71:121:line-length
 Scripts/Source/UC06_OrlaseShipAliasScript.psc:72:121:line-length
@@ -152809,6 +153098,7 @@ Scripts/Source/UC06_QuestScript.psc:90:1:identifier-casing
 Scripts/Source/UC06_QuestScript.psc:90:1:identifier-casing
 Scripts/Source/UC06_QuestScript.psc:90:1:identifier-casing
 Scripts/Source/UC06_QuestScript.psc:90:1:identifier-casing
+Scripts/Source/UC06_QuestScript.psc:90:1:parameter-count
 Scripts/Source/UC06_QuestScript.psc:90:1:unnecessary-function
 Scripts/Source/UC06_QuestScript.psc:90:121:line-length
 Scripts/Source/UC06_QuestScript.psc:91:121:line-length
@@ -152944,6 +153234,7 @@ Scripts/Source/UC07QuestScript.psc:117:1:identifier-casing
 Scripts/Source/UC07QuestScript.psc:117:1:identifier-casing
 Scripts/Source/UC07QuestScript.psc:117:1:identifier-casing
 Scripts/Source/UC07QuestScript.psc:117:1:identifier-casing
+Scripts/Source/UC07QuestScript.psc:117:1:parameter-count
 Scripts/Source/UC07QuestScript.psc:117:1:unnecessary-function
 Scripts/Source/UC07QuestScript.psc:117:121:line-length
 Scripts/Source/UC07QuestScript.psc:118:121:line-length
@@ -152975,6 +153266,7 @@ Scripts/Source/UC07_BatteryContainerCollScript.psc:31:1:identifier-casing
 Scripts/Source/UC07_BatteryContainerCollScript.psc:31:1:identifier-casing
 Scripts/Source/UC07_BatteryContainerCollScript.psc:31:1:identifier-casing
 Scripts/Source/UC07_BatteryContainerCollScript.psc:31:1:identifier-casing
+Scripts/Source/UC07_BatteryContainerCollScript.psc:31:1:parameter-count
 Scripts/Source/UC07_BatteryContainerCollScript.psc:31:1:unnecessary-function
 Scripts/Source/UC07_BatteryContainerCollScript.psc:31:121:line-length
 Scripts/Source/UC07_BatteryContainerCollScript.psc:32:121:line-length
@@ -153022,6 +153314,7 @@ Scripts/Source/UC07_BatteryMaterialsCollScript.psc:45:1:identifier-casing
 Scripts/Source/UC07_BatteryMaterialsCollScript.psc:45:1:identifier-casing
 Scripts/Source/UC07_BatteryMaterialsCollScript.psc:45:1:identifier-casing
 Scripts/Source/UC07_BatteryMaterialsCollScript.psc:45:1:identifier-casing
+Scripts/Source/UC07_BatteryMaterialsCollScript.psc:45:1:parameter-count
 Scripts/Source/UC07_BatteryMaterialsCollScript.psc:45:1:unnecessary-function
 Scripts/Source/UC07_BatteryMaterialsCollScript.psc:45:121:line-length
 Scripts/Source/UC07_BatteryMaterialsCollScript.psc:46:121:line-length
@@ -153062,6 +153355,7 @@ Scripts/Source/UC07_EclipticOnCombatChangedScript.psc:24:1:identifier-casing
 Scripts/Source/UC07_EclipticOnCombatChangedScript.psc:24:1:identifier-casing
 Scripts/Source/UC07_EclipticOnCombatChangedScript.psc:24:1:identifier-casing
 Scripts/Source/UC07_EclipticOnCombatChangedScript.psc:24:1:identifier-casing
+Scripts/Source/UC07_EclipticOnCombatChangedScript.psc:24:1:parameter-count
 Scripts/Source/UC07_EclipticOnCombatChangedScript.psc:24:1:unnecessary-function
 Scripts/Source/UC07_EclipticOnCombatChangedScript.psc:24:121:line-length
 Scripts/Source/UC07_EclipticOnCombatChangedScript.psc:25:121:line-length
@@ -153089,6 +153383,7 @@ Scripts/Source/UC07_HeatleechCollAliasScript.psc:23:1:identifier-casing
 Scripts/Source/UC07_HeatleechCollAliasScript.psc:23:1:identifier-casing
 Scripts/Source/UC07_HeatleechCollAliasScript.psc:23:1:identifier-casing
 Scripts/Source/UC07_HeatleechCollAliasScript.psc:23:1:identifier-casing
+Scripts/Source/UC07_HeatleechCollAliasScript.psc:23:1:parameter-count
 Scripts/Source/UC07_HeatleechCollAliasScript.psc:23:1:unnecessary-function
 Scripts/Source/UC07_HeatleechCollAliasScript.psc:23:121:line-length
 Scripts/Source/UC07_HeatleechCollAliasScript.psc:24:121:line-length
@@ -153157,6 +153452,7 @@ Scripts/Source/UC07_PlayerAliasScript.psc:47:1:identifier-casing
 Scripts/Source/UC07_PlayerAliasScript.psc:47:1:identifier-casing
 Scripts/Source/UC07_PlayerAliasScript.psc:47:1:identifier-casing
 Scripts/Source/UC07_PlayerAliasScript.psc:47:1:identifier-casing
+Scripts/Source/UC07_PlayerAliasScript.psc:47:1:parameter-count
 Scripts/Source/UC07_PlayerAliasScript.psc:47:1:unnecessary-function
 Scripts/Source/UC07_PlayerAliasScript.psc:47:121:line-length
 Scripts/Source/UC07_PlayerAliasScript.psc:48:121:line-length
@@ -153399,6 +153695,7 @@ Scripts/Source/UC08_AB_HostileThrallCollScript.psc:109:1:identifier-casing
 Scripts/Source/UC08_AB_HostileThrallCollScript.psc:109:1:identifier-casing
 Scripts/Source/UC08_AB_HostileThrallCollScript.psc:109:1:identifier-casing
 Scripts/Source/UC08_AB_HostileThrallCollScript.psc:109:1:identifier-casing
+Scripts/Source/UC08_AB_HostileThrallCollScript.psc:109:1:parameter-count
 Scripts/Source/UC08_AB_HostileThrallCollScript.psc:109:1:unnecessary-function
 Scripts/Source/UC08_AB_HostileThrallCollScript.psc:109:121:line-length
 Scripts/Source/UC08_AB_HostileThrallCollScript.psc:110:121:line-length
@@ -154022,6 +154319,7 @@ Scripts/Source/UC08_QueenBattle_QuestScript.psc:490:1:identifier-casing
 Scripts/Source/UC08_QueenBattle_QuestScript.psc:490:1:identifier-casing
 Scripts/Source/UC08_QueenBattle_QuestScript.psc:490:1:identifier-casing
 Scripts/Source/UC08_QueenBattle_QuestScript.psc:490:1:identifier-casing
+Scripts/Source/UC08_QueenBattle_QuestScript.psc:490:1:parameter-count
 Scripts/Source/UC08_QueenBattle_QuestScript.psc:490:1:unnecessary-function
 Scripts/Source/UC08_QueenBattle_QuestScript.psc:490:121:line-length
 Scripts/Source/UC08_QueenBattle_QuestScript.psc:491:121:line-length
@@ -154126,6 +154424,7 @@ Scripts/Source/UC09QuestScript.psc:49:1:identifier-casing
 Scripts/Source/UC09QuestScript.psc:49:1:identifier-casing
 Scripts/Source/UC09QuestScript.psc:49:1:identifier-casing
 Scripts/Source/UC09QuestScript.psc:49:1:identifier-casing
+Scripts/Source/UC09QuestScript.psc:49:1:parameter-count
 Scripts/Source/UC09QuestScript.psc:49:1:unnecessary-function
 Scripts/Source/UC09QuestScript.psc:49:121:line-length
 Scripts/Source/UC09QuestScript.psc:50:121:line-length
@@ -154243,6 +154542,7 @@ Scripts/Source/UC09_HeatleechRefScript.psc:67:1:identifier-casing
 Scripts/Source/UC09_HeatleechRefScript.psc:67:1:identifier-casing
 Scripts/Source/UC09_HeatleechRefScript.psc:67:1:identifier-casing
 Scripts/Source/UC09_HeatleechRefScript.psc:67:1:identifier-casing
+Scripts/Source/UC09_HeatleechRefScript.psc:67:1:parameter-count
 Scripts/Source/UC09_HeatleechRefScript.psc:67:1:unnecessary-function
 Scripts/Source/UC09_HeatleechRefScript.psc:67:121:line-length
 Scripts/Source/UC09_HeatleechRefScript.psc:68:121:line-length
@@ -154425,6 +154725,7 @@ Scripts/Source/UCParentFactionQuestScript.psc:189:1:identifier-casing
 Scripts/Source/UCParentFactionQuestScript.psc:189:1:identifier-casing
 Scripts/Source/UCParentFactionQuestScript.psc:189:1:identifier-casing
 Scripts/Source/UCParentFactionQuestScript.psc:189:1:identifier-casing
+Scripts/Source/UCParentFactionQuestScript.psc:189:1:parameter-count
 Scripts/Source/UCParentFactionQuestScript.psc:189:1:unnecessary-function
 Scripts/Source/UCParentFactionQuestScript.psc:189:121:line-length
 Scripts/Source/UCParentFactionQuestScript.psc:190:121:line-length
@@ -154576,6 +154877,7 @@ Scripts/Source/UCR03QuestScript.psc:168:1:identifier-casing
 Scripts/Source/UCR03QuestScript.psc:168:1:identifier-casing
 Scripts/Source/UCR03QuestScript.psc:168:1:identifier-casing
 Scripts/Source/UCR03QuestScript.psc:168:1:identifier-casing
+Scripts/Source/UCR03QuestScript.psc:168:1:parameter-count
 Scripts/Source/UCR03QuestScript.psc:168:1:unnecessary-function
 Scripts/Source/UCR03QuestScript.psc:168:121:line-length
 Scripts/Source/UCR03QuestScript.psc:169:121:line-length
@@ -154847,6 +155149,7 @@ Scripts/Source/UCR04QuestScript.psc:252:1:identifier-casing
 Scripts/Source/UCR04QuestScript.psc:252:1:identifier-casing
 Scripts/Source/UCR04QuestScript.psc:252:1:identifier-casing
 Scripts/Source/UCR04QuestScript.psc:252:1:identifier-casing
+Scripts/Source/UCR04QuestScript.psc:252:1:parameter-count
 Scripts/Source/UCR04QuestScript.psc:252:1:unnecessary-function
 Scripts/Source/UCR04QuestScript.psc:252:121:line-length
 Scripts/Source/UCR04QuestScript.psc:253:121:line-length
@@ -154892,6 +155195,7 @@ Scripts/Source/UCR04_PlayerAliasScript.psc:49:1:identifier-casing
 Scripts/Source/UCR04_PlayerAliasScript.psc:49:1:identifier-casing
 Scripts/Source/UCR04_PlayerAliasScript.psc:49:1:identifier-casing
 Scripts/Source/UCR04_PlayerAliasScript.psc:49:1:identifier-casing
+Scripts/Source/UCR04_PlayerAliasScript.psc:49:1:parameter-count
 Scripts/Source/UCR04_PlayerAliasScript.psc:49:1:unnecessary-function
 Scripts/Source/UCR04_PlayerAliasScript.psc:49:121:line-length
 Scripts/Source/UCR04_PlayerAliasScript.psc:50:121:line-length
@@ -154950,6 +155254,7 @@ Scripts/Source/UCR05QuestScript.psc:74:1:identifier-casing
 Scripts/Source/UCR05QuestScript.psc:74:1:identifier-casing
 Scripts/Source/UCR05QuestScript.psc:74:1:identifier-casing
 Scripts/Source/UCR05QuestScript.psc:74:1:identifier-casing
+Scripts/Source/UCR05QuestScript.psc:74:1:parameter-count
 Scripts/Source/UCR05QuestScript.psc:74:1:unnecessary-function
 Scripts/Source/UCR05QuestScript.psc:74:121:line-length
 Scripts/Source/UCR05QuestScript.psc:75:121:line-length
@@ -155214,6 +155519,7 @@ Scripts/Source/UC_WeatherTriggerScript.psc:61:1:identifier-casing
 Scripts/Source/UC_WeatherTriggerScript.psc:61:1:identifier-casing
 Scripts/Source/UC_WeatherTriggerScript.psc:61:1:identifier-casing
 Scripts/Source/UC_WeatherTriggerScript.psc:61:1:identifier-casing
+Scripts/Source/UC_WeatherTriggerScript.psc:61:1:parameter-count
 Scripts/Source/UC_WeatherTriggerScript.psc:61:1:unnecessary-function
 Scripts/Source/UC_WeatherTriggerScript.psc:61:121:line-length
 Scripts/Source/UC_WeatherTriggerScript.psc:62:121:line-length
@@ -155287,6 +155593,7 @@ Scripts/Source/UC_WeatherTriggerScript_OnEnter.psc:73:1:identifier-casing
 Scripts/Source/UC_WeatherTriggerScript_OnEnter.psc:73:1:identifier-casing
 Scripts/Source/UC_WeatherTriggerScript_OnEnter.psc:73:1:identifier-casing
 Scripts/Source/UC_WeatherTriggerScript_OnEnter.psc:73:1:identifier-casing
+Scripts/Source/UC_WeatherTriggerScript_OnEnter.psc:73:1:parameter-count
 Scripts/Source/UC_WeatherTriggerScript_OnEnter.psc:73:1:unnecessary-function
 Scripts/Source/UC_WeatherTriggerScript_OnEnter.psc:73:121:line-length
 Scripts/Source/UC_WeatherTriggerScript_OnEnter.psc:74:121:line-length

@@ -107,6 +107,7 @@ Scripts/Source/ObjectReference.psc:465:121:line-length
 Scripts/Source/ObjectReference.psc:466:121:line-length
 Scripts/Source/ObjectReference.psc:486:121:line-length
 Scripts/Source/ObjectReference.psc:492:121:line-length
+Scripts/Source/ObjectReference.psc:498:1:parameter-count
 Scripts/Source/ObjectReference.psc:498:121:line-length
 Scripts/Source/ObjectReference.psc:507:121:line-length
 Scripts/Source/ObjectReference.psc:517:121:line-length

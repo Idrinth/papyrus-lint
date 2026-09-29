@@ -31,6 +31,7 @@ describe("lint config UI round trip", () => {
       cyclomatic_complexity_error: 15,
       type_casing: "camelCase",
       named_arguments: "always",
+      parameter_count_max: 8,
       min_wait_interval: 0.25,
       magic_numbers: "strict",
       fail_on_warning: true,

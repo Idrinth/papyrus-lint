@@ -22,7 +22,7 @@
 # (today's built-in default, and `init`'s own default) and
 # shared/configuration/presets/papyrus-lint.standard.yaml for the other two presets.
 #
-# Only the two threshold overrides below are listed here — every "low"
+# Only the threshold overrides below are listed here — every "low"
 # importance rule (per `shared/rules.json`), including the free formatting
 # ones "standard" keeps, is turned off by `papyrus-lint-config/build.rs`
 # itself when it generates this preset's `rules:` section from that file
@@ -31,3 +31,4 @@
 
 cyclomatic_complexity_warning: 20  # was 10: avoid flooding unfamiliar/legacy code with complexity findings
 cyclomatic_complexity_error: 40    # was 20: same as above
+parameter_count_max: 10            # was 5: same first-pass leniency as complexity thresholds

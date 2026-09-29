@@ -53,8 +53,8 @@ exact line:
   auto-fixable formatting rules, while disabling purely stylistic and
   informational rules.
 - `careful` keeps only medium/high-importance rules and relaxes cyclomatic
-  complexity thresholds for a quieter first pass over an unfamiliar or legacy
-  project.
+  complexity and parameter-count thresholds for a quieter first pass over an
+  unfamiliar or legacy project.
 
 The annotated built-ins are under
 [`shared/configuration/presets/`](../shared/configuration/presets).
