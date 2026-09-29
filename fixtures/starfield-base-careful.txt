@@ -40804,6 +40804,8 @@ Scripts/Source/SFBGS00D/SFBGS00DRandomEnableOnLoadScript.psc:24:15:forbidden-fun
 Scripts/Source/SFBGS00D/SFBGS00DRandomEnableOnLoadScript.psc:69:15:forbidden-functions
 Scripts/Source/SFBGS00D/SFBGS00DRandomEnableOnLoadScript.psc:71:15:forbidden-functions
 Scripts/Source/SFBGS00D/SFBGS00DRandomEnableOnLoadScript.psc:80:15:forbidden-functions
+Scripts/Source/SFBGS00D/SFBGS00DRandomEnableOnLoadScript.psc:80:83:invalid-string-escape
+Scripts/Source/SFBGS00D/SFBGS00DRandomEnableOnLoadScript.psc:80:107:invalid-string-escape
 Scripts/Source/SFBGS00D/SFBGS00DRandomEnableOnLoadScript.psc:80:121:line-length
 Scripts/Source/SFBGS00D/SFBGS00D_ApplyPerkTimer.psc:2:121:line-length
 Scripts/Source/SFBGS00D/SFBGS00D_ApplyPerkTimer.psc:17:14:forbidden-functions
