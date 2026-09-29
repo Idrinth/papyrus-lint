@@ -28,7 +28,7 @@ class DefaultConfigTests(unittest.TestCase):
             for path in sorted((ROOT / "shared/rules").glob("*.json"))
         ]
         text = render_default_yaml(settings, rules)
-        self.assertTrue(text.startswith("# Target game."))
+        self.assertTrue(text.startswith("# game"))
         self.assertIn("\ngame: skyrim\n", text)
         self.assertIn("\ncompiler_path: null\n", text)
         self.assertIn("\nrules:\n", text)
