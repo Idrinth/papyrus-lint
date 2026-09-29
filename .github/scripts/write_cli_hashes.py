@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""Bake PapyrusLinterCLI and PapyrusLinter SHA-256 digests into the editor
-plugins.
+"""Bake PapyrusLinterCLI SHA-256 digests into the editor plugins.
 
 The hashing/rendering logic lives in ci_lib/cli_release_hashes.py; this is
 just the CLI entrypoint.
@@ -19,14 +18,14 @@ def main() -> int:
     parser.add_argument(
         "asset_dir",
         type=Path,
-        help="directory containing the PapyrusLinterCLI assets and optional PapyrusLinter GUI binaries",
+        help="directory containing the PapyrusLinterCLI assets",
     )
     parser.add_argument("--ts-path", type=Path, default=TS_PATH)
     parser.add_argument("--py-path", type=Path, default=PY_PATH)
     args = parser.parse_args()
     hashes = collect_hashes(args.asset_dir)
     write_hashes(hashes, args.ts_path, args.py_path)
-    print(f"Wrote CLI/GUI SHA-256 digests to {args.ts_path} and {args.py_path}.")
+    print(f"Wrote CLI SHA-256 digests to {args.ts_path} and {args.py_path}.")
     return 0
 
 

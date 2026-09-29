@@ -284,19 +284,16 @@ jobs:
               cp app/crates/papyrus-lint-cli/target/release/PapyrusLinterCLI.exe cli-dist/PapyrusLinterCLI-windows.exe
               cp app/crates/papyrus-lint-cli/target/release/PapyrusLinterCLI.exe hash-binaries/PapyrusLinterCLI-windows.exe
               cp app/crates/papyrus-lint-lsp/target/release/PapyrusLinterLsp.exe cli-dist/PapyrusLinterLsp-windows.exe
-              cp app/src-tauri/target/release/PapyrusLinter.exe hash-binaries/PapyrusLinter-windows.exe
               ;;
             macos-latest)
               cp app/crates/papyrus-lint-cli/target/release/PapyrusLinterCLI cli-dist/PapyrusLinterCLI-macos
               cp app/crates/papyrus-lint-cli/target/release/PapyrusLinterCLI hash-binaries/PapyrusLinterCLI-macos
               cp app/crates/papyrus-lint-lsp/target/release/PapyrusLinterLsp cli-dist/PapyrusLinterLsp-macos
-              cp app/src-tauri/target/release/PapyrusLinter hash-binaries/PapyrusLinter-macos
               ;;
             *)
               cp app/crates/papyrus-lint-cli/target/release/PapyrusLinterCLI cli-dist/PapyrusLinterCLI-linux
               cp app/crates/papyrus-lint-cli/target/release/PapyrusLinterCLI hash-binaries/PapyrusLinterCLI-linux
               cp app/crates/papyrus-lint-lsp/target/release/PapyrusLinterLsp cli-dist/PapyrusLinterLsp-linux
-              cp app/src-tauri/target/release/PapyrusLinter hash-binaries/PapyrusLinter-linux
               ;;
           esac
 
@@ -455,7 +452,7 @@ jobs:
           merge-multiple: true
           path: hash-binaries
 
-      - name: Bake CLI and GUI SHA-256 digests into the plugin
+      - name: Bake CLI SHA-256 digests into the plugin
         run: python3 .github/scripts/write_cli_hashes.py hash-binaries
 
       - name: Bake contact links into the plugin README
@@ -535,7 +532,7 @@ jobs:
           merge-multiple: true
           path: hash-binaries
 
-      - name: Bake CLI and GUI SHA-256 digests into the plugin
+      - name: Bake CLI SHA-256 digests into the plugin
         run: python3 .github/scripts/write_cli_hashes.py hash-binaries
 
       - name: Bake contact links into the plugin README

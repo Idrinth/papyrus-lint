@@ -35,7 +35,7 @@ export function expectedSha256(asset: string): string {
   return bakedDigests(asset)[0];
 }
 
-/** Every SHA-256 accepted for `asset`: the CLI, then any GUI alternatives. */
+/** Every SHA-256 accepted for `asset`: the official CLI digest. */
 export function acceptedSha256s(asset: string): readonly string[] {
   return bakedDigests(asset);
 }
@@ -60,7 +60,7 @@ async function assertExpectedSha256(filePath: string, asset: string): Promise<vo
   }
 }
 
-/** Require a user-supplied executable to match this release's CLI or GUI digest. */
+/** Require a user-supplied executable to match this release's CLI digest. */
 export async function verifyConfiguredExecutable(
   executable: string,
   platform: NodeJS.Platform = process.platform,

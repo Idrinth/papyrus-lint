@@ -52,7 +52,7 @@ app/
 ├── e2e/                               # Playwright layout/browser tests
 ├── public/                            # Static Vite assets
 └── src-tauri/                         # Rust/Tauri application package
-    ├── src/main.rs                    # GUI/CLI process entry point
+    ├── src/main.rs                    # GUI process entry point
     ├── src/lib.rs                     # Tauri builder and command registration
     ├── src/files.rs                   # Script/project discovery and source I/O commands
     ├── src/lint.rs                    # Desktop lint orchestration
@@ -122,11 +122,11 @@ Important internal boundaries:
   `run_lint_command.rs` form the normal lint/fix pipeline; `src/main.rs` is only
   the binary adapter around the library API.
 
-The Tauri package depends on the reusable crates and invokes
-`papyrus_lint_cli::run()` when launched with CLI arguments. This preserves one
-CLI implementation while keeping Tauri and its GUI system dependencies out of
-the standalone CLI crate. Both surfaces use `papyrus-lint-output`, preventing
-their exported report formats from drifting.
+The Tauri package depends on the reusable crates and always launches the
+desktop UI. Command-line linting lives only in the standalone
+`PapyrusLinterCLI` binary. This keeps Tauri and its GUI system
+dependencies out of the CLI crate. Both surfaces use `papyrus-lint-output`,
+preventing their exported report formats from drifting.
 
 ## Shared inputs and generated data
 

@@ -88,7 +88,7 @@ def release_version():
 
 
 def verify_configured_cli(executable, system=None):
-    """Require a manually selected CLI or GUI binary to match this plugin's release."""
+    """Require a manually selected CLI binary to match this plugin's release."""
     if executable in _verified_executables:
         return
     asset = _asset_name(system)
@@ -132,7 +132,7 @@ def expected_sha256(asset):
 
 
 def accepted_sha256s(asset):
-    """Every SHA-256 accepted for `asset`: the CLI, then any GUI alternatives."""
+    """Every SHA-256 accepted for `asset`: the official CLI digest."""
     return _baked_digests(asset)
 
 
