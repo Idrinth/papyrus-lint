@@ -134,7 +134,7 @@ fn save_annotates_top_level_keys_with_explanatory_comments() {
         .expect("failed to read saved config file");
     assert!(contents.starts_with("# game\ngame: skyrim\n"));
     assert!(contents.contains("# semicolon\nsemicolon: true\n"));
-    assert!(contents.contains("# nindentation\nindentation: tab\n"));
+    assert!(contents.contains("# indentation\nindentation: tab\n"));
     assert!(contents.contains("# Each rule accepts true or false\nrules:\n"));
     // Nested rule keys aren't individually commented, matching the
     // README's example, which only comments the `rules:` block itself.
