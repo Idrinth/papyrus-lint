@@ -670,6 +670,28 @@ fn referenced_types_include_declarations_and_nested_expressions() {
 }
 
 #[test]
+fn referenced_types_include_both_try_lock_guard_branches() {
+    let script = papyrus_parser::parse_with_mode(
+        "ScriptName Example\n\
+         Guard ExampleGuard\n\
+         Function Test()\n\
+             TryLockGuard ExampleGuard\n\
+                 GuardBodyType.Value\n\
+             ElseTryLockGuard\n\
+                 GuardElseType.Value\n\
+             EndTryLockGuard\n\
+         EndFunction\n",
+        papyrus_parser::parser::GameEdition::Starfield,
+    )
+    .expect("fixture should parse");
+
+    let names = referenced_type_names(&script);
+
+    assert!(names.iter().any(|name| name == "GuardBodyType"));
+    assert!(names.iter().any(|name| name == "GuardElseType"));
+}
+
+#[test]
 fn referenced_types_load_array_elements_and_struct_owners() {
     let script = papyrus_parser::parse_with_mode(
         "ScriptName Example\n\
