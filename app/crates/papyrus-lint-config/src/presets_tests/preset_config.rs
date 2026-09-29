@@ -30,7 +30,10 @@ fn standard_preset_turns_off_purely_stylistic_rules_but_keeps_formatting() {
     ));
     assert!(reports(
         &config,
-        &format!("ScriptName Example ; {}\n", "x".repeat(120)),
+        &format!(
+            "ScriptName Example ; {}\n",
+            "x".repeat(config.max_line_length)
+        ),
         "line-length"
     ));
 }
@@ -68,7 +71,7 @@ fn strict_preset_matches_the_built_in_default() {
     let config = initialized_preset(Preset::Strict);
     let source = format!(
         "ScriptName Example\n\nFunction bad_name()\nEndFunction ; {}",
-        "x".repeat(120)
+        "x".repeat(config.max_line_length)
     );
 
     assert_eq!(
