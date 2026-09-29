@@ -36,7 +36,7 @@ impl AstLint for Collect {
             ctx.line,
             1,
             format!(
-                "[info] Function '{}' has {} parameters (maximum: {})",
+                "[warning] Function '{}' has {} parameters (maximum: {})",
                 function.name, count, max
             ),
             RULE,
