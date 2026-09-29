@@ -340,6 +340,7 @@ Source/Scripts/Actor.psc:430:1:identifier-casing
 Source/Scripts/Actor.psc:430:1:identifier-casing
 Source/Scripts/Actor.psc:430:1:identifier-casing
 Source/Scripts/Actor.psc:430:1:identifier-casing
+Source/Scripts/Actor.psc:430:1:parameter-count
 Source/Scripts/Actor.psc:430:121:line-length
 Source/Scripts/Actor.psc:433:1:identifier-casing
 Source/Scripts/Actor.psc:436:1:identifier-casing
@@ -1697,6 +1698,7 @@ Source/Scripts/BYOHHouseBuildingScript.psc:265:1:identifier-casing
 Source/Scripts/BYOHHouseBuildingScript.psc:265:1:identifier-casing
 Source/Scripts/BYOHHouseBuildingScript.psc:265:1:identifier-casing
 Source/Scripts/BYOHHouseBuildingScript.psc:265:1:identifier-casing
+Source/Scripts/BYOHHouseBuildingScript.psc:265:1:parameter-count
 Source/Scripts/BYOHHouseBuildingScript.psc:265:121:line-length
 Source/Scripts/BYOHHouseBuildingScript.psc:268:11:forbidden-functions
 Source/Scripts/BYOHHouseBuildingScript.psc:274:1:indentation
@@ -9061,6 +9063,7 @@ Source/Scripts/CWAlliesScript.psc:106:1:indentation
 Source/Scripts/CWAlliesScript.psc:107:1:indentation
 Source/Scripts/CWAlliesScript.psc:108:1:indentation
 Source/Scripts/CWAlliesScript.psc:113:1:cyclomatic-complexity
+Source/Scripts/CWAlliesScript.psc:113:1:parameter-count
 Source/Scripts/CWAlliesScript.psc:114:1:indentation
 Source/Scripts/CWAlliesScript.psc:115:1:indentation
 Source/Scripts/CWAlliesScript.psc:116:1:indentation
@@ -9145,6 +9148,7 @@ Source/Scripts/CWAlliesScript.psc:238:1:indentation
 Source/Scripts/CWAlliesScript.psc:238:121:line-length
 Source/Scripts/CWAlliesScript.psc:243:1:indentation
 Source/Scripts/CWAlliesScript.psc:244:1:trailing-whitespace
+Source/Scripts/CWAlliesScript.psc:251:1:parameter-count
 Source/Scripts/CWAlliesScript.psc:251:121:line-length
 Source/Scripts/CWAlliesScript.psc:252:1:indentation
 Source/Scripts/CWAlliesScript.psc:254:1:indentation
@@ -11937,9 +11941,11 @@ Source/Scripts/CWFortSiegeScript.psc:314:2:empty-body
 Source/Scripts/CWFortSiegeScript.psc:315:1:indentation
 Source/Scripts/CWFortSiegeScript.psc:315:121:line-length
 Source/Scripts/CWFortSiegeScript.psc:316:1:trailing-whitespace
+Source/Scripts/CWFortSiegeScript.psc:322:1:parameter-count
 Source/Scripts/CWFortSiegeScript.psc:322:121:line-length
 Source/Scripts/CWFortSiegeScript.psc:323:1:indentation
 Source/Scripts/CWFortSiegeScript.psc:323:121:line-length
+Source/Scripts/CWFortSiegeScript.psc:343:1:parameter-count
 Source/Scripts/CWFortSiegeScript.psc:343:121:line-length
 Source/Scripts/CWFortSiegeScript.psc:344:1:indentation
 Source/Scripts/CWFortSiegeScript.psc:344:121:line-length
@@ -12853,6 +12859,7 @@ Source/Scripts/CWMission06Script.psc:41:1:none-form-usage
 Source/Scripts/CWMission06Script.psc:42:1:trailing-whitespace
 Source/Scripts/CWMission06Script.psc:44:1:trailing-whitespace
 Source/Scripts/CWMission06Script.psc:51:1:cyclomatic-complexity
+Source/Scripts/CWMission06Script.psc:51:1:parameter-count
 Source/Scripts/CWMission06Script.psc:65:1:indentation
 Source/Scripts/CWMission06Script.psc:67:1:indentation
 Source/Scripts/CWMission06Script.psc:70:1:trailing-whitespace
@@ -13343,6 +13350,7 @@ Source/Scripts/CWMissionScript.psc:142:1:trailing-whitespace
 Source/Scripts/CWMissionScript.psc:147:1:identifier-casing
 Source/Scripts/CWMissionScript.psc:147:1:identifier-casing
 Source/Scripts/CWMissionScript.psc:147:1:identifier-casing
+Source/Scripts/CWMissionScript.psc:147:1:parameter-count
 Source/Scripts/CWMissionScript.psc:147:1:unnecessary-function
 Source/Scripts/CWMissionScript.psc:147:121:line-length
 Source/Scripts/CWMissionScript.psc:148:1:indentation
@@ -13360,6 +13368,7 @@ Source/Scripts/CWMissionScript.psc:157:121:line-length
 Source/Scripts/CWMissionScript.psc:162:1:identifier-casing
 Source/Scripts/CWMissionScript.psc:162:1:identifier-casing
 Source/Scripts/CWMissionScript.psc:162:1:identifier-casing
+Source/Scripts/CWMissionScript.psc:162:1:parameter-count
 Source/Scripts/CWMissionScript.psc:162:1:unnecessary-function
 Source/Scripts/CWMissionScript.psc:162:121:line-length
 Source/Scripts/CWMissionScript.psc:163:1:indentation
@@ -13377,6 +13386,7 @@ Source/Scripts/CWMissionScript.psc:172:121:line-length
 Source/Scripts/CWMissionScript.psc:178:1:identifier-casing
 Source/Scripts/CWMissionScript.psc:178:1:identifier-casing
 Source/Scripts/CWMissionScript.psc:178:1:identifier-casing
+Source/Scripts/CWMissionScript.psc:178:1:parameter-count
 Source/Scripts/CWMissionScript.psc:178:1:unnecessary-function
 Source/Scripts/CWMissionScript.psc:178:121:line-length
 Source/Scripts/CWMissionScript.psc:179:1:indentation
@@ -13395,6 +13405,7 @@ Source/Scripts/CWMissionScript.psc:190:1:trailing-whitespace
 Source/Scripts/CWMissionScript.psc:194:1:identifier-casing
 Source/Scripts/CWMissionScript.psc:194:1:identifier-casing
 Source/Scripts/CWMissionScript.psc:194:1:identifier-casing
+Source/Scripts/CWMissionScript.psc:194:1:parameter-count
 Source/Scripts/CWMissionScript.psc:194:1:unnecessary-function
 Source/Scripts/CWMissionScript.psc:194:121:line-length
 Source/Scripts/CWMissionScript.psc:195:1:indentation
@@ -13475,6 +13486,7 @@ Source/Scripts/CWMissionScript.psc:265:121:line-length
 Source/Scripts/CWMissionScript.psc:270:1:identifier-casing
 Source/Scripts/CWMissionScript.psc:270:1:identifier-casing
 Source/Scripts/CWMissionScript.psc:270:1:identifier-casing
+Source/Scripts/CWMissionScript.psc:270:1:parameter-count
 Source/Scripts/CWMissionScript.psc:270:1:unnecessary-function
 Source/Scripts/CWMissionScript.psc:270:121:line-length
 Source/Scripts/CWMissionScript.psc:271:1:indentation
@@ -13492,6 +13504,7 @@ Source/Scripts/CWMissionScript.psc:284:1:trailing-whitespace
 Source/Scripts/CWMissionScript.psc:288:1:identifier-casing
 Source/Scripts/CWMissionScript.psc:288:1:identifier-casing
 Source/Scripts/CWMissionScript.psc:288:1:identifier-casing
+Source/Scripts/CWMissionScript.psc:288:1:parameter-count
 Source/Scripts/CWMissionScript.psc:288:1:unnecessary-function
 Source/Scripts/CWMissionScript.psc:288:121:line-length
 Source/Scripts/CWMissionScript.psc:289:1:indentation
@@ -13543,6 +13556,7 @@ Source/Scripts/CWMissionScript.psc:329:1:indentation
 Source/Scripts/CWMissionScript.psc:329:1:none-form-usage
 Source/Scripts/CWMissionScript.psc:333:1:identifier-casing
 Source/Scripts/CWMissionScript.psc:333:1:identifier-casing
+Source/Scripts/CWMissionScript.psc:333:1:parameter-count
 Source/Scripts/CWMissionScript.psc:333:121:line-length
 Source/Scripts/CWMissionScript.psc:334:1:indentation
 Source/Scripts/CWMissionScript.psc:334:121:line-length
@@ -16937,6 +16951,7 @@ Source/Scripts/CWScript.psc:3243:1:indentation
 Source/Scripts/CWScript.psc:3244:1:indentation
 Source/Scripts/CWScript.psc:3248:1:cyclomatic-complexity
 Source/Scripts/CWScript.psc:3248:1:identifier-casing
+Source/Scripts/CWScript.psc:3248:1:parameter-count
 Source/Scripts/CWScript.psc:3248:121:line-length
 Source/Scripts/CWScript.psc:3249:1:indentation
 Source/Scripts/CWScript.psc:3249:121:line-length
@@ -18264,6 +18279,7 @@ Source/Scripts/CWSiegePollPlayerLocation.psc:292:1:final-newline
 Source/Scripts/CWSiegeQuickStartScript.psc:1:49:trailing-whitespace
 Source/Scripts/CWSiegeQuickStartScript.psc:11:16:unused-property
 Source/Scripts/CWSiegeQuickStartScript.psc:18:1:cyclomatic-complexity
+Source/Scripts/CWSiegeQuickStartScript.psc:18:1:parameter-count
 Source/Scripts/CWSiegeQuickStartScript.psc:18:121:line-length
 Source/Scripts/CWSiegeQuickStartScript.psc:20:1:indentation
 Source/Scripts/CWSiegeQuickStartScript.psc:20:121:line-length
@@ -18455,6 +18471,7 @@ Source/Scripts/CWSiegeScript.psc:165:121:line-length
 Source/Scripts/CWSiegeScript.psc:189:121:line-length
 Source/Scripts/CWSiegeScript.psc:222:121:line-length
 Source/Scripts/CWSiegeScript.psc:254:121:line-length
+Source/Scripts/CWSiegeScript.psc:306:1:parameter-count
 Source/Scripts/CWSiegeScript.psc:306:121:line-length
 Source/Scripts/CWSiegeScript.psc:307:1:indentation
 Source/Scripts/CWSiegeScript.psc:308:1:indentation
@@ -18504,24 +18521,31 @@ Source/Scripts/CWSiegeScript.psc:422:30:trailing-whitespace
 Source/Scripts/CWSiegeScript.psc:424:1:trailing-whitespace
 Source/Scripts/CWSiegeScript.psc:426:1:trailing-whitespace
 Source/Scripts/CWSiegeScript.psc:432:121:line-length
+Source/Scripts/CWSiegeScript.psc:435:1:parameter-count
 Source/Scripts/CWSiegeScript.psc:435:121:line-length
 Source/Scripts/CWSiegeScript.psc:436:1:indentation
 Source/Scripts/CWSiegeScript.psc:436:121:line-length
+Source/Scripts/CWSiegeScript.psc:450:1:parameter-count
 Source/Scripts/CWSiegeScript.psc:450:121:line-length
 Source/Scripts/CWSiegeScript.psc:451:1:indentation
 Source/Scripts/CWSiegeScript.psc:451:121:line-length
+Source/Scripts/CWSiegeScript.psc:466:1:parameter-count
 Source/Scripts/CWSiegeScript.psc:466:121:line-length
 Source/Scripts/CWSiegeScript.psc:467:1:indentation
 Source/Scripts/CWSiegeScript.psc:467:121:line-length
+Source/Scripts/CWSiegeScript.psc:481:1:parameter-count
 Source/Scripts/CWSiegeScript.psc:481:121:line-length
 Source/Scripts/CWSiegeScript.psc:482:1:indentation
 Source/Scripts/CWSiegeScript.psc:482:121:line-length
+Source/Scripts/CWSiegeScript.psc:497:1:parameter-count
 Source/Scripts/CWSiegeScript.psc:497:121:line-length
 Source/Scripts/CWSiegeScript.psc:498:1:indentation
 Source/Scripts/CWSiegeScript.psc:498:121:line-length
+Source/Scripts/CWSiegeScript.psc:513:1:parameter-count
 Source/Scripts/CWSiegeScript.psc:513:121:line-length
 Source/Scripts/CWSiegeScript.psc:514:1:indentation
 Source/Scripts/CWSiegeScript.psc:514:121:line-length
+Source/Scripts/CWSiegeScript.psc:529:1:parameter-count
 Source/Scripts/CWSiegeScript.psc:530:1:indentation
 Source/Scripts/CWSiegeScript.psc:530:121:line-length
 Source/Scripts/CWSiegeScript.psc:531:1:indentation
@@ -18540,6 +18564,7 @@ Source/Scripts/CWSiegeScript.psc:538:1:indentation
 Source/Scripts/CWSiegeScript.psc:561:1:trailing-whitespace
 Source/Scripts/CWSiegeScript.psc:572:1:trailing-whitespace
 Source/Scripts/CWSiegeScript.psc:573:1:trailing-whitespace
+Source/Scripts/CWSiegeScript.psc:577:1:parameter-count
 Source/Scripts/CWSiegeScript.psc:578:1:indentation
 Source/Scripts/CWSiegeScript.psc:578:121:line-length
 Source/Scripts/CWSiegeScript.psc:579:1:indentation
@@ -18557,6 +18582,7 @@ Source/Scripts/CWSiegeScript.psc:585:121:line-length
 Source/Scripts/CWSiegeScript.psc:586:1:indentation
 Source/Scripts/CWSiegeScript.psc:609:1:trailing-whitespace
 Source/Scripts/CWSiegeScript.psc:620:1:trailing-whitespace
+Source/Scripts/CWSiegeScript.psc:624:1:parameter-count
 Source/Scripts/CWSiegeScript.psc:625:1:indentation
 Source/Scripts/CWSiegeScript.psc:625:121:line-length
 Source/Scripts/CWSiegeScript.psc:626:1:indentation
@@ -18965,6 +18991,7 @@ Source/Scripts/CWThreatCombatBarksScript.psc:78:18:unused-property
 Source/Scripts/CWThreatCombatBarksScript.psc:79:18:unused-property
 Source/Scripts/CWThreatCombatBarksScript.psc:134:121:line-length
 Source/Scripts/CWThreatCombatBarksScript.psc:137:1:cyclomatic-complexity
+Source/Scripts/CWThreatCombatBarksScript.psc:137:1:parameter-count
 Source/Scripts/CWThreatCombatBarksScript.psc:137:121:line-length
 Source/Scripts/CWThreatCombatBarksScript.psc:138:1:indentation
 Source/Scripts/CWThreatCombatBarksScript.psc:140:1:indentation
@@ -19540,6 +19567,7 @@ Source/Scripts/CarriageSystemScript.psc:268:1:identifier-casing
 Source/Scripts/CarriageSystemScript.psc:268:1:identifier-casing
 Source/Scripts/CarriageSystemScript.psc:268:1:identifier-casing
 Source/Scripts/CarriageSystemScript.psc:268:1:identifier-casing
+Source/Scripts/CarriageSystemScript.psc:268:1:parameter-count
 Source/Scripts/CarriageSystemScript.psc:268:121:line-length
 Source/Scripts/CarriageSystemScript.psc:269:1:indentation
 Source/Scripts/CarriageSystemScript.psc:270:1:indentation
@@ -19947,6 +19975,7 @@ Source/Scripts/Cell.psc:25:1:identifier-casing
 Source/Scripts/Cell.psc:25:1:identifier-casing
 Source/Scripts/Cell.psc:25:1:identifier-casing
 Source/Scripts/Cell.psc:25:1:identifier-casing
+Source/Scripts/Cell.psc:25:1:parameter-count
 Source/Scripts/Cell.psc:28:1:indentation
 Source/Scripts/Cell.psc:29:1:identifier-casing
 Source/Scripts/Cell.psc:29:1:identifier-casing
@@ -21016,6 +21045,7 @@ Source/Scripts/Critter.psc:631:1:identifier-casing
 Source/Scripts/Critter.psc:631:1:identifier-casing
 Source/Scripts/Critter.psc:631:1:identifier-casing
 Source/Scripts/Critter.psc:631:1:identifier-casing
+Source/Scripts/Critter.psc:631:1:parameter-count
 Source/Scripts/Critter.psc:631:121:line-length
 Source/Scripts/Critter.psc:634:1:trailing-whitespace
 Source/Scripts/Critter.psc:637:1:trailing-whitespace
@@ -71121,6 +71151,7 @@ Source/Scripts/Game.psc:13:1:identifier-casing
 Source/Scripts/Game.psc:13:1:identifier-casing
 Source/Scripts/Game.psc:13:1:identifier-casing
 Source/Scripts/Game.psc:13:1:identifier-casing
+Source/Scripts/Game.psc:13:1:parameter-count
 Source/Scripts/Game.psc:13:121:line-length
 Source/Scripts/Game.psc:16:1:identifier-casing
 Source/Scripts/Game.psc:16:1:identifier-casing
@@ -71138,6 +71169,7 @@ Source/Scripts/Game.psc:28:1:identifier-casing
 Source/Scripts/Game.psc:28:1:identifier-casing
 Source/Scripts/Game.psc:28:1:identifier-casing
 Source/Scripts/Game.psc:28:1:identifier-casing
+Source/Scripts/Game.psc:28:1:parameter-count
 Source/Scripts/Game.psc:28:121:line-length
 Source/Scripts/Game.psc:29:1:indentation
 Source/Scripts/Game.psc:29:121:line-length
@@ -71153,6 +71185,7 @@ Source/Scripts/Game.psc:32:1:identifier-casing
 Source/Scripts/Game.psc:32:1:identifier-casing
 Source/Scripts/Game.psc:32:1:identifier-casing
 Source/Scripts/Game.psc:32:1:indentation
+Source/Scripts/Game.psc:32:1:parameter-count
 Source/Scripts/Game.psc:32:121:line-length
 Source/Scripts/Game.psc:33:1:indentation
 Source/Scripts/Game.psc:33:121:line-length
@@ -71734,6 +71767,7 @@ Source/Scripts/HazardBase.psc:62:1:identifier-casing
 Source/Scripts/HazardBase.psc:62:1:identifier-casing
 Source/Scripts/HazardBase.psc:62:1:identifier-casing
 Source/Scripts/HazardBase.psc:62:1:identifier-casing
+Source/Scripts/HazardBase.psc:62:1:parameter-count
 Source/Scripts/HazardBase.psc:62:121:line-length
 Source/Scripts/HazardBase.psc:63:121:line-length
 Source/Scripts/HazardBase.psc:64:1:indentation
@@ -81442,6 +81476,7 @@ Source/Scripts/Message.psc:5:1:identifier-casing
 Source/Scripts/Message.psc:5:1:identifier-casing
 Source/Scripts/Message.psc:5:1:identifier-casing
 Source/Scripts/Message.psc:5:1:identifier-casing
+Source/Scripts/Message.psc:5:1:parameter-count
 Source/Scripts/Message.psc:5:121:line-length
 Source/Scripts/Message.psc:9:1:identifier-casing
 Source/Scripts/Message.psc:9:1:identifier-casing
@@ -82462,6 +82497,7 @@ Source/Scripts/ObjectReference.psc:486:1:identifier-casing
 Source/Scripts/ObjectReference.psc:486:1:identifier-casing
 Source/Scripts/ObjectReference.psc:486:1:identifier-casing
 Source/Scripts/ObjectReference.psc:486:1:identifier-casing
+Source/Scripts/ObjectReference.psc:486:1:parameter-count
 Source/Scripts/ObjectReference.psc:486:121:line-length
 Source/Scripts/ObjectReference.psc:489:1:identifier-casing
 Source/Scripts/ObjectReference.psc:489:1:identifier-casing
@@ -82485,6 +82521,7 @@ Source/Scripts/ObjectReference.psc:498:1:identifier-casing
 Source/Scripts/ObjectReference.psc:498:1:identifier-casing
 Source/Scripts/ObjectReference.psc:498:1:identifier-casing
 Source/Scripts/ObjectReference.psc:498:1:identifier-casing
+Source/Scripts/ObjectReference.psc:498:1:parameter-count
 Source/Scripts/ObjectReference.psc:498:121:line-length
 Source/Scripts/ObjectReference.psc:501:1:identifier-casing
 Source/Scripts/ObjectReference.psc:501:1:identifier-casing
@@ -82537,6 +82574,7 @@ Source/Scripts/ObjectReference.psc:582:1:identifier-casing
 Source/Scripts/ObjectReference.psc:582:1:identifier-casing
 Source/Scripts/ObjectReference.psc:582:1:identifier-casing
 Source/Scripts/ObjectReference.psc:582:1:identifier-casing
+Source/Scripts/ObjectReference.psc:582:1:parameter-count
 Source/Scripts/ObjectReference.psc:582:121:line-length
 Source/Scripts/ObjectReference.psc:585:1:identifier-casing
 Source/Scripts/ObjectReference.psc:585:1:identifier-casing
@@ -82547,6 +82585,7 @@ Source/Scripts/ObjectReference.psc:585:1:identifier-casing
 Source/Scripts/ObjectReference.psc:585:1:identifier-casing
 Source/Scripts/ObjectReference.psc:585:1:identifier-casing
 Source/Scripts/ObjectReference.psc:585:1:identifier-casing
+Source/Scripts/ObjectReference.psc:585:1:parameter-count
 Source/Scripts/ObjectReference.psc:585:121:line-length
 Source/Scripts/ObjectReference.psc:588:1:identifier-casing
 Source/Scripts/ObjectReference.psc:588:1:identifier-casing
@@ -118965,6 +119004,7 @@ Source/Scripts/Quest.psc:12:1:identifier-casing
 Source/Scripts/Quest.psc:12:1:identifier-casing
 Source/Scripts/Quest.psc:12:1:identifier-casing
 Source/Scripts/Quest.psc:12:1:identifier-casing
+Source/Scripts/Quest.psc:12:1:parameter-count
 Source/Scripts/Quest.psc:12:121:line-length
 Source/Scripts/Quest.psc:17:1:numeric-comparison
 Source/Scripts/Quest.psc:18:63:exclamation-spacing
@@ -119921,6 +119961,7 @@ Source/Scripts/RPDefault_OnAggro.psc:67:1:identifier-casing
 Source/Scripts/RPDefault_OnAggro.psc:67:1:identifier-casing
 Source/Scripts/RPDefault_OnAggro.psc:67:1:identifier-casing
 Source/Scripts/RPDefault_OnAggro.psc:67:1:identifier-casing
+Source/Scripts/RPDefault_OnAggro.psc:67:1:parameter-count
 Source/Scripts/RPDefault_OnAggro.psc:67:1:unnecessary-function
 Source/Scripts/RPDefault_OnAggro.psc:67:121:line-length
 Source/Scripts/RPDefault_OnAggro.psc:69:1:trailing-whitespace
@@ -119982,6 +120023,7 @@ Source/Scripts/RPDefault_OnAggroAlias.psc:67:1:identifier-casing
 Source/Scripts/RPDefault_OnAggroAlias.psc:67:1:identifier-casing
 Source/Scripts/RPDefault_OnAggroAlias.psc:67:1:identifier-casing
 Source/Scripts/RPDefault_OnAggroAlias.psc:67:1:identifier-casing
+Source/Scripts/RPDefault_OnAggroAlias.psc:67:1:parameter-count
 Source/Scripts/RPDefault_OnAggroAlias.psc:67:1:unnecessary-function
 Source/Scripts/RPDefault_OnAggroAlias.psc:67:121:line-length
 Source/Scripts/RPDefault_OnAggroAlias.psc:69:1:trailing-whitespace
@@ -120149,6 +120191,7 @@ Source/Scripts/RPDefault_OnHit.psc:164:1:identifier-casing
 Source/Scripts/RPDefault_OnHit.psc:164:1:identifier-casing
 Source/Scripts/RPDefault_OnHit.psc:164:1:identifier-casing
 Source/Scripts/RPDefault_OnHit.psc:164:1:identifier-casing
+Source/Scripts/RPDefault_OnHit.psc:164:1:parameter-count
 Source/Scripts/RPDefault_OnHit.psc:164:1:unnecessary-function
 Source/Scripts/RPDefault_OnHit.psc:164:121:line-length
 Source/Scripts/RPDefault_OnHit.psc:167:12:final-newline
@@ -120221,6 +120264,7 @@ Source/Scripts/RPDefault_OnHitAlias.psc:163:1:identifier-casing
 Source/Scripts/RPDefault_OnHitAlias.psc:163:1:identifier-casing
 Source/Scripts/RPDefault_OnHitAlias.psc:163:1:identifier-casing
 Source/Scripts/RPDefault_OnHitAlias.psc:163:1:identifier-casing
+Source/Scripts/RPDefault_OnHitAlias.psc:163:1:parameter-count
 Source/Scripts/RPDefault_OnHitAlias.psc:163:1:unnecessary-function
 Source/Scripts/RPDefault_OnHitAlias.psc:163:121:line-length
 Source/Scripts/RPDefault_OnHitAlias.psc:166:12:final-newline
@@ -120423,6 +120467,7 @@ Source/Scripts/RPDefault_SetGlobalOnHit.psc:10:1:identifier-casing
 Source/Scripts/RPDefault_SetGlobalOnHit.psc:10:1:identifier-casing
 Source/Scripts/RPDefault_SetGlobalOnHit.psc:10:1:identifier-casing
 Source/Scripts/RPDefault_SetGlobalOnHit.psc:10:1:identifier-casing
+Source/Scripts/RPDefault_SetGlobalOnHit.psc:10:1:parameter-count
 Source/Scripts/RPDefault_SetGlobalOnHit.psc:10:121:line-length
 Source/Scripts/RPDefault_SetGlobalOnHit.psc:11:1:none-form-usage
 Source/Scripts/RPDefault_SetGlobalOnHit.psc:13:12:final-newline
@@ -120435,6 +120480,7 @@ Source/Scripts/RPDefault_SetGlobalOnHitAlias.psc:11:1:identifier-casing
 Source/Scripts/RPDefault_SetGlobalOnHitAlias.psc:11:1:identifier-casing
 Source/Scripts/RPDefault_SetGlobalOnHitAlias.psc:11:1:identifier-casing
 Source/Scripts/RPDefault_SetGlobalOnHitAlias.psc:11:1:identifier-casing
+Source/Scripts/RPDefault_SetGlobalOnHitAlias.psc:11:1:parameter-count
 Source/Scripts/RPDefault_SetGlobalOnHitAlias.psc:11:121:line-length
 Source/Scripts/RPDefault_SetGlobalOnHitAlias.psc:12:1:none-form-usage
 Source/Scripts/RPDefault_SetGlobalOnHitAlias.psc:14:12:final-newline
@@ -120568,6 +120614,7 @@ Source/Scripts/RPDefault_SetStageOnHit.psc:13:1:identifier-casing
 Source/Scripts/RPDefault_SetStageOnHit.psc:13:1:identifier-casing
 Source/Scripts/RPDefault_SetStageOnHit.psc:13:1:identifier-casing
 Source/Scripts/RPDefault_SetStageOnHit.psc:13:1:identifier-casing
+Source/Scripts/RPDefault_SetStageOnHit.psc:13:1:parameter-count
 Source/Scripts/RPDefault_SetStageOnHit.psc:13:1:unnecessary-function
 Source/Scripts/RPDefault_SetStageOnHit.psc:13:121:line-length
 Source/Scripts/RPDefault_SetStageOnHit.psc:14:1:none-form-usage
@@ -120583,6 +120630,7 @@ Source/Scripts/RPDefault_SetStageOnHitAlias.psc:10:1:identifier-casing
 Source/Scripts/RPDefault_SetStageOnHitAlias.psc:10:1:identifier-casing
 Source/Scripts/RPDefault_SetStageOnHitAlias.psc:10:1:identifier-casing
 Source/Scripts/RPDefault_SetStageOnHitAlias.psc:10:1:identifier-casing
+Source/Scripts/RPDefault_SetStageOnHitAlias.psc:10:1:parameter-count
 Source/Scripts/RPDefault_SetStageOnHitAlias.psc:10:1:unnecessary-function
 Source/Scripts/RPDefault_SetStageOnHitAlias.psc:10:121:line-length
 Source/Scripts/RPDefault_SetStageOnHitAlias.psc:17:12:final-newline
@@ -120792,6 +120840,7 @@ Source/Scripts/RPDefault_Utility.psc:166:1:identifier-casing
 Source/Scripts/RPDefault_Utility.psc:166:1:identifier-casing
 Source/Scripts/RPDefault_Utility.psc:166:1:identifier-casing
 Source/Scripts/RPDefault_Utility.psc:166:1:identifier-casing
+Source/Scripts/RPDefault_Utility.psc:166:1:parameter-count
 Source/Scripts/RPDefault_Utility.psc:166:1:unnecessary-function
 Source/Scripts/RPDefault_Utility.psc:166:121:line-length
 Source/Scripts/RPDefault_Utility.psc:169:121:line-length
@@ -146664,6 +146713,7 @@ Source/Scripts/WICrowdTriggerScript.psc:141:1:trailing-whitespace
 Source/Scripts/WICrowdTriggerScript.psc:142:1:indentation
 Source/Scripts/WICrowdTriggerScript.psc:144:1:trailing-whitespace
 Source/Scripts/WICrowdTriggerScript.psc:145:1:trailing-whitespace
+Source/Scripts/WICrowdTriggerScript.psc:150:1:parameter-count
 Source/Scripts/WICrowdTriggerScript.psc:150:121:line-length
 Source/Scripts/WICrowdTriggerScript.psc:151:1:indentation
 Source/Scripts/WICrowdTriggerScript.psc:151:121:line-length
@@ -146722,6 +146772,7 @@ Source/Scripts/WICrowdTriggerScript.psc:246:32:trailing-whitespace
 Source/Scripts/WIDeadBody01.psc:4:1:identifier-casing
 Source/Scripts/WIDeadBody01.psc:4:16:unused-property
 Source/Scripts/WIDeadBody01.psc:4:28:trailing-whitespace
+Source/Scripts/WIDeadBody01.psc:7:1:parameter-count
 Source/Scripts/WIDeadBody01.psc:8:1:indentation
 Source/Scripts/WIDeadBody01.psc:9:1:indentation
 Source/Scripts/WIDeadBody01.psc:10:1:indentation
@@ -149288,6 +149339,7 @@ Source/Scripts/ccBGSSSE001_CrabMQ4CrabSpawner.psc:118:1:identifier-casing
 Source/Scripts/ccBGSSSE001_CrabMQ4CrabSpawner.psc:118:1:identifier-casing
 Source/Scripts/ccBGSSSE001_CrabMQ4CrabSpawner.psc:118:1:identifier-casing
 Source/Scripts/ccBGSSSE001_CrabMQ4CrabSpawner.psc:118:1:identifier-casing
+Source/Scripts/ccBGSSSE001_CrabMQ4CrabSpawner.psc:118:1:parameter-count
 Source/Scripts/ccBGSSSE001_CrabMQ4CrabSpawner.psc:118:121:line-length
 Source/Scripts/ccBGSSSE001_CrabMQ4CrabSpawner.psc:119:121:line-length
 Source/Scripts/ccBGSSSE001_CrabMQ4CrabSpawner.psc:124:1:identifier-casing
@@ -169688,6 +169740,7 @@ Source/Scripts/screenshot.psc:50:1:identifier-casing
 Source/Scripts/screenshot.psc:50:1:identifier-casing
 Source/Scripts/screenshot.psc:50:1:identifier-casing
 Source/Scripts/screenshot.psc:50:1:identifier-casing
+Source/Scripts/screenshot.psc:50:1:parameter-count
 Source/Scripts/screenshot.psc:50:121:line-length
 Source/Scripts/screenshot.psc:90:1:final-newline
 Source/Scripts/shipwreck04JewelryBoxSCRIPT.psc:1:12:type-casing

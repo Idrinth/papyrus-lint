@@ -3346,6 +3346,7 @@ Source/Scripts/CWAlliesScript.psc:76:121:line-length
 Source/Scripts/CWAlliesScript.psc:78:121:line-length
 Source/Scripts/CWAlliesScript.psc:80:1:none-form-usage
 Source/Scripts/CWAlliesScript.psc:96:1:none-form-usage
+Source/Scripts/CWAlliesScript.psc:113:1:parameter-count
 Source/Scripts/CWAlliesScript.psc:128:121:line-length
 Source/Scripts/CWAlliesScript.psc:135:121:line-length
 Source/Scripts/CWAlliesScript.psc:140:1:unchecked-cast
@@ -4321,8 +4322,10 @@ Source/Scripts/CWFortSiegeScript.psc:309:121:line-length
 Source/Scripts/CWFortSiegeScript.psc:312:121:line-length
 Source/Scripts/CWFortSiegeScript.psc:314:2:empty-body
 Source/Scripts/CWFortSiegeScript.psc:315:121:line-length
+Source/Scripts/CWFortSiegeScript.psc:322:1:parameter-count
 Source/Scripts/CWFortSiegeScript.psc:322:121:line-length
 Source/Scripts/CWFortSiegeScript.psc:323:121:line-length
+Source/Scripts/CWFortSiegeScript.psc:343:1:parameter-count
 Source/Scripts/CWFortSiegeScript.psc:343:121:line-length
 Source/Scripts/CWFortSiegeScript.psc:344:121:line-length
 Source/Scripts/CWFortSiegeScript.psc:387:121:line-length
@@ -4679,6 +4682,7 @@ Source/Scripts/CWMission06Script.psc:40:1:none-form-usage
 Source/Scripts/CWMission06Script.psc:40:78:forbidden-functions
 Source/Scripts/CWMission06Script.psc:40:121:line-length
 Source/Scripts/CWMission06Script.psc:41:1:none-form-usage
+Source/Scripts/CWMission06Script.psc:51:1:parameter-count
 Source/Scripts/CWMission06TurncoatScript.psc:5:1:unchecked-cast
 Source/Scripts/CWMission07EnemySoldierScript.psc:3:121:line-length
 Source/Scripts/CWMission07EnemySoldierScript.psc:12:1:unchecked-cast
@@ -6279,6 +6283,7 @@ Source/Scripts/CWSiegeScript.psc:165:121:line-length
 Source/Scripts/CWSiegeScript.psc:189:121:line-length
 Source/Scripts/CWSiegeScript.psc:222:121:line-length
 Source/Scripts/CWSiegeScript.psc:254:121:line-length
+Source/Scripts/CWSiegeScript.psc:306:1:parameter-count
 Source/Scripts/CWSiegeScript.psc:306:121:line-length
 Source/Scripts/CWSiegeScript.psc:349:121:line-length
 Source/Scripts/CWSiegeScript.psc:356:1:none-form-usage
@@ -6298,18 +6303,21 @@ Source/Scripts/CWSiegeScript.psc:497:121:line-length
 Source/Scripts/CWSiegeScript.psc:498:121:line-length
 Source/Scripts/CWSiegeScript.psc:513:121:line-length
 Source/Scripts/CWSiegeScript.psc:514:121:line-length
+Source/Scripts/CWSiegeScript.psc:529:1:parameter-count
 Source/Scripts/CWSiegeScript.psc:530:121:line-length
 Source/Scripts/CWSiegeScript.psc:531:121:line-length
 Source/Scripts/CWSiegeScript.psc:532:121:line-length
 Source/Scripts/CWSiegeScript.psc:535:121:line-length
 Source/Scripts/CWSiegeScript.psc:536:121:line-length
 Source/Scripts/CWSiegeScript.psc:537:121:line-length
+Source/Scripts/CWSiegeScript.psc:577:1:parameter-count
 Source/Scripts/CWSiegeScript.psc:578:121:line-length
 Source/Scripts/CWSiegeScript.psc:579:121:line-length
 Source/Scripts/CWSiegeScript.psc:580:121:line-length
 Source/Scripts/CWSiegeScript.psc:583:121:line-length
 Source/Scripts/CWSiegeScript.psc:584:121:line-length
 Source/Scripts/CWSiegeScript.psc:585:121:line-length
+Source/Scripts/CWSiegeScript.psc:624:1:parameter-count
 Source/Scripts/CWSiegeScript.psc:625:121:line-length
 Source/Scripts/CWSiegeScript.psc:626:121:line-length
 Source/Scripts/CWSiegeScript.psc:627:121:line-length
@@ -6462,6 +6470,7 @@ Source/Scripts/CWSoldierDeathObserverAliasScript.psc:26:121:line-length
 Source/Scripts/CWSoldierDeathObserverAliasScript.psc:28:1:none-form-usage
 Source/Scripts/CWThreatCombatBarksScript.psc:134:121:line-length
 Source/Scripts/CWThreatCombatBarksScript.psc:137:1:cyclomatic-complexity
+Source/Scripts/CWThreatCombatBarksScript.psc:137:1:parameter-count
 Source/Scripts/CWThreatCombatBarksScript.psc:137:121:line-length
 Source/Scripts/CWThreatCombatBarksScript.psc:143:121:line-length
 Source/Scripts/CWThreatCombatBarksScript.psc:145:1:numeric-comparison
@@ -25518,6 +25527,7 @@ Source/Scripts/ObjectReference.psc:465:121:line-length
 Source/Scripts/ObjectReference.psc:466:121:line-length
 Source/Scripts/ObjectReference.psc:486:121:line-length
 Source/Scripts/ObjectReference.psc:492:121:line-length
+Source/Scripts/ObjectReference.psc:498:1:parameter-count
 Source/Scripts/ObjectReference.psc:498:121:line-length
 Source/Scripts/ObjectReference.psc:507:121:line-length
 Source/Scripts/ObjectReference.psc:517:121:line-length
@@ -49053,6 +49063,7 @@ Source/Scripts/WICrowdTriggerScript.psc:74:2:forbidden-functions
 Source/Scripts/WICrowdTriggerScript.psc:79:1:none-form-usage
 Source/Scripts/WICrowdTriggerScript.psc:92:1:cyclomatic-complexity
 Source/Scripts/WICrowdTriggerScript.psc:140:1:none-form-usage
+Source/Scripts/WICrowdTriggerScript.psc:150:1:parameter-count
 Source/Scripts/WICrowdTriggerScript.psc:150:121:line-length
 Source/Scripts/WICrowdTriggerScript.psc:151:121:line-length
 Source/Scripts/WICrowdTriggerScript.psc:152:121:line-length
