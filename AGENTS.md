@@ -91,7 +91,7 @@ CI treats clippy warnings as errors.
    (`src/tags.rs`), `Rules`/`default_rules()` (`src/config.rs`), the
    `collect_diagnostics`/`apply_repairs` dispatch, and each rule's
    `mod` in `src/lib.rs` from the generated `shared/rules.json` at build time.
-   `Config`'s other fields are compiled from `shared/configuration/lint-settings.json`.
+   `Config`'s other fields are compiled from `shared/configuration/lint-settings.yaml`.
    `pages/build.py` generates the website's searchable `rules.html`
    straight from it; and release tooling fills in `templates/nexuspage.bbcode`'s
    five lint tables from it (see the comments in `.github/workflows/release.yml`) —
@@ -142,16 +142,17 @@ Minimum touch list (see also [`CONTRIBUTING.md`](CONTRIBUTING.md)):
    `collect_diagnostics`/`apply_repairs`, and `lib.rs`'s rule `mod`s from
    this file at build time — don't hand-edit those. `Config`'s other
    fields (everything except `rules`) are generated from
-   `shared/configuration/lint-settings.json` by the same `build.rs`. The desktop
+   `shared/configuration/lint-settings.yaml` by the same `build.rs`. The desktop
    Settings tab's per-rule checkboxes are the same: `app/scripts/generate-config-types.mjs`
    writes `RULE_SETTINGS` into `app/src/config-types.ts`, and
    `bindConfigSettings` renders `#lint-rules` from that. Don't add a
    checkbox to `app/index.html` (or the test fixture) for a new rule.
-   That script also writes `LINT_SETTINGS` from `shared/configuration/lint-settings.json`;
+   That script also writes `LINT_SETTINGS` from `shared/configuration/lint-settings.yaml`;
    `bindConfigSettings` renders those controls into `#lint-config-game` and
    `#lint-config-settings`. Don't hand-edit `Config` or those controls —
-   add the key to `shared/configuration/lint-settings.json` (with
-   `yaml_comment`, `yaml_default`, and `schema`), then regenerate
+   add the key to `shared/configuration/lint-settings.yaml` (with
+   `yaml.comment`, `yaml.default`, `schema`, and for Config fields `rust.type` /
+   `rust.default`), then regenerate
    `schema/papyrus-lint.schema.json`
    (`python3 .github/scripts/generate_config_schema.py`) and the git-ignored
    default YAML (`python3 .github/scripts/generate_default_config.py`).

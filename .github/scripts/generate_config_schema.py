@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Generate schema/papyrus-lint.schema.json from lint-settings + rules.
 
-Run after editing shared/configuration/lint-settings.json or shared/rules/*.json
+Run after editing shared/configuration/lint-settings.yaml or shared/rules/*.json
 (and after build_rules_json.py). The output is a Pages/docs artifact and is
 git-ignored - not a source of truth. CI and Pages jobs generate it before use;
 editors consume the published copy at

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Generate shared/configuration/papyrus-lint.default.yaml (and the config JSON Schema).
 
-Run after editing shared/configuration/lint-settings.json or shared/rules/*.json
+Run after editing shared/configuration/lint-settings.yaml or shared/rules/*.json
 (and after build_rules_json.py). Both outputs are build/release/docs artifacts and
 are git-ignored - not a source of truth. The schema is also produced so Pages and
 CI jobs that already call this script can publish/validate without a checked-in

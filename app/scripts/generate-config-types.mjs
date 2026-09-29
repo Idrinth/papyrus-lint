@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Generates app/src/config-types.ts from shared/rules/*.json,
-// shared/configuration/papyrus-lint.default.yaml, and shared/configuration/lint-settings.json.
+// shared/configuration/papyrus-lint.default.yaml, and shared/configuration/lint-settings.yaml.
 // Mirrors papyrus-lints/build.rs writing Rules / default_rules() and Config
 // into $OUT_DIR.
 
@@ -8,6 +8,28 @@ import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+
+export function loadYamlFile(filePath) {
+  const py = [
+    "import json, sys",
+    "try:",
+    " import yaml",
+    "except ImportError:",
+    " import subprocess",
+    " subprocess.check_call([sys.executable, '-m', 'pip', 'install', '--user', '-q', 'PyYAML==6.0.2'])",
+    " import yaml",
+    "json.dump(yaml.safe_load(open(sys.argv[1], encoding='utf-8')), sys.stdout)",
+  ].join("\n");
+  const result = spawnSync("python3", ["-c", py, filePath], { encoding: "utf8" });
+  if (result.error) {
+    throw new Error(`could not parse ${filePath}: ${result.error.message}`);
+  }
+  if (result.status !== 0) {
+    throw new Error(`could not parse ${filePath}: ${(result.stderr || "").trim() || `exit ${result.status}`}`);
+  }
+  return JSON.parse(result.stdout);
+}
+
 
 export const RULE_ID_TO_CONFIG_KEY = {
   "float-to-int": "float_int_conversion",
@@ -17,7 +39,7 @@ export const RULE_ID_TO_CONFIG_KEY = {
 const HEADER = [
   "// Generated from `shared/rules/*.json`,",
   "// `shared/configuration/papyrus-lint.default.yaml`, and",
-  "// `shared/configuration/lint-settings.json` by",
+  "// `shared/configuration/lint-settings.yaml` by",
   "// `app/scripts/generate-config-types.mjs`. Do not edit by hand.",
   "",
 ].join("\n");
@@ -46,7 +68,6 @@ const UI_PASSTHROUGH = [
   ["row", "row"],
   ["fill_selects", "fillSelects"],
   ["treat_zero_as_empty", "treatZeroAsEmpty"],
-  ["ui_order", "uiOrder"],
 ];
 
 export function configKeyFor(ruleId) {
@@ -159,8 +180,8 @@ function assertSettings(settings, top) {
       throw new Error(`duplicate lint setting ${setting.key}`);
     }
     seen.add(setting.key);
-    if (typeof setting.yaml_default !== "string" || typeof setting.ts_type !== "string") {
-      throw new Error(`lint setting ${setting.key} is missing yaml_default or ts_type`);
+    if (typeof setting.yaml?.default !== "string" || typeof setting.ts_type !== "string") {
+      throw new Error(`lint setting ${setting.key} is missing yaml.default or ts_type`);
     }
     if (!setting.ui?.id || !setting.ui.widget || !setting.ui.mount) {
       throw new Error(`lint setting ${setting.key} is missing ui.id, ui.widget, or ui.mount`);
@@ -168,9 +189,9 @@ function assertSettings(settings, top) {
     if (!(setting.key in top)) {
       throw new Error(`default YAML is missing ${setting.key}`);
     }
-    if (top[setting.key] !== setting.yaml_default) {
+    if (top[setting.key] !== setting.yaml.default) {
       throw new Error(
-        `default YAML ${setting.key} is ${top[setting.key]} but lint-settings says ${setting.yaml_default}`,
+        `default YAML ${setting.key} is ${top[setting.key]} but lint-settings says ${setting.yaml.default}`,
       );
     }
   }
@@ -187,7 +208,7 @@ function lintSettingForTs(setting) {
     id: ui.id,
     widget: ui.widget,
     mount: ui.mount,
-    defaultValue: parseYamlScalar(setting.yaml_default),
+    defaultValue: parseYamlScalar(setting.yaml.default),
   };
   for (const [from, to] of UI_PASSTHROUGH) {
     if (ui[from] !== undefined) {
@@ -326,12 +347,11 @@ export function renderConfigTypes(rules, defaultYaml, settings) {
   lines.push("  row?: boolean;");
   lines.push("  fillSelects?: readonly string[];");
   lines.push("  treatZeroAsEmpty?: boolean;");
-  lines.push("  uiOrder?: number;");
   lines.push("}");
   lines.push("");
   lines.push("export const LINT_SETTINGS: readonly LintSetting[] = [");
-  const uiOrdered = [...settings].sort((left, right) => (left.ui.ui_order ?? 0) - (right.ui.ui_order ?? 0));
-  for (const setting of uiOrdered) {
+  // Declaration order in lint-settings.yaml is the UI order.
+  for (const setting of settings) {
     lines.push(`  ${JSON.stringify(lintSettingForTs(setting))},`);
   }
   lines.push("];");
@@ -348,7 +368,7 @@ export function renderConfigTypes(rules, defaultYaml, settings) {
 export function writeConfigTypes(options) {
   const rules = assembleRules(options.rulesDir);
   const defaultYaml = fs.readFileSync(options.defaultYamlPath, "utf8");
-  const settingsFile = JSON.parse(fs.readFileSync(options.settingsPath, "utf8"));
+  const settingsFile = loadYamlFile(options.settingsPath);
   const rendered = renderConfigTypes(rules, defaultYaml, settingsFile.settings);
   fs.mkdirSync(path.dirname(options.outPath), { recursive: true });
   fs.writeFileSync(options.outPath, rendered, "utf8");
@@ -374,7 +394,7 @@ if (isMain) {
   const count = writeConfigTypes({
     rulesDir: path.join(repoRoot, "shared", "rules"),
     defaultYamlPath: path.join(repoRoot, "shared", "configuration", "papyrus-lint.default.yaml"),
-    settingsPath: path.join(repoRoot, "shared", "configuration", "lint-settings.json"),
+    settingsPath: path.join(repoRoot, "shared", "configuration", "lint-settings.yaml"),
     outPath: path.join(appDir, "src", "config-types.ts"),
   });
   console.log(`Wrote ${count} rule flags to app/src/config-types.ts.`);

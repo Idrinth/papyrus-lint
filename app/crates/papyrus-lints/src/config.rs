@@ -33,7 +33,7 @@
 //! (`enabled_by_default`, defaulting to `true`). A ruleset set to `false`
 //! disables that lint (and its automatic fix, if it has one) entirely.
 //! The other [`Config`] fields are generated from
-//! `shared/configuration/lint-settings.json` the same way.
+//! `shared/configuration/lint-settings.yaml` the same way.
 //!
 //! `assume_auto_properties_filled` (a top-level key, not a `rules` entry)
 //! is `false` by default: see [`Config::assume_auto_properties_filled`].

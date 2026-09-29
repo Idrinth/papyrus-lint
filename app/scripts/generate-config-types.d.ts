@@ -23,7 +23,10 @@ export function orderRules<T extends { id: string }>(
 
 export interface LintSettingSource {
   key: string;
-  yaml_default: string;
+  yaml: {
+    default: string;
+    comment?: string;
+  };
   ts_type: string;
   ts_alias?: string;
   ts_alias_from?: "value" | "config";
@@ -31,7 +34,6 @@ export interface LintSettingSource {
     id: string;
     widget: string;
     mount: string;
-    ui_order?: number;
     options?: Array<{ value: string; label: string; config?: string }>;
     [extra: string]: unknown;
   };
@@ -42,6 +44,8 @@ export function renderConfigTypes(
   defaultYaml: string,
   settings: LintSettingSource[],
 ): string;
+
+export function loadYamlFile(filePath: string): { settings: LintSettingSource[]; [key: string]: unknown };
 
 export function writeConfigTypes(options: {
   rulesDir: string;

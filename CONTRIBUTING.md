@@ -124,7 +124,7 @@ read - do this before building or testing anything below. Then run `python3
 .github/scripts/generate_default_config.py` so the git-ignored
 `shared/configuration/papyrus-lint.default.yaml` and
 `schema/papyrus-lint.schema.json` match the rules and
-`shared/configuration/lint-settings.json` (Pages and CI already run this).
+`shared/configuration/lint-settings.yaml` (Pages and CI already run this).
 Use `python3 .github/scripts/generate_config_schema.py` alone if you only need
 the schema.
 
@@ -138,7 +138,7 @@ examples (`shared/configuration/papyrus-lint.default.yaml`, `templates/nexuspage
 `RULE_TAGS`, `config.rs`'s `Rules` and the rest of `Config`, the
 check/repair dispatch, and `lib.rs`'s rule `mod`s are all compiled by
 `build.rs` (`Rules` and the dispatch from the generated `shared/rules.json`,
-the other `Config` fields from `shared/configuration/lint-settings.json`), so they
+the other `Config` fields from `shared/configuration/lint-settings.yaml`), so they
 never need hand-editing. The Settings tab controls for those `Config`
 fields are rendered from the same lint-settings file; don't add them to
 `app/index.html`.

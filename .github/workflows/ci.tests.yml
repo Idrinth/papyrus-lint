@@ -25,7 +25,7 @@ jobs:
       - uses: actions/checkout@v7
 
       - name: Install coverage
-        run: pip install coverage
+        run: pip install coverage PyYAML==6.0.2
 
       - name: Test Nexus page scripts
         run: |

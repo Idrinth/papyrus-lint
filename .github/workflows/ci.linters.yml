@@ -28,7 +28,7 @@ jobs:
           python-version: '3.13'
 
       - name: Install check-jsonschema
-        run: pip install check-jsonschema==0.35.0
+        run: pip install check-jsonschema==0.35.0 PyYAML==6.0.2
 
       - name: Validate rule metadata schema
         run: check-jsonschema --schemafile schema/papyrus-lint-rule.schema.json shared/rules/*.json
@@ -53,7 +53,7 @@ jobs:
         run: pip install yamllint==1.37.1
 
       - name: Lint YAML sources
-        run: yamllint shared/rules/data/*/*.yaml shared/links.yaml
+        run: yamllint shared/configuration/lint-settings.yaml shared/rules/data/*/*.yaml shared/links.yaml
 
   python-lint:
     name: CI / Linters / Python (ruff)
