@@ -7,3 +7,20 @@ use papyrus_lints::{
 };
 use papyrus_parser::ast::TypeName;
 use std::collections::HashSet;
+
+#[test]
+fn published_rule_id_lists_are_unique_and_fixable_rules_are_known() {
+    let known: HashSet<_> = KNOWN_RULE_IDS.iter().copied().collect();
+    let fixable: HashSet<_> = FIXABLE_RULE_IDS.iter().copied().collect();
+
+    assert_eq!(known.len(), KNOWN_RULE_IDS.len(), "duplicate known rule id");
+    assert_eq!(
+        fixable.len(),
+        FIXABLE_RULE_IDS.len(),
+        "duplicate fixable rule id"
+    );
+    assert!(
+        fixable.is_subset(&known),
+        "every fixable rule must also be advertised as known"
+    );
+}
