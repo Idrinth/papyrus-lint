@@ -81,6 +81,29 @@ impl IdentifierCasing {
     }
 }
 
+/// File encoding required by the "Forced encoding" lint.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum EncodingEnforced {
+    #[default]
+    Utf8,
+    #[serde(rename = "windows-1252")]
+    Windows1252,
+    #[serde(rename = "iso-8859-1")]
+    Iso88591,
+}
+
+impl EncodingEnforced {
+    /// YAML value for this encoding.
+    pub fn label(self) -> &'static str {
+        match self {
+            EncodingEnforced::Utf8 => "utf8",
+            EncodingEnforced::Windows1252 => "windows-1252",
+            EncodingEnforced::Iso88591 => "iso-8859-1",
+        }
+    }
+}
+
 include!(concat!(env!("OUT_DIR"), "/config_struct.rs"));
 
 include!(concat!(env!("OUT_DIR"), "/rules_struct.rs"));
