@@ -2828,6 +2828,7 @@ Scripts/Source/Base/BoS100FightMonitor.psc:302:1:argument-naming
 Scripts/Source/Base/BoS100FightMonitor.psc:302:1:cyclomatic-complexity
 Scripts/Source/Base/BoS100FightMonitor.psc:302:1:function-override
 Scripts/Source/Base/BoS100FightMonitor.psc:302:1:identifier-casing
+Scripts/Source/Base/BoS100FightMonitor.psc:302:1:nesting-depth
 Scripts/Source/Base/BoS100FightMonitor.psc:306:8:exclamation-spacing
 Scripts/Source/Base/BoS100FightMonitor.psc:306:47:exclamation-spacing
 Scripts/Source/Base/BoS100FightMonitor.psc:324:11:exclamation-spacing
@@ -3304,6 +3305,7 @@ Scripts/Source/Base/BoS303WarningScript.psc:21:1:none-form-usage
 Scripts/Source/Base/BoS303WarningScript.psc:22:1:none-form-usage
 Scripts/Source/Base/BoS303WarningScript.psc:28:1:function-override
 Scripts/Source/Base/BoS303WarningScript.psc:28:1:identifier-casing
+Scripts/Source/Base/BoS303WarningScript.psc:28:1:nesting-depth
 Scripts/Source/Base/BoS303WarningScript.psc:29:1:indentation
 Scripts/Source/Base/BoS303WarningScript.psc:29:7:forbidden-functions
 Scripts/Source/Base/BoS303WarningScript.psc:31:1:indentation
@@ -3910,6 +3912,7 @@ Scripts/Source/Base/BoSM01QuestScript.psc:136:1:argument-naming
 Scripts/Source/Base/BoSM01QuestScript.psc:136:1:function-override
 Scripts/Source/Base/BoSM01QuestScript.psc:136:1:identifier-casing
 Scripts/Source/Base/BoSM01QuestScript.psc:140:1:cyclomatic-complexity
+Scripts/Source/Base/BoSM01QuestScript.psc:140:1:nesting-depth
 Scripts/Source/Base/BoSM01QuestScript.psc:142:1:identifier-casing
 Scripts/Source/Base/BoSM01QuestScript.psc:142:1:unused-local-variable
 Scripts/Source/Base/BoSM01QuestScript.psc:142:22:forbidden-functions
@@ -4126,6 +4129,7 @@ Scripts/Source/Base/BoSVBAliasBoardingScript.psc:7:1:identifier-casing
 Scripts/Source/Base/BoSVBAliasBoardingScript.psc:7:56:trailing-whitespace
 Scripts/Source/Base/BoSVBAliasBoardingScript.psc:10:1:function-override
 Scripts/Source/Base/BoSVBAliasBoardingScript.psc:10:1:identifier-casing
+Scripts/Source/Base/BoSVBAliasBoardingScript.psc:10:1:nesting-depth
 Scripts/Source/Base/BoSVBAliasBoardingScript.psc:12:25:forbidden-functions
 Scripts/Source/Base/BoSVBAliasBoardingScript.psc:13:1:indentation
 Scripts/Source/Base/BoSVBAliasBoardingScript.psc:13:8:forbidden-functions
@@ -5305,6 +5309,7 @@ Scripts/Source/Base/COMDeaconScript.psc:18:1:identifier-casing
 Scripts/Source/Base/COMDeaconScript.psc:18:1:identifier-casing
 Scripts/Source/Base/COMDeaconScript.psc:18:1:identifier-casing
 Scripts/Source/Base/COMDeaconScript.psc:18:1:identifier-casing
+Scripts/Source/Base/COMDeaconScript.psc:18:1:nesting-depth
 Scripts/Source/Base/COMDeaconScript.psc:20:22:forbidden-functions
 Scripts/Source/Base/COMDeaconScript.psc:22:9:forbidden-functions
 Scripts/Source/Base/COMDeaconScript.psc:35:1:none-form-usage
@@ -5874,6 +5879,7 @@ Scripts/Source/Base/CZStageControllerScript.psc:292:1:identifier-casing
 Scripts/Source/Base/CZStageControllerScript.psc:296:1:cyclomatic-complexity
 Scripts/Source/Base/CZStageControllerScript.psc:296:1:function-override
 Scripts/Source/Base/CZStageControllerScript.psc:296:1:identifier-casing
+Scripts/Source/Base/CZStageControllerScript.psc:296:1:nesting-depth
 Scripts/Source/Base/CZStageControllerScript.psc:299:1:indentation
 Scripts/Source/Base/CZStageControllerScript.psc:300:1:indentation
 Scripts/Source/Base/CZStageControllerScript.psc:301:1:indentation
@@ -6068,6 +6074,7 @@ Scripts/Source/Base/CZStageControllerScript.psc:583:1:indentation
 Scripts/Source/Base/CZStageControllerScript.psc:584:1:indentation
 Scripts/Source/Base/CZStageControllerScript.psc:592:1:semicolon
 Scripts/Source/Base/CZStageControllerScript.psc:594:1:semicolon
+Scripts/Source/Base/CZStageControllerScript.psc:598:1:nesting-depth
 Scripts/Source/Base/CZStageControllerScript.psc:599:8:forbidden-functions
 Scripts/Source/Base/CZStageControllerScript.psc:601:8:forbidden-functions
 Scripts/Source/Base/CZStageControllerScript.psc:605:10:forbidden-functions
@@ -6361,6 +6368,7 @@ Scripts/Source/Base/ChainedDoor.psc:20:1:indentation
 Scripts/Source/Base/ChainedDoor.psc:21:1:indentation
 Scripts/Source/Base/ChainedDoor.psc:24:1:function-override
 Scripts/Source/Base/ChainedDoor.psc:24:1:identifier-casing
+Scripts/Source/Base/ChainedDoor.psc:24:1:nesting-depth
 Scripts/Source/Base/ChainedDoor.psc:25:1:indentation
 Scripts/Source/Base/ChainedDoor.psc:25:8:exclamation-spacing
 Scripts/Source/Base/ChainedDoor.psc:25:46:forbidden-functions
@@ -6513,6 +6521,7 @@ Scripts/Source/Base/CircuitBreakerMasterScript.psc:121:1:identifier-casing
 Scripts/Source/Base/CircuitBreakerMasterScript.psc:124:21:exclamation-spacing
 Scripts/Source/Base/CircuitBreakerMasterScript.psc:135:1:cyclomatic-complexity
 Scripts/Source/Base/CircuitBreakerMasterScript.psc:135:1:identifier-casing
+Scripts/Source/Base/CircuitBreakerMasterScript.psc:135:1:nesting-depth
 Scripts/Source/Base/CircuitBreakerMasterScript.psc:135:1:unnecessary-function
 Scripts/Source/Base/CircuitBreakerMasterScript.psc:136:2:empty-body
 Scripts/Source/Base/CircuitBreakerMasterScript.psc:141:1:indentation
@@ -6774,6 +6783,7 @@ Scripts/Source/Base/CommonArrayFunctions.psc:292:121:line-length
 Scripts/Source/Base/CommonArrayFunctions.psc:299:1:indentation
 Scripts/Source/Base/CommonArrayFunctions.psc:307:1:identifier-casing
 Scripts/Source/Base/CommonArrayFunctions.psc:307:1:identifier-casing
+Scripts/Source/Base/CommonArrayFunctions.psc:307:1:nesting-depth
 Scripts/Source/Base/CommonArrayFunctions.psc:307:121:line-length
 Scripts/Source/Base/CommonArrayFunctions.psc:311:121:line-length
 Scripts/Source/Base/CommonArrayFunctions.psc:317:121:line-length
@@ -7104,6 +7114,7 @@ Scripts/Source/Base/CompanionActorScript.psc:539:1:cyclomatic-complexity
 Scripts/Source/Base/CompanionActorScript.psc:539:1:identifier-casing
 Scripts/Source/Base/CompanionActorScript.psc:539:1:identifier-casing
 Scripts/Source/Base/CompanionActorScript.psc:539:1:identifier-casing
+Scripts/Source/Base/CompanionActorScript.psc:539:1:nesting-depth
 Scripts/Source/Base/CompanionActorScript.psc:542:9:forbidden-functions
 Scripts/Source/Base/CompanionActorScript.psc:547:9:forbidden-functions
 Scripts/Source/Base/CompanionActorScript.psc:556:25:forbidden-functions
@@ -7136,6 +7147,7 @@ Scripts/Source/Base/CompanionActorScript.psc:659:1:identifier-casing
 Scripts/Source/Base/CompanionActorScript.psc:660:1:identifier-casing
 Scripts/Source/Base/CompanionActorScript.psc:660:36:forbidden-functions
 Scripts/Source/Base/CompanionActorScript.psc:662:8:forbidden-functions
+Scripts/Source/Base/CompanionActorScript.psc:669:1:nesting-depth
 Scripts/Source/Base/CompanionActorScript.psc:670:1:identifier-casing
 Scripts/Source/Base/CompanionActorScript.psc:670:25:forbidden-functions
 Scripts/Source/Base/CompanionActorScript.psc:679:1:trailing-whitespace
@@ -7148,6 +7160,7 @@ Scripts/Source/Base/CompanionActorScript.psc:698:6:trailing-whitespace
 Scripts/Source/Base/CompanionActorScript.psc:699:121:line-length
 Scripts/Source/Base/CompanionActorScript.psc:700:121:line-length
 Scripts/Source/Base/CompanionActorScript.psc:705:1:explicit-return
+Scripts/Source/Base/CompanionActorScript.psc:705:1:nesting-depth
 Scripts/Source/Base/CompanionActorScript.psc:708:1:identifier-casing
 Scripts/Source/Base/CompanionActorScript.psc:710:1:trailing-whitespace
 Scripts/Source/Base/CompanionActorScript.psc:738:8:forbidden-functions
@@ -7275,6 +7288,7 @@ Scripts/Source/Base/CompanionActorScript.psc:1081:121:line-length
 Scripts/Source/Base/CompanionActorScript.psc:1084:1:trailing-whitespace
 Scripts/Source/Base/CompanionActorScript.psc:1086:1:identifier-casing
 Scripts/Source/Base/CompanionActorScript.psc:1089:121:line-length
+Scripts/Source/Base/CompanionActorScript.psc:1105:1:nesting-depth
 Scripts/Source/Base/CompanionActorScript.psc:1105:1:unnecessary-function
 Scripts/Source/Base/CompanionActorScript.psc:1107:9:forbidden-functions
 Scripts/Source/Base/CompanionActorScript.psc:1107:121:line-length
@@ -7292,6 +7306,7 @@ Scripts/Source/Base/CompanionActorScript.psc:1145:121:line-length
 Scripts/Source/Base/CompanionActorScript.psc:1147:11:forbidden-functions
 Scripts/Source/Base/CompanionActorScript.psc:1149:1:trailing-whitespace
 Scripts/Source/Base/CompanionActorScript.psc:1156:1:trailing-whitespace
+Scripts/Source/Base/CompanionActorScript.psc:1162:1:nesting-depth
 Scripts/Source/Base/CompanionActorScript.psc:1165:1:numeric-comparison
 Scripts/Source/Base/CompanionActorScript.psc:1167:1:identifier-casing
 Scripts/Source/Base/CompanionActorScript.psc:1168:1:variable-used-before-assignment
@@ -12074,6 +12089,7 @@ Scripts/Source/Base/CreationClub/VRWorkshops/VRWorkshopLoungerTravelScript.psc:3
 Scripts/Source/Base/CreationClub/VRWorkshops/VRWorkshopLoungerTravelScript.psc:349:31:unresolved-script
 Scripts/Source/Base/CreationClub/VRWorkshops/VRWorkshopLoungerTravelScript.psc:349:37:forbidden-functions
 Scripts/Source/Base/CreationClub/VRWorkshops/VRWorkshopLoungerTravelScript.psc:350:1:trailing-whitespace
+Scripts/Source/Base/CreationClub/VRWorkshops/VRWorkshopLoungerTravelScript.psc:353:1:nesting-depth
 Scripts/Source/Base/CreationClub/VRWorkshops/VRWorkshopLoungerTravelScript.psc:354:1:indentation
 Scripts/Source/Base/CreationClub/VRWorkshops/VRWorkshopLoungerTravelScript.psc:360:9:forbidden-functions
 Scripts/Source/Base/CreationClub/VRWorkshops/VRWorkshopLoungerTravelScript.psc:362:1:identifier-casing
@@ -12966,6 +12982,7 @@ Scripts/Source/Base/DN009_FireWeapScript.psc:37:1:indentation
 Scripts/Source/Base/DN009_FireWeapScript.psc:38:1:indentation
 Scripts/Source/Base/DN009_FireWeapScript.psc:43:1:function-override
 Scripts/Source/Base/DN009_FireWeapScript.psc:43:1:identifier-casing
+Scripts/Source/Base/DN009_FireWeapScript.psc:43:1:nesting-depth
 Scripts/Source/Base/DN009_FireWeapScript.psc:44:17:boolean-simplification
 Scripts/Source/Base/DN009_FireWeapScript.psc:51:21:boolean-simplification
 Scripts/Source/Base/DN009_FireWeapScript.psc:52:1:none-form-usage
@@ -14019,6 +14036,7 @@ Scripts/Source/Base/DN017QuestScript.psc:475:1:identifier-casing
 Scripts/Source/Base/DN017QuestScript.psc:484:10:exclamation-spacing
 Scripts/Source/Base/DN017QuestScript.psc:488:121:line-length
 Scripts/Source/Base/DN017QuestScript.psc:501:121:line-length
+Scripts/Source/Base/DN017QuestScript.psc:509:1:nesting-depth
 Scripts/Source/Base/DN017QuestScript.psc:514:1:identifier-casing
 Scripts/Source/Base/DN017QuestScript.psc:516:1:identifier-casing
 Scripts/Source/Base/DN017QuestScript.psc:518:1:identifier-casing
@@ -14424,6 +14442,7 @@ Scripts/Source/Base/DN029SecondWaveBScript.psc:25:1:none-form-usage
 Scripts/Source/Base/DN029SecondWaveBScript.psc:33:1:cyclomatic-complexity
 Scripts/Source/Base/DN029SecondWaveBScript.psc:33:1:function-override
 Scripts/Source/Base/DN029SecondWaveBScript.psc:33:1:identifier-casing
+Scripts/Source/Base/DN029SecondWaveBScript.psc:33:1:nesting-depth
 Scripts/Source/Base/DN029SecondWaveBScript.psc:36:1:indentation
 Scripts/Source/Base/DN029SecondWaveBScript.psc:37:1:indentation
 Scripts/Source/Base/DN029SecondWaveBScript.psc:39:1:indentation
@@ -14572,6 +14591,7 @@ Scripts/Source/Base/DN033_CircuitBreakerScript.psc:61:1:cyclomatic-complexity
 Scripts/Source/Base/DN033_CircuitBreakerScript.psc:61:1:identifier-casing
 Scripts/Source/Base/DN033_CircuitBreakerScript.psc:61:1:identifier-casing
 Scripts/Source/Base/DN033_CircuitBreakerScript.psc:61:1:identifier-casing
+Scripts/Source/Base/DN033_CircuitBreakerScript.psc:61:1:nesting-depth
 Scripts/Source/Base/DN033_CircuitBreakerScript.psc:65:1:indentation
 Scripts/Source/Base/DN033_CircuitBreakerScript.psc:65:44:comma-spacing
 Scripts/Source/Base/DN033_CircuitBreakerScript.psc:68:1:indentation
@@ -15451,6 +15471,7 @@ Scripts/Source/Base/DN049_ChampOnHitAliasScript.psc:36:1:identifier-casing
 Scripts/Source/Base/DN049_ChampOnHitAliasScript.psc:36:1:identifier-casing
 Scripts/Source/Base/DN049_ChampOnHitAliasScript.psc:36:1:identifier-casing
 Scripts/Source/Base/DN049_ChampOnHitAliasScript.psc:36:1:identifier-casing
+Scripts/Source/Base/DN049_ChampOnHitAliasScript.psc:36:1:nesting-depth
 Scripts/Source/Base/DN049_ChampOnHitAliasScript.psc:36:121:line-length
 Scripts/Source/Base/DN049_ChampOnHitAliasScript.psc:37:1:none-form-usage
 Scripts/Source/Base/DN049_ChampOnHitAliasScript.psc:37:6:exclamation-spacing
@@ -16018,6 +16039,7 @@ Scripts/Source/Base/DN070_TurretHallIDCardReaderScript.psc:11:1:indentation
 Scripts/Source/Base/DN070_TurretHallIDCardReaderScript.psc:12:1:indentation
 Scripts/Source/Base/DN070_TurretHallIDCardReaderScript.psc:17:1:cyclomatic-complexity
 Scripts/Source/Base/DN070_TurretHallIDCardReaderScript.psc:17:1:identifier-casing
+Scripts/Source/Base/DN070_TurretHallIDCardReaderScript.psc:17:1:nesting-depth
 Scripts/Source/Base/DN070_TurretHallIDCardReaderScript.psc:18:1:identifier-casing
 Scripts/Source/Base/DN070_TurretHallIDCardReaderScript.psc:18:23:forbidden-functions
 Scripts/Source/Base/DN070_TurretHallIDCardReaderScript.psc:27:1:identifier-casing
@@ -16364,6 +16386,7 @@ Scripts/Source/Base/DN080_SirenActivator.psc:76:1:identifier-casing
 Scripts/Source/Base/DN080_SirenActivator.psc:83:1:identifier-casing
 Scripts/Source/Base/DN080_SirenActivator.psc:83:1:identifier-casing
 Scripts/Source/Base/DN080_SirenActivator.psc:83:1:identifier-casing
+Scripts/Source/Base/DN080_SirenActivator.psc:83:1:nesting-depth
 Scripts/Source/Base/DN080_SirenActivator.psc:88:1:indentation
 Scripts/Source/Base/DN080_SirenActivator.psc:88:10:exclamation-spacing
 Scripts/Source/Base/DN080_SirenActivator.psc:89:1:indentation
@@ -16532,6 +16555,7 @@ Scripts/Source/Base/DN081ElevatorMasterScript.psc:153:1:cyclomatic-complexity
 Scripts/Source/Base/DN081ElevatorMasterScript.psc:153:1:identifier-casing
 Scripts/Source/Base/DN081ElevatorMasterScript.psc:153:1:identifier-casing
 Scripts/Source/Base/DN081ElevatorMasterScript.psc:153:1:identifier-casing
+Scripts/Source/Base/DN081ElevatorMasterScript.psc:153:1:nesting-depth
 Scripts/Source/Base/DN081ElevatorMasterScript.psc:154:5:exclamation-spacing
 Scripts/Source/Base/DN081ElevatorMasterScript.psc:155:6:exclamation-spacing
 Scripts/Source/Base/DN081ElevatorMasterScript.psc:155:28:exclamation-spacing
@@ -17123,6 +17147,7 @@ Scripts/Source/Base/DN084_GlassElevatorScript.psc:112:1:function-override
 Scripts/Source/Base/DN084_GlassElevatorScript.psc:133:1:trailing-whitespace
 Scripts/Source/Base/DN084_GlassElevatorScript.psc:147:1:cyclomatic-complexity
 Scripts/Source/Base/DN084_GlassElevatorScript.psc:147:1:function-override
+Scripts/Source/Base/DN084_GlassElevatorScript.psc:147:1:nesting-depth
 Scripts/Source/Base/DN084_GlassElevatorScript.psc:148:8:forbidden-functions
 Scripts/Source/Base/DN084_GlassElevatorScript.psc:150:1:identifier-casing
 Scripts/Source/Base/DN084_GlassElevatorScript.psc:151:9:exclamation-spacing
@@ -17210,6 +17235,7 @@ Scripts/Source/Base/DN084_GlassElevatorScript.psc:351:36:unresolved-script
 Scripts/Source/Base/DN084_GlassElevatorScript.psc:361:7:exclamation-spacing
 Scripts/Source/Base/DN084_GlassElevatorScript.psc:367:1:cyclomatic-complexity
 Scripts/Source/Base/DN084_GlassElevatorScript.psc:367:1:identifier-casing
+Scripts/Source/Base/DN084_GlassElevatorScript.psc:367:1:nesting-depth
 Scripts/Source/Base/DN084_GlassElevatorScript.psc:368:9:forbidden-functions
 Scripts/Source/Base/DN084_GlassElevatorScript.psc:369:9:forbidden-functions
 Scripts/Source/Base/DN084_GlassElevatorScript.psc:371:10:forbidden-functions
@@ -17471,6 +17497,7 @@ Scripts/Source/Base/DN084_QuestScript.psc:24:1:indentation
 Scripts/Source/Base/DN084_QuestScript.psc:25:1:indentation
 Scripts/Source/Base/DN084_QuestScript.psc:30:1:identifier-casing
 Scripts/Source/Base/DN084_QuestScript.psc:30:1:identifier-casing
+Scripts/Source/Base/DN084_QuestScript.psc:30:1:nesting-depth
 Scripts/Source/Base/DN084_QuestScript.psc:30:1:unnecessary-function
 Scripts/Source/Base/DN084_QuestScript.psc:38:30:unresolved-script
 Scripts/Source/Base/DN084_QuestScript.psc:44:1:identifier-casing
@@ -18827,6 +18854,7 @@ Scripts/Source/Base/DN131_SwanAliasScript.psc:73:1:argument-naming
 Scripts/Source/Base/DN131_SwanAliasScript.psc:73:1:cyclomatic-complexity
 Scripts/Source/Base/DN131_SwanAliasScript.psc:73:1:function-override
 Scripts/Source/Base/DN131_SwanAliasScript.psc:73:1:identifier-casing
+Scripts/Source/Base/DN131_SwanAliasScript.psc:73:1:nesting-depth
 Scripts/Source/Base/DN131_SwanAliasScript.psc:76:28:exclamation-spacing
 Scripts/Source/Base/DN131_SwanAliasScript.psc:77:8:exclamation-spacing
 Scripts/Source/Base/DN131_SwanAliasScript.psc:79:121:line-length
@@ -19244,6 +19272,7 @@ Scripts/Source/Base/DN136_AttackKlaxonDestScript.psc:25:19:forbidden-functions
 Scripts/Source/Base/DN136_AttackKlaxonDestScript.psc:26:19:forbidden-functions
 Scripts/Source/Base/DN136_AttackKlaxonDestScript.psc:26:34:forbidden-functions
 Scripts/Source/Base/DN136_AttackKlaxonDestScript.psc:30:1:identifier-casing
+Scripts/Source/Base/DN136_AttackKlaxonDestScript.psc:30:1:nesting-depth
 Scripts/Source/Base/DN136_AttackKlaxonDestScript.psc:36:15:boolean-simplification
 Scripts/Source/Base/DN136_AttackKlaxonDestScript.psc:38:21:forbidden-functions
 Scripts/Source/Base/DN136_AttackKlaxonDestScript.psc:39:21:forbidden-functions
@@ -19464,6 +19493,7 @@ Scripts/Source/Base/DN136_ElevatorNewScript.psc:125:1:cyclomatic-complexity
 Scripts/Source/Base/DN136_ElevatorNewScript.psc:125:1:identifier-casing
 Scripts/Source/Base/DN136_ElevatorNewScript.psc:125:1:identifier-casing
 Scripts/Source/Base/DN136_ElevatorNewScript.psc:125:1:identifier-casing
+Scripts/Source/Base/DN136_ElevatorNewScript.psc:125:1:nesting-depth
 Scripts/Source/Base/DN136_ElevatorNewScript.psc:126:23:boolean-simplification
 Scripts/Source/Base/DN136_ElevatorNewScript.psc:127:19:unresolved-script
 Scripts/Source/Base/DN136_ElevatorNewScript.psc:129:22:boolean-simplification
@@ -19831,6 +19861,7 @@ Scripts/Source/Base/DN136_PrivateElevatorNEWScript.psc:202:1:cyclomatic-complexi
 Scripts/Source/Base/DN136_PrivateElevatorNEWScript.psc:202:1:identifier-casing
 Scripts/Source/Base/DN136_PrivateElevatorNEWScript.psc:202:1:identifier-casing
 Scripts/Source/Base/DN136_PrivateElevatorNEWScript.psc:202:1:identifier-casing
+Scripts/Source/Base/DN136_PrivateElevatorNEWScript.psc:202:1:nesting-depth
 Scripts/Source/Base/DN136_PrivateElevatorNEWScript.psc:202:88:trailing-whitespace
 Scripts/Source/Base/DN136_PrivateElevatorNEWScript.psc:203:25:forbidden-functions
 Scripts/Source/Base/DN136_PrivateElevatorNEWScript.psc:205:33:forbidden-functions
@@ -20730,6 +20761,7 @@ Scripts/Source/Base/DN151_DoorSeal.psc:27:1:identifier-casing
 Scripts/Source/Base/DN151_DoorSeal.psc:30:1:function-override
 Scripts/Source/Base/DN151_DoorSeal.psc:31:6:exclamation-spacing
 Scripts/Source/Base/DN151_DoorSeal.psc:68:1:identifier-casing
+Scripts/Source/Base/DN151_DoorSeal.psc:68:1:nesting-depth
 Scripts/Source/Base/DN151_DoorSeal.psc:75:1:none-form-usage
 Scripts/Source/Base/DN151_DoorSeal.psc:76:10:exclamation-spacing
 Scripts/Source/Base/DN151_DoorSeal.psc:91:1:none-form-usage
@@ -22330,6 +22362,7 @@ Scripts/Source/Base/DN170_FloorCrack.psc:3:1:identifier-casing
 Scripts/Source/Base/DN170_FloorCrack.psc:4:1:identifier-casing
 Scripts/Source/Base/DN170_FloorCrack.psc:18:1:cyclomatic-complexity
 Scripts/Source/Base/DN170_FloorCrack.psc:18:1:identifier-casing
+Scripts/Source/Base/DN170_FloorCrack.psc:18:1:nesting-depth
 Scripts/Source/Base/DN170_FloorCrack.psc:20:6:exclamation-spacing
 Scripts/Source/Base/DN170_FloorCrack.psc:21:34:forbidden-functions
 Scripts/Source/Base/DN170_FloorCrack.psc:26:1:identifier-casing
@@ -23191,6 +23224,7 @@ Scripts/Source/Base/DefaultActivateSelf.psc:25:1:indentation
 Scripts/Source/Base/DefaultActivateSelf.psc:32:1:cyclomatic-complexity
 Scripts/Source/Base/DefaultActivateSelf.psc:32:1:identifier-casing
 Scripts/Source/Base/DefaultActivateSelf.psc:32:1:identifier-casing
+Scripts/Source/Base/DefaultActivateSelf.psc:32:1:nesting-depth
 Scripts/Source/Base/DefaultActivateSelf.psc:34:26:forbidden-functions
 Scripts/Source/Base/DefaultActivateSelf.psc:35:36:forbidden-functions
 Scripts/Source/Base/DefaultActivateSelf.psc:36:1:indentation
@@ -24167,6 +24201,7 @@ Scripts/Source/Base/DefaultCounter.psc:67:10:forbidden-functions
 Scripts/Source/Base/DefaultCounter.psc:69:1:indentation
 Scripts/Source/Base/DefaultCounter.psc:70:10:forbidden-functions
 Scripts/Source/Base/DefaultCounter.psc:73:1:trailing-whitespace
+Scripts/Source/Base/DefaultCounter.psc:76:1:nesting-depth
 Scripts/Source/Base/DefaultCounter.psc:76:1:unnecessary-function
 Scripts/Source/Base/DefaultCounter.psc:78:1:indentation
 Scripts/Source/Base/DefaultCounter.psc:91:1:indentation
@@ -24472,6 +24507,7 @@ Scripts/Source/Base/DefaultCrowdEventMember.psc:70:1:cyclomatic-complexity
 Scripts/Source/Base/DefaultCrowdEventMember.psc:70:1:identifier-casing
 Scripts/Source/Base/DefaultCrowdEventMember.psc:70:1:identifier-casing
 Scripts/Source/Base/DefaultCrowdEventMember.psc:70:1:identifier-casing
+Scripts/Source/Base/DefaultCrowdEventMember.psc:70:1:nesting-depth
 Scripts/Source/Base/DefaultCrowdEventMember.psc:74:1:none-form-usage
 Scripts/Source/Base/DefaultCrowdEventMember.psc:74:5:exclamation-spacing
 Scripts/Source/Base/DefaultCrowdEventMember.psc:77:10:forbidden-functions
@@ -24604,6 +24640,7 @@ Scripts/Source/Base/DefaultDisableSelfTrigger.psc:2:121:line-length
 Scripts/Source/Base/DefaultDisableSelfTrigger.psc:29:1:cyclomatic-complexity
 Scripts/Source/Base/DefaultDisableSelfTrigger.psc:29:1:identifier-casing
 Scripts/Source/Base/DefaultDisableSelfTrigger.psc:29:1:identifier-casing
+Scripts/Source/Base/DefaultDisableSelfTrigger.psc:29:1:nesting-depth
 Scripts/Source/Base/DefaultDisableSelfTrigger.psc:31:26:forbidden-functions
 Scripts/Source/Base/DefaultDisableSelfTrigger.psc:32:36:forbidden-functions
 Scripts/Source/Base/DefaultDisableSelfTrigger.psc:33:1:indentation
@@ -25647,6 +25684,7 @@ Scripts/Source/Base/DefaultRotateHelper.psc:133:5:exclamation-spacing
 Scripts/Source/Base/DefaultRotateHelper.psc:133:8:trailing-whitespace
 Scripts/Source/Base/DefaultRotateHelper.psc:155:1:trailing-whitespace
 Scripts/Source/Base/DefaultScriptFunctions.psc:7:1:cyclomatic-complexity
+Scripts/Source/Base/DefaultScriptFunctions.psc:7:1:nesting-depth
 Scripts/Source/Base/DefaultScriptFunctions.psc:7:1:parameter-count
 Scripts/Source/Base/DefaultScriptFunctions.psc:7:121:line-length
 Scripts/Source/Base/DefaultScriptFunctions.psc:10:1:identifier-casing
@@ -26556,6 +26594,7 @@ Scripts/Source/Base/DialogueRailroadScript.psc:10:1:identifier-casing
 Scripts/Source/Base/DialogueRailroadScript.psc:10:1:identifier-casing
 Scripts/Source/Base/DialogueRailroadScript.psc:10:1:identifier-casing
 Scripts/Source/Base/DialogueRailroadScript.psc:10:1:identifier-casing
+Scripts/Source/Base/DialogueRailroadScript.psc:10:1:nesting-depth
 Scripts/Source/Base/DialogueRailroadScript.psc:12:22:forbidden-functions
 Scripts/Source/Base/DialogueRailroadScript.psc:14:1:indentation
 Scripts/Source/Base/DialogueRailroadScript.psc:15:1:indentation
@@ -27737,6 +27776,7 @@ Scripts/Source/Base/EMSystemTurfScript.psc:77:1:indentation
 Scripts/Source/Base/EMSystemTurfScript.psc:78:1:cyclomatic-complexity
 Scripts/Source/Base/EMSystemTurfScript.psc:78:1:function-override
 Scripts/Source/Base/EMSystemTurfScript.psc:78:1:identifier-casing
+Scripts/Source/Base/EMSystemTurfScript.psc:78:1:nesting-depth
 Scripts/Source/Base/EMSystemTurfScript.psc:80:1:indentation
 Scripts/Source/Base/EMSystemTurfScript.psc:81:121:line-length
 Scripts/Source/Base/EMSystemTurfScript.psc:83:1:indentation
@@ -27767,6 +27807,7 @@ Scripts/Source/Base/EMSystemTurfScript.psc:123:1:indentation
 Scripts/Source/Base/EMSystemTurfScript.psc:128:1:indentation
 Scripts/Source/Base/EMSystemTurfScript.psc:129:1:cyclomatic-complexity
 Scripts/Source/Base/EMSystemTurfScript.psc:129:1:identifier-casing
+Scripts/Source/Base/EMSystemTurfScript.psc:129:1:nesting-depth
 Scripts/Source/Base/EMSystemTurfScript.psc:130:1:indentation
 Scripts/Source/Base/EMSystemTurfScript.psc:137:11:forbidden-functions
 Scripts/Source/Base/EMSystemTurfScript.psc:144:22:boolean-simplification
@@ -28020,6 +28061,7 @@ Scripts/Source/Base/ElevatorMasterScript.psc:78:1:function-override
 Scripts/Source/Base/ElevatorMasterScript.psc:83:1:function-override
 Scripts/Source/Base/ElevatorMasterScript.psc:84:41:forbidden-functions
 Scripts/Source/Base/ElevatorMasterScript.psc:88:1:cyclomatic-complexity
+Scripts/Source/Base/ElevatorMasterScript.psc:88:1:nesting-depth
 Scripts/Source/Base/ElevatorMasterScript.psc:90:32:forbidden-functions
 Scripts/Source/Base/ElevatorMasterScript.psc:91:32:forbidden-functions
 Scripts/Source/Base/ElevatorMasterScript.psc:92:31:forbidden-functions
@@ -28130,6 +28172,7 @@ Scripts/Source/Base/ElevatorMasterScript.psc:292:1:cyclomatic-complexity
 Scripts/Source/Base/ElevatorMasterScript.psc:292:1:identifier-casing
 Scripts/Source/Base/ElevatorMasterScript.psc:292:1:identifier-casing
 Scripts/Source/Base/ElevatorMasterScript.psc:292:1:identifier-casing
+Scripts/Source/Base/ElevatorMasterScript.psc:292:1:nesting-depth
 Scripts/Source/Base/ElevatorMasterScript.psc:293:8:forbidden-functions
 Scripts/Source/Base/ElevatorMasterScript.psc:294:1:trailing-whitespace
 Scripts/Source/Base/ElevatorMasterScript.psc:295:25:forbidden-functions
@@ -28332,6 +28375,7 @@ Scripts/Source/Base/FEVHoundEventScript.psc:12:9:final-newline
 Scripts/Source/Base/FFDiamondCity01MixerScript.psc:5:18:unused-property
 Scripts/Source/Base/FFDiamondCity01MixerScript.psc:12:1:identifier-casing
 Scripts/Source/Base/FFDiamondCity01MixerScript.psc:13:1:identifier-casing
+Scripts/Source/Base/FFDiamondCity01MixerScript.psc:13:1:nesting-depth
 Scripts/Source/Base/FFDiamondCity01MixerScript.psc:14:26:forbidden-functions
 Scripts/Source/Base/FFDiamondCity01MixerScript.psc:19:1:none-form-usage
 Scripts/Source/Base/FFDiamondCity01MixerScript.psc:20:1:indentation
@@ -28959,6 +29003,7 @@ Scripts/Source/Base/FXPrydwenFlyoverScript.psc:10:1:identifier-casing
 Scripts/Source/Base/FXPrydwenFlyoverScript.psc:11:1:identifier-casing
 Scripts/Source/Base/FXPrydwenFlyoverScript.psc:26:1:function-override
 Scripts/Source/Base/FXPrydwenFlyoverScript.psc:30:1:function-override
+Scripts/Source/Base/FXPrydwenFlyoverScript.psc:30:1:nesting-depth
 Scripts/Source/Base/FXPrydwenFlyoverScript.psc:32:20:forbidden-functions
 Scripts/Source/Base/FXPrydwenFlyoverScript.psc:32:31:trailing-whitespace
 Scripts/Source/Base/FXPrydwenFlyoverScript.psc:34:19:boolean-simplification
@@ -29281,6 +29326,7 @@ Scripts/Source/Base/FireFightStall_ActorScript.psc:35:1:unchecked-cast
 Scripts/Source/Base/FireFightStall_ActorScript.psc:35:51:unresolved-script
 Scripts/Source/Base/FireFightStall_ActorScript.psc:43:1:cyclomatic-complexity
 Scripts/Source/Base/FireFightStall_ActorScript.psc:43:1:function-override
+Scripts/Source/Base/FireFightStall_ActorScript.psc:43:1:nesting-depth
 Scripts/Source/Base/FireFightStall_ActorScript.psc:44:22:forbidden-functions
 Scripts/Source/Base/FireFightStall_ActorScript.psc:46:5:exclamation-spacing
 Scripts/Source/Base/FireFightStall_ActorScript.psc:48:6:exclamation-spacing
@@ -29832,6 +29878,7 @@ Scripts/Source/Base/FollowersScript.psc:814:1:unchecked-cast
 Scripts/Source/Base/FollowersScript.psc:815:1:unchecked-cast
 Scripts/Source/Base/FollowersScript.psc:815:37:trailing-whitespace
 Scripts/Source/Base/FollowersScript.psc:823:1:cyclomatic-complexity
+Scripts/Source/Base/FollowersScript.psc:823:1:nesting-depth
 Scripts/Source/Base/FollowersScript.psc:823:121:line-length
 Scripts/Source/Base/FollowersScript.psc:825:1:none-form-usage
 Scripts/Source/Base/FollowersScript.psc:828:1:trailing-whitespace
@@ -30192,6 +30239,7 @@ Scripts/Source/Base/FollowersScript.psc:1944:1:identifier-casing
 Scripts/Source/Base/FollowersScript.psc:1944:1:unnecessary-function
 Scripts/Source/Base/FollowersScript.psc:1946:22:forbidden-functions
 Scripts/Source/Base/FollowersScript.psc:1952:1:cyclomatic-complexity
+Scripts/Source/Base/FollowersScript.psc:1952:1:nesting-depth
 Scripts/Source/Base/FollowersScript.psc:1955:1:none-form-usage
 Scripts/Source/Base/FollowersScript.psc:1958:1:unchecked-cast
 Scripts/Source/Base/FollowersScript.psc:1958:1:unchecked-cast
@@ -54553,6 +54601,7 @@ Scripts/Source/Base/Fragments/Quests/QF_MS07_000229FC.psc:109:65:exclamation-spa
 Scripts/Source/Base/Fragments/Quests/QF_MS07_000229FC.psc:109:121:line-length
 Scripts/Source/Base/Fragments/Quests/QF_MS07_000229FC.psc:110:1:indentation
 Scripts/Source/Base/Fragments/Quests/QF_MS07_000229FC.psc:110:1:none-form-usage
+Scripts/Source/Base/Fragments/Quests/QF_MS07_000229FC.psc:117:1:nesting-depth
 Scripts/Source/Base/Fragments/Quests/QF_MS07_000229FC.psc:117:1:unnecessary-function
 Scripts/Source/Base/Fragments/Quests/QF_MS07_000229FC.psc:121:1:indentation
 Scripts/Source/Base/Fragments/Quests/QF_MS07_000229FC.psc:123:1:indentation
@@ -60284,6 +60333,7 @@ Scripts/Source/Base/Fragments/Quests/QF_Patch_1_6_0024A010.psc:34:1:identifier-c
 Scripts/Source/Base/Fragments/Quests/QF_Patch_1_6_0024A010.psc:34:25:unused-property
 Scripts/Source/Base/Fragments/Quests/QF_Patch_1_6_0024A010.psc:36:1:identifier-casing
 Scripts/Source/Base/Fragments/Quests/QF_Patch_1_6_0024A010.psc:36:25:unused-property
+Scripts/Source/Base/Fragments/Quests/QF_Patch_1_7_0024A0A1.psc:5:1:nesting-depth
 Scripts/Source/Base/Fragments/Quests/QF_Patch_1_7_0024A0A1.psc:12:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_Patch_1_7_0024A0A1.psc:12:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_Patch_1_7_0024A0A1.psc:13:1:identifier-casing
@@ -81513,6 +81563,7 @@ Scripts/Source/Base/Fragments/Terminals/TERM_hackerDoorHolotapeSubMe_00188AE3.ps
 Scripts/Source/Base/Fragments/Terminals/TERM_hackerDoorHolotapeSubMe_00188AE3.psc:111:1:identifier-casing
 Scripts/Source/Base/Fragments/Terminals/TERM_hackerDoorHolotapeSubMe_00188AE3.psc:113:1:identifier-casing
 Scripts/Source/Base/Fragments/Terminals/TERM_hackerDoorHolotapeSubMe_00188AE3.psc:115:1:identifier-casing
+Scripts/Source/Base/Fragments/Terminals/TERM_hackerProtectronHolotap_001680E5.psc:5:1:nesting-depth
 Scripts/Source/Base/Fragments/Terminals/TERM_hackerProtectronHolotap_001680E5.psc:10:1:identifier-casing
 Scripts/Source/Base/Fragments/Terminals/TERM_hackerProtectronHolotap_001680E5.psc:11:1:identifier-casing
 Scripts/Source/Base/Fragments/Terminals/TERM_hackerProtectronHolotap_001680E5.psc:13:1:indentation
@@ -81725,6 +81776,7 @@ Scripts/Source/Base/Fragments/Terminals/TERM_hackerVentHolotapeSubMe_0018A8DD.ps
 Scripts/Source/Base/Fragments/Terminals/TERM_hackerVentHolotapeSubMe_0018A8DD.psc:79:1:indentation
 Scripts/Source/Base/Fragments/Terminals/TERM_hackerVentHolotapeSubMe_0018A8DD.psc:80:1:indentation
 Scripts/Source/Base/Fragments/Terminals/TERM_hackerVentHolotapeSubMe_0018A8DD.psc:81:1:indentation
+Scripts/Source/Base/Fragments/Terminals/TERM_hackerVentHolotapeSubMe_0018A8DD.psc:88:1:nesting-depth
 Scripts/Source/Base/Fragments/Terminals/TERM_hackerVentHolotapeSubMe_0018A8DD.psc:90:1:identifier-casing
 Scripts/Source/Base/Fragments/Terminals/TERM_hackerVentHolotapeSubMe_0018A8DD.psc:91:1:identifier-casing
 Scripts/Source/Base/Fragments/Terminals/TERM_hackerVentHolotapeSubMe_0018A8DD.psc:93:1:identifier-casing
@@ -88287,6 +88339,7 @@ Scripts/Source/Base/FuseBox_BoxScript.psc:31:7:exclamation-spacing
 Scripts/Source/Base/FuseBox_BoxScript.psc:31:36:comma-spacing
 Scripts/Source/Base/FuseBox_BoxScript.psc:32:33:comma-spacing
 Scripts/Source/Base/FuseBox_BoxScript.psc:43:1:identifier-casing
+Scripts/Source/Base/FuseBox_BoxScript.psc:43:1:nesting-depth
 Scripts/Source/Base/FuseBox_BoxScript.psc:44:6:forbidden-functions
 Scripts/Source/Base/FuseBox_BoxScript.psc:45:1:indentation
 Scripts/Source/Base/FuseBox_BoxScript.psc:45:30:forbidden-functions
@@ -89024,6 +89077,7 @@ Scripts/Source/Base/GenericBrawlPlayerScript.psc:42:1:identifier-casing
 Scripts/Source/Base/GenericBrawlPlayerScript.psc:43:10:forbidden-functions
 Scripts/Source/Base/GenericBrawlPlayerScript.psc:44:9:forbidden-functions
 Scripts/Source/Base/GenericBrawlScript.psc:3:1:identifier-casing
+Scripts/Source/Base/GenericBrawlScript.psc:3:1:nesting-depth
 Scripts/Source/Base/GenericBrawlScript.psc:4:1:none-form-usage
 Scripts/Source/Base/GenericBrawlScript.psc:5:1:none-form-usage
 Scripts/Source/Base/GenericBrawlScript.psc:5:26:assignment-operator-spacing
@@ -89106,6 +89160,7 @@ Scripts/Source/Base/GenericGoHomeScript.psc:10:1:indentation
 Scripts/Source/Base/GenericGoHomeScript.psc:10:1:none-form-usage
 Scripts/Source/Base/GenericGoHomeScript.psc:13:1:function-override
 Scripts/Source/Base/GenericGoHomeScript.psc:13:1:identifier-casing
+Scripts/Source/Base/GenericGoHomeScript.psc:13:1:nesting-depth
 Scripts/Source/Base/GenericGoHomeScript.psc:14:1:indentation
 Scripts/Source/Base/GenericGoHomeScript.psc:15:1:identifier-casing
 Scripts/Source/Base/GenericGoHomeScript.psc:15:1:indentation
@@ -89160,6 +89215,7 @@ Scripts/Source/Base/GenericGoHomeScript.psc:47:1:indentation
 Scripts/Source/Base/GenericGoHomeScript.psc:48:1:indentation
 Scripts/Source/Base/GenericGoHomeScript.psc:49:1:indentation
 Scripts/Source/Base/GenericGoHomeScript.psc:52:1:identifier-casing
+Scripts/Source/Base/GenericGoHomeScript.psc:52:1:nesting-depth
 Scripts/Source/Base/GenericGoHomeScript.psc:53:1:identifier-casing
 Scripts/Source/Base/GenericGoHomeScript.psc:53:1:indentation
 Scripts/Source/Base/GenericGoHomeScript.psc:54:1:indentation
@@ -89754,6 +89810,7 @@ Scripts/Source/Base/Hardcore/HC_ManagerScript.psc:586:1:identifier-casing
 Scripts/Source/Base/Hardcore/HC_ManagerScript.psc:586:1:identifier-casing
 Scripts/Source/Base/Hardcore/HC_ManagerScript.psc:586:1:identifier-casing
 Scripts/Source/Base/Hardcore/HC_ManagerScript.psc:586:1:identifier-casing
+Scripts/Source/Base/Hardcore/HC_ManagerScript.psc:586:1:nesting-depth
 Scripts/Source/Base/Hardcore/HC_ManagerScript.psc:587:1:indentation
 Scripts/Source/Base/Hardcore/HC_ManagerScript.psc:589:1:indentation
 Scripts/Source/Base/Hardcore/HC_ManagerScript.psc:589:42:trailing-whitespace
@@ -90946,6 +91003,7 @@ Scripts/Source/Base/HeavyActorPushOnImpact.psc:15:1:identifier-casing
 Scripts/Source/Base/HeavyActorPushOnImpact.psc:17:1:identifier-casing
 Scripts/Source/Base/HeavyActorPushOnImpact.psc:19:1:function-override
 Scripts/Source/Base/HeavyActorPushOnImpact.psc:19:1:identifier-casing
+Scripts/Source/Base/HeavyActorPushOnImpact.psc:19:1:nesting-depth
 Scripts/Source/Base/HeavyActorPushOnImpact.psc:21:8:forbidden-functions
 Scripts/Source/Base/HeavyActorPushOnImpact.psc:23:1:indentation
 Scripts/Source/Base/HeavyActorPushOnImpact.psc:23:5:strict-boolean
@@ -91122,6 +91180,7 @@ Scripts/Source/Base/IDCardReaderScript.psc:55:1:indentation
 Scripts/Source/Base/IDCardReaderScript.psc:55:121:line-length
 Scripts/Source/Base/IDCardReaderScript.psc:60:1:cyclomatic-complexity
 Scripts/Source/Base/IDCardReaderScript.psc:60:1:identifier-casing
+Scripts/Source/Base/IDCardReaderScript.psc:60:1:nesting-depth
 Scripts/Source/Base/IDCardReaderScript.psc:61:1:identifier-casing
 Scripts/Source/Base/IDCardReaderScript.psc:61:23:forbidden-functions
 Scripts/Source/Base/IDCardReaderScript.psc:70:1:identifier-casing
@@ -91151,6 +91210,7 @@ Scripts/Source/Base/IDCardReaderScript.psc:125:22:unresolved-script
 Scripts/Source/Base/IDCardReaderScript.psc:140:1:identifier-casing
 Scripts/Source/Base/IDCardReaderScript.psc:140:1:unnecessary-function
 Scripts/Source/Base/IDCardReaderScript.psc:150:1:identifier-casing
+Scripts/Source/Base/IDCardReaderScript.psc:150:1:nesting-depth
 Scripts/Source/Base/IDCardReaderScript.psc:155:1:identifier-casing
 Scripts/Source/Base/IDCardReaderScript.psc:155:42:forbidden-functions
 Scripts/Source/Base/IDCardReaderScript.psc:163:8:forbidden-functions
@@ -91505,6 +91565,7 @@ Scripts/Source/Base/Inst302InteriorTriggerScript.psc:10:36:forbidden-functions
 Scripts/Source/Base/Inst302InteriorTriggerScript.psc:11:1:none-form-usage
 Scripts/Source/Base/Inst302InteriorTriggerScript.psc:16:9:final-newline
 Scripts/Source/Base/Inst302QuestScript.psc:3:14:unused-property
+Scripts/Source/Base/Inst302QuestScript.psc:15:1:nesting-depth
 Scripts/Source/Base/Inst302QuestScript.psc:18:1:indentation
 Scripts/Source/Base/Inst302QuestScript.psc:20:1:none-form-usage
 Scripts/Source/Base/Inst302QuestScript.psc:24:1:indentation
@@ -91596,6 +91657,7 @@ Scripts/Source/Base/Inst302SkipToCombat.psc:22:1:none-form-usage
 Scripts/Source/Base/Inst302SkipToCombat.psc:23:1:indentation
 Scripts/Source/Base/Inst302SynthRoomTriggerScript.psc:10:1:argument-naming
 Scripts/Source/Base/Inst302SynthRoomTriggerScript.psc:10:1:function-override
+Scripts/Source/Base/Inst302SynthRoomTriggerScript.psc:10:1:nesting-depth
 Scripts/Source/Base/Inst302SynthRoomTriggerScript.psc:12:1:indentation
 Scripts/Source/Base/Inst302SynthRoomTriggerScript.psc:12:1:none-form-usage
 Scripts/Source/Base/Inst302SynthRoomTriggerScript.psc:14:1:indentation
@@ -92211,6 +92273,7 @@ Scripts/Source/Base/Inst307FightQuestScript.psc:461:1:identifier-casing
 Scripts/Source/Base/Inst307FightQuestScript.psc:461:1:identifier-casing
 Scripts/Source/Base/Inst307FightQuestScript.psc:461:1:unnecessary-function
 Scripts/Source/Base/Inst307FightQuestScript.psc:468:1:cyclomatic-complexity
+Scripts/Source/Base/Inst307FightQuestScript.psc:468:1:nesting-depth
 Scripts/Source/Base/Inst307FightQuestScript.psc:469:1:identifier-casing
 Scripts/Source/Base/Inst307FightQuestScript.psc:470:1:identifier-casing
 Scripts/Source/Base/Inst307FightQuestScript.psc:470:1:unused-local-variable
@@ -92252,6 +92315,7 @@ Scripts/Source/Base/Inst307FightQuestScript.psc:617:1:unchecked-cast
 Scripts/Source/Base/Inst307FightQuestScript.psc:639:9:trailing-whitespace
 Scripts/Source/Base/Inst307FightQuestScript.psc:662:80:trailing-whitespace
 Scripts/Source/Base/Inst307FightQuestScript.psc:664:1:cyclomatic-complexity
+Scripts/Source/Base/Inst307FightQuestScript.psc:664:1:nesting-depth
 Scripts/Source/Base/Inst307FightQuestScript.psc:669:1:identifier-casing
 Scripts/Source/Base/Inst307FightQuestScript.psc:670:1:identifier-casing
 Scripts/Source/Base/Inst307FightQuestScript.psc:691:31:unresolved-script
@@ -92280,6 +92344,7 @@ Scripts/Source/Base/Inst307FightQuestScript.psc:781:11:exclamation-spacing
 Scripts/Source/Base/Inst307FightQuestScript.psc:787:30:unresolved-script
 Scripts/Source/Base/Inst307FightQuestScript.psc:805:1:identifier-casing
 Scripts/Source/Base/Inst307FightQuestScript.psc:808:6:exclamation-spacing
+Scripts/Source/Base/Inst307FightQuestScript.psc:815:1:nesting-depth
 Scripts/Source/Base/Inst307FightQuestScript.psc:817:1:identifier-casing
 Scripts/Source/Base/Inst307FightQuestScript.psc:826:1:identifier-casing
 Scripts/Source/Base/Inst307FightQuestScript.psc:827:1:identifier-casing
@@ -93308,6 +93373,7 @@ Scripts/Source/Base/InstM03UnlockHydroDoorScript.psc:10:9:final-newline
 Scripts/Source/Base/InstMassFusionQuestScript.psc:3:14:unused-property
 Scripts/Source/Base/InstMassFusionRelayTriggerScript.psc:9:1:argument-naming
 Scripts/Source/Base/InstMassFusionRelayTriggerScript.psc:9:1:function-override
+Scripts/Source/Base/InstMassFusionRelayTriggerScript.psc:9:1:nesting-depth
 Scripts/Source/Base/InstMassFusionRelayTriggerScript.psc:11:27:assignment-operator-spacing
 Scripts/Source/Base/InstMassFusionRelayTriggerScript.psc:11:27:assignment-operator-spacing
 Scripts/Source/Base/InstMassFusionRelayTriggerScript.psc:11:33:forbidden-functions
@@ -93469,6 +93535,7 @@ Scripts/Source/Base/InstituteBeaconSpawnerMarkerScript.psc:19:1:place-at-me
 Scripts/Source/Base/InstituteBeaconSpawnerMarkerScript.psc:22:9:final-newline
 Scripts/Source/Base/InstituteEmergencyRelayButtonScript.psc:6:1:argument-naming
 Scripts/Source/Base/InstituteEmergencyRelayButtonScript.psc:6:1:function-override
+Scripts/Source/Base/InstituteEmergencyRelayButtonScript.psc:6:1:nesting-depth
 Scripts/Source/Base/InstituteEmergencyRelayButtonScript.psc:9:1:none-form-usage
 Scripts/Source/Base/InstituteEmergencyRelayButtonScript.psc:10:1:none-form-usage
 Scripts/Source/Base/InstituteEmergencyRelayButtonScript.psc:11:27:forbidden-functions
@@ -93484,6 +93551,7 @@ Scripts/Source/Base/InstituteEmergencyRelayButtonScript.psc:20:6:trailing-whites
 Scripts/Source/Base/InstituteEmergencyRelayButtonScript.psc:21:1:none-form-usage
 Scripts/Source/Base/InstituteEmergencyRelayTriggerScript.psc:18:1:argument-naming
 Scripts/Source/Base/InstituteEmergencyRelayTriggerScript.psc:18:1:function-override
+Scripts/Source/Base/InstituteEmergencyRelayTriggerScript.psc:18:1:nesting-depth
 Scripts/Source/Base/InstituteEmergencyRelayTriggerScript.psc:21:1:indentation
 Scripts/Source/Base/InstituteEmergencyRelayTriggerScript.psc:23:1:none-form-usage
 Scripts/Source/Base/InstituteEmergencyRelayTriggerScript.psc:26:1:indentation
@@ -94208,6 +94276,7 @@ Scripts/Source/Base/LoadElevatorMasterScript.psc:88:13:forbidden-functions
 Scripts/Source/Base/LoadElevatorMasterScript.psc:96:8:forbidden-functions
 Scripts/Source/Base/LoadElevatorMasterScript.psc:101:1:function-override
 Scripts/Source/Base/LoadElevatorMasterScript.psc:101:1:identifier-casing
+Scripts/Source/Base/LoadElevatorMasterScript.psc:101:1:nesting-depth
 Scripts/Source/Base/LoadElevatorMasterScript.psc:102:1:indentation
 Scripts/Source/Base/LoadElevatorMasterScript.psc:103:1:indentation
 Scripts/Source/Base/LoadElevatorMasterScript.psc:103:1:none-form-usage
@@ -94241,6 +94310,7 @@ Scripts/Source/Base/LoadElevatorMasterScript.psc:124:1:cyclomatic-complexity
 Scripts/Source/Base/LoadElevatorMasterScript.psc:124:1:function-override
 Scripts/Source/Base/LoadElevatorMasterScript.psc:124:1:identifier-casing
 Scripts/Source/Base/LoadElevatorMasterScript.psc:124:1:identifier-casing
+Scripts/Source/Base/LoadElevatorMasterScript.psc:124:1:nesting-depth
 Scripts/Source/Base/LoadElevatorMasterScript.psc:125:31:forbidden-functions
 Scripts/Source/Base/LoadElevatorMasterScript.psc:126:33:forbidden-functions
 Scripts/Source/Base/LoadElevatorMasterScript.psc:128:1:indentation
@@ -94304,6 +94374,7 @@ Scripts/Source/Base/LoadElevatorPanelScript.psc:21:1:indentation
 Scripts/Source/Base/LoadElevatorPanelScript.psc:22:1:indentation
 Scripts/Source/Base/LoadElevatorPanelScript.psc:26:1:identifier-casing
 Scripts/Source/Base/LoadElevatorPanelScript.psc:30:1:function-override
+Scripts/Source/Base/LoadElevatorPanelScript.psc:30:1:nesting-depth
 Scripts/Source/Base/LoadElevatorPanelScript.psc:31:5:exclamation-spacing
 Scripts/Source/Base/LoadElevatorPanelScript.psc:33:1:indentation
 Scripts/Source/Base/LoadElevatorPanelScript.psc:34:1:indentation
@@ -95468,6 +95539,7 @@ Scripts/Source/Base/MQ106InvestgationDummySCRIPT.psc:12:1:indentation
 Scripts/Source/Base/MQ106InvestgationDummySCRIPT.psc:13:1:indentation
 Scripts/Source/Base/MQ106InvestgationDummySCRIPT.psc:16:1:function-override
 Scripts/Source/Base/MQ106InvestgationDummySCRIPT.psc:16:1:identifier-casing
+Scripts/Source/Base/MQ106InvestgationDummySCRIPT.psc:16:1:nesting-depth
 Scripts/Source/Base/MQ106InvestgationDummySCRIPT.psc:18:1:indentation
 Scripts/Source/Base/MQ106InvestgationDummySCRIPT.psc:18:11:forbidden-functions
 Scripts/Source/Base/MQ106InvestgationDummySCRIPT.psc:19:1:indentation
@@ -95986,6 +96058,7 @@ Scripts/Source/Base/MQ203Script.psc:147:1:cyclomatic-complexity
 Scripts/Source/Base/MQ203Script.psc:147:1:identifier-casing
 Scripts/Source/Base/MQ203Script.psc:147:1:identifier-casing
 Scripts/Source/Base/MQ203Script.psc:147:1:identifier-casing
+Scripts/Source/Base/MQ203Script.psc:147:1:nesting-depth
 Scripts/Source/Base/MQ203Script.psc:151:9:forbidden-functions
 Scripts/Source/Base/MQ203Script.psc:152:11:forbidden-functions
 Scripts/Source/Base/MQ203Script.psc:160:1:unused-local-variable
@@ -96050,6 +96123,7 @@ Scripts/Source/Base/MQ203Script.psc:425:1:identifier-casing
 Scripts/Source/Base/MQ203Script.psc:427:1:identifier-casing
 Scripts/Source/Base/MQ203Script.psc:437:1:identifier-casing
 Scripts/Source/Base/MQ203Script.psc:437:1:identifier-casing
+Scripts/Source/Base/MQ203Script.psc:437:1:nesting-depth
 Scripts/Source/Base/MQ203Script.psc:438:1:identifier-casing
 Scripts/Source/Base/MQ203Script.psc:439:2:strict-boolean
 Scripts/Source/Base/MQ203Script.psc:446:2:strict-boolean
@@ -96159,6 +96233,7 @@ Scripts/Source/Base/MQ203Script.psc:837:1:unused-local-variable
 Scripts/Source/Base/MQ203Script.psc:853:1:cyclomatic-complexity
 Scripts/Source/Base/MQ203Script.psc:853:1:identifier-casing
 Scripts/Source/Base/MQ203Script.psc:853:1:identifier-casing
+Scripts/Source/Base/MQ203Script.psc:853:1:nesting-depth
 Scripts/Source/Base/MQ203Script.psc:855:1:identifier-casing
 Scripts/Source/Base/MQ203Script.psc:857:1:identifier-casing
 Scripts/Source/Base/MQ203Script.psc:859:1:identifier-casing
@@ -96472,6 +96547,7 @@ Scripts/Source/Base/MQ204CaveUpdateTriggerScript.psc:10:49:assignment-operator-s
 Scripts/Source/Base/MQ204CaveUpdateTriggerScript.psc:15:9:final-newline
 Scripts/Source/Base/MQ204EdgeUpdateTriggerRef.psc:5:1:argument-naming
 Scripts/Source/Base/MQ204EdgeUpdateTriggerRef.psc:5:1:function-override
+Scripts/Source/Base/MQ204EdgeUpdateTriggerRef.psc:5:1:nesting-depth
 Scripts/Source/Base/MQ204EdgeUpdateTriggerRef.psc:7:23:forbidden-functions
 Scripts/Source/Base/MQ204EdgeUpdateTriggerRef.psc:8:1:none-form-usage
 Scripts/Source/Base/MQ204EdgeUpdateTriggerRef.psc:9:1:none-form-usage
@@ -96877,6 +96953,7 @@ Scripts/Source/Base/MQ206Script.psc:428:34:unresolved-script
 Scripts/Source/Base/MQ206Script.psc:431:1:identifier-casing
 Scripts/Source/Base/MQ206Script.psc:432:1:identifier-casing
 Scripts/Source/Base/MQ206Script.psc:433:1:cyclomatic-complexity
+Scripts/Source/Base/MQ206Script.psc:433:1:nesting-depth
 Scripts/Source/Base/MQ206Script.psc:434:8:forbidden-functions
 Scripts/Source/Base/MQ206Script.psc:437:33:boolean-simplification
 Scripts/Source/Base/MQ206Script.psc:441:1:identifier-casing
@@ -97057,6 +97134,7 @@ Scripts/Source/Base/MQ206Script.psc:739:1:identifier-casing
 Scripts/Source/Base/MQ206Script.psc:745:1:cyclomatic-complexity
 Scripts/Source/Base/MQ206Script.psc:745:1:identifier-casing
 Scripts/Source/Base/MQ206Script.psc:745:1:identifier-casing
+Scripts/Source/Base/MQ206Script.psc:745:1:nesting-depth
 Scripts/Source/Base/MQ206Script.psc:746:8:forbidden-functions
 Scripts/Source/Base/MQ206Script.psc:748:9:forbidden-functions
 Scripts/Source/Base/MQ206Script.psc:753:29:boolean-simplification
@@ -97532,6 +97610,7 @@ Scripts/Source/Base/MS01FridgeDoorScript.psc:5:1:none-form-usage
 Scripts/Source/Base/MS01HouseTriggerScript.psc:10:1:argument-naming
 Scripts/Source/Base/MS01HouseTriggerScript.psc:10:1:function-override
 Scripts/Source/Base/MS01HouseTriggerScript.psc:10:1:identifier-casing
+Scripts/Source/Base/MS01HouseTriggerScript.psc:10:1:nesting-depth
 Scripts/Source/Base/MS01HouseTriggerScript.psc:12:1:none-form-usage
 Scripts/Source/Base/MS01HouseTriggerScript.psc:13:1:none-form-usage
 Scripts/Source/Base/MS01HouseTriggerScript.psc:14:1:none-form-usage
@@ -97905,6 +97984,7 @@ Scripts/Source/Base/MS04_LeverScript.psc:29:1:identifier-casing
 Scripts/Source/Base/MS04_LeverScript.psc:35:1:identifier-casing
 Scripts/Source/Base/MS04_LeverScript.psc:36:1:identifier-casing
 Scripts/Source/Base/MS04_LeverScript.psc:36:1:identifier-casing
+Scripts/Source/Base/MS04_LeverScript.psc:36:1:nesting-depth
 Scripts/Source/Base/MS04_LeverScript.psc:37:45:exclamation-spacing
 Scripts/Source/Base/MS04_LeverScript.psc:38:1:none-form-usage
 Scripts/Source/Base/MS04_LeverScript.psc:42:1:identifier-casing
@@ -97994,6 +98074,7 @@ Scripts/Source/Base/MS05BNestInnerTriggerScript.psc:3:1:identifier-casing
 Scripts/Source/Base/MS05BNestInnerTriggerScript.psc:5:1:identifier-casing
 Scripts/Source/Base/MS05BNestInnerTriggerScript.psc:7:1:function-override
 Scripts/Source/Base/MS05BNestInnerTriggerScript.psc:7:1:identifier-casing
+Scripts/Source/Base/MS05BNestInnerTriggerScript.psc:7:1:nesting-depth
 Scripts/Source/Base/MS05BNestInnerTriggerScript.psc:8:1:trailing-whitespace
 Scripts/Source/Base/MS05BNestInnerTriggerScript.psc:9:1:none-form-usage
 Scripts/Source/Base/MS05BNestInnerTriggerScript.psc:11:1:indentation
@@ -98253,6 +98334,7 @@ Scripts/Source/Base/MS07cActiveStationTriggerScript.psc:28:1:unchecked-cast
 Scripts/Source/Base/MS07cActiveStationTriggerScript.psc:30:1:indentation
 Scripts/Source/Base/MS07cActiveStationTriggerScript.psc:40:1:function-override
 Scripts/Source/Base/MS07cActiveStationTriggerScript.psc:40:1:identifier-casing
+Scripts/Source/Base/MS07cActiveStationTriggerScript.psc:40:1:nesting-depth
 Scripts/Source/Base/MS07cActiveStationTriggerScript.psc:41:1:indentation
 Scripts/Source/Base/MS07cActiveStationTriggerScript.psc:41:101:trailing-whitespace
 Scripts/Source/Base/MS07cActiveStationTriggerScript.psc:42:1:indentation
@@ -98302,6 +98384,7 @@ Scripts/Source/Base/MS07cHolotapeAliasScript.psc:8:1:identifier-casing
 Scripts/Source/Base/MS07cHolotapeAliasScript.psc:9:1:identifier-casing
 Scripts/Source/Base/MS07cHolotapeAliasScript.psc:14:1:identifier-casing
 Scripts/Source/Base/MS07cHolotapeAliasScript.psc:14:1:identifier-casing
+Scripts/Source/Base/MS07cHolotapeAliasScript.psc:14:1:nesting-depth
 Scripts/Source/Base/MS07cHolotapeAliasScript.psc:16:29:forbidden-functions
 Scripts/Source/Base/MS07cHolotapeAliasScript.psc:21:1:none-form-usage
 Scripts/Source/Base/MS07cHolotapeAliasScript.psc:23:1:none-form-usage
@@ -98407,6 +98490,7 @@ Scripts/Source/Base/MS07cKeypadScript.psc:7:1:identifier-casing
 Scripts/Source/Base/MS07cKeypadScript.psc:11:1:identifier-casing
 Scripts/Source/Base/MS07cKeypadScript.psc:13:1:function-override
 Scripts/Source/Base/MS07cKeypadScript.psc:13:1:identifier-casing
+Scripts/Source/Base/MS07cKeypadScript.psc:13:1:nesting-depth
 Scripts/Source/Base/MS07cKeypadScript.psc:14:1:indentation
 Scripts/Source/Base/MS07cKeypadScript.psc:15:1:indentation
 Scripts/Source/Base/MS07cKeypadScript.psc:18:1:none-form-usage
@@ -98952,6 +99036,7 @@ Scripts/Source/Base/MS11RepairSystemScript.psc:14:1:identifier-casing
 Scripts/Source/Base/MS11RepairSystemScript.psc:15:1:identifier-casing
 Scripts/Source/Base/MS11RepairSystemScript.psc:17:1:function-override
 Scripts/Source/Base/MS11RepairSystemScript.psc:17:1:identifier-casing
+Scripts/Source/Base/MS11RepairSystemScript.psc:17:1:nesting-depth
 Scripts/Source/Base/MS11RepairSystemScript.psc:19:25:forbidden-functions
 Scripts/Source/Base/MS11RepairSystemScript.psc:20:1:trailing-whitespace
 Scripts/Source/Base/MS11RepairSystemScript.psc:21:1:none-form-usage
@@ -99225,6 +99310,7 @@ Scripts/Source/Base/MS13FindPhotoScript.psc:3:1:identifier-casing
 Scripts/Source/Base/MS13FindPhotoScript.psc:3:1:identifier-casing
 Scripts/Source/Base/MS13FindPhotoScript.psc:3:1:identifier-casing
 Scripts/Source/Base/MS13FindPhotoScript.psc:3:1:identifier-casing
+Scripts/Source/Base/MS13FindPhotoScript.psc:3:1:nesting-depth
 Scripts/Source/Base/MS13FindPhotoScript.psc:4:8:forbidden-functions
 Scripts/Source/Base/MS13FindPhotoScript.psc:5:22:forbidden-functions
 Scripts/Source/Base/MS13FindPhotoScript.psc:6:1:none-form-usage
@@ -99566,6 +99652,7 @@ Scripts/Source/Base/MS13Script.psc:222:15:unused-property
 Scripts/Source/Base/MS13Script.psc:233:14:unused-property
 Scripts/Source/Base/MS14BullyScript.psc:7:1:argument-naming
 Scripts/Source/Base/MS14BullyScript.psc:7:1:function-override
+Scripts/Source/Base/MS14BullyScript.psc:7:1:nesting-depth
 Scripts/Source/Base/MS14BullyScript.psc:9:1:none-form-usage
 Scripts/Source/Base/MS14BullyScript.psc:9:21:operator-spacing
 Scripts/Source/Base/MS14BullyScript.psc:10:1:none-form-usage
@@ -100000,6 +100087,7 @@ Scripts/Source/Base/MS17OutsideHouseHandlingScript.psc:42:55:trailing-whitespace
 Scripts/Source/Base/MS17OutsideHouseHandlingScript.psc:51:1:argument-naming
 Scripts/Source/Base/MS17OutsideHouseHandlingScript.psc:51:1:function-override
 Scripts/Source/Base/MS17OutsideHouseHandlingScript.psc:51:1:identifier-casing
+Scripts/Source/Base/MS17OutsideHouseHandlingScript.psc:51:1:nesting-depth
 Scripts/Source/Base/MS17OutsideHouseHandlingScript.psc:55:1:identifier-casing
 Scripts/Source/Base/MS17OutsideHouseHandlingScript.psc:59:1:unchecked-cast
 Scripts/Source/Base/MS17OutsideHouseHandlingScript.psc:68:11:trailing-whitespace
@@ -101022,6 +101110,7 @@ Scripts/Source/Base/MinArtilleryScript.psc:234:1:identifier-casing
 Scripts/Source/Base/MinArtilleryScript.psc:242:8:forbidden-functions
 Scripts/Source/Base/MinArtilleryScript.psc:247:1:cyclomatic-complexity
 Scripts/Source/Base/MinArtilleryScript.psc:247:1:identifier-casing
+Scripts/Source/Base/MinArtilleryScript.psc:247:1:nesting-depth
 Scripts/Source/Base/MinArtilleryScript.psc:248:8:forbidden-functions
 Scripts/Source/Base/MinArtilleryScript.psc:250:1:identifier-casing
 Scripts/Source/Base/MinArtilleryScript.psc:250:1:none-form-usage
@@ -101402,6 +101491,7 @@ Scripts/Source/Base/MinDefendCastleAttackScript.psc:301:1:identifier-casing
 Scripts/Source/Base/MinDefendCastleAttackScript.psc:303:1:identifier-casing
 Scripts/Source/Base/MinDefendCastleAttackScript.psc:308:1:identifier-casing
 Scripts/Source/Base/MinDefendCastleAttackScript.psc:314:1:cyclomatic-complexity
+Scripts/Source/Base/MinDefendCastleAttackScript.psc:314:1:nesting-depth
 Scripts/Source/Base/MinDefendCastleAttackScript.psc:315:1:indentation
 Scripts/Source/Base/MinDefendCastleAttackScript.psc:315:11:forbidden-functions
 Scripts/Source/Base/MinDefendCastleAttackScript.psc:316:1:indentation
@@ -101721,6 +101811,7 @@ Scripts/Source/Base/MinDefendCastleAttackScript.psc:615:1:indentation
 Scripts/Source/Base/MinDefendCastleAttackScript.psc:616:1:indentation
 Scripts/Source/Base/MinDefendCastleAttackScript.psc:617:1:indentation
 Scripts/Source/Base/MinDefendCastleAttackScript.psc:618:1:indentation
+Scripts/Source/Base/MinDefendCastleAttackScript.psc:624:1:nesting-depth
 Scripts/Source/Base/MinDefendCastleAttackScript.psc:625:1:identifier-casing
 Scripts/Source/Base/MinDefendCastleAttackScript.psc:625:1:indentation
 Scripts/Source/Base/MinDefendCastleAttackScript.psc:626:1:identifier-casing
@@ -101797,6 +101888,7 @@ Scripts/Source/Base/MinDefendCastleAttackScript.psc:699:1:indentation
 Scripts/Source/Base/MinDefendCastleAttackScript.psc:699:35:unresolved-script
 Scripts/Source/Base/MinDefendCastleAttackScript.psc:700:1:indentation
 Scripts/Source/Base/MinDefendCastleAttackScript.psc:705:1:cyclomatic-complexity
+Scripts/Source/Base/MinDefendCastleAttackScript.psc:705:1:nesting-depth
 Scripts/Source/Base/MinDefendCastleAttackScript.psc:706:1:indentation
 Scripts/Source/Base/MinDefendCastleAttackScript.psc:706:11:forbidden-functions
 Scripts/Source/Base/MinDefendCastleAttackScript.psc:707:1:identifier-casing
@@ -102233,6 +102325,7 @@ Scripts/Source/Base/MinDestBOSScript.psc:61:1:identifier-casing
 Scripts/Source/Base/MinDestBOSScript.psc:61:1:identifier-casing
 Scripts/Source/Base/MinDestBOSScript.psc:61:1:identifier-casing
 Scripts/Source/Base/MinDestBOSScript.psc:61:1:identifier-casing
+Scripts/Source/Base/MinDestBOSScript.psc:61:1:nesting-depth
 Scripts/Source/Base/MinDestBOSScript.psc:62:8:forbidden-functions
 Scripts/Source/Base/MinDestBOSScript.psc:64:22:forbidden-functions
 Scripts/Source/Base/MinDestBOSScript.psc:66:1:none-form-usage
@@ -102366,6 +102459,7 @@ Scripts/Source/Base/MinDestBOSScript.psc:258:1:none-form-usage
 Scripts/Source/Base/MinDestBOSScript.psc:261:1:final-newline
 Scripts/Source/Base/MinDestBoSArtilleryScript.psc:9:1:identifier-casing
 Scripts/Source/Base/MinDestBoSArtilleryScript.psc:11:1:identifier-casing
+Scripts/Source/Base/MinDestBoSArtilleryScript.psc:11:1:nesting-depth
 Scripts/Source/Base/MinDestBoSArtilleryScript.psc:12:8:forbidden-functions
 Scripts/Source/Base/MinDestBoSArtilleryScript.psc:13:1:identifier-casing
 Scripts/Source/Base/MinDestBoSArtilleryScript.psc:13:1:none-form-usage
@@ -102912,6 +103006,7 @@ Scripts/Source/Base/MinRecruit02Script.psc:40:1:none-form-usage
 Scripts/Source/Base/MinRecruit02Script.psc:44:1:none-form-usage
 Scripts/Source/Base/MinRecruit02Script.psc:48:1:cyclomatic-complexity
 Scripts/Source/Base/MinRecruit02Script.psc:48:1:function-override
+Scripts/Source/Base/MinRecruit02Script.psc:48:1:nesting-depth
 Scripts/Source/Base/MinRecruit02Script.psc:49:8:forbidden-functions
 Scripts/Source/Base/MinRecruit02Script.psc:49:121:line-length
 Scripts/Source/Base/MinRecruit02Script.psc:53:10:forbidden-functions
@@ -103050,6 +103145,7 @@ Scripts/Source/Base/MinRecruitQuestScript.psc:143:37:unresolved-script
 Scripts/Source/Base/MinRecruitQuestScript.psc:146:1:cyclomatic-complexity
 Scripts/Source/Base/MinRecruitQuestScript.psc:146:1:identifier-casing
 Scripts/Source/Base/MinRecruitQuestScript.psc:146:1:identifier-casing
+Scripts/Source/Base/MinRecruitQuestScript.psc:146:1:nesting-depth
 Scripts/Source/Base/MinRecruitQuestScript.psc:147:8:forbidden-functions
 Scripts/Source/Base/MinRecruitQuestScript.psc:150:1:identifier-casing
 Scripts/Source/Base/MinRecruitQuestScript.psc:150:48:unresolved-script
@@ -103371,6 +103467,7 @@ Scripts/Source/Base/MinutemenCentralScript.psc:374:1:identifier-casing
 Scripts/Source/Base/MinutemenCentralScript.psc:374:1:identifier-casing
 Scripts/Source/Base/MinutemenCentralScript.psc:374:1:identifier-casing
 Scripts/Source/Base/MinutemenCentralScript.psc:383:1:cyclomatic-complexity
+Scripts/Source/Base/MinutemenCentralScript.psc:383:1:nesting-depth
 Scripts/Source/Base/MinutemenCentralScript.psc:384:8:forbidden-functions
 Scripts/Source/Base/MinutemenCentralScript.psc:388:26:slow-functions
 Scripts/Source/Base/MinutemenCentralScript.psc:388:37:unresolved-script
@@ -105554,6 +105651,7 @@ Scripts/Source/Base/PowerArmorFXScript.psc:17:8:forbidden-functions
 Scripts/Source/Base/PowerArmorFXScript.psc:26:1:function-override
 Scripts/Source/Base/PowerArmorFXScript.psc:26:1:identifier-casing
 Scripts/Source/Base/PowerArmorFXScript.psc:26:1:identifier-casing
+Scripts/Source/Base/PowerArmorFXScript.psc:26:1:nesting-depth
 Scripts/Source/Base/PowerArmorFXScript.psc:27:1:indentation
 Scripts/Source/Base/PowerArmorFXScript.psc:28:1:indentation
 Scripts/Source/Base/PowerArmorFXScript.psc:28:12:forbidden-functions
@@ -105654,6 +105752,7 @@ Scripts/Source/Base/PowerArmorWorkbench.psc:55:1:none-form-usage
 Scripts/Source/Base/PowerArmorWorkbench.psc:55:1:variable-used-before-assignment
 Scripts/Source/Base/PowerArmorWorkbench.psc:64:1:cyclomatic-complexity
 Scripts/Source/Base/PowerArmorWorkbench.psc:64:1:identifier-casing
+Scripts/Source/Base/PowerArmorWorkbench.psc:64:1:nesting-depth
 Scripts/Source/Base/PowerArmorWorkbench.psc:65:33:forbidden-functions
 Scripts/Source/Base/PowerArmorWorkbench.psc:67:1:trailing-whitespace
 Scripts/Source/Base/PowerArmorWorkbench.psc:68:10:forbidden-functions
@@ -105855,6 +105954,7 @@ Scripts/Source/Base/ProjectorScript.psc:111:1:unnecessary-function
 Scripts/Source/Base/ProjectorScript.psc:123:1:identifier-casing
 Scripts/Source/Base/ProjectorScript.psc:137:1:function-override
 Scripts/Source/Base/ProjectorScript.psc:137:1:identifier-casing
+Scripts/Source/Base/ProjectorScript.psc:137:1:nesting-depth
 Scripts/Source/Base/ProjectorScript.psc:140:1:identifier-casing
 Scripts/Source/Base/ProjectorScript.psc:142:25:boolean-simplification
 Scripts/Source/Base/ProjectorScript.psc:156:1:function-override
@@ -106029,6 +106129,7 @@ Scripts/Source/Base/PulowskShelterScript.psc:35:37:comma-spacing
 Scripts/Source/Base/PulowskShelterScript.psc:35:43:forbidden-functions
 Scripts/Source/Base/PulowskShelterScript.psc:38:1:function-override
 Scripts/Source/Base/PulowskShelterScript.psc:38:1:identifier-casing
+Scripts/Source/Base/PulowskShelterScript.psc:38:1:nesting-depth
 Scripts/Source/Base/PulowskShelterScript.psc:39:8:forbidden-functions
 Scripts/Source/Base/PulowskShelterScript.psc:40:1:indentation
 Scripts/Source/Base/PulowskShelterScript.psc:40:28:forbidden-functions
@@ -106148,6 +106249,7 @@ Scripts/Source/Base/Quest.psc:13:1:identifier-casing
 Scripts/Source/Base/Quest.psc:13:1:identifier-casing
 Scripts/Source/Base/Quest.psc:13:1:identifier-casing
 Scripts/Source/Base/Quest.psc:13:1:identifier-casing
+Scripts/Source/Base/Quest.psc:13:1:nesting-depth
 Scripts/Source/Base/Quest.psc:13:1:parameter-count
 Scripts/Source/Base/Quest.psc:13:121:line-length
 Scripts/Source/Base/Quest.psc:16:8:forbidden-functions
@@ -106630,6 +106732,7 @@ Scripts/Source/Base/RECheckpointQuestScript.psc:60:1:indentation
 Scripts/Source/Base/RECheckpointQuestScript.psc:64:1:identifier-casing
 Scripts/Source/Base/RECheckpointQuestScript.psc:64:1:identifier-casing
 Scripts/Source/Base/RECheckpointQuestScript.psc:64:1:identifier-casing
+Scripts/Source/Base/RECheckpointQuestScript.psc:64:1:nesting-depth
 Scripts/Source/Base/RECheckpointQuestScript.psc:65:1:identifier-casing
 Scripts/Source/Base/RECheckpointQuestScript.psc:66:1:identifier-casing
 Scripts/Source/Base/RECheckpointQuestScript.psc:70:1:none-form-usage
@@ -106921,6 +107024,7 @@ Scripts/Source/Base/RELCOnCombatStateChangedScript.psc:5:1:identifier-casing
 Scripts/Source/Base/RELCOnCombatStateChangedScript.psc:7:1:function-override
 Scripts/Source/Base/RELCOnCombatStateChangedScript.psc:7:1:identifier-casing
 Scripts/Source/Base/RELCOnCombatStateChangedScript.psc:7:1:identifier-casing
+Scripts/Source/Base/RELCOnCombatStateChangedScript.psc:7:1:nesting-depth
 Scripts/Source/Base/RELCOnCombatStateChangedScript.psc:8:1:indentation
 Scripts/Source/Base/RELCOnCombatStateChangedScript.psc:8:7:forbidden-functions
 Scripts/Source/Base/RELCOnCombatStateChangedScript.psc:11:9:forbidden-functions
@@ -107157,6 +107261,7 @@ Scripts/Source/Base/REPrisonerScript.psc:135:1:trailing-whitespace
 Scripts/Source/Base/REPrisonerScript.psc:140:1:cyclomatic-complexity
 Scripts/Source/Base/REPrisonerScript.psc:140:1:identifier-casing
 Scripts/Source/Base/REPrisonerScript.psc:140:1:identifier-casing
+Scripts/Source/Base/REPrisonerScript.psc:140:1:nesting-depth
 Scripts/Source/Base/REPrisonerScript.psc:141:2:strict-boolean
 Scripts/Source/Base/REPrisonerScript.psc:151:1:identifier-casing
 Scripts/Source/Base/REPrisonerScript.psc:152:3:strict-boolean
@@ -107399,6 +107504,7 @@ Scripts/Source/Base/REScript.psc:167:1:cyclomatic-complexity
 Scripts/Source/Base/REScript.psc:167:1:identifier-casing
 Scripts/Source/Base/REScript.psc:167:1:identifier-casing
 Scripts/Source/Base/REScript.psc:167:1:identifier-casing
+Scripts/Source/Base/REScript.psc:167:1:nesting-depth
 Scripts/Source/Base/REScript.psc:168:8:forbidden-functions
 Scripts/Source/Base/REScript.psc:172:1:identifier-casing
 Scripts/Source/Base/REScript.psc:173:1:identifier-casing
@@ -107447,6 +107553,7 @@ Scripts/Source/Base/REScript.psc:278:10:forbidden-functions
 Scripts/Source/Base/REScript.psc:286:1:cyclomatic-complexity
 Scripts/Source/Base/REScript.psc:286:1:identifier-casing
 Scripts/Source/Base/REScript.psc:286:1:identifier-casing
+Scripts/Source/Base/REScript.psc:286:1:nesting-depth
 Scripts/Source/Base/REScript.psc:288:1:identifier-casing
 Scripts/Source/Base/REScript.psc:290:1:identifier-casing
 Scripts/Source/Base/REScript.psc:291:1:identifier-casing
@@ -108030,6 +108137,7 @@ Scripts/Source/Base/RR201RebelChestScript.psc:12:1:identifier-casing
 Scripts/Source/Base/RR201RebelChestScript.psc:12:1:identifier-casing
 Scripts/Source/Base/RR201RebelChestScript.psc:12:1:identifier-casing
 Scripts/Source/Base/RR201RebelChestScript.psc:12:1:identifier-casing
+Scripts/Source/Base/RR201RebelChestScript.psc:12:1:nesting-depth
 Scripts/Source/Base/RR201RebelChestScript.psc:12:121:line-length
 Scripts/Source/Base/RR201RebelChestScript.psc:14:8:forbidden-functions
 Scripts/Source/Base/RR201RebelChestScript.psc:17:9:forbidden-functions
@@ -108054,6 +108162,7 @@ Scripts/Source/Base/RR201RebelChestScript.psc:41:1:identifier-casing
 Scripts/Source/Base/RR201RebelChestScript.psc:41:1:identifier-casing
 Scripts/Source/Base/RR201RebelChestScript.psc:41:1:identifier-casing
 Scripts/Source/Base/RR201RebelChestScript.psc:41:1:identifier-casing
+Scripts/Source/Base/RR201RebelChestScript.psc:41:1:nesting-depth
 Scripts/Source/Base/RR201RebelChestScript.psc:41:121:line-length
 Scripts/Source/Base/RR201RebelChestScript.psc:43:8:forbidden-functions
 Scripts/Source/Base/RR201RebelChestScript.psc:46:9:forbidden-functions
@@ -109232,6 +109341,7 @@ Scripts/Source/Base/RefCollectionAliasManager.psc:306:11:forbidden-functions
 Scripts/Source/Base/RefCollectionAliasManager.psc:313:1:variable-used-before-assignment
 Scripts/Source/Base/RefCollectionAliasManager.psc:316:9:forbidden-functions
 Scripts/Source/Base/RefCollectionAliasManager.psc:320:8:forbidden-functions
+Scripts/Source/Base/RefCollectionAliasManager.psc:326:1:nesting-depth
 Scripts/Source/Base/RefCollectionAliasManager.psc:327:8:forbidden-functions
 Scripts/Source/Base/RefCollectionAliasManager.psc:329:1:identifier-casing
 Scripts/Source/Base/RefCollectionAliasManager.psc:334:2:strict-boolean
@@ -109524,6 +109634,7 @@ Scripts/Source/Base/RelayTowerScript.psc:57:1:indentation
 Scripts/Source/Base/RelayTowerScript.psc:63:1:cyclomatic-complexity
 Scripts/Source/Base/RelayTowerScript.psc:63:1:identifier-casing
 Scripts/Source/Base/RelayTowerScript.psc:63:1:identifier-casing
+Scripts/Source/Base/RelayTowerScript.psc:63:1:nesting-depth
 Scripts/Source/Base/RelayTowerScript.psc:67:1:none-form-usage
 Scripts/Source/Base/RelayTowerScript.psc:68:1:none-form-usage
 Scripts/Source/Base/RelayTowerScript.psc:70:4:strict-boolean
@@ -109571,6 +109682,7 @@ Scripts/Source/Base/RelayTowerScript.psc:224:1:unnecessary-function
 Scripts/Source/Base/RelayTowerScript.psc:226:1:indentation
 Scripts/Source/Base/RelayTowerScript.psc:231:1:unnecessary-function
 Scripts/Source/Base/RelayTowerScript.psc:235:22:exclamation-spacing
+Scripts/Source/Base/RelayTowerScript.psc:241:1:nesting-depth
 Scripts/Source/Base/RelayTowerScript.psc:242:1:indentation
 Scripts/Source/Base/RelayTowerScript.psc:243:1:indentation
 Scripts/Source/Base/RelayTowerScript.psc:243:35:forbidden-functions
@@ -111465,6 +111577,7 @@ Scripts/Source/Base/SpotlightScript.psc:138:3:empty-body
 Scripts/Source/Base/SpotlightScript.psc:146:1:indentation
 Scripts/Source/Base/SpotlightScript.psc:146:121:line-length
 Scripts/Source/Base/SpotlightScript.psc:147:1:identifier-casing
+Scripts/Source/Base/SpotlightScript.psc:147:1:nesting-depth
 Scripts/Source/Base/SpotlightScript.psc:149:3:empty-body
 Scripts/Source/Base/SpotlightScript.psc:149:26:forbidden-functions
 Scripts/Source/Base/SpotlightScript.psc:151:1:indentation
@@ -111598,6 +111711,7 @@ Scripts/Source/Base/SpotlightScript.psc:338:1:identifier-casing
 Scripts/Source/Base/SpotlightScript.psc:350:121:line-length
 Scripts/Source/Base/SpotlightScript.psc:351:1:cyclomatic-complexity
 Scripts/Source/Base/SpotlightScript.psc:351:1:identifier-casing
+Scripts/Source/Base/SpotlightScript.psc:351:1:nesting-depth
 Scripts/Source/Base/SpotlightScript.psc:358:1:none-form-usage
 Scripts/Source/Base/SpotlightScript.psc:359:1:indentation
 Scripts/Source/Base/SpotlightScript.psc:361:7:exclamation-spacing
@@ -111812,6 +111926,7 @@ Scripts/Source/Base/SpotlightTriggerScript.psc:235:8:trailing-whitespace
 Scripts/Source/Base/SpotlightTriggerScript.psc:243:1:indentation
 Scripts/Source/Base/SpotlightTriggerScript.psc:246:1:function-override
 Scripts/Source/Base/SpotlightTriggerScript.psc:246:1:identifier-casing
+Scripts/Source/Base/SpotlightTriggerScript.psc:246:1:nesting-depth
 Scripts/Source/Base/SpotlightTriggerScript.psc:247:1:trailing-whitespace
 Scripts/Source/Base/SpotlightTriggerScript.psc:248:1:indentation
 Scripts/Source/Base/SpotlightTriggerScript.psc:257:4:empty-body
@@ -111828,6 +111943,7 @@ Scripts/Source/Base/SpotlightTriggerScript.psc:304:1:indentation
 Scripts/Source/Base/SpotlightTriggerScript.psc:305:1:indentation
 Scripts/Source/Base/SpotlightTriggerScript.psc:306:1:useless-downcast
 Scripts/Source/Base/SpotlightTriggerScript.psc:306:18:unresolved-script
+Scripts/Source/Base/SpotlightTriggerScript.psc:310:1:nesting-depth
 Scripts/Source/Base/SpotlightTriggerScript.psc:311:1:indentation
 Scripts/Source/Base/SpotlightTriggerScript.psc:312:15:boolean-simplification
 Scripts/Source/Base/SpotlightTriggerScript.psc:313:1:identifier-casing
@@ -113317,6 +113433,7 @@ Scripts/Source/Base/TestCellPowerArmorScript.psc:9:1:identifier-casing
 Scripts/Source/Base/TestCellPowerArmorScript.psc:10:1:identifier-casing
 Scripts/Source/Base/TestCellPowerArmorScript.psc:12:1:identifier-casing
 Scripts/Source/Base/TestCellPowerArmorScript.psc:18:1:identifier-casing
+Scripts/Source/Base/TestCellPowerArmorScript.psc:18:1:nesting-depth
 Scripts/Source/Base/TestCellPowerArmorScript.psc:19:9:forbidden-functions
 Scripts/Source/Base/TestCellPowerArmorScript.psc:20:27:forbidden-functions
 Scripts/Source/Base/TestCellPowerArmorScript.psc:21:1:identifier-casing
@@ -113498,6 +113615,7 @@ Scripts/Source/Base/TestDrewDisableSelfTrigger.psc:2:121:line-length
 Scripts/Source/Base/TestDrewDisableSelfTrigger.psc:29:1:cyclomatic-complexity
 Scripts/Source/Base/TestDrewDisableSelfTrigger.psc:29:1:identifier-casing
 Scripts/Source/Base/TestDrewDisableSelfTrigger.psc:29:1:identifier-casing
+Scripts/Source/Base/TestDrewDisableSelfTrigger.psc:29:1:nesting-depth
 Scripts/Source/Base/TestDrewDisableSelfTrigger.psc:31:26:forbidden-functions
 Scripts/Source/Base/TestDrewDisableSelfTrigger.psc:32:36:forbidden-functions
 Scripts/Source/Base/TestDrewDisableSelfTrigger.psc:33:1:indentation
@@ -113717,6 +113835,7 @@ Scripts/Source/Base/TestMalfunctioningDoorScript.psc:17:1:unnecessary-function
 Scripts/Source/Base/TestMegatonBombScript.psc:1:57:trailing-whitespace
 Scripts/Source/Base/TestMegatonBombScript.psc:14:1:function-override
 Scripts/Source/Base/TestMegatonBombScript.psc:14:1:identifier-casing
+Scripts/Source/Base/TestMegatonBombScript.psc:14:1:nesting-depth
 Scripts/Source/Base/TestMegatonBombScript.psc:16:25:forbidden-functions
 Scripts/Source/Base/TestMegatonBombScript.psc:17:1:none-form-usage
 Scripts/Source/Base/TestMegatonBombScript.psc:18:1:none-form-usage
@@ -114883,6 +115002,7 @@ Scripts/Source/Base/TrapExplGas.psc:115:1:trailing-whitespace
 Scripts/Source/Base/TrapExplGas.psc:117:1:cyclomatic-complexity
 Scripts/Source/Base/TrapExplGas.psc:117:1:identifier-casing
 Scripts/Source/Base/TrapExplGas.psc:117:1:identifier-casing
+Scripts/Source/Base/TrapExplGas.psc:117:1:nesting-depth
 Scripts/Source/Base/TrapExplGas.psc:118:9:forbidden-functions
 Scripts/Source/Base/TrapExplGas.psc:120:31:exclamation-spacing
 Scripts/Source/Base/TrapExplGas.psc:120:74:unresolved-script
@@ -115724,6 +115844,7 @@ Scripts/Source/Base/TrapTrigBase.psc:302:1:indentation
 Scripts/Source/Base/TrapTrigBase.psc:303:1:cyclomatic-complexity
 Scripts/Source/Base/TrapTrigBase.psc:303:1:identifier-casing
 Scripts/Source/Base/TrapTrigBase.psc:303:1:identifier-casing
+Scripts/Source/Base/TrapTrigBase.psc:303:1:nesting-depth
 Scripts/Source/Base/TrapTrigBase.psc:303:1:unnecessary-function
 Scripts/Source/Base/TrapTrigBase.psc:305:1:indentation
 Scripts/Source/Base/TrapTrigBase.psc:307:25:forbidden-functions
@@ -116368,6 +116489,7 @@ Scripts/Source/Base/TutorialPlayerAliasScript.psc:115:1:cyclomatic-complexity
 Scripts/Source/Base/TutorialPlayerAliasScript.psc:115:1:function-override
 Scripts/Source/Base/TutorialPlayerAliasScript.psc:115:1:identifier-casing
 Scripts/Source/Base/TutorialPlayerAliasScript.psc:115:1:identifier-casing
+Scripts/Source/Base/TutorialPlayerAliasScript.psc:115:1:nesting-depth
 Scripts/Source/Base/TutorialPlayerAliasScript.psc:120:5:exclamation-spacing
 Scripts/Source/Base/TutorialPlayerAliasScript.psc:120:121:line-length
 Scripts/Source/Base/TutorialPlayerAliasScript.psc:122:1:none-form-usage
@@ -116432,6 +116554,7 @@ Scripts/Source/Base/TutorialPlayerAliasScript.psc:204:1:cyclomatic-complexity
 Scripts/Source/Base/TutorialPlayerAliasScript.psc:204:1:function-override
 Scripts/Source/Base/TutorialPlayerAliasScript.psc:204:1:identifier-casing
 Scripts/Source/Base/TutorialPlayerAliasScript.psc:204:1:identifier-casing
+Scripts/Source/Base/TutorialPlayerAliasScript.psc:204:1:nesting-depth
 Scripts/Source/Base/TutorialPlayerAliasScript.psc:205:1:indentation
 Scripts/Source/Base/TutorialPlayerAliasScript.psc:206:1:indentation
 Scripts/Source/Base/TutorialPlayerAliasScript.psc:207:1:indentation
@@ -116541,6 +116664,7 @@ Scripts/Source/Base/TutorialPlayerAliasScript.psc:289:1:cyclomatic-complexity
 Scripts/Source/Base/TutorialPlayerAliasScript.psc:289:1:function-override
 Scripts/Source/Base/TutorialPlayerAliasScript.psc:289:1:identifier-casing
 Scripts/Source/Base/TutorialPlayerAliasScript.psc:289:1:identifier-casing
+Scripts/Source/Base/TutorialPlayerAliasScript.psc:289:1:nesting-depth
 Scripts/Source/Base/TutorialPlayerAliasScript.psc:295:1:none-form-usage
 Scripts/Source/Base/TutorialPlayerAliasScript.psc:295:1:none-form-usage
 Scripts/Source/Base/TutorialPlayerAliasScript.psc:295:1:none-form-usage
@@ -116650,6 +116774,7 @@ Scripts/Source/Base/TutorialScript.psc:135:11:exclamation-spacing
 Scripts/Source/Base/TutorialScript.psc:144:1:cyclomatic-complexity
 Scripts/Source/Base/TutorialScript.psc:144:1:function-override
 Scripts/Source/Base/TutorialScript.psc:144:1:identifier-casing
+Scripts/Source/Base/TutorialScript.psc:144:1:nesting-depth
 Scripts/Source/Base/TutorialScript.psc:144:29:trailing-whitespace
 Scripts/Source/Base/TutorialScript.psc:146:23:exclamation-spacing
 Scripts/Source/Base/TutorialScript.psc:151:1:indentation
@@ -116697,6 +116822,7 @@ Scripts/Source/Base/TutorialScript.psc:214:1:identifier-casing
 Scripts/Source/Base/TutorialScript.psc:214:1:identifier-casing
 Scripts/Source/Base/TutorialScript.psc:214:1:identifier-casing
 Scripts/Source/Base/TutorialScript.psc:214:1:identifier-casing
+Scripts/Source/Base/TutorialScript.psc:214:1:nesting-depth
 Scripts/Source/Base/TutorialScript.psc:214:121:line-length
 Scripts/Source/Base/TutorialScript.psc:215:1:indentation
 Scripts/Source/Base/TutorialScript.psc:216:1:indentation
@@ -116766,6 +116892,7 @@ Scripts/Source/Base/TutorialScript.psc:272:1:cyclomatic-complexity
 Scripts/Source/Base/TutorialScript.psc:272:1:function-override
 Scripts/Source/Base/TutorialScript.psc:272:1:identifier-casing
 Scripts/Source/Base/TutorialScript.psc:272:1:identifier-casing
+Scripts/Source/Base/TutorialScript.psc:272:1:nesting-depth
 Scripts/Source/Base/TutorialScript.psc:273:1:indentation
 Scripts/Source/Base/TutorialScript.psc:275:1:indentation
 Scripts/Source/Base/TutorialScript.psc:277:1:indentation
@@ -117143,6 +117270,7 @@ Scripts/Source/Base/TutorialScript.psc:712:1:indentation
 Scripts/Source/Base/TutorialScript.psc:713:1:indentation
 Scripts/Source/Base/TutorialScript.psc:718:53:trailing-whitespace
 Scripts/Source/Base/TutorialScript.psc:720:1:cyclomatic-complexity
+Scripts/Source/Base/TutorialScript.psc:720:1:nesting-depth
 Scripts/Source/Base/TutorialScript.psc:720:1:unnecessary-function
 Scripts/Source/Base/TutorialScript.psc:721:1:indentation
 Scripts/Source/Base/TutorialScript.psc:721:4:exclamation-spacing
@@ -117614,6 +117742,7 @@ Scripts/Source/Base/V81ProjectorScript.psc:75:1:unnecessary-function
 Scripts/Source/Base/V81ProjectorScript.psc:85:1:identifier-casing
 Scripts/Source/Base/V81ProjectorScript.psc:97:1:function-override
 Scripts/Source/Base/V81ProjectorScript.psc:97:1:identifier-casing
+Scripts/Source/Base/V81ProjectorScript.psc:97:1:nesting-depth
 Scripts/Source/Base/V81ProjectorScript.psc:100:1:identifier-casing
 Scripts/Source/Base/V81ProjectorScript.psc:102:25:boolean-simplification
 Scripts/Source/Base/V81ProjectorScript.psc:116:1:function-override
@@ -117791,6 +117920,7 @@ Scripts/Source/Base/VFTPlayerScript.psc:9:1:function-override
 Scripts/Source/Base/VFTPlayerScript.psc:15:1:function-override
 Scripts/Source/Base/VFTPlayerScript.psc:15:1:identifier-casing
 Scripts/Source/Base/VFTPlayerScript.psc:15:1:identifier-casing
+Scripts/Source/Base/VFTPlayerScript.psc:15:1:nesting-depth
 Scripts/Source/Base/VFTPlayerScript.psc:16:1:none-form-usage
 Scripts/Source/Base/VFTPlayerScript.psc:17:1:indentation
 Scripts/Source/Base/VFTPlayerScript.psc:17:20:operator-spacing
@@ -118166,6 +118296,7 @@ Scripts/Source/Base/VertibirdCrashScript.psc:25:10:forbidden-functions
 Scripts/Source/Base/VertibirdCrashScript.psc:33:1:trailing-whitespace
 Scripts/Source/Base/VertibirdCrashScript.psc:34:121:line-length
 Scripts/Source/Base/VertibirdCrashScript.psc:35:1:identifier-casing
+Scripts/Source/Base/VertibirdCrashScript.psc:35:1:nesting-depth
 Scripts/Source/Base/VertibirdCrashScript.psc:36:1:identifier-casing
 Scripts/Source/Base/VertibirdCrashScript.psc:42:1:trailing-whitespace
 Scripts/Source/Base/VertibirdCrashScript.psc:43:1:identifier-casing
@@ -118856,6 +118987,7 @@ Scripts/Source/Base/WorkshopAttackScript.psc:99:1:indentation
 Scripts/Source/Base/WorkshopAttackScript.psc:99:15:forbidden-functions
 Scripts/Source/Base/WorkshopAttackScript.psc:100:1:indentation
 Scripts/Source/Base/WorkshopAttackScript.psc:101:1:indentation
+Scripts/Source/Base/WorkshopAttackScript.psc:104:1:nesting-depth
 Scripts/Source/Base/WorkshopAttackScript.psc:105:1:indentation
 Scripts/Source/Base/WorkshopAttackScript.psc:105:11:forbidden-functions
 Scripts/Source/Base/WorkshopAttackScript.psc:106:1:trailing-whitespace
@@ -119068,6 +119200,7 @@ Scripts/Source/Base/WorkshopChildScript.psc:5:1:function-override
 Scripts/Source/Base/WorkshopChildScript.psc:11:1:function-override
 Scripts/Source/Base/WorkshopChildScript.psc:18:1:identifier-casing
 Scripts/Source/Base/WorkshopChildScript.psc:18:1:identifier-casing
+Scripts/Source/Base/WorkshopChildScript.psc:22:1:nesting-depth
 Scripts/Source/Base/WorkshopChildScript.psc:23:8:forbidden-functions
 Scripts/Source/Base/WorkshopChildScript.psc:25:1:identifier-casing
 Scripts/Source/Base/WorkshopChildScript.psc:25:1:useless-downcast
@@ -119613,6 +119746,7 @@ Scripts/Source/Base/WorkshopObjectScript.psc:256:1:unnecessary-function
 Scripts/Source/Base/WorkshopObjectScript.psc:257:2:strict-boolean
 Scripts/Source/Base/WorkshopObjectScript.psc:271:1:indentation
 Scripts/Source/Base/WorkshopObjectScript.psc:278:1:identifier-casing
+Scripts/Source/Base/WorkshopObjectScript.psc:278:1:nesting-depth
 Scripts/Source/Base/WorkshopObjectScript.psc:278:1:unnecessary-function
 Scripts/Source/Base/WorkshopObjectScript.psc:280:1:identifier-casing
 Scripts/Source/Base/WorkshopObjectScript.psc:282:4:strict-boolean
@@ -119646,6 +119780,7 @@ Scripts/Source/Base/WorkshopObjectScript.psc:381:1:indentation
 Scripts/Source/Base/WorkshopObjectScript.psc:382:1:indentation
 Scripts/Source/Base/WorkshopObjectScript.psc:383:1:indentation
 Scripts/Source/Base/WorkshopObjectScript.psc:387:1:cyclomatic-complexity
+Scripts/Source/Base/WorkshopObjectScript.psc:387:1:nesting-depth
 Scripts/Source/Base/WorkshopObjectScript.psc:399:1:identifier-casing
 Scripts/Source/Base/WorkshopObjectScript.psc:400:1:identifier-casing
 Scripts/Source/Base/WorkshopObjectScript.psc:402:1:identifier-casing
@@ -119708,6 +119843,7 @@ Scripts/Source/Base/WorkshopObjectScript.psc:577:1:none-form-usage
 Scripts/Source/Base/WorkshopObjectScript.psc:581:2:strict-boolean
 Scripts/Source/Base/WorkshopObjectScript.psc:582:1:none-form-usage
 Scripts/Source/Base/WorkshopObjectScript.psc:586:1:identifier-casing
+Scripts/Source/Base/WorkshopObjectScript.psc:586:1:nesting-depth
 Scripts/Source/Base/WorkshopObjectScript.psc:586:1:unnecessary-function
 Scripts/Source/Base/WorkshopObjectScript.psc:587:1:none-form-usage
 Scripts/Source/Base/WorkshopObjectScript.psc:587:121:line-length
@@ -120264,6 +120400,7 @@ Scripts/Source/Base/WorkshopParentScript.psc:675:1:cyclomatic-complexity
 Scripts/Source/Base/WorkshopParentScript.psc:675:1:function-override
 Scripts/Source/Base/WorkshopParentScript.psc:675:1:identifier-casing
 Scripts/Source/Base/WorkshopParentScript.psc:675:1:identifier-casing
+Scripts/Source/Base/WorkshopParentScript.psc:675:1:nesting-depth
 Scripts/Source/Base/WorkshopParentScript.psc:682:64:unresolved-script
 Scripts/Source/Base/WorkshopParentScript.psc:683:62:unresolved-script
 Scripts/Source/Base/WorkshopParentScript.psc:685:1:trailing-whitespace
@@ -120388,6 +120525,7 @@ Scripts/Source/Base/WorkshopParentScript.psc:1012:1:identifier-casing
 Scripts/Source/Base/WorkshopParentScript.psc:1016:1:identifier-casing
 Scripts/Source/Base/WorkshopParentScript.psc:1017:1:identifier-casing
 Scripts/Source/Base/WorkshopParentScript.psc:1020:121:line-length
+Scripts/Source/Base/WorkshopParentScript.psc:1033:1:nesting-depth
 Scripts/Source/Base/WorkshopParentScript.psc:1038:1:identifier-casing
 Scripts/Source/Base/WorkshopParentScript.psc:1039:1:identifier-casing
 Scripts/Source/Base/WorkshopParentScript.psc:1040:1:identifier-casing
@@ -120527,6 +120665,7 @@ Scripts/Source/Base/WorkshopParentScript.psc:1530:1:identifier-casing
 Scripts/Source/Base/WorkshopParentScript.psc:1530:1:identifier-casing
 Scripts/Source/Base/WorkshopParentScript.psc:1530:1:identifier-casing
 Scripts/Source/Base/WorkshopParentScript.psc:1530:1:identifier-casing
+Scripts/Source/Base/WorkshopParentScript.psc:1530:1:nesting-depth
 Scripts/Source/Base/WorkshopParentScript.psc:1530:121:line-length
 Scripts/Source/Base/WorkshopParentScript.psc:1535:1:identifier-casing
 Scripts/Source/Base/WorkshopParentScript.psc:1536:3:strict-boolean
@@ -120659,6 +120798,7 @@ Scripts/Source/Base/WorkshopParentScript.psc:1913:1:cyclomatic-complexity
 Scripts/Source/Base/WorkshopParentScript.psc:1913:1:identifier-casing
 Scripts/Source/Base/WorkshopParentScript.psc:1913:1:identifier-casing
 Scripts/Source/Base/WorkshopParentScript.psc:1913:1:identifier-casing
+Scripts/Source/Base/WorkshopParentScript.psc:1913:1:nesting-depth
 Scripts/Source/Base/WorkshopParentScript.psc:1913:121:line-length
 Scripts/Source/Base/WorkshopParentScript.psc:1917:1:indentation
 Scripts/Source/Base/WorkshopParentScript.psc:1918:1:indentation
@@ -120706,6 +120846,7 @@ Scripts/Source/Base/WorkshopParentScript.psc:2126:123:trailing-whitespace
 Scripts/Source/Base/WorkshopParentScript.psc:2127:1:identifier-casing
 Scripts/Source/Base/WorkshopParentScript.psc:2127:1:identifier-casing
 Scripts/Source/Base/WorkshopParentScript.psc:2127:1:identifier-casing
+Scripts/Source/Base/WorkshopParentScript.psc:2127:1:nesting-depth
 Scripts/Source/Base/WorkshopParentScript.psc:2130:1:identifier-casing
 Scripts/Source/Base/WorkshopParentScript.psc:2133:1:identifier-casing
 Scripts/Source/Base/WorkshopParentScript.psc:2136:39:unresolved-script
@@ -120741,6 +120882,7 @@ Scripts/Source/Base/WorkshopParentScript.psc:2294:1:cyclomatic-complexity
 Scripts/Source/Base/WorkshopParentScript.psc:2294:1:identifier-casing
 Scripts/Source/Base/WorkshopParentScript.psc:2294:1:identifier-casing
 Scripts/Source/Base/WorkshopParentScript.psc:2294:1:identifier-casing
+Scripts/Source/Base/WorkshopParentScript.psc:2294:1:nesting-depth
 Scripts/Source/Base/WorkshopParentScript.psc:2304:1:identifier-casing
 Scripts/Source/Base/WorkshopParentScript.psc:2307:1:identifier-casing
 Scripts/Source/Base/WorkshopParentScript.psc:2316:6:exclamation-spacing
@@ -120779,6 +120921,7 @@ Scripts/Source/Base/WorkshopParentScript.psc:2452:3:strict-boolean
 Scripts/Source/Base/WorkshopParentScript.psc:2461:1:cyclomatic-complexity
 Scripts/Source/Base/WorkshopParentScript.psc:2461:1:identifier-casing
 Scripts/Source/Base/WorkshopParentScript.psc:2461:1:identifier-casing
+Scripts/Source/Base/WorkshopParentScript.psc:2461:1:nesting-depth
 Scripts/Source/Base/WorkshopParentScript.psc:2463:1:identifier-casing
 Scripts/Source/Base/WorkshopParentScript.psc:2465:1:identifier-casing
 Scripts/Source/Base/WorkshopParentScript.psc:2467:3:strict-boolean
@@ -120796,6 +120939,7 @@ Scripts/Source/Base/WorkshopParentScript.psc:2510:1:identifier-casing
 Scripts/Source/Base/WorkshopParentScript.psc:2512:1:identifier-casing
 Scripts/Source/Base/WorkshopParentScript.psc:2520:1:identifier-casing
 Scripts/Source/Base/WorkshopParentScript.psc:2520:1:identifier-casing
+Scripts/Source/Base/WorkshopParentScript.psc:2520:1:nesting-depth
 Scripts/Source/Base/WorkshopParentScript.psc:2522:1:indentation
 Scripts/Source/Base/WorkshopParentScript.psc:2523:2:strict-boolean
 Scripts/Source/Base/WorkshopParentScript.psc:2524:1:indentation
@@ -120809,6 +120953,7 @@ Scripts/Source/Base/WorkshopParentScript.psc:2545:1:unnecessary-function
 Scripts/Source/Base/WorkshopParentScript.psc:2554:1:cyclomatic-complexity
 Scripts/Source/Base/WorkshopParentScript.psc:2554:1:identifier-casing
 Scripts/Source/Base/WorkshopParentScript.psc:2554:1:identifier-casing
+Scripts/Source/Base/WorkshopParentScript.psc:2554:1:nesting-depth
 Scripts/Source/Base/WorkshopParentScript.psc:2557:5:exclamation-spacing
 Scripts/Source/Base/WorkshopParentScript.psc:2569:1:identifier-casing
 Scripts/Source/Base/WorkshopParentScript.psc:2572:1:identifier-casing
@@ -120922,6 +121067,7 @@ Scripts/Source/Base/WorkshopParentScript.psc:2851:1:identifier-casing
 Scripts/Source/Base/WorkshopParentScript.psc:2852:1:identifier-casing
 Scripts/Source/Base/WorkshopParentScript.psc:2864:1:identifier-casing
 Scripts/Source/Base/WorkshopParentScript.psc:2864:1:identifier-casing
+Scripts/Source/Base/WorkshopParentScript.psc:2864:1:nesting-depth
 Scripts/Source/Base/WorkshopParentScript.psc:2864:1:unnecessary-function
 Scripts/Source/Base/WorkshopParentScript.psc:2869:1:identifier-casing
 Scripts/Source/Base/WorkshopParentScript.psc:2871:1:identifier-casing
@@ -120959,6 +121105,7 @@ Scripts/Source/Base/WorkshopParentScript.psc:2969:121:line-length
 Scripts/Source/Base/WorkshopParentScript.psc:2979:1:identifier-casing
 Scripts/Source/Base/WorkshopParentScript.psc:2979:1:identifier-casing
 Scripts/Source/Base/WorkshopParentScript.psc:2979:1:identifier-casing
+Scripts/Source/Base/WorkshopParentScript.psc:2979:1:nesting-depth
 Scripts/Source/Base/WorkshopParentScript.psc:2980:1:identifier-casing
 Scripts/Source/Base/WorkshopParentScript.psc:2980:1:unused-local-variable
 Scripts/Source/Base/WorkshopParentScript.psc:2981:1:identifier-casing
@@ -120983,6 +121130,7 @@ Scripts/Source/Base/WorkshopParentScript.psc:3030:28:unresolved-script
 Scripts/Source/Base/WorkshopParentScript.psc:3032:1:none-form-usage
 Scripts/Source/Base/WorkshopParentScript.psc:3036:1:cyclomatic-complexity
 Scripts/Source/Base/WorkshopParentScript.psc:3036:1:identifier-casing
+Scripts/Source/Base/WorkshopParentScript.psc:3036:1:nesting-depth
 Scripts/Source/Base/WorkshopParentScript.psc:3042:2:unused-getter
 Scripts/Source/Base/WorkshopParentScript.psc:3044:121:line-length
 Scripts/Source/Base/WorkshopParentScript.psc:3046:1:indentation
@@ -121220,6 +121368,7 @@ Scripts/Source/Base/WorkshopParentScript.psc:3686:1:identifier-casing
 Scripts/Source/Base/WorkshopParentScript.psc:3695:1:identifier-casing
 Scripts/Source/Base/WorkshopParentScript.psc:3695:1:identifier-casing
 Scripts/Source/Base/WorkshopParentScript.psc:3695:1:identifier-casing
+Scripts/Source/Base/WorkshopParentScript.psc:3695:1:nesting-depth
 Scripts/Source/Base/WorkshopParentScript.psc:3695:121:line-length
 Scripts/Source/Base/WorkshopParentScript.psc:3696:8:forbidden-functions
 Scripts/Source/Base/WorkshopParentScript.psc:3699:1:trailing-whitespace
@@ -121329,6 +121478,7 @@ Scripts/Source/Base/WorkshopParentScript.psc:3876:41:unresolved-script
 Scripts/Source/Base/WorkshopParentScript.psc:3877:1:unchecked-cast
 Scripts/Source/Base/WorkshopParentScript.psc:3877:29:unresolved-script
 Scripts/Source/Base/WorkshopParentScript.psc:3884:1:identifier-casing
+Scripts/Source/Base/WorkshopParentScript.psc:3884:1:nesting-depth
 Scripts/Source/Base/WorkshopParentScript.psc:3885:1:identifier-casing
 Scripts/Source/Base/WorkshopParentScript.psc:3886:1:identifier-casing
 Scripts/Source/Base/WorkshopParentScript.psc:3886:1:none-form-usage
@@ -121381,6 +121531,7 @@ Scripts/Source/Base/WorkshopRE02Script.psc:39:1:none-form-usage
 Scripts/Source/Base/WorkshopRE02Script.psc:42:1:none-form-usage
 Scripts/Source/Base/WorkshopRE02Script.psc:43:35:unresolved-script
 Scripts/Source/Base/WorkshopRE02Script.psc:47:1:function-override
+Scripts/Source/Base/WorkshopRE02Script.psc:47:1:nesting-depth
 Scripts/Source/Base/WorkshopRE02Script.psc:47:1:unnecessary-function
 Scripts/Source/Base/WorkshopRE02Script.psc:51:10:forbidden-functions
 Scripts/Source/Base/WorkshopRE02Script.psc:61:1:identifier-casing
@@ -121929,6 +122080,7 @@ Scripts/Source/Base/WorkshopScript.psc:770:1:none-form-usage
 Scripts/Source/Base/WorkshopScript.psc:777:1:cyclomatic-complexity
 Scripts/Source/Base/WorkshopScript.psc:777:1:identifier-casing
 Scripts/Source/Base/WorkshopScript.psc:777:1:identifier-casing
+Scripts/Source/Base/WorkshopScript.psc:777:1:nesting-depth
 Scripts/Source/Base/WorkshopScript.psc:783:1:identifier-casing
 Scripts/Source/Base/WorkshopScript.psc:783:1:none-form-usage
 Scripts/Source/Base/WorkshopScript.psc:784:1:none-form-usage
@@ -122181,6 +122333,7 @@ Scripts/Source/Base/WorkshopScript.psc:1283:1:numeric-comparison
 Scripts/Source/Base/WorkshopScript.psc:1285:1:none-form-usage
 Scripts/Source/Base/WorkshopScript.psc:1289:1:cyclomatic-complexity
 Scripts/Source/Base/WorkshopScript.psc:1289:1:identifier-casing
+Scripts/Source/Base/WorkshopScript.psc:1289:1:nesting-depth
 Scripts/Source/Base/WorkshopScript.psc:1291:1:identifier-casing
 Scripts/Source/Base/WorkshopScript.psc:1291:1:none-form-usage
 Scripts/Source/Base/WorkshopScript.psc:1294:1:identifier-casing
@@ -122572,6 +122725,7 @@ Scripts/Source/Base/WorkshopTutorialScript.psc:179:1:indentation
 Scripts/Source/Base/WorkshopTutorialScript.psc:205:1:cyclomatic-complexity
 Scripts/Source/Base/WorkshopTutorialScript.psc:205:1:identifier-casing
 Scripts/Source/Base/WorkshopTutorialScript.psc:205:1:identifier-casing
+Scripts/Source/Base/WorkshopTutorialScript.psc:205:1:nesting-depth
 Scripts/Source/Base/WorkshopTutorialScript.psc:205:1:unnecessary-function
 Scripts/Source/Base/WorkshopTutorialScript.psc:207:1:identifier-casing
 Scripts/Source/Base/WorkshopTutorialScript.psc:208:1:identifier-casing
@@ -122629,6 +122783,7 @@ Scripts/Source/Base/WorkshopTutorialScript.psc:381:1:identifier-casing
 Scripts/Source/Base/WorkshopTutorialScript.psc:381:1:identifier-casing
 Scripts/Source/Base/WorkshopTutorialScript.psc:381:1:identifier-casing
 Scripts/Source/Base/WorkshopTutorialScript.psc:381:1:identifier-casing
+Scripts/Source/Base/WorkshopTutorialScript.psc:381:1:nesting-depth
 Scripts/Source/Base/WorkshopTutorialScript.psc:381:121:line-length
 Scripts/Source/Base/WorkshopTutorialScript.psc:386:8:forbidden-functions
 Scripts/Source/Base/WorkshopTutorialScript.psc:386:121:line-length
@@ -122645,6 +122800,7 @@ Scripts/Source/Base/WorkshopTutorialScript.psc:423:1:redundant-bool-assignment
 Scripts/Source/Base/WorkshopTutorialScript.psc:428:1:indentation
 Scripts/Source/Base/WorkshopTutorialScript.psc:433:8:forbidden-functions
 Scripts/Source/Base/WorkshopTutorialScript.psc:437:1:identifier-casing
+Scripts/Source/Base/WorkshopTutorialScript.psc:437:1:nesting-depth
 Scripts/Source/Base/WorkshopTutorialScript.psc:438:8:forbidden-functions
 Scripts/Source/Base/WorkshopTutorialScript.psc:439:1:identifier-casing
 Scripts/Source/Base/WorkshopTutorialScript.psc:441:9:forbidden-functions
@@ -122670,6 +122826,7 @@ Scripts/Source/Base/WorkshopTutorialScript.psc:504:1:cyclomatic-complexity
 Scripts/Source/Base/WorkshopTutorialScript.psc:504:1:identifier-casing
 Scripts/Source/Base/WorkshopTutorialScript.psc:504:1:identifier-casing
 Scripts/Source/Base/WorkshopTutorialScript.psc:504:1:identifier-casing
+Scripts/Source/Base/WorkshopTutorialScript.psc:504:1:nesting-depth
 Scripts/Source/Base/WorkshopTutorialScript.psc:505:8:forbidden-functions
 Scripts/Source/Base/WorkshopTutorialScript.psc:506:1:identifier-casing
 Scripts/Source/Base/WorkshopTutorialScript.psc:518:1:identifier-casing
@@ -122914,6 +123071,7 @@ Scripts/Source/Base/abProtectronRaceScript.psc:47:1:indentation
 Scripts/Source/Base/abProtectronRaceScript.psc:48:2:empty-body
 Scripts/Source/Base/abProtectronRaceScript.psc:55:1:function-override
 Scripts/Source/Base/abProtectronRaceScript.psc:55:1:identifier-casing
+Scripts/Source/Base/abProtectronRaceScript.psc:55:1:nesting-depth
 Scripts/Source/Base/abProtectronRaceScript.psc:56:2:empty-body
 Scripts/Source/Base/abProtectronRaceScript.psc:57:1:indentation
 Scripts/Source/Base/abProtectronRaceScript.psc:59:1:identifier-casing
@@ -124156,6 +124314,7 @@ Scripts/Source/Base/hackerHolotapeMaster.psc:106:1:indentation
 Scripts/Source/Base/hackerHolotapeMaster.psc:108:1:indentation
 Scripts/Source/Base/hackerHolotapeMaster.psc:112:1:cyclomatic-complexity
 Scripts/Source/Base/hackerHolotapeMaster.psc:112:1:identifier-casing
+Scripts/Source/Base/hackerHolotapeMaster.psc:112:1:nesting-depth
 Scripts/Source/Base/hackerHolotapeMaster.psc:114:1:identifier-casing
 Scripts/Source/Base/hackerHolotapeMaster.psc:114:1:indentation
 Scripts/Source/Base/hackerHolotapeMaster.psc:114:1:none-form-usage
@@ -124337,6 +124496,7 @@ Scripts/Source/Base/hackerHolotapeMaster.psc:255:37:slow-functions
 Scripts/Source/Base/hackerHolotapeMaster.psc:255:48:unresolved-script
 Scripts/Source/Base/hackerHolotapeMaster.psc:257:1:indentation
 Scripts/Source/Base/hackerHolotapeMaster.psc:262:1:identifier-casing
+Scripts/Source/Base/hackerHolotapeMaster.psc:262:1:nesting-depth
 Scripts/Source/Base/hackerHolotapeMaster.psc:263:1:identifier-casing
 Scripts/Source/Base/hackerHolotapeMaster.psc:263:1:none-form-usage
 Scripts/Source/Base/hackerHolotapeMaster.psc:264:1:identifier-casing
@@ -124846,6 +125006,7 @@ Scripts/Source/Base/holdupExplosionEffectScript.psc:52:1:cyclomatic-complexity
 Scripts/Source/Base/holdupExplosionEffectScript.psc:52:1:function-override
 Scripts/Source/Base/holdupExplosionEffectScript.psc:52:1:identifier-casing
 Scripts/Source/Base/holdupExplosionEffectScript.psc:52:1:identifier-casing
+Scripts/Source/Base/holdupExplosionEffectScript.psc:52:1:nesting-depth
 Scripts/Source/Base/holdupExplosionEffectScript.psc:57:65:forbidden-functions
 Scripts/Source/Base/holdupExplosionEffectScript.psc:57:121:line-length
 Scripts/Source/Base/holdupExplosionEffectScript.psc:59:14:forbidden-functions
@@ -125056,6 +125217,7 @@ Scripts/Source/Base/inst305RadioRackSlotScript.psc:83:1:indentation
 Scripts/Source/Base/inst305RadioRackSlotScript.psc:88:1:cyclomatic-complexity
 Scripts/Source/Base/inst305RadioRackSlotScript.psc:88:1:function-override
 Scripts/Source/Base/inst305RadioRackSlotScript.psc:88:1:identifier-casing
+Scripts/Source/Base/inst305RadioRackSlotScript.psc:88:1:nesting-depth
 Scripts/Source/Base/inst305RadioRackSlotScript.psc:90:1:none-form-usage
 Scripts/Source/Base/inst305RadioRackSlotScript.psc:90:1:none-form-usage
 Scripts/Source/Base/inst305RadioRackSlotScript.psc:90:33:exclamation-spacing
@@ -125333,6 +125495,7 @@ Scripts/Source/Base/securityBarScript.psc:10:1:identifier-casing
 Scripts/Source/Base/securityBarScript.psc:16:1:identifier-casing
 Scripts/Source/Base/securityBarScript.psc:24:1:cyclomatic-complexity
 Scripts/Source/Base/securityBarScript.psc:24:1:function-override
+Scripts/Source/Base/securityBarScript.psc:24:1:nesting-depth
 Scripts/Source/Base/securityBarScript.psc:25:5:exclamation-spacing
 Scripts/Source/Base/securityBarScript.psc:26:6:exclamation-spacing
 Scripts/Source/Base/securityBarScript.psc:28:7:forbidden-functions
@@ -125452,6 +125615,7 @@ Scripts/Source/Base/securityBarScript.psc:124:9:forbidden-functions
 Scripts/Source/Base/securityBarScript.psc:128:1:none-form-usage
 Scripts/Source/Base/securityBarScript.psc:128:60:trailing-whitespace
 Scripts/Source/Base/securityBarScript.psc:130:25:forbidden-functions
+Scripts/Source/Base/securityBarScript.psc:133:1:nesting-depth
 Scripts/Source/Base/securityBarScript.psc:133:1:unnecessary-function
 Scripts/Source/Base/securityBarScript.psc:135:9:forbidden-functions
 Scripts/Source/Base/securityBarScript.psc:137:9:forbidden-functions
@@ -125561,6 +125725,7 @@ Scripts/Source/Base/testAddKeywordToLinkedActor.psc:5:1:identifier-casing
 Scripts/Source/Base/testAddKeywordToLinkedActor.psc:6:1:identifier-casing
 Scripts/Source/Base/testAddKeywordToLinkedActor.psc:8:1:function-override
 Scripts/Source/Base/testAddKeywordToLinkedActor.psc:8:1:identifier-casing
+Scripts/Source/Base/testAddKeywordToLinkedActor.psc:8:1:nesting-depth
 Scripts/Source/Base/testAddKeywordToLinkedActor.psc:10:8:forbidden-functions
 Scripts/Source/Base/testAddKeywordToLinkedActor.psc:11:8:forbidden-functions
 Scripts/Source/Base/testAddKeywordToLinkedActor.psc:12:1:trailing-whitespace
@@ -126631,6 +126796,7 @@ Scripts/Source/Base/traphitbase.psc:62:1:identifier-casing
 Scripts/Source/Base/traphitbase.psc:62:1:identifier-casing
 Scripts/Source/Base/traphitbase.psc:62:1:identifier-casing
 Scripts/Source/Base/traphitbase.psc:62:1:identifier-casing
+Scripts/Source/Base/traphitbase.psc:62:1:nesting-depth
 Scripts/Source/Base/traphitbase.psc:62:121:line-length
 Scripts/Source/Base/traphitbase.psc:63:1:indentation
 Scripts/Source/Base/traphitbase.psc:64:1:unchecked-cast
@@ -127536,6 +127702,7 @@ Scripts/Source/DLC01/DLC01/DLC01BotModQuestScript.psc:31:1:identifier-casing
 Scripts/Source/DLC01/DLC01/DLC01BotModQuestScript.psc:31:1:identifier-casing
 Scripts/Source/DLC01/DLC01/DLC01BotModQuestScript.psc:31:121:line-length
 Scripts/Source/DLC01/DLC01/DLC01BotModQuestScript.psc:54:1:identifier-casing
+Scripts/Source/DLC01/DLC01/DLC01BotModQuestScript.psc:54:1:nesting-depth
 Scripts/Source/DLC01/DLC01/DLC01BotModQuestScript.psc:54:1:unnecessary-function
 Scripts/Source/DLC01/DLC01/DLC01BotModQuestScript.psc:56:1:none-form-usage
 Scripts/Source/DLC01/DLC01/DLC01BotModQuestScript.psc:59:1:identifier-casing
@@ -128330,6 +128497,7 @@ Scripts/Source/DLC01/DLC01/DLC01LairQuestScript.psc:1240:1:argument-naming
 Scripts/Source/DLC01/DLC01/DLC01LairQuestScript.psc:1240:1:cyclomatic-complexity
 Scripts/Source/DLC01/DLC01/DLC01LairQuestScript.psc:1240:1:function-override
 Scripts/Source/DLC01/DLC01/DLC01LairQuestScript.psc:1240:1:identifier-casing
+Scripts/Source/DLC01/DLC01/DLC01LairQuestScript.psc:1240:1:nesting-depth
 Scripts/Source/DLC01/DLC01/DLC01LairQuestScript.psc:1250:1:identifier-casing
 Scripts/Source/DLC01/DLC01/DLC01LairQuestScript.psc:1260:1:identifier-casing
 Scripts/Source/DLC01/DLC01/DLC01LairQuestScript.psc:1260:48:forbidden-functions
@@ -128551,6 +128719,7 @@ Scripts/Source/DLC01/DLC01/DLC01Lair_Dispatcher.psc:544:1:cyclomatic-complexity
 Scripts/Source/DLC01/DLC01/DLC01Lair_Dispatcher.psc:544:1:identifier-casing
 Scripts/Source/DLC01/DLC01/DLC01Lair_Dispatcher.psc:544:1:identifier-casing
 Scripts/Source/DLC01/DLC01/DLC01Lair_Dispatcher.psc:544:1:identifier-casing
+Scripts/Source/DLC01/DLC01/DLC01Lair_Dispatcher.psc:544:1:nesting-depth
 Scripts/Source/DLC01/DLC01/DLC01Lair_Dispatcher.psc:544:63:assignment-operator-spacing
 Scripts/Source/DLC01/DLC01/DLC01Lair_Dispatcher.psc:544:63:assignment-operator-spacing
 Scripts/Source/DLC01/DLC01/DLC01Lair_Dispatcher.psc:544:88:assignment-operator-spacing
@@ -128766,6 +128935,7 @@ Scripts/Source/DLC01/DLC01/DLC01MQ00Script.psc:219:1:none-form-usage
 Scripts/Source/DLC01/DLC01/DLC01MQ00Script.psc:220:1:none-form-usage
 Scripts/Source/DLC01/DLC01/DLC01MQ00Script.psc:224:1:cyclomatic-complexity
 Scripts/Source/DLC01/DLC01/DLC01MQ00Script.psc:224:1:identifier-casing
+Scripts/Source/DLC01/DLC01/DLC01MQ00Script.psc:224:1:nesting-depth
 Scripts/Source/DLC01/DLC01/DLC01MQ00Script.psc:225:8:forbidden-functions
 Scripts/Source/DLC01/DLC01/DLC01MQ00Script.psc:227:1:identifier-casing
 Scripts/Source/DLC01/DLC01/DLC01MQ00Script.psc:228:1:identifier-casing
@@ -129462,6 +129632,7 @@ Scripts/Source/DLC01/DLC01/DLC01_GarageDoorKlaxonScript.psc:26:38:forbidden-func
 Scripts/Source/DLC01/DLC01/DLC01_GarageDoorKlaxonScript.psc:27:1:none-form-usage
 Scripts/Source/DLC01/DLC01/DLC01_GarageDoorKlaxonScript.psc:35:1:identifier-casing
 Scripts/Source/DLC01/DLC01/DLC01_GarageDoorKlaxonScript.psc:35:1:identifier-casing
+Scripts/Source/DLC01/DLC01/DLC01_GarageDoorKlaxonScript.psc:35:1:nesting-depth
 Scripts/Source/DLC01/DLC01/DLC01_GarageDoorKlaxonScript.psc:36:9:forbidden-functions
 Scripts/Source/DLC01/DLC01/DLC01_GarageDoorKlaxonScript.psc:38:1:none-form-usage
 Scripts/Source/DLC01/DLC01/DLC01_GarageDoorKlaxonScript.psc:39:14:boolean-simplification
@@ -129555,6 +129726,7 @@ Scripts/Source/DLC01/DLC01/DLC01_KlaxonJailDestScript.psc:22:19:forbidden-functi
 Scripts/Source/DLC01/DLC01/DLC01_KlaxonJailDestScript.psc:22:34:forbidden-functions
 Scripts/Source/DLC01/DLC01/DLC01_KlaxonJailDestScript.psc:28:1:cyclomatic-complexity
 Scripts/Source/DLC01/DLC01/DLC01_KlaxonJailDestScript.psc:28:1:identifier-casing
+Scripts/Source/DLC01/DLC01/DLC01_KlaxonJailDestScript.psc:28:1:nesting-depth
 Scripts/Source/DLC01/DLC01/DLC01_KlaxonJailDestScript.psc:29:42:boolean-simplification
 Scripts/Source/DLC01/DLC01/DLC01_KlaxonJailDestScript.psc:29:68:boolean-simplification
 Scripts/Source/DLC01/DLC01/DLC01_KlaxonJailDestScript.psc:34:15:boolean-simplification
@@ -129666,6 +129838,7 @@ Scripts/Source/DLC01/DLC01/DLC01_MechanistDoorControlScript.psc:177:1:cyclomatic
 Scripts/Source/DLC01/DLC01/DLC01_MechanistDoorControlScript.psc:177:1:identifier-casing
 Scripts/Source/DLC01/DLC01/DLC01_MechanistDoorControlScript.psc:177:1:identifier-casing
 Scripts/Source/DLC01/DLC01/DLC01_MechanistDoorControlScript.psc:177:1:identifier-casing
+Scripts/Source/DLC01/DLC01/DLC01_MechanistDoorControlScript.psc:177:1:nesting-depth
 Scripts/Source/DLC01/DLC01/DLC01_MechanistDoorControlScript.psc:177:1:unnecessary-function
 Scripts/Source/DLC01/DLC01/DLC01_MechanistDoorControlScript.psc:179:1:identifier-casing
 Scripts/Source/DLC01/DLC01/DLC01_MechanistDoorControlScript.psc:179:48:unresolved-script
@@ -129797,6 +129970,7 @@ Scripts/Source/DLC01/DLC01/DLC01_MedSprayScript.psc:20:1:identifier-casing
 Scripts/Source/DLC01/DLC01/DLC01_MedSprayScript.psc:21:1:identifier-casing
 Scripts/Source/DLC01/DLC01/DLC01_MedSprayScript.psc:22:1:identifier-casing
 Scripts/Source/DLC01/DLC01/DLC01_MedSprayScript.psc:26:1:identifier-casing
+Scripts/Source/DLC01/DLC01/DLC01_MedSprayScript.psc:26:1:nesting-depth
 Scripts/Source/DLC01/DLC01/DLC01_MedSprayScript.psc:27:1:identifier-casing
 Scripts/Source/DLC01/DLC01/DLC01_MedSprayScript.psc:28:18:boolean-simplification
 Scripts/Source/DLC01/DLC01/DLC01_MedSprayScript.psc:30:1:identifier-casing
@@ -130853,6 +131027,7 @@ Scripts/Source/DLC01/DLC01/DLC01_TrackSystemDoorTrigger.psc:44:1:identifier-casi
 Scripts/Source/DLC01/DLC01/DLC01_TrackSystemDoorTrigger.psc:56:1:argument-naming
 Scripts/Source/DLC01/DLC01/DLC01_TrackSystemDoorTrigger.psc:56:1:function-override
 Scripts/Source/DLC01/DLC01/DLC01_TrackSystemDoorTrigger.psc:56:1:identifier-casing
+Scripts/Source/DLC01/DLC01/DLC01_TrackSystemDoorTrigger.psc:56:1:nesting-depth
 Scripts/Source/DLC01/DLC01/DLC01_TrackSystemDoorTrigger.psc:58:1:identifier-casing
 Scripts/Source/DLC01/DLC01/DLC01_TrackSystemDoorTrigger.psc:63:14:forbidden-functions
 Scripts/Source/DLC01/DLC01/DLC01_TrackSystemDoorTrigger.psc:72:121:line-length
@@ -130890,6 +131065,7 @@ Scripts/Source/DLC01/DLC01/DLC01_TrackSystemMachine.psc:35:1:identifier-casing
 Scripts/Source/DLC01/DLC01/DLC01_TrackSystemMachine.psc:35:121:line-length
 Scripts/Source/DLC01/DLC01/DLC01_TrackSystemMachine.psc:43:1:cyclomatic-complexity
 Scripts/Source/DLC01/DLC01/DLC01_TrackSystemMachine.psc:43:1:identifier-casing
+Scripts/Source/DLC01/DLC01/DLC01_TrackSystemMachine.psc:43:1:nesting-depth
 Scripts/Source/DLC01/DLC01/DLC01_TrackSystemMachine.psc:43:121:line-length
 Scripts/Source/DLC01/DLC01/DLC01_TrackSystemMachine.psc:78:1:identifier-casing
 Scripts/Source/DLC01/DLC01/DLC01_TrackSystemMachine.psc:84:1:unchecked-cast
@@ -131143,6 +131319,7 @@ Scripts/Source/DLC01/DLC01/DLC01_TrackSystemTrack.psc:195:1:identifier-casing
 Scripts/Source/DLC01/DLC01/DLC01_TrackSystemTrack.psc:196:1:identifier-casing
 Scripts/Source/DLC01/DLC01/DLC01_TrackSystemTrack.psc:204:1:cyclomatic-complexity
 Scripts/Source/DLC01/DLC01/DLC01_TrackSystemTrack.psc:204:1:function-override
+Scripts/Source/DLC01/DLC01/DLC01_TrackSystemTrack.psc:204:1:nesting-depth
 Scripts/Source/DLC01/DLC01/DLC01_TrackSystemTrack.psc:205:6:exclamation-spacing
 Scripts/Source/DLC01/DLC01/DLC01_TrackSystemTrack.psc:219:10:forbidden-functions
 Scripts/Source/DLC01/DLC01/DLC01_TrackSystemTrack.psc:224:1:unchecked-cast
@@ -131227,6 +131404,7 @@ Scripts/Source/DLC01/DLC01/DLC01_TrackSystemTrack.psc:478:1:identifier-casing
 Scripts/Source/DLC01/DLC01/DLC01_TrackSystemTrack.psc:486:1:identifier-casing
 Scripts/Source/DLC01/DLC01/DLC01_TrackSystemTrack.psc:503:1:cyclomatic-complexity
 Scripts/Source/DLC01/DLC01/DLC01_TrackSystemTrack.psc:503:1:identifier-casing
+Scripts/Source/DLC01/DLC01/DLC01_TrackSystemTrack.psc:503:1:nesting-depth
 Scripts/Source/DLC01/DLC01/DLC01_TrackSystemTrack.psc:503:1:unnecessary-function
 Scripts/Source/DLC01/DLC01/DLC01_TrackSystemTrack.psc:506:24:unresolved-script
 Scripts/Source/DLC01/DLC01/DLC01_TrackSystemTrack.psc:511:8:exclamation-spacing
@@ -131416,6 +131594,7 @@ Scripts/Source/DLC01/DLC01/DLC01_UnstableModActorScript.psc:36:1:unnecessary-fun
 Scripts/Source/DLC01/DLC01/DLC01_UnstableModActorScript.psc:38:1:identifier-casing
 Scripts/Source/DLC01/DLC01/DLC01_UnstableModActorScript.psc:40:23:trailing-whitespace
 Scripts/Source/DLC01/DLC01/DLC01_UnstableModActorScript.psc:46:1:identifier-casing
+Scripts/Source/DLC01/DLC01/DLC01_UnstableModActorScript.psc:46:1:nesting-depth
 Scripts/Source/DLC01/DLC01/DLC01_UnstableModActorScript.psc:47:1:identifier-casing
 Scripts/Source/DLC01/DLC01/DLC01_UnstableModActorScript.psc:49:1:identifier-casing
 Scripts/Source/DLC01/DLC01/DLC01_UnstableModActorScript.psc:53:9:exclamation-spacing
@@ -131437,6 +131616,7 @@ Scripts/Source/DLC01/DLC01/DLC01_UnstableModActorScript.psc:137:1:unnecessary-fu
 Scripts/Source/DLC01/DLC01/DLC01_UnstableModActorScript.psc:146:1:cyclomatic-complexity
 Scripts/Source/DLC01/DLC01/DLC01_UnstableModActorScript.psc:146:1:identifier-casing
 Scripts/Source/DLC01/DLC01/DLC01_UnstableModActorScript.psc:146:1:identifier-casing
+Scripts/Source/DLC01/DLC01/DLC01_UnstableModActorScript.psc:146:1:nesting-depth
 Scripts/Source/DLC01/DLC01/DLC01_UnstableModActorScript.psc:149:1:identifier-casing
 Scripts/Source/DLC01/DLC01/DLC01_UnstableModActorScript.psc:152:9:forbidden-functions
 Scripts/Source/DLC01/DLC01/DLC01_UnstableModActorScript.psc:153:9:forbidden-functions
@@ -131561,6 +131741,7 @@ Scripts/Source/DLC01/DLC01/DLC01_UnstableModRestrictionScript.psc:49:1:argument-
 Scripts/Source/DLC01/DLC01/DLC01_UnstableModRestrictionScript.psc:49:1:cyclomatic-complexity
 Scripts/Source/DLC01/DLC01/DLC01_UnstableModRestrictionScript.psc:49:1:function-override
 Scripts/Source/DLC01/DLC01/DLC01_UnstableModRestrictionScript.psc:49:1:identifier-casing
+Scripts/Source/DLC01/DLC01/DLC01_UnstableModRestrictionScript.psc:49:1:nesting-depth
 Scripts/Source/DLC01/DLC01/DLC01_UnstableModRestrictionScript.psc:52:1:identifier-casing
 Scripts/Source/DLC01/DLC01/DLC01_UnstableModRestrictionScript.psc:54:1:identifier-casing
 Scripts/Source/DLC01/DLC01/DLC01_UnstableModRestrictionScript.psc:56:1:indentation
@@ -137233,6 +137414,7 @@ Scripts/Source/DLC02/DLC02/DLC02WorkshopArenaCombatantScript.psc:20:1:indentatio
 Scripts/Source/DLC02/DLC02/DLC02WorkshopArenaCombatantScript.psc:23:1:cyclomatic-complexity
 Scripts/Source/DLC02/DLC02/DLC02WorkshopArenaCombatantScript.psc:23:1:function-override
 Scripts/Source/DLC02/DLC02/DLC02WorkshopArenaCombatantScript.psc:23:1:identifier-casing
+Scripts/Source/DLC02/DLC02/DLC02WorkshopArenaCombatantScript.psc:23:1:nesting-depth
 Scripts/Source/DLC02/DLC02/DLC02WorkshopArenaCombatantScript.psc:26:2:strict-boolean
 Scripts/Source/DLC02/DLC02/DLC02WorkshopArenaCombatantScript.psc:31:10:forbidden-functions
 Scripts/Source/DLC02/DLC02/DLC02WorkshopArenaCombatantScript.psc:32:1:identifier-casing
@@ -137331,6 +137513,7 @@ Scripts/Source/DLC02/DLC02/DLC02WorkshopAttackStarterScript.psc:111:9:forbidden-
 Scripts/Source/DLC02/DLC02/DLC02WorkshopAttackStarterScript.psc:116:1:identifier-casing
 Scripts/Source/DLC02/DLC02/DLC02WorkshopAttackStarterScript.psc:116:1:identifier-casing
 Scripts/Source/DLC02/DLC02/DLC02WorkshopAttackStarterScript.psc:116:1:identifier-casing
+Scripts/Source/DLC02/DLC02/DLC02WorkshopAttackStarterScript.psc:116:1:nesting-depth
 Scripts/Source/DLC02/DLC02/DLC02WorkshopAttackStarterScript.psc:118:1:identifier-casing
 Scripts/Source/DLC02/DLC02/DLC02WorkshopAttackStarterScript.psc:119:3:strict-boolean
 Scripts/Source/DLC02/DLC02/DLC02WorkshopAttackStarterScript.psc:120:1:indentation
@@ -137460,6 +137643,7 @@ Scripts/Source/DLC02/DLC02/DLC02WorkshopSummonedToRelaxScript.psc:84:13:forbidde
 Scripts/Source/DLC02/DLC02/DLC02WorkshopSummonedToRelaxScript.psc:85:1:indentation
 Scripts/Source/DLC02/DLC02/DLC02WorkshopSummonedToRelaxScript.psc:86:1:indentation
 Scripts/Source/DLC02/DLC02/DLC02WorkshopSummonedToRelaxScript.psc:90:1:cyclomatic-complexity
+Scripts/Source/DLC02/DLC02/DLC02WorkshopSummonedToRelaxScript.psc:90:1:nesting-depth
 Scripts/Source/DLC02/DLC02/DLC02WorkshopSummonedToRelaxScript.psc:91:8:forbidden-functions
 Scripts/Source/DLC02/DLC02/DLC02WorkshopSummonedToRelaxScript.psc:92:1:identifier-casing
 Scripts/Source/DLC02/DLC02/DLC02WorkshopSummonedToRelaxScript.psc:93:1:identifier-casing
@@ -137577,6 +137761,7 @@ Scripts/Source/DLC02/DLC02/DLC02WorkshopTrapHit.psc:51:1:identifier-casing
 Scripts/Source/DLC02/DLC02/DLC02WorkshopTrapHit.psc:51:1:identifier-casing
 Scripts/Source/DLC02/DLC02/DLC02WorkshopTrapHit.psc:51:1:identifier-casing
 Scripts/Source/DLC02/DLC02/DLC02WorkshopTrapHit.psc:51:1:identifier-casing
+Scripts/Source/DLC02/DLC02/DLC02WorkshopTrapHit.psc:51:1:nesting-depth
 Scripts/Source/DLC02/DLC02/DLC02WorkshopTrapHit.psc:51:121:line-length
 Scripts/Source/DLC02/DLC02/DLC02WorkshopTrapHit.psc:52:1:indentation
 Scripts/Source/DLC02/DLC02/DLC02WorkshopTrapHit.psc:52:10:forbidden-functions
@@ -138274,6 +138459,7 @@ Scripts/Source/DLC02/DLC02/WorkshopCageScript.psc:145:11:forbidden-functions
 Scripts/Source/DLC02/DLC02/WorkshopCageScript.psc:153:1:identifier-casing
 Scripts/Source/DLC02/DLC02/WorkshopCageScript.psc:154:1:cyclomatic-complexity
 Scripts/Source/DLC02/DLC02/WorkshopCageScript.psc:154:1:identifier-casing
+Scripts/Source/DLC02/DLC02/WorkshopCageScript.psc:154:1:nesting-depth
 Scripts/Source/DLC02/DLC02/WorkshopCageScript.psc:155:8:forbidden-functions
 Scripts/Source/DLC02/DLC02/WorkshopCageScript.psc:156:1:identifier-casing
 Scripts/Source/DLC02/DLC02/WorkshopCageScript.psc:158:9:forbidden-functions
@@ -140677,6 +140863,7 @@ Scripts/Source/DLC03/DLC03/DLC03MQ02FightQuestScript.psc:114:1:cyclomatic-comple
 Scripts/Source/DLC03/DLC03/DLC03MQ02FightQuestScript.psc:114:1:identifier-casing
 Scripts/Source/DLC03/DLC03/DLC03MQ02FightQuestScript.psc:114:1:identifier-casing
 Scripts/Source/DLC03/DLC03/DLC03MQ02FightQuestScript.psc:114:1:identifier-casing
+Scripts/Source/DLC03/DLC03/DLC03MQ02FightQuestScript.psc:114:1:nesting-depth
 Scripts/Source/DLC03/DLC03/DLC03MQ02FightQuestScript.psc:114:121:line-length
 Scripts/Source/DLC03/DLC03/DLC03MQ02FightQuestScript.psc:116:1:identifier-casing
 Scripts/Source/DLC03/DLC03/DLC03MQ02FightQuestScript.psc:126:1:identifier-casing
@@ -140741,6 +140928,7 @@ Scripts/Source/DLC03/DLC03/DLC03MQ02FightQuestScript.psc:247:1:unnecessary-funct
 Scripts/Source/DLC03/DLC03/DLC03MQ02FightQuestScript.psc:251:1:argument-naming
 Scripts/Source/DLC03/DLC03/DLC03MQ02FightQuestScript.psc:251:1:function-override
 Scripts/Source/DLC03/DLC03/DLC03MQ02FightQuestScript.psc:251:1:identifier-casing
+Scripts/Source/DLC03/DLC03/DLC03MQ02FightQuestScript.psc:251:1:nesting-depth
 Scripts/Source/DLC03/DLC03/DLC03MQ02FightQuestScript.psc:253:26:unresolved-script
 Scripts/Source/DLC03/DLC03/DLC03MQ02FightQuestScript.psc:254:1:identifier-casing
 Scripts/Source/DLC03/DLC03/DLC03MQ02FightQuestScript.psc:255:34:unresolved-script
@@ -140907,6 +141095,7 @@ Scripts/Source/DLC03/DLC03/DLC03MQ06FuseBoxScript.psc:32:7:exclamation-spacing
 Scripts/Source/DLC03/DLC03/DLC03MQ06FuseBoxScript.psc:32:36:comma-spacing
 Scripts/Source/DLC03/DLC03/DLC03MQ06FuseBoxScript.psc:33:33:comma-spacing
 Scripts/Source/DLC03/DLC03/DLC03MQ06FuseBoxScript.psc:44:1:identifier-casing
+Scripts/Source/DLC03/DLC03/DLC03MQ06FuseBoxScript.psc:44:1:nesting-depth
 Scripts/Source/DLC03/DLC03/DLC03MQ06FuseBoxScript.psc:45:6:forbidden-functions
 Scripts/Source/DLC03/DLC03/DLC03MQ06FuseBoxScript.psc:46:1:indentation
 Scripts/Source/DLC03/DLC03/DLC03MQ06FuseBoxScript.psc:46:30:forbidden-functions
@@ -141223,6 +141412,7 @@ Scripts/Source/DLC03/DLC03/DLC03MQ06_WindFarmHandlingScript.psc:123:1:identifier
 Scripts/Source/DLC03/DLC03/DLC03MQ06_WindFarmHandlingScript.psc:123:1:identifier-casing
 Scripts/Source/DLC03/DLC03/DLC03MQ06_WindFarmHandlingScript.psc:123:1:identifier-casing
 Scripts/Source/DLC03/DLC03/DLC03MQ06_WindFarmHandlingScript.psc:123:1:identifier-casing
+Scripts/Source/DLC03/DLC03/DLC03MQ06_WindFarmHandlingScript.psc:123:1:nesting-depth
 Scripts/Source/DLC03/DLC03/DLC03MQ06_WindFarmHandlingScript.psc:126:19:forbidden-functions
 Scripts/Source/DLC03/DLC03/DLC03MQ06_WindFarmHandlingScript.psc:127:24:exclamation-spacing
 Scripts/Source/DLC03/DLC03/DLC03MQ06_WindFarmHandlingScript.psc:127:121:line-length
@@ -141441,6 +141631,7 @@ Scripts/Source/DLC03/DLC03/DLC03NakanoShipWheelACTScript.psc:4:1:identifier-casi
 Scripts/Source/DLC03/DLC03/DLC03NakanoShipWheelACTScript.psc:6:26:unused-property
 Scripts/Source/DLC03/DLC03/DLC03NakanoShipWheelACTScript.psc:8:1:function-override
 Scripts/Source/DLC03/DLC03/DLC03NakanoShipWheelACTScript.psc:8:1:identifier-casing
+Scripts/Source/DLC03/DLC03/DLC03NakanoShipWheelACTScript.psc:8:1:nesting-depth
 Scripts/Source/DLC03/DLC03/DLC03NakanoShipWheelACTScript.psc:9:25:forbidden-functions
 Scripts/Source/DLC03/DLC03/DLC03NakanoShipWheelACTScript.psc:10:1:unchecked-cast
 Scripts/Source/DLC03/DLC03/DLC03NakanoShipWheelACTScript.psc:10:7:forbidden-functions
@@ -141748,6 +141939,7 @@ Scripts/Source/DLC03/DLC03/DLC03TrapHit.psc:56:1:identifier-casing
 Scripts/Source/DLC03/DLC03/DLC03TrapHit.psc:56:1:identifier-casing
 Scripts/Source/DLC03/DLC03/DLC03TrapHit.psc:56:1:identifier-casing
 Scripts/Source/DLC03/DLC03/DLC03TrapHit.psc:56:1:identifier-casing
+Scripts/Source/DLC03/DLC03/DLC03TrapHit.psc:56:1:nesting-depth
 Scripts/Source/DLC03/DLC03/DLC03TrapHit.psc:56:121:line-length
 Scripts/Source/DLC03/DLC03/DLC03TrapHit.psc:57:1:indentation
 Scripts/Source/DLC03/DLC03/DLC03TrapHit.psc:57:10:forbidden-functions
@@ -141963,6 +142155,7 @@ Scripts/Source/DLC03/DLC03/DLC03WorkshopParentScript.psc:5:1:unnecessary-functio
 Scripts/Source/DLC03/DLC03/DLC03WorkshopParentScript.psc:10:1:identifier-casing
 Scripts/Source/DLC03/DLC03/DLC03WorkshopParentScript.psc:10:1:identifier-casing
 Scripts/Source/DLC03/DLC03/DLC03WorkshopParentScript.psc:10:1:identifier-casing
+Scripts/Source/DLC03/DLC03/DLC03WorkshopParentScript.psc:10:1:nesting-depth
 Scripts/Source/DLC03/DLC03/DLC03WorkshopParentScript.psc:12:1:identifier-casing
 Scripts/Source/DLC03/DLC03/DLC03WorkshopParentScript.psc:12:1:unused-local-variable
 Scripts/Source/DLC03/DLC03/DLC03WorkshopParentScript.psc:13:1:identifier-casing
@@ -146821,6 +147014,7 @@ Scripts/Source/DLC03/DLC03/FogCondenserCollectionAliasScript.psc:16:1:identifier
 Scripts/Source/DLC03/DLC03/FogCondenserCollectionAliasScript.psc:18:1:function-override
 Scripts/Source/DLC03/DLC03/FogCondenserCollectionAliasScript.psc:18:1:identifier-casing
 Scripts/Source/DLC03/DLC03/FogCondenserCollectionAliasScript.psc:18:1:identifier-casing
+Scripts/Source/DLC03/DLC03/FogCondenserCollectionAliasScript.psc:18:1:nesting-depth
 Scripts/Source/DLC03/DLC03/FogCondenserCollectionAliasScript.psc:19:8:forbidden-functions
 Scripts/Source/DLC03/DLC03/FogCondenserCollectionAliasScript.psc:20:121:line-length
 Scripts/Source/DLC03/DLC03/FogCondenserCollectionAliasScript.psc:24:27:forbidden-functions
@@ -151040,6 +151234,7 @@ Scripts/Source/DLC03/DLC03/Fragments/Quests/QF_DLC03MQ05_01001B43.psc:249:1:inde
 Scripts/Source/DLC03/DLC03/Fragments/Quests/QF_DLC03MQ05_01001B43.psc:256:1:unnecessary-function
 Scripts/Source/DLC03/DLC03/Fragments/Quests/QF_DLC03MQ05_01001B43.psc:260:1:indentation
 Scripts/Source/DLC03/DLC03/Fragments/Quests/QF_DLC03MQ05_01001B43.psc:267:1:cyclomatic-complexity
+Scripts/Source/DLC03/DLC03/Fragments/Quests/QF_DLC03MQ05_01001B43.psc:267:1:nesting-depth
 Scripts/Source/DLC03/DLC03/Fragments/Quests/QF_DLC03MQ05_01001B43.psc:273:1:none-form-usage
 Scripts/Source/DLC03/DLC03/Fragments/Quests/QF_DLC03MQ05_01001B43.psc:276:1:none-form-usage
 Scripts/Source/DLC03/DLC03/Fragments/Quests/QF_DLC03MQ05_01001B43.psc:276:6:exclamation-spacing
@@ -155214,6 +155409,7 @@ Scripts/Source/DLC03/DLC03/MQ04Script.psc:262:1:none-form-usage
 Scripts/Source/DLC03/DLC03/MQ04Script.psc:262:64:boolean-simplification
 Scripts/Source/DLC03/DLC03/MQ04Script.psc:267:1:identifier-casing
 Scripts/Source/DLC03/DLC03/MQ04Script.psc:267:1:identifier-casing
+Scripts/Source/DLC03/DLC03/MQ04Script.psc:267:1:nesting-depth
 Scripts/Source/DLC03/DLC03/MQ04Script.psc:268:8:forbidden-functions
 Scripts/Source/DLC03/DLC03/MQ04Script.psc:269:1:identifier-casing
 Scripts/Source/DLC03/DLC03/MQ04Script.psc:269:1:none-form-usage
@@ -155644,6 +155840,7 @@ Scripts/Source/DLC03/DLC03/VRDataRetrieverScript.psc:125:1:none-form-usage
 Scripts/Source/DLC03/DLC03/VRDataRetrieverScript.psc:131:1:unnecessary-function
 Scripts/Source/DLC03/DLC03/VRDataRetrieverScript.psc:132:2:strict-boolean
 Scripts/Source/DLC03/DLC03/VRDataRetrieverScript.psc:133:9:forbidden-functions
+Scripts/Source/DLC03/DLC03/VRDataRetrieverScript.psc:141:1:nesting-depth
 Scripts/Source/DLC03/DLC03/VRDataRetrieverScript.psc:141:1:unnecessary-function
 Scripts/Source/DLC03/DLC03/VRDataRetrieverScript.psc:144:1:identifier-casing
 Scripts/Source/DLC03/DLC03/VRDataRetrieverScript.psc:144:34:forbidden-functions
@@ -155797,6 +155994,7 @@ Scripts/Source/DLC03/DLC03/WorkshopRadiantOwned04Script.psc:3:1:identifier-casin
 Scripts/Source/DLC03/DLC03/WorkshopRadiantOwned04Script.psc:21:1:function-override
 Scripts/Source/DLC03/DLC03/WorkshopRadiantOwned04Script.psc:21:1:unnecessary-function
 Scripts/Source/DLC03/DLC03/WorkshopRadiantOwned04Script.psc:22:8:forbidden-functions
+Scripts/Source/DLC03/DLC03/WorkshopRadiantOwned04Script.psc:25:1:nesting-depth
 Scripts/Source/DLC03/DLC03/WorkshopRadiantOwned04Script.psc:26:1:identifier-casing
 Scripts/Source/DLC03/DLC03/WorkshopRadiantOwned04Script.psc:26:1:none-form-usage
 Scripts/Source/DLC03/DLC03/WorkshopRadiantOwned04Script.psc:28:1:none-form-usage
@@ -158025,6 +158223,7 @@ Scripts/Source/DLC04/DLC04/DLC04BotModQuestScript.psc:624:1:indentation
 Scripts/Source/DLC04/DLC04/DLC04BotModQuestScript.psc:629:1:indentation
 Scripts/Source/DLC04/DLC04/DLC04BotModQuestScript.psc:631:1:indentation
 Scripts/Source/DLC04/DLC04/DLC04BotModQuestScript.psc:637:1:identifier-casing
+Scripts/Source/DLC04/DLC04/DLC04BotModQuestScript.psc:637:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04BotModQuestScript.psc:637:1:unnecessary-function
 Scripts/Source/DLC04/DLC04/DLC04BotModQuestScript.psc:639:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04BotModQuestScript.psc:642:1:identifier-casing
@@ -158233,6 +158432,7 @@ Scripts/Source/DLC04/DLC04/DLC04ChaseOffDisableQuestScript.psc:22:1:function-ove
 Scripts/Source/DLC04/DLC04/DLC04ChaseOffDisableQuestScript.psc:27:1:unnecessary-function
 Scripts/Source/DLC04/DLC04/DLC04ChaseOffDisableQuestScript.psc:31:1:function-override
 Scripts/Source/DLC04/DLC04/DLC04ChaseOffDisableQuestScript.psc:31:1:identifier-casing
+Scripts/Source/DLC04/DLC04/DLC04ChaseOffDisableQuestScript.psc:31:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04ChaseOffDisableQuestScript.psc:33:1:identifier-casing
 Scripts/Source/DLC04/DLC04/DLC04ChaseOffDisableQuestScript.psc:34:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04ChaseOffDisableQuestScript.psc:38:1:identifier-casing
@@ -158249,6 +158449,7 @@ Scripts/Source/DLC04/DLC04/DLC04ChaseOffDisableQuestScript.psc:61:1:none-form-us
 Scripts/Source/DLC04/DLC04/DLC04ChaseOffDisableQuestScript.psc:63:10:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04ChaseOffDisableQuestScript.psc:65:1:trailing-whitespace
 Scripts/Source/DLC04/DLC04/DLC04ChaseOffDisableQuestScript.psc:74:1:identifier-casing
+Scripts/Source/DLC04/DLC04/DLC04ChaseOffDisableQuestScript.psc:74:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04ChaseOffDisableQuestScript.psc:76:8:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04ChaseOffDisableQuestScript.psc:77:5:exclamation-spacing
 Scripts/Source/DLC04/DLC04/DLC04ChaseOffDisableQuestScript.psc:79:1:identifier-casing
@@ -158527,6 +158728,7 @@ Scripts/Source/DLC04/DLC04/DLC04GZBattlezoneQuestScript.psc:30:1:unnecessary-fun
 Scripts/Source/DLC04/DLC04/DLC04GZBattlezoneQuestScript.psc:34:1:argument-naming
 Scripts/Source/DLC04/DLC04/DLC04GZBattlezoneQuestScript.psc:34:1:function-override
 Scripts/Source/DLC04/DLC04/DLC04GZBattlezoneQuestScript.psc:34:1:identifier-casing
+Scripts/Source/DLC04/DLC04/DLC04GZBattlezoneQuestScript.psc:34:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04GZBattlezoneQuestScript.psc:36:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04GZBattlezoneQuestScript.psc:36:7:exclamation-spacing
 Scripts/Source/DLC04/DLC04/DLC04GZBattlezoneQuestScript.psc:38:1:none-form-usage
@@ -158630,6 +158832,7 @@ Scripts/Source/DLC04/DLC04/DLC04GZEMSystemTurfScript.psc:121:1:indentation
 Scripts/Source/DLC04/DLC04/DLC04GZEMSystemTurfScript.psc:126:1:indentation
 Scripts/Source/DLC04/DLC04/DLC04GZEMSystemTurfScript.psc:127:1:cyclomatic-complexity
 Scripts/Source/DLC04/DLC04/DLC04GZEMSystemTurfScript.psc:127:1:identifier-casing
+Scripts/Source/DLC04/DLC04/DLC04GZEMSystemTurfScript.psc:127:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04GZEMSystemTurfScript.psc:128:1:indentation
 Scripts/Source/DLC04/DLC04/DLC04GZEMSystemTurfScript.psc:135:11:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04GZEMSystemTurfScript.psc:141:8:forbidden-functions
@@ -159718,6 +159921,7 @@ Scripts/Source/DLC04/DLC04/DLC04KiddieKingdomMainQuestScript.psc:64:9:forbidden-
 Scripts/Source/DLC04/DLC04/DLC04KiddieKingdomMainQuestScript.psc:71:10:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04KiddieKingdomMainQuestScript.psc:76:1:numeric-comparison
 Scripts/Source/DLC04/DLC04/DLC04KiddieKingdomMainQuestScript.psc:85:9:forbidden-functions
+Scripts/Source/DLC04/DLC04/DLC04KiddieKingdomMainQuestScript.psc:90:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04KiddieKingdomMainQuestScript.psc:91:8:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04KiddieKingdomMainQuestScript.psc:92:117:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04KiddieKingdomMainQuestScript.psc:92:121:line-length
@@ -159806,6 +160010,7 @@ Scripts/Source/DLC04/DLC04/DLC04KiddieKingdomMainQuestScript.psc:291:1:identifie
 Scripts/Source/DLC04/DLC04/DLC04KiddieKingdomMainQuestScript.psc:292:8:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04KiddieKingdomMainQuestScript.psc:294:9:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04KiddieKingdomMainQuestScript.psc:307:1:identifier-casing
+Scripts/Source/DLC04/DLC04/DLC04KiddieKingdomMainQuestScript.psc:307:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04KiddieKingdomMainQuestScript.psc:308:8:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04KiddieKingdomMainQuestScript.psc:309:5:exclamation-spacing
 Scripts/Source/DLC04/DLC04/DLC04KiddieKingdomMainQuestScript.psc:312:1:identifier-casing
@@ -160280,6 +160485,7 @@ Scripts/Source/DLC04/DLC04/DLC04MQ01GauntletQuestScript.psc:223:1:none-form-usag
 Scripts/Source/DLC04/DLC04/DLC04MQ01GauntletQuestScript.psc:224:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04MQ01GauntletQuestScript.psc:232:1:cyclomatic-complexity
 Scripts/Source/DLC04/DLC04/DLC04MQ01GauntletQuestScript.psc:232:1:identifier-casing
+Scripts/Source/DLC04/DLC04/DLC04MQ01GauntletQuestScript.psc:232:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04MQ01GauntletQuestScript.psc:233:8:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04MQ01GauntletQuestScript.psc:234:26:exclamation-spacing
 Scripts/Source/DLC04/DLC04/DLC04MQ01GauntletQuestScript.psc:243:1:identifier-casing
@@ -160814,6 +161020,7 @@ Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:581:1:identifier-casing
 Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:582:35:trailing-whitespace
 Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:600:1:cyclomatic-complexity
 Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:600:1:identifier-casing
+Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:600:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:601:1:identifier-casing
 Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:601:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:603:8:forbidden-functions
@@ -161065,6 +161272,7 @@ Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:857:1:identifier-casing
 Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:857:1:identifier-casing
 Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:857:1:identifier-casing
 Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:857:1:identifier-casing
+Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:857:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:857:1:parameter-count
 Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:857:121:line-length
 Scripts/Source/DLC04/DLC04/DLC04MQ04QuestScript.psc:860:8:forbidden-functions
@@ -161733,6 +161941,7 @@ Scripts/Source/DLC04/DLC04/DLC04MS02_AlignmentScript.psc:8:1:identifier-casing
 Scripts/Source/DLC04/DLC04/DLC04MS02_AlignmentScript.psc:11:1:cyclomatic-complexity
 Scripts/Source/DLC04/DLC04/DLC04MS02_AlignmentScript.psc:11:1:function-override
 Scripts/Source/DLC04/DLC04/DLC04MS02_AlignmentScript.psc:11:1:identifier-casing
+Scripts/Source/DLC04/DLC04/DLC04MS02_AlignmentScript.psc:11:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04MS02_AlignmentScript.psc:12:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04MS02_AlignmentScript.psc:12:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04MS02_AlignmentScript.psc:12:1:none-form-usage
@@ -161843,6 +162052,7 @@ Scripts/Source/DLC04/DLC04/DLC04MS02_Spacesuit_Script.psc:3:1:identifier-casing
 Scripts/Source/DLC04/DLC04/DLC04MS02_Spacesuit_Script.psc:6:1:function-override
 Scripts/Source/DLC04/DLC04/DLC04MS02_Spacesuit_Script.psc:6:1:identifier-casing
 Scripts/Source/DLC04/DLC04/DLC04MS02_Spacesuit_Script.psc:6:1:identifier-casing
+Scripts/Source/DLC04/DLC04/DLC04MS02_Spacesuit_Script.psc:6:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04MS02_Spacesuit_Script.psc:7:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04MS02_Spacesuit_Script.psc:8:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04MS02_Spacesuit_Script.psc:9:30:forbidden-functions
@@ -161867,6 +162077,7 @@ Scripts/Source/DLC04/DLC04/DLC04MS03_BodyDropScript.psc:7:26:unused-property
 Scripts/Source/DLC04/DLC04/DLC04MS03_BodyDropScript.psc:9:1:identifier-casing
 Scripts/Source/DLC04/DLC04/DLC04MS03_BodyDropScript.psc:22:1:cyclomatic-complexity
 Scripts/Source/DLC04/DLC04/DLC04MS03_BodyDropScript.psc:22:1:function-override
+Scripts/Source/DLC04/DLC04/DLC04MS03_BodyDropScript.psc:22:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04MS03_BodyDropScript.psc:23:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04MS03_BodyDropScript.psc:23:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04MS03_BodyDropScript.psc:24:1:none-form-usage
@@ -162005,6 +162216,7 @@ Scripts/Source/DLC04/DLC04/DLC04PPHChangeLocationScript.psc:62:121:line-length
 Scripts/Source/DLC04/DLC04/DLC04PPHChangeLocationScript.psc:67:12:final-newline
 Scripts/Source/DLC04/DLC04/DLC04PPHScript.psc:1:12:script-filename-mismatch
 Scripts/Source/DLC04/DLC04/DLC04PPHScript.psc:52:1:cyclomatic-complexity
+Scripts/Source/DLC04/DLC04/DLC04PPHScript.psc:52:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04PPHScript.psc:56:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04PPHScript.psc:57:11:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04PPHScript.psc:58:1:none-form-usage
@@ -162189,6 +162401,7 @@ Scripts/Source/DLC04/DLC04/DLC04PQFlagpoleAliasScript.psc:1:12:script-filename-m
 Scripts/Source/DLC04/DLC04/DLC04PQFlagpoleAliasScript.psc:14:1:cyclomatic-complexity
 Scripts/Source/DLC04/DLC04/DLC04PQFlagpoleAliasScript.psc:14:1:function-override
 Scripts/Source/DLC04/DLC04/DLC04PQFlagpoleAliasScript.psc:14:1:identifier-casing
+Scripts/Source/DLC04/DLC04/DLC04PQFlagpoleAliasScript.psc:14:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04PQFlagpoleAliasScript.psc:15:1:indentation
 Scripts/Source/DLC04/DLC04/DLC04PQFlagpoleAliasScript.psc:15:7:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04PQFlagpoleAliasScript.psc:17:1:indentation
@@ -162302,6 +162515,7 @@ Scripts/Source/DLC04/DLC04/DLC04PackScentGrenadeQuestScript.psc:73:1:indentation
 Scripts/Source/DLC04/DLC04/DLC04PackScentGrenadeQuestScript.psc:82:1:cyclomatic-complexity
 Scripts/Source/DLC04/DLC04/DLC04PackScentGrenadeQuestScript.psc:82:1:identifier-casing
 Scripts/Source/DLC04/DLC04/DLC04PackScentGrenadeQuestScript.psc:82:1:identifier-casing
+Scripts/Source/DLC04/DLC04/DLC04PackScentGrenadeQuestScript.psc:82:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04PackScentGrenadeQuestScript.psc:83:1:identifier-casing
 Scripts/Source/DLC04/DLC04/DLC04PackScentGrenadeQuestScript.psc:83:1:indentation
 Scripts/Source/DLC04/DLC04/DLC04PackScentGrenadeQuestScript.psc:84:1:identifier-casing
@@ -162726,6 +162940,7 @@ Scripts/Source/DLC04/DLC04/DLC04RaidChaseOffScript.psc:175:1:indentation
 Scripts/Source/DLC04/DLC04/DLC04RaidChaseOffScript.psc:176:8:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04RaidChaseOffScript.psc:178:5:exclamation-spacing
 Scripts/Source/DLC04/DLC04/DLC04RaidChaseOffScript.psc:198:1:cyclomatic-complexity
+Scripts/Source/DLC04/DLC04/DLC04RaidChaseOffScript.psc:198:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04RaidChaseOffScript.psc:200:47:unresolved-script
 Scripts/Source/DLC04/DLC04/DLC04RaidChaseOffScript.psc:201:1:identifier-casing
 Scripts/Source/DLC04/DLC04/DLC04RaidChaseOffScript.psc:203:8:forbidden-functions
@@ -162924,6 +163139,7 @@ Scripts/Source/DLC04/DLC04/DLC04RaidChaseOffScript.psc:652:7:exclamation-spacing
 Scripts/Source/DLC04/DLC04/DLC04RaidChaseOffScript.psc:653:11:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04RaidChaseOffScript.psc:654:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04RaidChaseOffScript.psc:666:1:identifier-casing
+Scripts/Source/DLC04/DLC04/DLC04RaidChaseOffScript.psc:666:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04RaidChaseOffScript.psc:666:1:unnecessary-function
 Scripts/Source/DLC04/DLC04/DLC04RaidChaseOffScript.psc:666:78:trailing-whitespace
 Scripts/Source/DLC04/DLC04/DLC04RaidChaseOffScript.psc:668:27:unresolved-script
@@ -163006,6 +163222,7 @@ Scripts/Source/DLC04/DLC04/DLC04RaidCoerceScript.psc:130:1:indentation
 Scripts/Source/DLC04/DLC04/DLC04RaidCoerceScript.psc:131:8:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04RaidCoerceScript.psc:133:5:exclamation-spacing
 Scripts/Source/DLC04/DLC04/DLC04RaidCoerceScript.psc:153:1:cyclomatic-complexity
+Scripts/Source/DLC04/DLC04/DLC04RaidCoerceScript.psc:153:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04RaidCoerceScript.psc:155:47:unresolved-script
 Scripts/Source/DLC04/DLC04/DLC04RaidCoerceScript.psc:156:1:identifier-casing
 Scripts/Source/DLC04/DLC04/DLC04RaidCoerceScript.psc:158:8:forbidden-functions
@@ -163213,6 +163430,7 @@ Scripts/Source/DLC04/DLC04/DLC04RaidParentScript.psc:200:1:identifier-casing
 Scripts/Source/DLC04/DLC04/DLC04RaidParentScript.psc:202:1:identifier-casing
 Scripts/Source/DLC04/DLC04/DLC04RaidParentScript.psc:202:1:identifier-casing
 Scripts/Source/DLC04/DLC04/DLC04RaidParentScript.psc:202:1:identifier-casing
+Scripts/Source/DLC04/DLC04/DLC04RaidParentScript.psc:202:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04RaidParentScript.psc:202:1:unnecessary-function
 Scripts/Source/DLC04/DLC04/DLC04RaidParentScript.psc:202:121:line-length
 Scripts/Source/DLC04/DLC04/DLC04RaidParentScript.psc:204:1:none-form-usage
@@ -163275,6 +163493,7 @@ Scripts/Source/DLC04/DLC04/DLC04RaidParentScript.psc:339:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04RaidParentScript.psc:340:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04RaidParentScript.psc:343:1:cyclomatic-complexity
 Scripts/Source/DLC04/DLC04/DLC04RaidParentScript.psc:343:1:identifier-casing
+Scripts/Source/DLC04/DLC04/DLC04RaidParentScript.psc:343:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04RaidParentScript.psc:347:9:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04RaidParentScript.psc:348:11:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04RaidParentScript.psc:353:1:none-form-usage
@@ -163412,6 +163631,7 @@ Scripts/Source/DLC04/DLC04/DLC04RaidParentScript.psc:657:1:indentation
 Scripts/Source/DLC04/DLC04/DLC04RaidParentScript.psc:658:1:indentation
 Scripts/Source/DLC04/DLC04/DLC04RaidParentScript.psc:665:7:trailing-whitespace
 Scripts/Source/DLC04/DLC04/DLC04RaidParentScript.psc:668:1:identifier-casing
+Scripts/Source/DLC04/DLC04/DLC04RaidParentScript.psc:668:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04RaidParentScript.psc:669:1:identifier-casing
 Scripts/Source/DLC04/DLC04/DLC04RaidParentScript.psc:669:1:indentation
 Scripts/Source/DLC04/DLC04/DLC04RaidParentScript.psc:670:1:indentation
@@ -163558,6 +163778,7 @@ Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:189:8:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:191:5:exclamation-spacing
 Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:211:1:identifier-casing
 Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:211:1:identifier-casing
+Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:211:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:212:39:unresolved-script
 Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:214:6:exclamation-spacing
 Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:214:27:exclamation-spacing
@@ -163572,6 +163793,7 @@ Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:249:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:256:1:cyclomatic-complexity
 Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:256:1:function-override
 Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:256:1:identifier-casing
+Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:256:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:258:6:exclamation-spacing
 Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:258:23:trailing-whitespace
 Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:266:8:exclamation-spacing
@@ -163591,6 +163813,7 @@ Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:302:6:exclamation-spacing
 Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:302:28:exclamation-spacing
 Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:303:10:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:313:1:cyclomatic-complexity
+Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:313:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:315:47:unresolved-script
 Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:316:1:identifier-casing
 Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:318:8:forbidden-functions
@@ -163723,6 +163946,7 @@ Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:639:11:trailing-whitespace
 Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:642:5:exclamation-spacing
 Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:654:8:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:657:1:identifier-casing
+Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:657:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:660:27:unresolved-script
 Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:662:48:unresolved-script
 Scripts/Source/DLC04/DLC04/DLC04RaidSubdueScript.psc:667:1:identifier-casing
@@ -163948,6 +164172,7 @@ Scripts/Source/DLC04/DLC04/DLC04RaidWipeOutScript.psc:258:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04RaidWipeOutScript.psc:258:67:unresolved-script
 Scripts/Source/DLC04/DLC04/DLC04RaidWipeOutScript.psc:265:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04RaidWipeOutScript.psc:270:1:cyclomatic-complexity
+Scripts/Source/DLC04/DLC04/DLC04RaidWipeOutScript.psc:270:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04RaidWipeOutScript.psc:272:47:unresolved-script
 Scripts/Source/DLC04/DLC04/DLC04RaidWipeOutScript.psc:273:1:identifier-casing
 Scripts/Source/DLC04/DLC04/DLC04RaidWipeOutScript.psc:275:8:forbidden-functions
@@ -164120,6 +164345,7 @@ Scripts/Source/DLC04/DLC04/DLC04RaidWipeOutScript.psc:654:1:identifier-casing
 Scripts/Source/DLC04/DLC04/DLC04RaidWipeOutScript.psc:655:42:unresolved-script
 Scripts/Source/DLC04/DLC04/DLC04RaidWipeOutScript.psc:668:8:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04RaidWipeOutScript.psc:671:1:identifier-casing
+Scripts/Source/DLC04/DLC04/DLC04RaidWipeOutScript.psc:671:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04RaidWipeOutScript.psc:673:27:unresolved-script
 Scripts/Source/DLC04/DLC04/DLC04RaidWipeOutScript.psc:675:48:unresolved-script
 Scripts/Source/DLC04/DLC04/DLC04RaidWipeOutScript.psc:679:1:identifier-casing
@@ -164387,6 +164613,7 @@ Scripts/Source/DLC04/DLC04/DLC04RideControllerGenericScript.psc:121:1:unnecessar
 Scripts/Source/DLC04/DLC04/DLC04RideControllerGenericScript.psc:131:61:semicolon
 Scripts/Source/DLC04/DLC04/DLC04RideControllerGenericScript.psc:134:61:semicolon
 Scripts/Source/DLC04/DLC04/DLC04RideControllerGenericScript.psc:136:54:trailing-whitespace
+Scripts/Source/DLC04/DLC04/DLC04RideControllerGenericScript.psc:137:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04RideControllerGenericScript.psc:137:1:unnecessary-function
 Scripts/Source/DLC04/DLC04/DLC04RideControllerGenericScript.psc:139:1:useless-downcast
 Scripts/Source/DLC04/DLC04/DLC04RideControllerGenericScript.psc:140:3:strict-boolean
@@ -164654,6 +164881,7 @@ Scripts/Source/DLC04/DLC04/DLC04SafariHolotapeScript.psc:7:1:identifier-casing
 Scripts/Source/DLC04/DLC04/DLC04SafariHolotapeScript.psc:8:1:identifier-casing
 Scripts/Source/DLC04/DLC04/DLC04SafariHolotapeScript.psc:12:1:identifier-casing
 Scripts/Source/DLC04/DLC04/DLC04SafariHolotapeScript.psc:12:1:identifier-casing
+Scripts/Source/DLC04/DLC04/DLC04SafariHolotapeScript.psc:12:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04SafariHolotapeScript.psc:13:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04SafariHolotapeScript.psc:14:25:trailing-whitespace
 Scripts/Source/DLC04/DLC04/DLC04SafariHolotapeScript.psc:15:1:none-form-usage
@@ -164790,6 +165018,7 @@ Scripts/Source/DLC04/DLC04/DLC04TAliasMoveToHomeWorkshopScript.psc:44:1:indentat
 Scripts/Source/DLC04/DLC04/DLC04TAliasMoveToHomeWorkshopScript.psc:45:1:indentation
 Scripts/Source/DLC04/DLC04/DLC04TAliasMoveToHomeWorkshopScript.psc:47:1:indentation
 Scripts/Source/DLC04/DLC04/DLC04TAliasMoveToHomeWorkshopScript.psc:53:1:identifier-casing
+Scripts/Source/DLC04/DLC04/DLC04TAliasMoveToHomeWorkshopScript.psc:53:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04TAliasMoveToHomeWorkshopScript.psc:54:1:identifier-casing
 Scripts/Source/DLC04/DLC04/DLC04TAliasMoveToHomeWorkshopScript.psc:54:1:indentation
 Scripts/Source/DLC04/DLC04/DLC04TAliasMoveToHomeWorkshopScript.psc:55:1:indentation
@@ -165230,6 +165459,7 @@ Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:497:8:trailing-whitespa
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:499:9:trailing-whitespace
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:501:1:identifier-casing
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:501:1:identifier-casing
+Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:501:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:501:1:unnecessary-function
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:502:34:unresolved-script
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:503:9:forbidden-functions
@@ -165292,6 +165522,7 @@ Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:677:12:trailing-whitesp
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:679:1:cyclomatic-complexity
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:679:1:identifier-casing
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:679:1:identifier-casing
+Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:679:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:680:8:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:681:34:unresolved-script
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:685:1:identifier-casing
@@ -165362,6 +165593,7 @@ Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:822:1:identifier-casing
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:826:1:cyclomatic-complexity
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:826:1:identifier-casing
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:826:1:identifier-casing
+Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:826:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:826:1:unnecessary-function
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:829:1:identifier-casing
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:830:1:identifier-casing
@@ -165447,6 +165679,7 @@ Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:972:1:identifier-casing
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:974:58:trailing-whitespace
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:977:1:identifier-casing
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:977:1:identifier-casing
+Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:977:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:977:1:unnecessary-function
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:982:93:trailing-whitespace
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:985:1:identifier-casing
@@ -165481,6 +165714,7 @@ Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:1051:11:trailing-whites
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:1054:12:trailing-whitespace
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:1059:1:cyclomatic-complexity
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:1059:1:identifier-casing
+Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:1059:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:1067:1:identifier-casing
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:1067:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:1068:1:identifier-casing
@@ -165619,6 +165853,7 @@ Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:1292:39:trailing-whites
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:1293:1:identifier-casing
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:1299:8:trailing-whitespace
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:1306:12:trailing-whitespace
+Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:1309:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:1309:121:line-length
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:1310:8:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:1311:1:trailing-whitespace
@@ -165655,6 +165890,7 @@ Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:1360:9:forbidden-functi
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:1364:9:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:1367:1:trailing-whitespace
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:1370:1:identifier-casing
+Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:1370:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:1371:1:identifier-casing
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:1372:1:identifier-casing
 Scripts/Source/DLC04/DLC04/DLC04WorkshopParentScript.psc:1372:1:none-form-usage
@@ -168639,6 +168875,7 @@ Scripts/Source/DLC04/DLC04/DLC04_GZNukaGalaxyLightMarkerScript.psc:25:1:identifi
 Scripts/Source/DLC04/DLC04/DLC04_GZNukaGalaxyLightMarkerScript.psc:27:9:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04_GZNukaGalaxyLightMarkerScript.psc:33:1:function-override
 Scripts/Source/DLC04/DLC04/DLC04_GZNukaGalaxyLightMarkerScript.psc:41:1:identifier-casing
+Scripts/Source/DLC04/DLC04/DLC04_GZNukaGalaxyLightMarkerScript.psc:41:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04_GZNukaGalaxyLightMarkerScript.psc:42:1:identifier-casing
 Scripts/Source/DLC04/DLC04/DLC04_GZNukaGalaxyLightMarkerScript.psc:46:1:identifier-casing
 Scripts/Source/DLC04/DLC04/DLC04_GZNukaGalaxyLightMarkerScript.psc:49:9:exclamation-spacing
@@ -169175,6 +169412,7 @@ Scripts/Source/DLC04/DLC04/DLC04_KK_RadFogCommentScript.psc:32:1:indentation
 Scripts/Source/DLC04/DLC04/DLC04_KK_RadFogCommentScript.psc:33:1:indentation
 Scripts/Source/DLC04/DLC04/DLC04_KK_RadFogCommentScript.psc:36:1:function-override
 Scripts/Source/DLC04/DLC04/DLC04_KK_RadFogCommentScript.psc:36:1:identifier-casing
+Scripts/Source/DLC04/DLC04/DLC04_KK_RadFogCommentScript.psc:36:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04_KK_RadFogCommentScript.psc:37:1:indentation
 Scripts/Source/DLC04/DLC04/DLC04_KK_RadFogCommentScript.psc:37:11:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04_KK_RadFogCommentScript.psc:38:1:identifier-casing
@@ -169336,6 +169574,7 @@ Scripts/Source/DLC04/DLC04/DLC04_MonorailControlLeverScript.psc:24:1:identifier-
 Scripts/Source/DLC04/DLC04/DLC04_MonorailControlLeverScript.psc:25:7:exclamation-spacing
 Scripts/Source/DLC04/DLC04/DLC04_MonorailControlLeverScript.psc:31:10:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04_MonorailControlLeverScript.psc:35:1:identifier-casing
+Scripts/Source/DLC04/DLC04/DLC04_MonorailControlLeverScript.psc:35:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04_MonorailControlLeverScript.psc:37:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04_MonorailControlLeverScript.psc:38:11:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04_MonorailControlLeverScript.psc:40:1:none-form-usage
@@ -169782,6 +170021,7 @@ Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:348:1:argume
 Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:348:1:cyclomatic-complexity
 Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:348:1:function-override
 Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:348:1:identifier-casing
+Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:348:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:353:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:353:1:none-form-usage
 Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:356:1:identifier-casing
@@ -169801,6 +170041,7 @@ Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:411:51:excla
 Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:424:1:identifier-casing
 Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:427:1:cyclomatic-complexity
 Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:427:1:identifier-casing
+Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:427:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:432:1:identifier-casing
 Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:433:1:identifier-casing
 Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:434:1:identifier-casing
@@ -169898,6 +170139,7 @@ Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:621:1:numeri
 Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:622:12:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:628:1:cyclomatic-complexity
 Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:628:1:identifier-casing
+Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:628:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:628:1:unnecessary-function
 Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:629:22:exclamation-spacing
 Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:639:1:identifier-casing
@@ -169988,6 +170230,7 @@ Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:880:1:cyclom
 Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:880:1:identifier-casing
 Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:880:1:identifier-casing
 Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:880:1:identifier-casing
+Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:880:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:880:1:unnecessary-function
 Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:882:1:identifier-casing
 Scripts/Source/DLC04/DLC04/DLC04_NUK001_CrowdManagerQuestScript.psc:891:121:line-length
@@ -170899,6 +171142,7 @@ Scripts/Source/DLC04/DLC04/DLC04_NukaCadeQuestScript.psc:225:1:unnecessary-funct
 Scripts/Source/DLC04/DLC04/DLC04_NukaCadeQuestScript.psc:232:1:indentation
 Scripts/Source/DLC04/DLC04/DLC04_NukaCadeQuestScript.psc:233:1:indentation
 Scripts/Source/DLC04/DLC04/DLC04_NukaCadeQuestScript.psc:237:1:cyclomatic-complexity
+Scripts/Source/DLC04/DLC04/DLC04_NukaCadeQuestScript.psc:237:1:nesting-depth
 Scripts/Source/DLC04/DLC04/DLC04_NukaCadeQuestScript.psc:239:43:trailing-whitespace
 Scripts/Source/DLC04/DLC04/DLC04_NukaCadeQuestScript.psc:240:8:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04_NukaCadeQuestScript.psc:241:1:identifier-casing
@@ -180807,6 +181051,7 @@ Scripts/Source/DLC05/DLC05/DLC05WorkshopFirework.psc:53:1:function-override
 Scripts/Source/DLC05/DLC05/DLC05WorkshopFirework.psc:53:1:identifier-casing
 Scripts/Source/DLC05/DLC05/DLC05WorkshopFirework.psc:56:7:trailing-whitespace
 Scripts/Source/DLC05/DLC05/DLC05WorkshopFirework.psc:59:1:unnecessary-function
+Scripts/Source/DLC05/DLC05/DLC05WorkshopFirework.psc:64:1:nesting-depth
 Scripts/Source/DLC05/DLC05/DLC05WorkshopFirework.psc:64:1:unnecessary-function
 Scripts/Source/DLC05/DLC05/DLC05WorkshopFirework.psc:66:1:indentation
 Scripts/Source/DLC05/DLC05/DLC05WorkshopFirework.psc:67:1:identifier-casing
@@ -181448,6 +181693,7 @@ Scripts/Source/DLC05/DLC05/WeaponRackScript.psc:95:121:line-length
 Scripts/Source/DLC05/DLC05/WeaponRackScript.psc:97:9:forbidden-functions
 Scripts/Source/DLC05/DLC05/WeaponRackScript.psc:100:9:forbidden-functions
 Scripts/Source/DLC05/DLC05/WeaponRackScript.psc:105:29:trailing-whitespace
+Scripts/Source/DLC05/DLC05/WeaponRackScript.psc:111:1:nesting-depth
 Scripts/Source/DLC05/DLC05/WeaponRackScript.psc:112:8:forbidden-functions
 Scripts/Source/DLC05/DLC05/WeaponRackScript.psc:114:2:strict-boolean
 Scripts/Source/DLC05/DLC05/WeaponRackScript.psc:118:121:line-length
@@ -181574,6 +181820,7 @@ Scripts/Source/DLC05/DLC05/WorkshopBuilderScript.psc:70:14:boolean-simplificatio
 Scripts/Source/DLC05/DLC05/WorkshopBuilderScript.psc:73:12:trailing-whitespace
 Scripts/Source/DLC05/DLC05/WorkshopBuilderScript.psc:76:1:cyclomatic-complexity
 Scripts/Source/DLC05/DLC05/WorkshopBuilderScript.psc:76:1:function-override
+Scripts/Source/DLC05/DLC05/WorkshopBuilderScript.psc:76:1:nesting-depth
 Scripts/Source/DLC05/DLC05/WorkshopBuilderScript.psc:77:8:forbidden-functions
 Scripts/Source/DLC05/DLC05/WorkshopBuilderScript.psc:79:1:indentation
 Scripts/Source/DLC05/DLC05/WorkshopBuilderScript.psc:82:1:identifier-casing
@@ -181798,6 +182045,7 @@ Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:173:9:forbidden-functions
 Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:173:121:line-length
 Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:180:1:function-override
 Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:180:1:identifier-casing
+Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:180:1:nesting-depth
 Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:182:9:forbidden-functions
 Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:182:121:line-length
 Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:184:30:boolean-simplification
@@ -181817,6 +182065,7 @@ Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:229:1:unnecessary-function
 Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:231:12:trailing-whitespace
 Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:233:1:unnecessary-function
 Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:237:1:cyclomatic-complexity
+Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:237:1:nesting-depth
 Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:238:8:forbidden-functions
 Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:239:13:boolean-simplification
 Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:240:1:indentation
@@ -181870,6 +182119,7 @@ Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:347:1:indentation
 Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:348:1:identifier-casing
 Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:349:30:trailing-whitespace
 Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:350:1:identifier-casing
+Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:356:1:nesting-depth
 Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:357:8:forbidden-functions
 Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:362:1:identifier-casing
 Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:363:56:unresolved-script
@@ -181892,12 +182142,14 @@ Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:398:9:forbidden-functions
 Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:402:8:forbidden-functions
 Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:404:12:trailing-whitespace
 Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:406:1:identifier-casing
+Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:406:1:nesting-depth
 Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:408:1:identifier-casing
 Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:410:1:identifier-casing
 Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:411:58:boolean-simplification
 Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:412:1:identifier-casing
 Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:414:11:forbidden-functions
 Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:433:1:identifier-casing
+Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:433:1:nesting-depth
 Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:434:8:forbidden-functions
 Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:437:3:strict-boolean
 Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:438:1:identifier-casing
@@ -182176,6 +182428,7 @@ Scripts/Source/DLC06/DLC06/DLC06ExperimentQuestScript.psc:81:1:cyclomatic-comple
 Scripts/Source/DLC06/DLC06/DLC06ExperimentQuestScript.psc:81:1:identifier-casing
 Scripts/Source/DLC06/DLC06/DLC06ExperimentQuestScript.psc:81:1:identifier-casing
 Scripts/Source/DLC06/DLC06/DLC06ExperimentQuestScript.psc:81:1:identifier-casing
+Scripts/Source/DLC06/DLC06/DLC06ExperimentQuestScript.psc:81:1:nesting-depth
 Scripts/Source/DLC06/DLC06/DLC06ExperimentQuestScript.psc:81:1:unnecessary-function
 Scripts/Source/DLC06/DLC06/DLC06ExperimentQuestScript.psc:82:1:none-form-usage
 Scripts/Source/DLC06/DLC06/DLC06ExperimentQuestScript.psc:83:1:none-form-usage
@@ -182444,6 +182697,7 @@ Scripts/Source/DLC06/DLC06/DLC06OverseerHandlerScript.psc:92:1:indentation
 Scripts/Source/DLC06/DLC06/DLC06OverseerHandlerScript.psc:93:1:identifier-casing
 Scripts/Source/DLC06/DLC06/DLC06OverseerHandlerScript.psc:93:1:indentation
 Scripts/Source/DLC06/DLC06/DLC06OverseerHandlerScript.psc:96:1:identifier-casing
+Scripts/Source/DLC06/DLC06/DLC06OverseerHandlerScript.psc:96:1:nesting-depth
 Scripts/Source/DLC06/DLC06/DLC06OverseerHandlerScript.psc:97:8:forbidden-functions
 Scripts/Source/DLC06/DLC06/DLC06OverseerHandlerScript.psc:98:1:indentation
 Scripts/Source/DLC06/DLC06/DLC06OverseerHandlerScript.psc:100:1:none-form-usage
@@ -182738,6 +182992,7 @@ Scripts/Source/DLC06/DLC06/DLC06WorkshopParent.psc:167:1:cyclomatic-complexity
 Scripts/Source/DLC06/DLC06/DLC06WorkshopParent.psc:167:1:identifier-casing
 Scripts/Source/DLC06/DLC06/DLC06WorkshopParent.psc:167:1:identifier-casing
 Scripts/Source/DLC06/DLC06/DLC06WorkshopParent.psc:167:1:identifier-casing
+Scripts/Source/DLC06/DLC06/DLC06WorkshopParent.psc:167:1:nesting-depth
 Scripts/Source/DLC06/DLC06/DLC06WorkshopParent.psc:169:9:forbidden-functions
 Scripts/Source/DLC06/DLC06/DLC06WorkshopParent.psc:170:1:identifier-casing
 Scripts/Source/DLC06/DLC06/DLC06WorkshopParent.psc:171:30:trailing-whitespace
@@ -182797,6 +183052,7 @@ Scripts/Source/DLC06/DLC06/DLC06WorkshopParent.psc:259:5:strict-boolean
 Scripts/Source/DLC06/DLC06/DLC06WorkshopParent.psc:260:1:indentation
 Scripts/Source/DLC06/DLC06/DLC06WorkshopParent.psc:261:1:indentation
 Scripts/Source/DLC06/DLC06/DLC06WorkshopParent.psc:265:1:identifier-casing
+Scripts/Source/DLC06/DLC06/DLC06WorkshopParent.psc:265:1:nesting-depth
 Scripts/Source/DLC06/DLC06/DLC06WorkshopParent.psc:265:1:unnecessary-function
 Scripts/Source/DLC06/DLC06/DLC06WorkshopParent.psc:266:1:indentation
 Scripts/Source/DLC06/DLC06/DLC06WorkshopParent.psc:266:5:strict-boolean
@@ -184560,6 +184816,7 @@ Scripts/Source/DLC06/DLC06/WorkshopObjectDeathScript.psc:55:12:trailing-whitespa
 Scripts/Source/DLC06/DLC06/WorkshopObjectDeathScript.psc:59:1:identifier-casing
 Scripts/Source/DLC06/DLC06/WorkshopObjectDeathScript.psc:60:8:forbidden-functions
 Scripts/Source/DLC06/DLC06/WorkshopObjectDeathScript.psc:62:12:trailing-whitespace
+Scripts/Source/DLC06/DLC06/WorkshopObjectDeathScript.psc:64:1:nesting-depth
 Scripts/Source/DLC06/DLC06/WorkshopObjectDeathScript.psc:66:1:identifier-casing
 Scripts/Source/DLC06/DLC06/WorkshopObjectDeathScript.psc:67:8:forbidden-functions
 Scripts/Source/DLC06/DLC06/WorkshopObjectDeathScript.psc:68:2:strict-boolean
@@ -184621,6 +184878,7 @@ Scripts/Source/DLC06/DLC06/WorkshopSpecialBuffScript.psc:14:1:identifier-casing
 Scripts/Source/DLC06/DLC06/WorkshopSpecialBuffScript.psc:15:1:cyclomatic-complexity
 Scripts/Source/DLC06/DLC06/WorkshopSpecialBuffScript.psc:15:1:identifier-casing
 Scripts/Source/DLC06/DLC06/WorkshopSpecialBuffScript.psc:15:1:indentation
+Scripts/Source/DLC06/DLC06/WorkshopSpecialBuffScript.psc:15:1:nesting-depth
 Scripts/Source/DLC06/DLC06/WorkshopSpecialBuffScript.psc:16:1:indentation
 Scripts/Source/DLC06/DLC06/WorkshopSpecialBuffScript.psc:17:1:indentation
 Scripts/Source/DLC06/DLC06/WorkshopSpecialBuffScript.psc:17:11:forbidden-functions

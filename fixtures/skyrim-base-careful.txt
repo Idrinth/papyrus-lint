@@ -8,6 +8,7 @@ Source/Scripts/AchievementsScript.psc:43:1:cyclomatic-complexity
 Source/Scripts/AchievementsScript.psc:68:121:line-length
 Source/Scripts/AchievementsScript.psc:79:121:line-length
 Source/Scripts/AchievementsScript.psc:81:121:line-length
+Source/Scripts/AchievementsScript.psc:175:1:nesting-depth
 Source/Scripts/ActivateAgainAfterDelay.psc:2:121:line-length
 Source/Scripts/ActivateAgainAfterDelay.psc:20:3:empty-body
 Source/Scripts/ActivateAgainAfterDelay.psc:20:6:forbidden-functions
@@ -333,6 +334,7 @@ Source/Scripts/BYOHDivertItemScript.psc:3:121:line-length
 Source/Scripts/BYOHDivertItemScript.psc:6:33:forbidden-functions
 Source/Scripts/BYOHDivertItemScript.psc:7:28:forbidden-functions
 Source/Scripts/BYOHDivertPrefabsScript.psc:2:121:line-length
+Source/Scripts/BYOHDivertPrefabsScript.psc:6:1:nesting-depth
 Source/Scripts/BYOHDivertPrefabsScript.psc:7:31:forbidden-functions
 Source/Scripts/BYOHDivertPrefabsScript.psc:12:33:forbidden-functions
 Source/Scripts/BYOHDivertPrefabsScript.psc:35:3:empty-body
@@ -370,6 +372,7 @@ Source/Scripts/BYOHHouseBanditAttackPacifyOnLoad.psc:12:1:none-form-usage
 Source/Scripts/BYOHHouseBanditAttackPacifyOnLoad.psc:12:1:none-form-usage
 Source/Scripts/BYOHHouseBanditPacifierScript.psc:7:121:line-length
 Source/Scripts/BYOHHouseBanditPacifierScript.psc:9:25:forbidden-functions
+Source/Scripts/BYOHHouseBardScript.psc:25:1:nesting-depth
 Source/Scripts/BYOHHouseBardScript.psc:26:1:none-form-usage
 Source/Scripts/BYOHHouseBardScript.psc:34:1:none-form-usage
 Source/Scripts/BYOHHouseBardScript.psc:34:1:none-form-usage
@@ -402,6 +405,7 @@ Source/Scripts/BYOHHouseBuildingScript.psc:114:3:empty-body
 Source/Scripts/BYOHHouseBuildingScript.psc:148:1:unchecked-cast
 Source/Scripts/BYOHHouseBuildingScript.psc:148:121:line-length
 Source/Scripts/BYOHHouseBuildingScript.psc:151:2:empty-body
+Source/Scripts/BYOHHouseBuildingScript.psc:158:1:nesting-depth
 Source/Scripts/BYOHHouseBuildingScript.psc:168:1:none-form-usage
 Source/Scripts/BYOHHouseBuildingScript.psc:177:1:none-form-usage
 Source/Scripts/BYOHHouseBuildingScript.psc:186:1:none-form-usage
@@ -411,6 +415,7 @@ Source/Scripts/BYOHHouseBuildingScript.psc:201:1:none-form-usage
 Source/Scripts/BYOHHouseBuildingScript.psc:227:1:none-form-usage
 Source/Scripts/BYOHHouseBuildingScript.psc:229:1:none-form-usage
 Source/Scripts/BYOHHouseBuildingScript.psc:229:1:none-form-usage
+Source/Scripts/BYOHHouseBuildingScript.psc:265:1:nesting-depth
 Source/Scripts/BYOHHouseBuildingScript.psc:265:121:line-length
 Source/Scripts/BYOHHouseBuildingScript.psc:268:11:forbidden-functions
 Source/Scripts/BYOHHouseBuildingScript.psc:279:1:unchecked-cast
@@ -468,6 +473,7 @@ Source/Scripts/BYOHHouseBuildingScript.psc:502:1:none-form-usage
 Source/Scripts/BYOHHouseBuildingScript.psc:503:45:forbidden-functions
 Source/Scripts/BYOHHouseBuildingScript.psc:505:1:none-form-usage
 Source/Scripts/BYOHHouseBuildingScript.psc:506:1:none-form-usage
+Source/Scripts/BYOHHouseBuildingScript.psc:512:1:nesting-depth
 Source/Scripts/BYOHHouseBuildingScript.psc:514:22:forbidden-functions
 Source/Scripts/BYOHHouseBuildingScript.psc:515:1:none-form-usage
 Source/Scripts/BYOHHouseBuildingScript.psc:523:5:empty-body
@@ -523,6 +529,7 @@ Source/Scripts/BYOHHouseBuildingScript.psc:686:8:forbidden-functions
 Source/Scripts/BYOHHouseBuildingScript.psc:686:97:slow-functions
 Source/Scripts/BYOHHouseBuildingScript.psc:688:1:unchecked-cast
 Source/Scripts/BYOHHouseBuildingScript.psc:693:1:explicit-return
+Source/Scripts/BYOHHouseBuildingScript.psc:693:1:nesting-depth
 Source/Scripts/BYOHHouseBuildingScript.psc:697:1:unchecked-cast
 Source/Scripts/BYOHHouseBuildingScript.psc:702:1:none-form-usage
 Source/Scripts/BYOHHouseBuildingScript.psc:704:1:none-form-usage
@@ -538,6 +545,7 @@ Source/Scripts/BYOHHouseBuildingScript.psc:752:1:numeric-comparison
 Source/Scripts/BYOHHouseBuildingScript.psc:762:1:setvalue-in-loop
 Source/Scripts/BYOHHouseBuildingScript.psc:762:1:unchecked-cast
 Source/Scripts/BYOHHouseBuildingScript.psc:772:1:explicit-return
+Source/Scripts/BYOHHouseBuildingScript.psc:772:1:nesting-depth
 Source/Scripts/BYOHHouseBuildingScript.psc:776:1:unchecked-cast
 Source/Scripts/BYOHHouseBuildingScript.psc:780:1:unchecked-cast
 Source/Scripts/BYOHHouseBuildingScript.psc:780:56:slow-functions
@@ -593,6 +601,7 @@ Source/Scripts/BYOHHouseBuildingScript.psc:1070:1:none-form-usage
 Source/Scripts/BYOHHouseBuildingScript.psc:1070:1:none-form-usage
 Source/Scripts/BYOHHouseCarriageScript.psc:8:1:none-form-usage
 Source/Scripts/BYOHHouseChickenScript.psc:11:1:none-form-usage
+Source/Scripts/BYOHHouseCowScript.psc:19:1:nesting-depth
 Source/Scripts/BYOHHouseCowScript.psc:20:1:none-form-usage
 Source/Scripts/BYOHHouseCowScript.psc:23:1:unchecked-cast
 Source/Scripts/BYOHHouseCowScript.psc:25:1:none-form-usage
@@ -742,6 +751,7 @@ Source/Scripts/BYOHHouseTrophyBaseScript.psc:21:10:forbidden-functions
 Source/Scripts/BYOHHouseTrophyBaseScript.psc:24:8:forbidden-functions
 Source/Scripts/BYOHHouseTrophyBaseScript.psc:27:23:forbidden-functions
 Source/Scripts/BYOHKidsAttendWeddingMarker.psc:2:121:line-length
+Source/Scripts/BYOHKidsAttendWeddingMarker.psc:14:1:nesting-depth
 Source/Scripts/BYOHKidsAttendWeddingMarker.psc:16:1:none-form-usage
 Source/Scripts/BYOHKidsAttendWeddingMarker.psc:16:1:none-form-usage
 Source/Scripts/BYOHKidsAttendWeddingMarker.psc:19:1:none-form-usage
@@ -1086,6 +1096,7 @@ Source/Scripts/BYOHRelationshipAdoptableScript.psc:378:121:line-length
 Source/Scripts/BYOHRelationshipAdoptableScript.psc:379:121:line-length
 Source/Scripts/BYOHRelationshipAdoptableScript.psc:403:1:unchecked-cast
 Source/Scripts/BYOHRelationshipAdoptableScript.psc:419:1:cyclomatic-complexity
+Source/Scripts/BYOHRelationshipAdoptableScript.psc:419:1:nesting-depth
 Source/Scripts/BYOHRelationshipAdoptableScript.psc:420:121:line-length
 Source/Scripts/BYOHRelationshipAdoptableScript.psc:429:1:unchecked-cast
 Source/Scripts/BYOHRelationshipAdoptableScript.psc:430:1:unchecked-cast
@@ -1153,6 +1164,7 @@ Source/Scripts/BYOHRelationshipAdoptionChildScript.psc:141:1:argument-naming
 Source/Scripts/BYOHRelationshipAdoptionChildScript.psc:141:1:argument-naming
 Source/Scripts/BYOHRelationshipAdoptionChildScript.psc:141:1:argument-naming
 Source/Scripts/BYOHRelationshipAdoptionChildScript.psc:141:1:argument-naming
+Source/Scripts/BYOHRelationshipAdoptionChildScript.psc:141:1:nesting-depth
 Source/Scripts/BYOHRelationshipAdoptionChildScript.psc:150:121:line-length
 Source/Scripts/BYOHRelationshipAdoptionChildScript.psc:151:121:line-length
 Source/Scripts/BYOHRelationshipAdoptionChildScript.psc:157:1:none-form-usage
@@ -1613,6 +1625,7 @@ Source/Scripts/BYOHRelationshipAdoptionScript.psc:1284:1:none-form-usage
 Source/Scripts/BYOHRelationshipAdoptionScript.psc:1284:7:forbidden-functions
 Source/Scripts/BYOHRelationshipAdoptionScript.psc:1296:7:forbidden-functions
 Source/Scripts/BYOHRelationshipAdoptionScript.psc:1356:1:cyclomatic-complexity
+Source/Scripts/BYOHRelationshipAdoptionScript.psc:1356:1:nesting-depth
 Source/Scripts/BYOHRelationshipAdoptionScript.psc:1361:1:none-form-usage
 Source/Scripts/BYOHRelationshipAdoptionScript.psc:1361:1:none-form-usage
 Source/Scripts/BYOHRelationshipAdoptionScript.psc:1361:1:none-form-usage
@@ -3072,6 +3085,7 @@ Source/Scripts/C06YsgramorStatueScript.psc:56:1:none-form-usage
 Source/Scripts/CCHorseArmorChangeScript.psc:22:121:line-length
 Source/Scripts/CCHorseArmorChangeScript.psc:26:121:line-length
 Source/Scripts/CCHorseArmorChangeScript.psc:37:121:line-length
+Source/Scripts/CCHorseArmorChangeScript.psc:48:1:nesting-depth
 Source/Scripts/CCHorseArmorChangeScript.psc:49:121:line-length
 Source/Scripts/CCHorseArmorChangeScript.psc:67:4:strict-boolean
 Source/Scripts/CCHorseArmorChangeScript.psc:71:1:none-form-usage
@@ -3281,6 +3295,7 @@ Source/Scripts/CR13QuestScript.psc:38:1:unchecked-cast
 Source/Scripts/CR13QuestScript.psc:39:1:none-form-usage
 Source/Scripts/CR13QuestScript.psc:39:33:unresolved-script
 Source/Scripts/CR13QuestScript.psc:40:1:unchecked-cast
+Source/Scripts/CR13SconceScript.psc:15:1:nesting-depth
 Source/Scripts/CR13SconceScript.psc:16:27:forbidden-functions
 Source/Scripts/CR13SconceScript.psc:18:14:forbidden-functions
 Source/Scripts/CR13SconceScript.psc:20:1:none-form-usage
@@ -3457,6 +3472,7 @@ Source/Scripts/CWArrowVolleyParentScript.psc:47:121:line-length
 Source/Scripts/CWArrowVolleyParentScript.psc:50:121:line-length
 Source/Scripts/CWArrowVolleyParentScript.psc:60:121:line-length
 Source/Scripts/CWArrowVolleyParentScript.psc:75:1:none-form-usage
+Source/Scripts/CWArrowVolleyParentScript.psc:91:1:nesting-depth
 Source/Scripts/CWArrowVolleyParentScript.psc:106:1:none-form-usage
 Source/Scripts/CWArrowVolleyParentScript.psc:106:1:none-form-usage
 Source/Scripts/CWArrowVolleyParentScript.psc:106:1:none-form-usage
@@ -5094,6 +5110,7 @@ Source/Scripts/CWReinforcementControllerScript.psc:186:10:forbidden-functions
 Source/Scripts/CWReinforcementControllerScript.psc:188:121:line-length
 Source/Scripts/CWReinforcementControllerScript.psc:204:12:goto-state
 Source/Scripts/CWReinforcementControllerScript.psc:205:121:line-length
+Source/Scripts/CWReinforcementControllerScript.psc:263:1:nesting-depth
 Source/Scripts/CWReinforcementControllerScript.psc:269:121:line-length
 Source/Scripts/CWReinforcementControllerScript.psc:275:121:line-length
 Source/Scripts/CWReinforcementControllerScript.psc:282:121:line-length
@@ -5354,6 +5371,7 @@ Source/Scripts/CWReinforcementControllerScript.psc:1160:2:empty-body
 Source/Scripts/CWReinforcementControllerScript.psc:1161:121:line-length
 Source/Scripts/CWReinforcementControllerScript.psc:1162:2:empty-body
 Source/Scripts/CWReinforcementControllerScript.psc:1163:121:line-length
+Source/Scripts/CWReinforcementControllerScript.psc:1168:1:nesting-depth
 Source/Scripts/CWReinforcementControllerScript.psc:1171:2:strict-boolean
 Source/Scripts/CWReinforcementControllerScript.psc:1173:12:forbidden-functions
 Source/Scripts/CWReinforcementControllerScript.psc:1174:43:forbidden-functions
@@ -5645,6 +5663,7 @@ Source/Scripts/CWScript.psc:1594:121:line-length
 Source/Scripts/CWScript.psc:1600:121:line-length
 Source/Scripts/CWScript.psc:1605:121:line-length
 Source/Scripts/CWScript.psc:1614:1:cyclomatic-complexity
+Source/Scripts/CWScript.psc:1614:1:nesting-depth
 Source/Scripts/CWScript.psc:1616:121:line-length
 Source/Scripts/CWScript.psc:1625:1:none-form-usage
 Source/Scripts/CWScript.psc:1635:4:empty-body
@@ -6002,6 +6021,7 @@ Source/Scripts/CWScript.psc:3974:1:none-form-usage
 Source/Scripts/CWScript.psc:3980:1:none-form-usage
 Source/Scripts/CWScript.psc:3986:121:line-length
 Source/Scripts/CWScript.psc:3988:121:line-length
+Source/Scripts/CWScript.psc:3995:1:nesting-depth
 Source/Scripts/CWScript.psc:3995:121:line-length
 Source/Scripts/CWScript.psc:3998:121:line-length
 Source/Scripts/CWScript.psc:4010:121:line-length
@@ -6146,6 +6166,7 @@ Source/Scripts/CWSiegeBarricadeScript.psc:56:2:strict-boolean
 Source/Scripts/CWSiegeBarricadeScript.psc:60:2:strict-boolean
 Source/Scripts/CWSiegeBarricadeScript.psc:64:2:strict-boolean
 Source/Scripts/CWSiegeCityDoorScript.psc:33:1:argument-naming
+Source/Scripts/CWSiegeCityDoorScript.psc:33:1:nesting-depth
 Source/Scripts/CWSiegeCityDoorScript.psc:41:1:unchecked-cast
 Source/Scripts/CWSiegeCityDoorScript.psc:44:96:forbidden-functions
 Source/Scripts/CWSiegeCityDoorScript.psc:46:1:none-form-usage
@@ -6178,6 +6199,7 @@ Source/Scripts/CWSiegePollPlayerLocation.psc:70:1:none-form-usage
 Source/Scripts/CWSiegePollPlayerLocation.psc:71:19:forbidden-functions
 Source/Scripts/CWSiegePollPlayerLocation.psc:73:121:line-length
 Source/Scripts/CWSiegePollPlayerLocation.psc:80:1:cyclomatic-complexity
+Source/Scripts/CWSiegePollPlayerLocation.psc:80:1:nesting-depth
 Source/Scripts/CWSiegePollPlayerLocation.psc:86:2:empty-body
 Source/Scripts/CWSiegePollPlayerLocation.psc:87:121:line-length
 Source/Scripts/CWSiegePollPlayerLocation.psc:93:121:line-length
@@ -7067,6 +7089,7 @@ Source/Scripts/CraftSmithing.psc:22:121:line-length
 Source/Scripts/CraftSmithing.psc:24:121:line-length
 Source/Scripts/CraftSmithing.psc:26:121:line-length
 Source/Scripts/CraftingActivateLinker.psc:32:1:argument-naming
+Source/Scripts/CraftingActivateLinker.psc:32:1:nesting-depth
 Source/Scripts/CraftingActivateLinker.psc:36:2:strict-boolean
 Source/Scripts/CraftingActivateLinker.psc:38:26:forbidden-functions
 Source/Scripts/CraftingActivateLinker.psc:41:1:none-form-usage
@@ -7119,6 +7142,7 @@ Source/Scripts/CrimeGuardsScript.psc:111:7:forbidden-functions
 Source/Scripts/CrimeGuardsScript.psc:116:1:none-form-usage
 Source/Scripts/CrimeGuardsScript.psc:118:7:forbidden-functions
 Source/Scripts/Critter.psc:33:121:line-length
+Source/Scripts/Critter.psc:104:1:nesting-depth
 Source/Scripts/Critter.psc:112:4:strict-boolean
 Source/Scripts/Critter.psc:123:1:none-form-usage
 Source/Scripts/Critter.psc:123:121:line-length
@@ -7352,6 +7376,7 @@ Source/Scripts/DA02Script.psc:314:1:none-form-usage
 Source/Scripts/DA02Script.psc:315:1:none-form-usage
 Source/Scripts/DA02Script.psc:316:1:none-form-usage
 Source/Scripts/DA02Script.psc:317:1:none-form-usage
+Source/Scripts/DA02Script.psc:374:1:nesting-depth
 Source/Scripts/DA02Script.psc:376:121:line-length
 Source/Scripts/DA02Script.psc:380:1:none-form-usage
 Source/Scripts/DA02Script.psc:381:1:none-form-usage
@@ -7538,6 +7563,7 @@ Source/Scripts/DA05QuestScript.psc:88:1:none-form-usage
 Source/Scripts/DA05QuestScript.psc:89:1:none-form-usage
 Source/Scripts/DA05QuestScript.psc:90:1:none-form-usage
 Source/Scripts/DA05QuestScript.psc:91:1:none-form-usage
+Source/Scripts/DA05QuestScript.psc:95:1:nesting-depth
 Source/Scripts/DA05QuestScript.psc:96:1:unchecked-cast
 Source/Scripts/DA05QuestScript.psc:101:11:forbidden-functions
 Source/Scripts/DA05QuestScript.psc:101:54:forbidden-functions
@@ -7578,6 +7604,7 @@ Source/Scripts/DA06AtubAliasScript.psc:8:22:forbidden-functions
 Source/Scripts/DA06AtubAliasScript.psc:9:1:none-form-usage
 Source/Scripts/DA06AtubAliasScript.psc:10:1:none-form-usage
 Source/Scripts/DA06CaveTrigger.psc:11:1:argument-naming
+Source/Scripts/DA06CaveTrigger.psc:11:1:nesting-depth
 Source/Scripts/DA06CaveTrigger.psc:13:1:none-form-usage
 Source/Scripts/DA06CaveTrigger.psc:15:1:none-form-usage
 Source/Scripts/DA06CaveTrigger.psc:18:1:none-form-usage
@@ -7620,6 +7647,7 @@ Source/Scripts/DA06LargashburOrcScript.psc:14:1:unchecked-cast
 Source/Scripts/DA06LargashburOrcScript.psc:15:1:none-form-usage
 Source/Scripts/DA06LargashburOrcScript.psc:15:9:forbidden-functions
 Source/Scripts/DA06PreRitualSceneTriggerScript.psc:15:1:argument-naming
+Source/Scripts/DA06PreRitualSceneTriggerScript.psc:15:1:nesting-depth
 Source/Scripts/DA06PreRitualSceneTriggerScript.psc:18:1:none-form-usage
 Source/Scripts/DA06PreRitualSceneTriggerScript.psc:19:25:forbidden-functions
 Source/Scripts/DA06PreRitualSceneTriggerScript.psc:20:1:none-form-usage
@@ -7638,6 +7666,7 @@ Source/Scripts/DA06ShagrolHammerScript.psc:8:26:forbidden-functions
 Source/Scripts/DA06ShagrolHammerScript.psc:9:1:none-form-usage
 Source/Scripts/DA06ShagrolHammerScript.psc:9:3:empty-body
 Source/Scripts/DA06StartSceneTriggerScript.psc:10:1:argument-naming
+Source/Scripts/DA06UgorScript.psc:9:1:nesting-depth
 Source/Scripts/DA06UgorScript.psc:14:1:unchecked-cast
 Source/Scripts/DA06UgorScript.psc:15:1:none-form-usage
 Source/Scripts/DA06UgorScript.psc:17:40:forbidden-functions
@@ -7832,6 +7861,7 @@ Source/Scripts/DA10GhostTrapHit.psc:26:1:none-form-usage
 Source/Scripts/DA10GhostTrapHit.psc:27:1:none-form-usage
 Source/Scripts/DA10GhostTrapHit.psc:36:121:line-length
 Source/Scripts/DA10HauntingControllerScript.psc:114:1:cyclomatic-complexity
+Source/Scripts/DA10HauntingControllerScript.psc:114:1:nesting-depth
 Source/Scripts/DA10HauntingControllerScript.psc:114:1:undefined-event
 Source/Scripts/DA10HauntingControllerScript.psc:119:4:empty-body
 Source/Scripts/DA10HauntingControllerScript.psc:126:1:none-form-usage
@@ -8527,6 +8557,7 @@ Source/Scripts/DBAstridShackLeaveTriggerScript.psc:10:1:unchecked-cast
 Source/Scripts/DBAstridShackLeaveTriggerScript.psc:11:1:none-form-usage
 Source/Scripts/DBCiceroArriveTrigScript.psc:11:1:argument-naming
 Source/Scripts/DBCiceroArriveTrigScript.psc:11:1:cyclomatic-complexity
+Source/Scripts/DBCiceroArriveTrigScript.psc:11:1:nesting-depth
 Source/Scripts/DBCiceroArriveTrigScript.psc:16:9:forbidden-functions
 Source/Scripts/DBCiceroArriveTrigScript.psc:17:1:unchecked-cast
 Source/Scripts/DBCiceroArriveTrigScript.psc:18:1:none-form-usage
@@ -8648,6 +8679,7 @@ Source/Scripts/DBSanctuarySkillBooksScript.psc:12:1:none-form-usage
 Source/Scripts/DBSanctuarySkillBooksScript.psc:13:1:none-form-usage
 Source/Scripts/DBSanctuarySkillBooksScript.psc:15:1:none-form-usage
 Source/Scripts/DBSanctuaryWordWallTriggerScript.psc:53:15:forbidden-functions
+Source/Scripts/DBSanctuaryWordWallTriggerScript.psc:58:1:nesting-depth
 Source/Scripts/DBSanctuaryWordWallTriggerScript.psc:60:10:forbidden-functions
 Source/Scripts/DBSanctuaryWordWallTriggerScript.psc:64:28:unresolved-script
 Source/Scripts/DBSanctuaryWordWallTriggerScript.psc:66:25:unresolved-script
@@ -8682,6 +8714,7 @@ Source/Scripts/DBSanctuaryWordWallTriggerScript.psc:189:26:unresolved-script
 Source/Scripts/DBSanctuaryWordWallTriggerScript.psc:203:24:unresolved-script
 Source/Scripts/DBSanctuaryWordWallTriggerScript.psc:212:25:unresolved-script
 Source/Scripts/DBSanctuaryWordWallTriggerScript.psc:213:32:unresolved-script
+Source/Scripts/DBSanctuaryWordWallTriggerScript.psc:227:1:nesting-depth
 Source/Scripts/DBSanctuaryWordWallTriggerScript.psc:241:27:forbidden-functions
 Source/Scripts/DBSanctuaryWordWallTriggerScript.psc:243:28:unresolved-script
 Source/Scripts/DBSanctuaryWordWallTriggerScript.psc:247:1:short-wait-interval
@@ -8764,6 +8797,7 @@ Source/Scripts/DLC01SoulCairnFissureScript.psc:23:1:none-form-usage
 Source/Scripts/DLC01SoulCairnFissureScript.psc:34:1:none-form-usage
 Source/Scripts/DLC01SoulCairnFissureScript.psc:35:1:none-form-usage
 Source/Scripts/DLC01SoulCairnFissureScript.psc:36:1:none-form-usage
+Source/Scripts/DLC01SoulCairnLightningRodScript.psc:20:1:nesting-depth
 Source/Scripts/DLC01SoulCairnLightningRodScript.psc:24:1:none-form-usage
 Source/Scripts/DLC01SoulCairnLightningRodScript.psc:26:3:empty-body
 Source/Scripts/DLC01SoulCairnLightningRodScript.psc:35:1:none-form-usage
@@ -8999,6 +9033,7 @@ Source/Scripts/DLC1AddRemoveWSpaceFromFListSCRIPT.psc:16:1:argument-naming
 Source/Scripts/DLC1AddRemoveWSpaceFromFListSCRIPT.psc:18:1:none-form-usage
 Source/Scripts/DLC1AddRemoveWSpaceFromFListSCRIPT.psc:20:1:none-form-usage
 Source/Scripts/DLC1ArkngthamzBallista.psc:34:121:line-length
+Source/Scripts/DLC1ArkngthamzBallista.psc:38:1:nesting-depth
 Source/Scripts/DLC1ArkngthamzBallista.psc:45:3:empty-body
 Source/Scripts/DLC1ArkngthamzBallista.psc:48:19:unresolved-script
 Source/Scripts/DLC1ArkngthamzBallista.psc:57:1:none-form-usage
@@ -9042,6 +9077,7 @@ Source/Scripts/DLC1AurielsBowPlayerScript.psc:17:34:forbidden-functions
 Source/Scripts/DLC1AurielsBowPlayerScript.psc:28:2:unused-getter
 Source/Scripts/DLC1AurielsBowPlayerScript.psc:30:121:line-length
 Source/Scripts/DLC1AurielsBowPlayerScript.psc:33:1:argument-naming
+Source/Scripts/DLC1AurielsBowPlayerScript.psc:33:1:nesting-depth
 Source/Scripts/DLC1AurielsBowPlayerScript.psc:35:1:none-form-usage
 Source/Scripts/DLC1AurielsBowPlayerScript.psc:41:1:none-form-usage
 Source/Scripts/DLC1AurielsBowPlayerScript.psc:44:1:none-form-usage
@@ -9137,6 +9173,7 @@ Source/Scripts/DLC1CoffinActivateInUseScript.psc:6:25:forbidden-functions
 Source/Scripts/DLC1CritterFollowSCRIPT.psc:60:1:none-form-usage
 Source/Scripts/DLC1CritterFollowSCRIPT.psc:68:12:forbidden-functions
 Source/Scripts/DLC1CritterFollowSCRIPT.psc:91:1:short-wait-interval
+Source/Scripts/DLC1CritterFollowSCRIPT.psc:105:1:nesting-depth
 Source/Scripts/DLC1CritterFollowSCRIPT.psc:108:13:forbidden-functions
 Source/Scripts/DLC1CritterFollowSCRIPT.psc:113:121:line-length
 Source/Scripts/DLC1CritterFollowSCRIPT.psc:124:29:unresolved-script
@@ -9223,6 +9260,7 @@ Source/Scripts/DLC1DragonSummonScript.psc:32:121:line-length
 Source/Scripts/DLC1DragonSummonScript.psc:36:1:none-form-usage
 Source/Scripts/DLC1DragonSummonScript.psc:40:1:undefined-event
 Source/Scripts/DLC1DragonSummonScript.psc:41:1:none-form-usage
+Source/Scripts/DLC1DrainBloodPointScript.psc:9:1:nesting-depth
 Source/Scripts/DLC1DrainBloodPointScript.psc:11:22:forbidden-functions
 Source/Scripts/DLC1DrainBloodPointScript.psc:14:1:none-form-usage
 Source/Scripts/DLC1DrainBloodPointScript.psc:15:1:none-form-usage
@@ -9846,6 +9884,7 @@ Source/Scripts/DLC1LD_D2QuestScript.psc:57:1:none-form-usage
 Source/Scripts/DLC1LD_DoorTriggerToggleScript.psc:6:10:forbidden-functions
 Source/Scripts/DLC1LD_ForgeSteamValveScript.psc:20:1:none-form-usage
 Source/Scripts/DLC1LD_ForgeSteamValveScript.psc:24:1:none-form-usage
+Source/Scripts/DLC1LD_ForgeSteamValveScript.psc:32:1:nesting-depth
 Source/Scripts/DLC1LD_ForgeSteamValveScript.psc:36:1:unchecked-cast
 Source/Scripts/DLC1LD_ForgeSteamValveScript.psc:37:1:unchecked-cast
 Source/Scripts/DLC1LD_ForgeSteamValveScript.psc:38:1:unchecked-cast
@@ -10001,6 +10040,7 @@ Source/Scripts/DLC1MagicCastFromSunScript.psc:11:121:line-length
 Source/Scripts/DLC1MagicCastFromSunScript.psc:59:1:undefined-event
 Source/Scripts/DLC1MagicCastFromSunScript.psc:65:1:argument-naming
 Source/Scripts/DLC1MagicCastFromSunScript.psc:65:1:argument-naming
+Source/Scripts/DLC1MagicCastFromSunScript.psc:65:1:nesting-depth
 Source/Scripts/DLC1MagicCastFromSunScript.psc:73:10:forbidden-functions
 Source/Scripts/DLC1MagicCastFromSunScript.psc:84:4:strict-boolean
 Source/Scripts/DLC1MagicCastFromSunScript.psc:87:14:forbidden-functions
@@ -10147,6 +10187,7 @@ Source/Scripts/DLC1PlayerVampireChangeScript.psc:375:30:forbidden-functions
 Source/Scripts/DLC1PlayerVampireChangeScript.psc:379:17:forbidden-functions
 Source/Scripts/DLC1PlayerVampireChangeScript.psc:389:1:argument-naming
 Source/Scripts/DLC1PlayerVampireChangeScript.psc:389:1:argument-naming
+Source/Scripts/DLC1PlayerVampireChangeScript.psc:389:1:nesting-depth
 Source/Scripts/DLC1PlayerVampireChangeScript.psc:390:30:forbidden-functions
 Source/Scripts/DLC1PlayerVampireChangeScript.psc:400:1:none-form-usage
 Source/Scripts/DLC1PlayerVampireChangeScript.psc:401:1:none-form-usage
@@ -10415,6 +10456,7 @@ Source/Scripts/DLC1RandomLightningStrikeTrigSCRIPT.psc:31:121:line-length
 Source/Scripts/DLC1RandomLightningStrikeTrigSCRIPT.psc:60:23:forbidden-functions
 Source/Scripts/DLC1RandomLightningStrikeTrigSCRIPT.psc:68:121:line-length
 Source/Scripts/DLC1RandomLightningStrikeTrigSCRIPT.psc:81:121:line-length
+Source/Scripts/DLC1RandomLightningStrikeTrigSCRIPT.psc:82:1:nesting-depth
 Source/Scripts/DLC1RandomLightningStrikeTrigSCRIPT.psc:84:121:line-length
 Source/Scripts/DLC1RandomLightningStrikeTrigSCRIPT.psc:96:121:line-length
 Source/Scripts/DLC1RandomLightningStrikeTrigSCRIPT.psc:118:1:none-form-usage
@@ -10441,6 +10483,7 @@ Source/Scripts/DLC1RefAliasMoveTriggerScript.psc:23:1:unchecked-cast
 Source/Scripts/DLC1RefAliasMoveTriggerScript.psc:24:1:none-form-usage
 Source/Scripts/DLC1RefAliasMoveTriggerScript.psc:25:1:none-form-usage
 Source/Scripts/DLC1RefAliasMoveTriggerScript.psc:26:1:none-form-usage
+Source/Scripts/DLC1RefAliasMoveTriggerScript.psc:30:1:nesting-depth
 Source/Scripts/DLC1RefAliasMoveTriggerScript.psc:31:26:forbidden-functions
 Source/Scripts/DLC1RefAliasMoveTriggerScript.psc:32:29:forbidden-functions
 Source/Scripts/DLC1RefAliasMoveTriggerScript.psc:34:5:strict-boolean
@@ -10542,6 +10585,7 @@ Source/Scripts/DLC1SeranaCureQuestScript.psc:43:1:none-form-usage
 Source/Scripts/DLC1SeranaCureSelfQuestPlayerScript.psc:6:1:unchecked-cast
 Source/Scripts/DLC1SeranaLevelingScript.psc:5:1:undefined-event
 Source/Scripts/DLC1SeranaLevelingScript.psc:6:2:forbidden-functions
+Source/Scripts/DLC1SeranaLevelingScript.psc:9:1:nesting-depth
 Source/Scripts/DLC1SeranaLevelingScript.psc:71:1:undefined-event
 Source/Scripts/DLC1SeranaLevelingScript.psc:74:1:numeric-comparison
 Source/Scripts/DLC1ShellBugSounds.psc:9:1:none-form-usage
@@ -10634,6 +10678,7 @@ Source/Scripts/DLC1TrapInfectedBones.psc:83:1:unchecked-cast
 Source/Scripts/DLC1TrapInfectedBones.psc:86:1:none-form-usage
 Source/Scripts/DLC1TrapInfectedBones.psc:86:1:unchecked-cast
 Source/Scripts/DLC1TrapInfectedBones.psc:86:121:line-length
+Source/Scripts/DLC1TrapInfectedBones.psc:139:1:nesting-depth
 Source/Scripts/DLC1TrapPoisonBloom.psc:54:3:strict-boolean
 Source/Scripts/DLC1TrapPoisonBloom.psc:179:3:strict-boolean
 Source/Scripts/DLC1TrapPoisonBloom.psc:183:11:forbidden-functions
@@ -10644,6 +10689,7 @@ Source/Scripts/DLC1TrapPoisonBloom.psc:208:3:strict-boolean
 Source/Scripts/DLC1TrapPoisonBloom.psc:213:3:strict-boolean
 Source/Scripts/DLC1TrapPoisonBloom.psc:216:1:unchecked-cast
 Source/Scripts/DLC1TrapPoisonBloom.psc:239:121:line-length
+Source/Scripts/DLC1TrapPoisonBloom.psc:241:1:nesting-depth
 Source/Scripts/DLC1TrapPoisonBloom.psc:245:25:forbidden-functions
 Source/Scripts/DLC1TrapPoisonBloom.psc:262:1:unchecked-cast
 Source/Scripts/DLC1TrapPoisonBloom.psc:275:1:unchecked-cast
@@ -10818,6 +10864,7 @@ Source/Scripts/DLC1VQ03BarrierPylonScript.psc:90:1:none-form-usage
 Source/Scripts/DLC1VQ03HunterNoteScript.psc:14:1:none-form-usage
 Source/Scripts/DLC1VQ03HunterNoteScript.psc:19:12:forbidden-functions
 Source/Scripts/DLC1VQ03HunterNoteScript.psc:21:1:none-form-usage
+Source/Scripts/DLC1VQ03HunterUpdateObjectiveScript.psc:23:1:nesting-depth
 Source/Scripts/DLC1VQ03HunterUpdateObjectiveScript.psc:26:1:none-form-usage
 Source/Scripts/DLC1VQ03HunterUpdateObjectiveScript.psc:28:1:none-form-usage
 Source/Scripts/DLC1VQ03HunterUpdateObjectiveScript.psc:29:1:none-form-usage
@@ -10849,9 +10896,11 @@ Source/Scripts/DLC1VQ03MothpriestFightScript.psc:85:1:none-form-usage
 Source/Scripts/DLC1VQ03MothpriestFightScript.psc:87:12:forbidden-functions
 Source/Scripts/DLC1VQ03MothpriestFightScript.psc:90:1:none-form-usage
 Source/Scripts/DLC1VQ03MothpriestFightScript.psc:94:1:none-form-usage
+Source/Scripts/DLC1VQ03SetStageDoorTrigScript.psc:27:1:nesting-depth
 Source/Scripts/DLC1VQ03SetStageDoorTrigScript.psc:29:1:none-form-usage
 Source/Scripts/DLC1VQ03SetStageDoorTrigScript.psc:31:1:none-form-usage
 Source/Scripts/DLC1VQ03SetStageDoorTrigScript.psc:35:4:strict-boolean
+Source/Scripts/DLC1VQ03VampireDisplayObjectiveScript.psc:24:1:nesting-depth
 Source/Scripts/DLC1VQ03VampireDisplayObjectiveScript.psc:27:1:none-form-usage
 Source/Scripts/DLC1VQ03VampireDisplayObjectiveScript.psc:29:1:none-form-usage
 Source/Scripts/DLC1VQ03VampireDisplayObjectiveScript.psc:30:1:none-form-usage
@@ -11042,6 +11091,7 @@ Source/Scripts/DLC1VQ05GemScript.psc:11:1:none-form-usage
 Source/Scripts/DLC1VQ05JumpPadTrigger.psc:7:25:forbidden-functions
 Source/Scripts/DLC1VQ05JumpPadTrigger.psc:8:1:none-form-usage
 Source/Scripts/DLC1VQ05JumpPadTrigger.psc:9:1:none-form-usage
+Source/Scripts/DLC1VQ05MeetSceneTriggerScript.psc:9:1:nesting-depth
 Source/Scripts/DLC1VQ05MeetSceneTriggerScript.psc:12:1:none-form-usage
 Source/Scripts/DLC1VQ05MeetSceneTriggerScript.psc:13:1:none-form-usage
 Source/Scripts/DLC1VQ05MeetSceneTriggerScript.psc:16:1:none-form-usage
@@ -11067,6 +11117,7 @@ Source/Scripts/DLC1VQ05QuestScript.psc:17:1:none-form-usage
 Source/Scripts/DLC1VQ05QuestScript.psc:27:1:none-form-usage
 Source/Scripts/DLC1VQ05QuestScript.psc:28:1:none-form-usage
 Source/Scripts/DLC1VQ05QuestScript.psc:29:1:none-form-usage
+Source/Scripts/DLC1VQ05ReturnHomeTriggerScript.psc:6:1:nesting-depth
 Source/Scripts/DLC1VQ05ReturnHomeTriggerScript.psc:9:26:forbidden-functions
 Source/Scripts/DLC1VQ05ReturnHomeTriggerScript.psc:10:1:none-form-usage
 Source/Scripts/DLC1VQ05ReturnHomeTriggerScript.psc:11:1:none-form-usage
@@ -11291,11 +11342,13 @@ Source/Scripts/DLC1VQ07FSceneTriggerScript.psc:12:1:none-form-usage
 Source/Scripts/DLC1VQ07FinalBossTriggerScript.psc:9:1:none-form-usage
 Source/Scripts/DLC1VQ07FinalBossTriggerScript.psc:10:27:forbidden-functions
 Source/Scripts/DLC1VQ07FinalBossTriggerScript.psc:11:1:none-form-usage
+Source/Scripts/DLC1VQ07GeleborHelloTriggerScript.psc:7:1:nesting-depth
 Source/Scripts/DLC1VQ07GeleborHelloTriggerScript.psc:10:1:none-form-usage
 Source/Scripts/DLC1VQ07GeleborHelloTriggerScript.psc:11:27:forbidden-functions
 Source/Scripts/DLC1VQ07GeleborHelloTriggerScript.psc:12:1:none-form-usage
 Source/Scripts/DLC1VQ07GeleborHelloTriggerScript.psc:13:1:none-form-usage
 Source/Scripts/DLC1VQ07GeleborHelloTriggerScript.psc:14:1:none-form-usage
+Source/Scripts/DLC1VQ07GeleborHelloTriggerScript02.psc:7:1:nesting-depth
 Source/Scripts/DLC1VQ07GeleborHelloTriggerScript02.psc:10:1:none-form-usage
 Source/Scripts/DLC1VQ07GeleborHelloTriggerScript02.psc:11:1:none-form-usage
 Source/Scripts/DLC1VQ07GeleborHelloTriggerScript02.psc:12:28:forbidden-functions
@@ -11710,10 +11763,12 @@ Source/Scripts/DLC1WispShieldScript.psc:25:1:argument-naming
 Source/Scripts/DLC1WispShieldScript.psc:26:1:none-form-usage
 Source/Scripts/DLC1WispShieldScript.psc:33:121:line-length
 Source/Scripts/DLC1WispShieldScript.psc:53:121:line-length
+Source/Scripts/DLC1WordWallTrigger02Script.psc:20:1:nesting-depth
 Source/Scripts/DLC1WordWallTrigger02Script.psc:22:23:forbidden-functions
 Source/Scripts/DLC1WordWallTrigger02Script.psc:76:24:forbidden-functions
 Source/Scripts/DLC1WordWallTriggerScript.psc:135:15:forbidden-functions
 Source/Scripts/DLC1WordWallTriggerScript.psc:140:1:cyclomatic-complexity
+Source/Scripts/DLC1WordWallTriggerScript.psc:140:1:nesting-depth
 Source/Scripts/DLC1WordWallTriggerScript.psc:142:12:forbidden-functions
 Source/Scripts/DLC1WordWallTriggerScript.psc:142:73:forbidden-functions
 Source/Scripts/DLC1WordWallTriggerScript.psc:142:108:forbidden-functions
@@ -11750,6 +11805,7 @@ Source/Scripts/DLC1WordWallTriggerScript.psc:280:1:none-form-usage
 Source/Scripts/DLC1WordWallTriggerScript.psc:281:1:none-form-usage
 Source/Scripts/DLC1WordWallTriggerScript.psc:291:1:none-form-usage
 Source/Scripts/DLC1WordWallTriggerScript.psc:292:1:none-form-usage
+Source/Scripts/DLC1WordWallTriggerScript.psc:312:1:nesting-depth
 Source/Scripts/DLC1WordWallTriggerScript.psc:330:1:none-form-usage
 Source/Scripts/DLC1WordWallTriggerScript.psc:334:1:short-wait-interval
 Source/Scripts/DLC1WordWallTriggerScript.psc:352:1:none-form-usage
@@ -11875,6 +11931,7 @@ Source/Scripts/DLC1_BF_FallingDebrisControllerSCRIPT.psc:252:6:forbidden-functio
 Source/Scripts/DLC1_BF_FallingDebrisControllerSCRIPT.psc:253:34:forbidden-functions
 Source/Scripts/DLC1_BF_FallingDebrisControllerSCRIPT.psc:260:1:unchecked-cast
 Source/Scripts/DLC1_BF_FallingDebrisTrigSCRIPT.psc:77:121:line-length
+Source/Scripts/DLC1_BF_FallingDebrisTrigSCRIPT.psc:92:1:nesting-depth
 Source/Scripts/DLC1_BF_FallingDebrisTrigSCRIPT.psc:96:1:none-form-usage
 Source/Scripts/DLC1_BF_FallingDebrisTrigSCRIPT.psc:96:2:empty-body
 Source/Scripts/DLC1_BF_FallingDebrisTrigSCRIPT.psc:105:1:none-form-usage
@@ -14916,6 +14973,7 @@ Source/Scripts/DLC1dunHarkonBossBattle.psc:172:1:none-form-usage
 Source/Scripts/DLC1dunHarkonBossBattle.psc:177:1:none-form-usage
 Source/Scripts/DLC1dunHarkonBossBattle.psc:191:121:line-length
 Source/Scripts/DLC1dunHarkonBossBattle.psc:196:1:cyclomatic-complexity
+Source/Scripts/DLC1dunHarkonBossBattle.psc:196:1:nesting-depth
 Source/Scripts/DLC1dunHarkonBossBattle.psc:201:1:none-form-usage
 Source/Scripts/DLC1dunHarkonBossBattle.psc:205:2:empty-body
 Source/Scripts/DLC1dunHarkonBossBattle.psc:208:1:numeric-comparison
@@ -15775,6 +15833,7 @@ Source/Scripts/DLC2DBBookLevelEnableDisableSCRIPT.psc:88:4:empty-body
 Source/Scripts/DLC2DBBookLevelLightTranslationSCRIPT.psc:22:6:forbidden-functions
 Source/Scripts/DLC2DBBookLevelLightTranslationSCRIPT.psc:25:3:empty-body
 Source/Scripts/DLC2DBBookLevelLightTranslationSCRIPT.psc:29:15:forbidden-functions
+Source/Scripts/DLC2DBBookLevelLightTranslationSCRIPT.psc:34:1:nesting-depth
 Source/Scripts/DLC2DBBookLevelLightTranslationSCRIPT.psc:35:6:forbidden-functions
 Source/Scripts/DLC2DBBookLevelLightTranslationSCRIPT.psc:37:40:forbidden-functions
 Source/Scripts/DLC2DBBookLevelLightTranslationSCRIPT.psc:40:5:empty-body
@@ -15785,6 +15844,7 @@ Source/Scripts/DLC2DBBookLevelLightTranslationSCRIPT.psc:67:6:forbidden-function
 Source/Scripts/DLC2DBBookLevelLightTranslationSCRIPT.psc:68:3:empty-body
 Source/Scripts/DLC2DBBookLevelLightTranslationSCRIPT.psc:78:6:forbidden-functions
 Source/Scripts/DLC2DBBookLevelLightTranslationSCRIPT.psc:89:6:forbidden-functions
+Source/Scripts/DLC2DBBookLevelLightTranslationSCRIPT.psc:99:1:nesting-depth
 Source/Scripts/DLC2DBBookLevelLightTranslationSCRIPT.psc:100:6:forbidden-functions
 Source/Scripts/DLC2DBBookLevelLightTranslationSCRIPT.psc:101:3:empty-body
 Source/Scripts/DLC2DBBookLevelLightTranslationSCRIPT.psc:105:4:empty-body
@@ -16097,6 +16157,7 @@ Source/Scripts/DLC2ExpSpiderCraftingSCRIPT.psc:214:1:none-form-usage
 Source/Scripts/DLC2ExpSpiderCraftingSCRIPT.psc:215:3:forbidden-functions
 Source/Scripts/DLC2ExpSpiderCraftingSCRIPT.psc:217:11:forbidden-functions
 Source/Scripts/DLC2ExpSpiderDeadSpiderSCRIPT.psc:21:10:forbidden-functions
+Source/Scripts/DLC2ExpSpiderDeadSpiderSCRIPT.psc:26:1:nesting-depth
 Source/Scripts/DLC2ExpSpiderDeadSpiderSCRIPT.psc:28:1:unchecked-cast
 Source/Scripts/DLC2ExpSpiderDeadSpiderSCRIPT.psc:29:1:unchecked-cast
 Source/Scripts/DLC2ExpSpiderDeadSpiderSCRIPT.psc:36:4:strict-boolean
@@ -16158,6 +16219,7 @@ Source/Scripts/DLC2ExpSpiderZombieScrollSCRIPT.psc:13:1:unchecked-cast
 Source/Scripts/DLC2ExpSpiderZombieScrollSCRIPT.psc:20:1:argument-naming
 Source/Scripts/DLC2ExpSpiderZombieScrollSCRIPT.psc:20:1:argument-naming
 Source/Scripts/DLC2ExpSpiderZombieScrollSCRIPT.psc:22:1:unchecked-cast
+Source/Scripts/DLC2ExplodingSpiderEggSCRIPT.psc:23:1:nesting-depth
 Source/Scripts/DLC2ExplodingSpiderEggSCRIPT.psc:26:3:strict-boolean
 Source/Scripts/DLC2ExplodingSpiderEggSCRIPT.psc:28:28:forbidden-functions
 Source/Scripts/DLC2ExplodingSpiderEggSCRIPT.psc:29:1:unchecked-cast
@@ -16646,6 +16708,7 @@ Source/Scripts/DLC2LevitationTriggerScript.psc:9:1:none-form-usage
 Source/Scripts/DLC2LevitationTriggerScript.psc:10:1:none-form-usage
 Source/Scripts/DLC2LvlSeekerMirrorScript.psc:17:121:line-length
 Source/Scripts/DLC2MH01EnterThirskTrigger.psc:10:1:argument-naming
+Source/Scripts/DLC2MH01EnterThirskTrigger.psc:10:1:nesting-depth
 Source/Scripts/DLC2MH01EnterThirskTrigger.psc:11:26:forbidden-functions
 Source/Scripts/DLC2MH01EnterThirskTrigger.psc:12:1:none-form-usage
 Source/Scripts/DLC2MH01EnterThirskTrigger.psc:13:1:none-form-usage
@@ -16840,6 +16903,7 @@ Source/Scripts/DLC2MQ06MiraakBossBattle.psc:195:1:argument-naming
 Source/Scripts/DLC2MQ06MiraakBossBattle.psc:195:1:argument-naming
 Source/Scripts/DLC2MQ06MiraakBossBattle.psc:195:121:line-length
 Source/Scripts/DLC2MQ06MiraakBossBattle.psc:203:1:cyclomatic-complexity
+Source/Scripts/DLC2MQ06MiraakBossBattle.psc:203:1:nesting-depth
 Source/Scripts/DLC2MQ06MiraakBossBattle.psc:207:1:none-form-usage
 Source/Scripts/DLC2MQ06MiraakBossBattle.psc:209:26:forbidden-functions
 Source/Scripts/DLC2MQ06MiraakBossBattle.psc:210:1:none-form-usage
@@ -17280,6 +17344,7 @@ Source/Scripts/DLC2PillarScript.psc:74:1:none-form-usage
 Source/Scripts/DLC2PillarScript.psc:77:1:none-form-usage
 Source/Scripts/DLC2PillarScript.psc:79:1:none-form-usage
 Source/Scripts/DLC2PillarScript.psc:87:121:line-length
+Source/Scripts/DLC2PillarScript.psc:98:1:nesting-depth
 Source/Scripts/DLC2PillarScript.psc:100:27:forbidden-functions
 Source/Scripts/DLC2PillarScript.psc:103:1:none-form-usage
 Source/Scripts/DLC2PillarScript.psc:103:1:none-form-usage
@@ -18020,6 +18085,7 @@ Source/Scripts/DLC2TrapApoTentacle.psc:160:4:empty-body
 Source/Scripts/DLC2TrapApoTentacle.psc:176:21:unresolved-script
 Source/Scripts/DLC2TrapApoTentacle.psc:197:4:strict-boolean
 Source/Scripts/DLC2TrapApoTentacle.psc:235:4:strict-boolean
+Source/Scripts/DLC2TrapApoTentacle.psc:283:1:nesting-depth
 Source/Scripts/DLC2TrapApoTentacle.psc:287:25:forbidden-functions
 Source/Scripts/DLC2TrapApoTentacle.psc:301:3:strict-boolean
 Source/Scripts/DLC2TrapApoTentacle.psc:302:1:unchecked-cast
@@ -18077,12 +18143,14 @@ Source/Scripts/DLC2WaterScript.psc:15:1:none-form-usage
 Source/Scripts/DLC2WaterScript.psc:18:1:none-form-usage
 Source/Scripts/DLC2WhirlwindDamageScript.psc:5:1:argument-naming
 Source/Scripts/DLC2WhirlwindDamageScript.psc:5:1:argument-naming
+Source/Scripts/DLC2WordWallTrigger02Script.psc:20:1:nesting-depth
 Source/Scripts/DLC2WordWallTrigger02Script.psc:22:23:forbidden-functions
 Source/Scripts/DLC2WordWallTrigger02Script.psc:76:24:forbidden-functions
 Source/Scripts/DLC2WordWallTriggerBendWillScript.psc:22:23:forbidden-functions
 Source/Scripts/DLC2WordWallTriggerBendWillScript.psc:42:24:forbidden-functions
 Source/Scripts/DLC2WordWallTriggerScript.psc:135:15:forbidden-functions
 Source/Scripts/DLC2WordWallTriggerScript.psc:140:1:cyclomatic-complexity
+Source/Scripts/DLC2WordWallTriggerScript.psc:140:1:nesting-depth
 Source/Scripts/DLC2WordWallTriggerScript.psc:142:12:forbidden-functions
 Source/Scripts/DLC2WordWallTriggerScript.psc:142:73:forbidden-functions
 Source/Scripts/DLC2WordWallTriggerScript.psc:142:108:forbidden-functions
@@ -18119,6 +18187,7 @@ Source/Scripts/DLC2WordWallTriggerScript.psc:280:1:none-form-usage
 Source/Scripts/DLC2WordWallTriggerScript.psc:281:1:none-form-usage
 Source/Scripts/DLC2WordWallTriggerScript.psc:291:1:none-form-usage
 Source/Scripts/DLC2WordWallTriggerScript.psc:292:1:none-form-usage
+Source/Scripts/DLC2WordWallTriggerScript.psc:312:1:nesting-depth
 Source/Scripts/DLC2WordWallTriggerScript.psc:330:1:none-form-usage
 Source/Scripts/DLC2WordWallTriggerScript.psc:334:1:short-wait-interval
 Source/Scripts/DLC2WordWallTriggerScript.psc:352:1:none-form-usage
@@ -20340,6 +20409,7 @@ Source/Scripts/DLC2dunGyldenhulFurnitureScript.psc:123:36:forbidden-functions
 Source/Scripts/DLC2dunGyldenhulFurnitureScript.psc:124:36:forbidden-functions
 Source/Scripts/DLC2dunGyldenhulFurnitureScript.psc:125:36:forbidden-functions
 Source/Scripts/DLC2dunGyldenhulMineScript.psc:15:1:argument-naming
+Source/Scripts/DLC2dunGyldenhulMineScript.psc:15:1:nesting-depth
 Source/Scripts/DLC2dunGyldenhulMineScript.psc:16:2:strict-boolean
 Source/Scripts/DLC2dunGyldenhulMineScript.psc:17:28:forbidden-functions
 Source/Scripts/DLC2dunGyldenhulMineScript.psc:18:13:forbidden-functions
@@ -20794,6 +20864,7 @@ Source/Scripts/DLC2dunNchardakDoorSeal.psc:8:121:line-length
 Source/Scripts/DLC2dunNchardakDoorSeal.psc:9:121:line-length
 Source/Scripts/DLC2dunNchardakDoorSeal.psc:35:1:unchecked-cast
 Source/Scripts/DLC2dunNchardakDoorSeal.psc:36:1:unchecked-cast
+Source/Scripts/DLC2dunNchardakDoorSeal.psc:69:1:nesting-depth
 Source/Scripts/DLC2dunNchardakDoorSeal.psc:93:1:unchecked-cast
 Source/Scripts/DLC2dunNchardakDoorSeal.psc:112:1:unchecked-cast
 Source/Scripts/DLC2dunNchardakDoorSeal.psc:114:1:unchecked-cast
@@ -20923,6 +20994,7 @@ Source/Scripts/DLC2dunNchardakTrackingScript.psc:18:121:line-length
 Source/Scripts/DLC2dunNchardakTrackingScript.psc:45:1:explicit-return
 Source/Scripts/DLC2dunNchardakTrackingScript.psc:53:3:empty-body
 Source/Scripts/DLC2dunNchardakTrackingScript.psc:93:1:unchecked-cast
+Source/Scripts/DLC2dunNchardakTrackingScript.psc:117:1:nesting-depth
 Source/Scripts/DLC2dunNchardakTrackingScript.psc:120:12:forbidden-functions
 Source/Scripts/DLC2dunNchardakTrackingScript.psc:121:9:forbidden-functions
 Source/Scripts/DLC2dunNchardakTrackingScript.psc:122:25:forbidden-functions
@@ -20931,6 +21003,7 @@ Source/Scripts/DLC2dunNchardakTrackingScript.psc:123:1:setvalue-in-loop
 Source/Scripts/DLC2dunNchardakTrackingScript.psc:127:1:none-form-usage
 Source/Scripts/DLC2dunNchardakTrackingScript.psc:129:1:none-form-usage
 Source/Scripts/DLC2dunNchardakTrackingScript.psc:131:1:none-form-usage
+Source/Scripts/DLC2dunNchardakTrackingScript.psc:143:1:nesting-depth
 Source/Scripts/DLC2dunNchardakTrackingScript.psc:146:12:forbidden-functions
 Source/Scripts/DLC2dunNchardakTrackingScript.psc:147:9:forbidden-functions
 Source/Scripts/DLC2dunNchardakTrackingScript.psc:148:25:forbidden-functions
@@ -20939,6 +21012,7 @@ Source/Scripts/DLC2dunNchardakTrackingScript.psc:149:1:setvalue-in-loop
 Source/Scripts/DLC2dunNchardakTrackingScript.psc:153:1:none-form-usage
 Source/Scripts/DLC2dunNchardakTrackingScript.psc:155:1:none-form-usage
 Source/Scripts/DLC2dunNchardakTrackingScript.psc:170:33:forbidden-functions
+Source/Scripts/DLC2dunNchardakTrackingScript.psc:178:1:nesting-depth
 Source/Scripts/DLC2dunNchardakTrackingScript.psc:178:121:line-length
 Source/Scripts/DLC2dunNchardakTrackingScript.psc:179:1:none-form-usage
 Source/Scripts/DLC2dunNchardakTrackingScript.psc:239:121:line-length
@@ -21107,6 +21181,7 @@ Source/Scripts/DWRCGScript.psc:14:1:none-form-usage
 Source/Scripts/DWRCGScript.psc:16:1:none-form-usage
 Source/Scripts/DWRCGScript.psc:17:1:none-form-usage
 Source/Scripts/DaedricArmorAttachFXScript.psc:7:1:none-form-usage
+Source/Scripts/DarkBrotherhood.psc:154:1:nesting-depth
 Source/Scripts/DarkBrotherhood.psc:170:1:none-form-usage
 Source/Scripts/DarkBrotherhood.psc:171:1:none-form-usage
 Source/Scripts/DarkBrotherhood.psc:172:1:none-form-usage
@@ -21893,6 +21968,7 @@ Source/Scripts/FXAlduinScript.psc:132:1:none-form-usage
 Source/Scripts/FXAlduinScript.psc:133:11:forbidden-functions
 Source/Scripts/FXAlduinScript.psc:140:1:undefined-event
 Source/Scripts/FXAlduinScript.psc:142:1:none-form-usage
+Source/Scripts/FXAlduinScript.psc:147:1:nesting-depth
 Source/Scripts/FXAlduinScript.psc:149:22:forbidden-functions
 Source/Scripts/FXAlduinScript.psc:151:1:none-form-usage
 Source/Scripts/FXAlduinScript.psc:154:1:none-form-usage
@@ -22497,6 +22573,7 @@ Source/Scripts/FinnsLuteScript.psc:6:1:none-form-usage
 Source/Scripts/FinnsLuteScript.psc:8:1:none-form-usage
 Source/Scripts/FireFly.psc:57:11:forbidden-functions
 Source/Scripts/FireFly.psc:76:1:short-wait-interval
+Source/Scripts/FireFly.psc:87:1:nesting-depth
 Source/Scripts/FireFly.psc:90:12:forbidden-functions
 Source/Scripts/FireFly.psc:102:29:unresolved-script
 Source/Scripts/FireFly.psc:114:121:line-length
@@ -22711,6 +22788,7 @@ Source/Scripts/HelgenRandomSoundScript.psc:103:1:none-form-usage
 Source/Scripts/HelgenRandomSoundScript.psc:107:1:none-form-usage
 Source/Scripts/HelgenRandomSoundScript.psc:113:1:none-form-usage
 Source/Scripts/HelgenRandomSoundScript.psc:117:1:none-form-usage
+Source/Scripts/HildeSoldierScript.psc:7:1:nesting-depth
 Source/Scripts/HildeSoldierScript.psc:8:25:forbidden-functions
 Source/Scripts/HildeSoldierScript.psc:9:1:none-form-usage
 Source/Scripts/HildeSoldierScript.psc:10:1:none-form-usage
@@ -22865,6 +22943,7 @@ Source/Scripts/MG01FireEffectScript.psc:6:1:argument-naming
 Source/Scripts/MG01FireEffectScript.psc:6:1:argument-naming
 Source/Scripts/MG01FireEffectScript.psc:10:20:forbidden-functions
 Source/Scripts/MG01FireEffectScript.psc:11:1:unchecked-cast
+Source/Scripts/MG01NiryaScript.psc:8:1:nesting-depth
 Source/Scripts/MG01NiryaScript.psc:15:1:unchecked-cast
 Source/Scripts/MG01NiryaScript.psc:27:1:none-form-usage
 Source/Scripts/MG01NiryaScript.psc:29:25:forbidden-functions
@@ -23007,6 +23086,7 @@ Source/Scripts/MG02SaarthalTravelTrigger1Script.psc:22:1:none-form-usage
 Source/Scripts/MG02SaarthalTravelTrigger1Script.psc:23:1:unchecked-cast
 Source/Scripts/MG02SaarthalTravelTrigger1Script.psc:24:1:none-form-usage
 Source/Scripts/MG02Stage20FGTriggerScript.psc:4:1:argument-naming
+Source/Scripts/MG02Stage20FGTriggerScript.psc:4:1:nesting-depth
 Source/Scripts/MG02Stage20FGTriggerScript.psc:8:23:forbidden-functions
 Source/Scripts/MG02Stage20FGTriggerScript.psc:12:1:unchecked-cast
 Source/Scripts/MG02Stage20FGTriggerScript.psc:13:1:unchecked-cast
@@ -23039,6 +23119,7 @@ Source/Scripts/MG02TransitionDoorTriggerScript.psc:16:1:none-form-usage
 Source/Scripts/MG02TransitionDoorTriggerScript.psc:18:1:unchecked-cast
 Source/Scripts/MG02TransitionDoorTriggerScript.psc:19:1:unchecked-cast
 Source/Scripts/MG02VisionPlayerTriggerScript.psc:31:1:argument-naming
+Source/Scripts/MG02VisionPlayerTriggerScript.psc:31:1:nesting-depth
 Source/Scripts/MG02VisionPlayerTriggerScript.psc:35:23:forbidden-functions
 Source/Scripts/MG02VisionPlayerTriggerScript.psc:36:1:unchecked-cast
 Source/Scripts/MG02VisionPlayerTriggerScript.psc:37:1:unchecked-cast
@@ -23047,6 +23128,7 @@ Source/Scripts/MG02VisionPlayerTriggerScript.psc:39:13:forbidden-functions
 Source/Scripts/MG02VisionPlayerTriggerScript.psc:40:14:forbidden-functions
 Source/Scripts/MG02VisionPlayerTriggerScript.psc:41:1:unchecked-cast
 Source/Scripts/MG02VisionTolfdirTriggerScript.psc:9:1:argument-naming
+Source/Scripts/MG02VisionTolfdirTriggerScript.psc:9:1:nesting-depth
 Source/Scripts/MG02VisionTolfdirTriggerScript.psc:13:1:none-form-usage
 Source/Scripts/MG02VisionTolfdirTriggerScript.psc:14:1:unchecked-cast
 Source/Scripts/MG02VisionTolfdirTriggerScript.psc:15:1:unchecked-cast
@@ -23057,6 +23139,7 @@ Source/Scripts/MG02VisionTolfdirTriggerScript.psc:21:14:forbidden-functions
 Source/Scripts/MG02VisionTolfdirTriggerScript.psc:22:1:unchecked-cast
 Source/Scripts/MG02WallAliasScript.psc:9:1:argument-naming
 Source/Scripts/MG02WallAliasScript.psc:23:121:line-length
+Source/Scripts/MG02WallAliasScript.psc:25:1:nesting-depth
 Source/Scripts/MG02WallAliasScript.psc:27:22:forbidden-functions
 Source/Scripts/MG02WallAliasScript.psc:28:11:forbidden-functions
 Source/Scripts/MG02WallAliasScript.psc:30:1:unchecked-cast
@@ -23081,6 +23164,7 @@ Source/Scripts/MG03BookScript.psc:25:1:none-form-usage
 Source/Scripts/MG03BookScript.psc:26:1:none-form-usage
 Source/Scripts/MG03BookScript.psc:26:52:forbidden-functions
 Source/Scripts/MG03BookScript.psc:32:1:unchecked-cast
+Source/Scripts/MG03CallerTriggerScript.psc:10:1:nesting-depth
 Source/Scripts/MG03CallerTriggerScript.psc:13:24:forbidden-functions
 Source/Scripts/MG03CallerTriggerScript.psc:14:1:unchecked-cast
 Source/Scripts/MG03CallerTriggerScript.psc:15:1:none-form-usage
@@ -23122,6 +23206,7 @@ Source/Scripts/MG03QuestScript.psc:29:1:none-form-usage
 Source/Scripts/MG03QuestScript.psc:43:11:forbidden-functions
 Source/Scripts/MG03QuestScript.psc:44:1:none-form-usage
 Source/Scripts/MG04ArchMageDoorScript.psc:13:1:argument-naming
+Source/Scripts/MG04ArchMageDoorScript.psc:13:1:nesting-depth
 Source/Scripts/MG04ArchMageDoorScript.psc:15:25:forbidden-functions
 Source/Scripts/MG04ArchMageDoorScript.psc:16:1:none-form-usage
 Source/Scripts/MG04ArchMageDoorScript.psc:17:1:none-form-usage
@@ -23147,6 +23232,7 @@ Source/Scripts/MG05SavosArenScript.psc:8:23:forbidden-functions
 Source/Scripts/MG05SavosArenScript.psc:9:1:none-form-usage
 Source/Scripts/MG05SavosArenScript.psc:10:1:none-form-usage
 Source/Scripts/MG05WinterholdUpdateTriggerScript.psc:8:1:argument-naming
+Source/Scripts/MG05WinterholdUpdateTriggerScript.psc:8:1:nesting-depth
 Source/Scripts/MG05WinterholdUpdateTriggerScript.psc:10:23:forbidden-functions
 Source/Scripts/MG05WinterholdUpdateTriggerScript.psc:13:1:none-form-usage
 Source/Scripts/MG05WinterholdUpdateTriggerScript.psc:16:1:none-form-usage
@@ -23211,6 +23297,7 @@ Source/Scripts/MG06CrystalTriggerScript.psc:16:1:unchecked-cast
 Source/Scripts/MG06CrystalTriggerScript.psc:17:1:unchecked-cast
 Source/Scripts/MG06CrystalTriggerScript.psc:18:1:unchecked-cast
 Source/Scripts/MG06CrystalTriggerScript.psc:19:1:unchecked-cast
+Source/Scripts/MG06Dome01Script.psc:37:1:nesting-depth
 Source/Scripts/MG06Dome01Script.psc:44:12:goto-state
 Source/Scripts/MG06Dome01Script.psc:55:1:unchecked-cast
 Source/Scripts/MG06Dome01Script.psc:57:1:unchecked-cast
@@ -23265,6 +23352,7 @@ Source/Scripts/MG06ScopeActivatorScript.psc:39:1:none-form-usage
 Source/Scripts/MG06TelescopeTriggerScript.psc:8:25:forbidden-functions
 Source/Scripts/MG06TelescopeTriggerScript.psc:9:1:none-form-usage
 Source/Scripts/MG06TelescopeTriggerScript.psc:11:1:none-form-usage
+Source/Scripts/MG06VisionTriggerScript.psc:32:1:nesting-depth
 Source/Scripts/MG06VisionTriggerScript.psc:34:25:forbidden-functions
 Source/Scripts/MG06VisionTriggerScript.psc:38:1:none-form-usage
 Source/Scripts/MG06VisionTriggerScript.psc:40:1:unchecked-cast
@@ -23338,6 +23426,7 @@ Source/Scripts/MG07StaffScript.psc:8:26:forbidden-functions
 Source/Scripts/MG07StaffScript.psc:9:1:none-form-usage
 Source/Scripts/MG07StaffScript.psc:10:1:none-form-usage
 Source/Scripts/MG07VisionTriggerScript.psc:34:1:argument-naming
+Source/Scripts/MG07VisionTriggerScript.psc:34:1:nesting-depth
 Source/Scripts/MG07VisionTriggerScript.psc:41:23:forbidden-functions
 Source/Scripts/MG07VisionTriggerScript.psc:42:1:none-form-usage
 Source/Scripts/MG07VisionTriggerScript.psc:43:1:none-form-usage
@@ -23391,6 +23480,7 @@ Source/Scripts/MG08CollegeTriggerScript.psc:14:23:forbidden-functions
 Source/Scripts/MG08CollegeTriggerScript.psc:16:1:unchecked-cast
 Source/Scripts/MG08EyeScript.psc:12:1:argument-naming
 Source/Scripts/MG08EyeScript.psc:12:1:argument-naming
+Source/Scripts/MG08EyeScript.psc:12:1:nesting-depth
 Source/Scripts/MG08EyeScript.psc:16:1:unchecked-cast
 Source/Scripts/MG08EyeScript.psc:25:1:none-form-usage
 Source/Scripts/MG08EyeScript.psc:26:1:none-form-usage
@@ -23410,6 +23500,7 @@ Source/Scripts/MG08EyeScript.psc:47:1:none-form-usage
 Source/Scripts/MG08EyeScript.psc:48:1:none-form-usage
 Source/Scripts/MG08EyeScript.psc:49:1:unchecked-cast
 Source/Scripts/MG08EyeScript.psc:51:13:forbidden-functions
+Source/Scripts/MG08GateScript.psc:9:1:nesting-depth
 Source/Scripts/MG08GateScript.psc:12:25:forbidden-functions
 Source/Scripts/MG08GateScript.psc:13:1:none-form-usage
 Source/Scripts/MG08GateScript.psc:15:1:none-form-usage
@@ -23426,17 +23517,20 @@ Source/Scripts/MG08TEMPBarrierTriggerScript.psc:10:23:forbidden-functions
 Source/Scripts/MG08TEMPBarrierTriggerScript.psc:11:1:none-form-usage
 Source/Scripts/MG08TEMPBarrierTriggerScript.psc:12:1:none-form-usage
 Source/Scripts/MG08TEMPBarrierTriggerScript.psc:13:1:none-form-usage
+Source/Scripts/MGClassroomTriggerScript.psc:14:1:nesting-depth
 Source/Scripts/MGClassroomTriggerScript.psc:19:25:forbidden-functions
 Source/Scripts/MGClassroomTriggerScript.psc:20:1:none-form-usage
 Source/Scripts/MGClassroomTriggerScript.psc:22:1:none-form-usage
 Source/Scripts/MGClassroomTriggerScript.psc:23:1:none-form-usage
 Source/Scripts/MGClassroomTriggerScript.psc:24:1:none-form-usage
+Source/Scripts/MGCollegeLecturesQuestScript.psc:4:1:nesting-depth
 Source/Scripts/MGCollegeLecturesQuestScript.psc:13:1:unchecked-cast
 Source/Scripts/MGCollegeLecturesQuestScript.psc:19:1:none-form-usage
 Source/Scripts/MGCollegeLecturesQuestScript.psc:19:16:slow-functions
 Source/Scripts/MGCollegeLecturesQuestScript.psc:20:1:none-form-usage
 Source/Scripts/MGCollegeLecturesQuestScript.psc:20:17:slow-functions
 Source/Scripts/MGCollegeLecturesQuestScript.psc:40:1:cyclomatic-complexity
+Source/Scripts/MGCollegeLecturesQuestScript.psc:40:1:nesting-depth
 Source/Scripts/MGCollegeLecturesQuestScript.psc:43:1:none-form-usage
 Source/Scripts/MGCollegeLecturesQuestScript.psc:43:16:slow-functions
 Source/Scripts/MGCollegeLecturesQuestScript.psc:44:1:none-form-usage
@@ -23482,6 +23576,7 @@ Source/Scripts/MGR02GlovesScript.psc:24:1:unchecked-cast
 Source/Scripts/MGR02GlovesScript.psc:25:1:unchecked-cast
 Source/Scripts/MGR02PillarScript.psc:8:1:none-form-usage
 Source/Scripts/MGR02PillarScript.psc:9:1:none-form-usage
+Source/Scripts/MGR02QuestScript.psc:35:1:nesting-depth
 Source/Scripts/MGR02QuestScript.psc:46:1:none-form-usage
 Source/Scripts/MGR02QuestScript.psc:51:1:none-form-usage
 Source/Scripts/MGR02QuestScript.psc:51:28:forbidden-functions
@@ -23526,6 +23621,7 @@ Source/Scripts/MGR22QuestScript.psc:16:33:forbidden-functions
 Source/Scripts/MGR22QuestScript.psc:19:1:none-form-usage
 Source/Scripts/MGR22QuestScript.psc:20:1:none-form-usage
 Source/Scripts/MGR22QuestScript.psc:25:1:cyclomatic-complexity
+Source/Scripts/MGR22QuestScript.psc:25:1:nesting-depth
 Source/Scripts/MGR22QuestScript.psc:37:11:forbidden-functions
 Source/Scripts/MGR22QuestScript.psc:38:12:forbidden-functions
 Source/Scripts/MGR22QuestScript.psc:39:13:forbidden-functions
@@ -23620,6 +23716,7 @@ Source/Scripts/MGRArniel03SContainerScript.psc:38:1:none-form-usage
 Source/Scripts/MGRArniel03SContainerScript.psc:39:1:none-form-usage
 Source/Scripts/MGRArniel03SContainerScript.psc:46:1:argument-naming
 Source/Scripts/MGRArniel03SContainerScript.psc:46:1:argument-naming
+Source/Scripts/MGRArniel03SContainerScript.psc:46:1:nesting-depth
 Source/Scripts/MGRArniel03SContainerScript.psc:62:1:none-form-usage
 Source/Scripts/MGRArniel03SContainerScript.psc:67:1:unchecked-cast
 Source/Scripts/MGRArniel03SContainerScript.psc:68:1:none-form-usage
@@ -23799,6 +23896,7 @@ Source/Scripts/MGRitual03EffectScript.psc:10:1:none-form-usage
 Source/Scripts/MGRitual03EffectScript.psc:10:1:none-form-usage
 Source/Scripts/MGRitual03EffectScript.psc:11:1:unchecked-cast
 Source/Scripts/MGRitual03EffectScript.psc:12:1:none-form-usage
+Source/Scripts/MGRitual03EffectScript.psc:19:1:nesting-depth
 Source/Scripts/MGRitual03EffectScript.psc:23:1:unchecked-cast
 Source/Scripts/MGRitual03EffectScript.psc:24:1:unchecked-cast
 Source/Scripts/MGRitual03EffectScript.psc:26:1:unchecked-cast
@@ -24028,6 +24126,7 @@ Source/Scripts/MQ105QuestScript.psc:86:1:none-form-usage
 Source/Scripts/MQ105QuestScript.psc:86:1:none-form-usage
 Source/Scripts/MQ105QuestScript.psc:87:1:none-form-usage
 Source/Scripts/MQ105QuestScript.psc:102:7:forbidden-functions
+Source/Scripts/MQ105QuestScript.psc:106:1:nesting-depth
 Source/Scripts/MQ105QuestScript.psc:112:1:none-form-usage
 Source/Scripts/MQ105QuestScript.psc:113:1:none-form-usage
 Source/Scripts/MQ105QuestScript.psc:119:1:none-form-usage
@@ -24166,6 +24265,7 @@ Source/Scripts/MQ201ThalmorEmbassyDisguiseScript.psc:43:1:undefined-event
 Source/Scripts/MQ201ThalmorEmbassyDisguiseScript.psc:44:16:forbidden-functions
 Source/Scripts/MQ201ThalmorEmbassyDisguiseScript.psc:63:3:empty-body
 Source/Scripts/MQ201ThalmorEmbassyDisguiseScript.psc:75:1:cyclomatic-complexity
+Source/Scripts/MQ201ThalmorEmbassyDisguiseScript.psc:75:1:nesting-depth
 Source/Scripts/MQ201ThalmorEmbassyDisguiseScript.psc:98:4:empty-body
 Source/Scripts/MQ201ThalmorEmbassyDisguiseScript.psc:105:121:line-length
 Source/Scripts/MQ201ThalmorEmbassyDisguiseScript.psc:107:4:empty-body
@@ -24420,6 +24520,7 @@ Source/Scripts/MQ305Bard1Script.psc:6:1:none-form-usage
 Source/Scripts/MQ305BardScript.psc:7:1:none-form-usage
 Source/Scripts/MQ305Script.psc:37:1:none-form-usage
 Source/Scripts/MQ305Script.psc:39:1:none-form-usage
+Source/Scripts/MQCallDragonScript.psc:3:1:nesting-depth
 Source/Scripts/MQCallDragonScript.psc:9:121:line-length
 Source/Scripts/MQCallDragonScript.psc:21:13:forbidden-functions
 Source/Scripts/MQCallDragonScript.psc:21:53:forbidden-functions
@@ -25133,6 +25234,7 @@ Source/Scripts/MS14GhoruunEntrance.psc:28:1:none-form-usage
 Source/Scripts/MS14GhoruunEntrance.psc:28:1:none-form-usage
 Source/Scripts/MS14GhoruunEntrance.psc:29:1:none-form-usage
 Source/Scripts/MS14HelgiCoffinScript.psc:6:1:argument-naming
+Source/Scripts/MS14HelgiCoffinScript.psc:6:1:nesting-depth
 Source/Scripts/MS14HelgiCoffinScript.psc:7:25:forbidden-functions
 Source/Scripts/MS14HelgiCoffinScript.psc:10:1:none-form-usage
 Source/Scripts/MS14HelgiCoffinScript.psc:14:1:none-form-usage
@@ -25229,6 +25331,7 @@ Source/Scripts/MagicTrap.psc:297:1:none-form-usage
 Source/Scripts/MagicTrap.psc:299:1:none-form-usage
 Source/Scripts/MagicTrap.psc:302:1:none-form-usage
 Source/Scripts/MagicTrap.psc:304:2:empty-body
+Source/Scripts/MagicTrap.psc:344:1:nesting-depth
 Source/Scripts/MagicTrap.psc:350:18:forbidden-functions
 Source/Scripts/MagicTrap.psc:352:21:forbidden-functions
 Source/Scripts/MagicTrap.psc:354:1:unchecked-cast
@@ -25302,6 +25405,7 @@ Source/Scripts/MineOreFurnitureScript.psc:208:36:forbidden-functions
 Source/Scripts/MineOreFurnitureScript.psc:209:36:forbidden-functions
 Source/Scripts/MineOreScript.psc:72:6:forbidden-functions
 Source/Scripts/MineOreScript.psc:78:1:argument-naming
+Source/Scripts/MineOreScript.psc:78:1:nesting-depth
 Source/Scripts/MineOreScript.psc:82:2:strict-boolean
 Source/Scripts/MineOreScript.psc:84:26:forbidden-functions
 Source/Scripts/MineOreScript.psc:87:1:none-form-usage
@@ -25387,6 +25491,7 @@ Source/Scripts/NN01QuestScript.psc:32:1:none-form-usage
 Source/Scripts/NN01QuestScript.psc:34:1:none-form-usage
 Source/Scripts/NN01QuestScript.psc:36:1:none-form-usage
 Source/Scripts/NN01QuestScript.psc:37:1:none-form-usage
+Source/Scripts/NightMotherCoffinScript.psc:26:1:nesting-depth
 Source/Scripts/NightMotherCoffinScript.psc:28:10:forbidden-functions
 Source/Scripts/NightMotherCoffinScript.psc:32:10:forbidden-functions
 Source/Scripts/NightMotherCoffinScript.psc:37:25:forbidden-functions
@@ -26072,6 +26177,7 @@ Source/Scripts/PhysicsTrap.psc:30:1:local-variable-shadowing
 Source/Scripts/PhysicsTrap.psc:63:1:local-variable-shadowing
 Source/Scripts/PhysicsTrap.psc:65:1:unchecked-cast
 Source/Scripts/PhysicsTrap.psc:80:19:unresolved-script
+Source/Scripts/PhysicsTrapHit.psc:16:1:nesting-depth
 Source/Scripts/PhysicsTrapHit.psc:16:121:line-length
 Source/Scripts/PhysicsTrapHit.psc:22:1:unchecked-cast
 Source/Scripts/PhysicsTrapHit.psc:22:1:unchecked-cast
@@ -34912,6 +35018,7 @@ Source/Scripts/QF_MQ302_00045923.psc:1131:1:none-form-usage
 Source/Scripts/QF_MQ302_00045923.psc:1133:1:none-form-usage
 Source/Scripts/QF_MQ302_00045923.psc:1137:1:none-form-usage
 Source/Scripts/QF_MQ302_00045923.psc:1175:1:none-form-usage
+Source/Scripts/QF_MQ302_00045923.psc:1182:1:nesting-depth
 Source/Scripts/QF_MQ302_00045923.psc:1192:86:slow-functions
 Source/Scripts/QF_MQ302_00045923.psc:1199:9:forbidden-functions
 Source/Scripts/QF_MQ302_00045923.psc:1231:13:forbidden-functions
@@ -40354,6 +40461,7 @@ Source/Scripts/Quest.psc:8:121:line-length
 Source/Scripts/Quest.psc:9:121:line-length
 Source/Scripts/Quest.psc:10:121:line-length
 Source/Scripts/Quest.psc:11:121:line-length
+Source/Scripts/Quest.psc:12:1:nesting-depth
 Source/Scripts/Quest.psc:12:121:line-length
 Source/Scripts/Quest.psc:17:1:numeric-comparison
 Source/Scripts/Quest.psc:115:121:line-length
@@ -40775,6 +40883,7 @@ Source/Scripts/RentRoomScript.psc:24:1:none-form-usage
 Source/Scripts/RentRoomScript.psc:24:1:unchecked-cast
 Source/Scripts/ResourceFurnitureScript.psc:35:27:forbidden-functions
 Source/Scripts/ResourceFurnitureScript.psc:36:2:strict-boolean
+Source/Scripts/ResourceFurnitureScript.psc:42:1:nesting-depth
 Source/Scripts/ResourceFurnitureScript.psc:45:1:unchecked-cast
 Source/Scripts/ResourceFurnitureScript.psc:45:25:forbidden-functions
 Source/Scripts/ResourceFurnitureScript.psc:47:37:forbidden-functions
@@ -42091,6 +42200,7 @@ Source/Scripts/SarcophagusSkullLock01SCRIPT.psc:127:9:forbidden-functions
 Source/Scripts/SarcophagusSkullLock01SCRIPT.psc:133:1:none-form-usage
 Source/Scripts/SarcophagusSkullLock01SCRIPT.psc:134:9:forbidden-functions
 Source/Scripts/SarcophagusSkullLock01SCRIPT.psc:153:1:unchecked-cast
+Source/Scripts/SayOnHitByMagicEffectScript.psc:7:1:nesting-depth
 Source/Scripts/SayOnHitByMagicEffectScript.psc:11:22:forbidden-functions
 Source/Scripts/SayOnHitByMagicEffectScript.psc:13:1:none-form-usage
 Source/Scripts/SayOnHitByMagicEffectScript.psc:13:1:none-form-usage
@@ -42137,6 +42247,7 @@ Source/Scripts/SlowdownStrikeScript.psc:10:1:argument-naming
 Source/Scripts/SlowdownStrikeScript.psc:15:1:none-form-usage
 Source/Scripts/SlowdownStrikeScript.psc:15:30:forbidden-functions
 Source/Scripts/SlowdownStrikeScript.psc:16:4:empty-body
+Source/Scripts/SlowdownStrikeScript.psc:24:1:nesting-depth
 Source/Scripts/SlowdownStrikeScript.psc:31:121:line-length
 Source/Scripts/SlowdownStrikeScript.psc:34:22:forbidden-functions
 Source/Scripts/SlowdownStrikeScript.psc:36:1:numeric-comparison
@@ -42234,6 +42345,7 @@ Source/Scripts/SpringTrap.psc:20:36:unresolved-script
 Source/Scripts/StartSceneTriggerSpecificTime.psc:2:121:line-length
 Source/Scripts/StartSceneTriggerSpecificTime.psc:29:121:line-length
 Source/Scripts/StartSceneTriggerSpecificTime.psc:32:121:line-length
+Source/Scripts/StartSceneTriggerSpecificTime.psc:35:1:nesting-depth
 Source/Scripts/StartSceneTriggerSpecificTime.psc:41:1:none-form-usage
 Source/Scripts/StartSceneTriggerSpecificTime.psc:61:1:none-form-usage
 Source/Scripts/StartSceneTriggerSpecificTime.psc:63:1:numeric-comparison
@@ -43066,6 +43178,7 @@ Source/Scripts/TG04EECDoorScript.psc:17:1:none-form-usage
 Source/Scripts/TG04FirebrandCaseScript.psc:7:28:forbidden-functions
 Source/Scripts/TG04FirebrandCaseScript.psc:8:1:none-form-usage
 Source/Scripts/TG04FirebrandCaseScript.psc:9:1:none-form-usage
+Source/Scripts/TG04GulumEiScript.psc:14:1:nesting-depth
 Source/Scripts/TG04GulumEiScript.psc:18:1:none-form-usage
 Source/Scripts/TG04GulumEiScript.psc:19:1:none-form-usage
 Source/Scripts/TG04GulumEiScript.psc:20:12:forbidden-functions
@@ -43099,6 +43212,7 @@ Source/Scripts/TG04PostQuestScript.psc:22:8:forbidden-functions
 Source/Scripts/TG04PostQuestScript.psc:23:8:forbidden-functions
 Source/Scripts/TG04PostQuestScript.psc:25:8:forbidden-functions
 Source/Scripts/TG04PostQuestScript.psc:26:8:forbidden-functions
+Source/Scripts/TG04SceneBreakerScript.psc:9:1:nesting-depth
 Source/Scripts/TG04SceneBreakerScript.psc:11:1:none-form-usage
 Source/Scripts/TG04SceneBreakerScript.psc:12:1:none-form-usage
 Source/Scripts/TG04SceneBreakerScript.psc:13:1:none-form-usage
@@ -43148,6 +43262,7 @@ Source/Scripts/TG05SceneModTriggerScript.psc:10:1:unchecked-cast
 Source/Scripts/TG05SceneModTriggerScript.psc:11:1:none-form-usage
 Source/Scripts/TG05SceneStartTriggerScript.psc:8:25:forbidden-functions
 Source/Scripts/TG05SceneStartTriggerScript.psc:10:1:none-form-usage
+Source/Scripts/TG06BreadScriptCell01.psc:7:1:nesting-depth
 Source/Scripts/TG06BreadScriptCell01.psc:9:1:none-form-usage
 Source/Scripts/TG06BreadScriptCell01.psc:10:1:none-form-usage
 Source/Scripts/TG06BreadScriptCell01.psc:11:1:none-form-usage
@@ -43213,6 +43328,7 @@ Source/Scripts/TG07SceneTriggerScript.psc:10:1:none-form-usage
 Source/Scripts/TG07SceneTriggerScript.psc:11:1:none-form-usage
 Source/Scripts/TG07ValdDebtScript.psc:8:28:forbidden-functions
 Source/Scripts/TG07ValdDebtScript.psc:10:1:none-form-usage
+Source/Scripts/TG07ValdTriggerScript.psc:9:1:nesting-depth
 Source/Scripts/TG07ValdTriggerScript.psc:11:1:none-form-usage
 Source/Scripts/TG07ValdTriggerScript.psc:13:1:none-form-usage
 Source/Scripts/TG07ValdTriggerScript.psc:14:28:forbidden-functions
@@ -43474,6 +43590,7 @@ Source/Scripts/TG08BTowerFallScript.psc:28:1:none-form-usage
 Source/Scripts/TG08BTowerFallScript.psc:42:2:strict-boolean
 Source/Scripts/TG08BTowerFallScript.psc:43:29:forbidden-functions
 Source/Scripts/TG08CircleTriggerScript.psc:8:1:argument-naming
+Source/Scripts/TG08CircleTriggerScript.psc:8:1:nesting-depth
 Source/Scripts/TG08CircleTriggerScript.psc:10:25:forbidden-functions
 Source/Scripts/TG08CircleTriggerScript.psc:12:1:none-form-usage
 Source/Scripts/TG08CircleTriggerScript.psc:13:1:none-form-usage
@@ -43483,6 +43600,7 @@ Source/Scripts/TG08EarthquakeDustEffects.psc:53:2:strict-boolean
 Source/Scripts/TG08EarthquakeDustEffects.psc:54:1:place-at-me
 Source/Scripts/TG08EarthquakeDustEffects.psc:57:2:strict-boolean
 Source/Scripts/TG08EarthquakeDustEffects.psc:58:1:place-at-me
+Source/Scripts/TG08GuildSceneTriggerScript.psc:7:1:nesting-depth
 Source/Scripts/TG08GuildSceneTriggerScript.psc:9:25:forbidden-functions
 Source/Scripts/TG08GuildSceneTriggerScript.psc:10:1:none-form-usage
 Source/Scripts/TG08GuildSceneTriggerScript.psc:12:1:none-form-usage
@@ -43638,10 +43756,12 @@ Source/Scripts/TG09TriggerSubterfugeScript.psc:8:25:forbidden-functions
 Source/Scripts/TG09TriggerSubterfugeScript.psc:9:1:none-form-usage
 Source/Scripts/TG09TriggerSubterfugeScript.psc:10:9:forbidden-functions
 Source/Scripts/TG09TriggerSubterfugeScript.psc:11:1:none-form-usage
+Source/Scripts/TGAssaultFenceScript.psc:6:1:nesting-depth
 Source/Scripts/TGAssaultFenceScript.psc:9:11:forbidden-functions
 Source/Scripts/TGAssaultFenceScript.psc:10:24:forbidden-functions
 Source/Scripts/TGAssaultFenceScript.psc:12:1:none-form-usage
 Source/Scripts/TGAssaultFenceScript.psc:13:1:none-form-usage
+Source/Scripts/TGAssaultScript.psc:6:1:nesting-depth
 Source/Scripts/TGAssaultScript.psc:6:1:undefined-event
 Source/Scripts/TGAssaultScript.psc:8:10:forbidden-functions
 Source/Scripts/TGAssaultScript.psc:9:23:forbidden-functions
@@ -43652,6 +43772,7 @@ Source/Scripts/TGAssaultScript.psc:22:22:forbidden-functions
 Source/Scripts/TGAssaultScript.psc:23:11:forbidden-functions
 Source/Scripts/TGAssaultScript.psc:24:1:none-form-usage
 Source/Scripts/TGAssaultScript.psc:25:1:none-form-usage
+Source/Scripts/TGAssaultSpecialScript.psc:8:1:nesting-depth
 Source/Scripts/TGAssaultSpecialScript.psc:8:1:undefined-event
 Source/Scripts/TGAssaultSpecialScript.psc:10:1:none-form-usage
 Source/Scripts/TGAssaultSpecialScript.psc:11:23:forbidden-functions
@@ -48480,6 +48601,7 @@ Source/Scripts/TestJeffLScript.psc:6:1:argument-naming
 Source/Scripts/TestMoth.psc:58:1:none-form-usage
 Source/Scripts/TestMoth.psc:66:11:forbidden-functions
 Source/Scripts/TestMoth.psc:85:1:short-wait-interval
+Source/Scripts/TestMoth.psc:96:1:nesting-depth
 Source/Scripts/TestMoth.psc:99:12:forbidden-functions
 Source/Scripts/TestMoth.psc:111:29:unresolved-script
 Source/Scripts/TestMoth.psc:123:121:line-length
@@ -48534,6 +48656,7 @@ Source/Scripts/TrapBear.psc:94:1:unchecked-cast
 Source/Scripts/TrapBear.psc:96:1:none-form-usage
 Source/Scripts/TrapBreakAwayBase.psc:17:1:none-form-usage
 Source/Scripts/TrapDweBallista.psc:34:121:line-length
+Source/Scripts/TrapDweBallista.psc:38:1:nesting-depth
 Source/Scripts/TrapDweBallista.psc:45:3:empty-body
 Source/Scripts/TrapDweBallista.psc:48:19:unresolved-script
 Source/Scripts/TrapDweBallista.psc:57:1:none-form-usage
@@ -48567,6 +48690,7 @@ Source/Scripts/TrapExplosiveGas.psc:53:1:none-form-usage
 Source/Scripts/TrapExplosiveGas.psc:56:1:none-form-usage
 Source/Scripts/TrapExplosiveGas.psc:67:3:empty-body
 Source/Scripts/TrapExplosiveGas.psc:84:1:none-form-usage
+Source/Scripts/TrapExplosiveGas.psc:98:1:nesting-depth
 Source/Scripts/TrapExplosiveGas.psc:104:1:none-form-usage
 Source/Scripts/TrapExplosiveGas.psc:108:4:strict-boolean
 Source/Scripts/TrapExplosiveGas.psc:113:1:unchecked-cast
@@ -48589,6 +48713,7 @@ Source/Scripts/TrapFirePlate.psc:80:26:forbidden-functions
 Source/Scripts/TrapFirePlate.psc:106:10:forbidden-functions
 Source/Scripts/TrapFirePlate.psc:107:2:strict-boolean
 Source/Scripts/TrapFirePlate.psc:173:2:strict-boolean
+Source/Scripts/TrapFlamethrower.psc:64:1:nesting-depth
 Source/Scripts/TrapFlamethrower.psc:130:1:none-form-usage
 Source/Scripts/TrapFlamethrower.psc:133:31:forbidden-functions
 Source/Scripts/TrapFlamethrower.psc:134:1:none-form-usage
@@ -48608,6 +48733,7 @@ Source/Scripts/TrapGenericEffectHazard.psc:41:19:unresolved-script
 Source/Scripts/TrapGenericEffectHazard.psc:43:10:forbidden-functions
 Source/Scripts/TrapGenericEffectHazard.psc:59:12:forbidden-functions
 Source/Scripts/TrapHitBase.psc:59:1:cyclomatic-complexity
+Source/Scripts/TrapHitBase.psc:59:1:nesting-depth
 Source/Scripts/TrapHitBase.psc:59:121:line-length
 Source/Scripts/TrapHitBase.psc:61:1:unchecked-cast
 Source/Scripts/TrapHitBase.psc:61:1:unchecked-cast
@@ -48647,6 +48773,7 @@ Source/Scripts/TrapPoisonGas.psc:158:24:forbidden-functions
 Source/Scripts/TrapPoisonGas.psc:165:1:undefined-event
 Source/Scripts/TrapPoisonGas.psc:176:1:undefined-event
 Source/Scripts/TrapPoisonGas.psc:179:11:forbidden-functions
+Source/Scripts/TrapPoisonGas.psc:232:1:nesting-depth
 Source/Scripts/TrapPoisonGas.psc:236:2:strict-boolean
 Source/Scripts/TrapPoisonGas.psc:239:4:empty-body
 Source/Scripts/TrapPoisonGas.psc:283:4:empty-body
@@ -48690,6 +48817,7 @@ Source/Scripts/TrapTriggerBase.psc:219:13:forbidden-functions
 Source/Scripts/TrapTriggerBase.psc:229:1:undefined-event
 Source/Scripts/TrapTriggerBase.psc:234:12:forbidden-functions
 Source/Scripts/TrapTriggerBase.psc:236:12:forbidden-functions
+Source/Scripts/TrapTriggerBase.psc:275:1:nesting-depth
 Source/Scripts/TrapTriggerBase.psc:279:25:forbidden-functions
 Source/Scripts/TrapTriggerBase.psc:293:3:strict-boolean
 Source/Scripts/TrapTriggerBase.psc:294:1:unchecked-cast
@@ -49166,6 +49294,7 @@ Source/Scripts/WIGamesScript.psc:117:1:none-form-usage
 Source/Scripts/WIGamesScript.psc:118:1:none-form-usage
 Source/Scripts/WIGamesScript.psc:120:2:strict-boolean
 Source/Scripts/WIGamesScript.psc:121:27:forbidden-functions
+Source/Scripts/WIKill02Script.psc:19:1:nesting-depth
 Source/Scripts/WIKill02Script.psc:22:1:none-form-usage
 Source/Scripts/WIKill02Script.psc:22:58:forbidden-functions
 Source/Scripts/WIKill02Script.psc:23:1:none-form-usage
@@ -49275,11 +49404,13 @@ Source/Scripts/WRDrawBridge01SCRIPT.psc:62:4:empty-body
 Source/Scripts/WRDrawBridge01SCRIPT.psc:66:1:unchecked-cast
 Source/Scripts/WRDrawBridge01SCRIPT.psc:75:1:undefined-event
 Source/Scripts/WRDrawBridge01SCRIPT.psc:77:1:none-form-usage
+Source/Scripts/WeaponRackActivateSCRIPT.psc:107:1:nesting-depth
 Source/Scripts/WeaponRackActivateSCRIPT.psc:109:18:forbidden-functions
 Source/Scripts/WeaponRackActivateSCRIPT.psc:133:20:forbidden-functions
 Source/Scripts/WeaponRackActivateSCRIPT.psc:136:3:strict-boolean
 Source/Scripts/WeaponRackActivateSCRIPT.psc:149:2:empty-body
 Source/Scripts/WeaponRackActivateSCRIPT.psc:160:1:cyclomatic-complexity
+Source/Scripts/WeaponRackActivateSCRIPT.psc:160:1:nesting-depth
 Source/Scripts/WeaponRackActivateSCRIPT.psc:170:27:forbidden-functions
 Source/Scripts/WeaponRackActivateSCRIPT.psc:173:1:none-form-usage
 Source/Scripts/WeaponRackActivateSCRIPT.psc:177:1:none-form-usage
@@ -49465,12 +49596,14 @@ Source/Scripts/WordWallListenerQuestScript.psc:24:1:none-form-usage
 Source/Scripts/WordWallListenerQuestScript.psc:25:121:line-length
 Source/Scripts/WordWallListenerQuestScript.psc:28:2:empty-body
 Source/Scripts/WordWallListenerQuestScript.psc:29:121:line-length
+Source/Scripts/WordWallTrigger02Script.psc:20:1:nesting-depth
 Source/Scripts/WordWallTrigger02Script.psc:22:23:forbidden-functions
 Source/Scripts/WordWallTrigger02Script.psc:76:24:forbidden-functions
 Source/Scripts/WordWallTriggerBleakFallsScript.psc:22:23:forbidden-functions
 Source/Scripts/WordWallTriggerBleakFallsScript.psc:42:24:forbidden-functions
 Source/Scripts/WordWallTriggerScript.psc:135:15:forbidden-functions
 Source/Scripts/WordWallTriggerScript.psc:140:1:cyclomatic-complexity
+Source/Scripts/WordWallTriggerScript.psc:140:1:nesting-depth
 Source/Scripts/WordWallTriggerScript.psc:142:12:forbidden-functions
 Source/Scripts/WordWallTriggerScript.psc:142:73:forbidden-functions
 Source/Scripts/WordWallTriggerScript.psc:142:108:forbidden-functions
@@ -49507,6 +49640,7 @@ Source/Scripts/WordWallTriggerScript.psc:279:1:none-form-usage
 Source/Scripts/WordWallTriggerScript.psc:280:1:none-form-usage
 Source/Scripts/WordWallTriggerScript.psc:289:1:none-form-usage
 Source/Scripts/WordWallTriggerScript.psc:290:1:none-form-usage
+Source/Scripts/WordWallTriggerScript.psc:305:1:nesting-depth
 Source/Scripts/WordWallTriggerScript.psc:321:1:none-form-usage
 Source/Scripts/WordWallTriggerScript.psc:325:1:short-wait-interval
 Source/Scripts/WordWallTriggerScript.psc:339:1:none-form-usage
@@ -49598,6 +49732,7 @@ Source/Scripts/bpwMatchCardScript.psc:145:1:none-form-usage
 Source/Scripts/bpwMatchCardScript.psc:145:121:line-length
 Source/Scripts/bpwMatchCardScript.psc:146:1:none-form-usage
 Source/Scripts/bpwMatchCardScript.psc:147:1:none-form-usage
+Source/Scripts/briarheartIngredientScript.psc:7:1:nesting-depth
 Source/Scripts/briarheartIngredientScript.psc:9:2:strict-boolean
 Source/Scripts/briarheartIngredientScript.psc:13:1:unchecked-cast
 Source/Scripts/briarheartIngredientScript.psc:14:1:unchecked-cast
@@ -49736,6 +49871,7 @@ Source/Scripts/ccBGSSSE001_CrabMQ4CrabCtrlr.psc:175:1:none-form-usage
 Source/Scripts/ccBGSSSE001_CrabMQ4CrabCtrlr.psc:175:1:place-at-me
 Source/Scripts/ccBGSSSE001_CrabMQ4CrabSpawner.psc:97:121:line-length
 Source/Scripts/ccBGSSSE001_CrabMQ4CrabSpawner.psc:107:1:none-form-usage
+Source/Scripts/ccBGSSSE001_CrabMQ4CrabSpawner.psc:118:1:nesting-depth
 Source/Scripts/ccBGSSSE001_CrabMQ4CrabSpawner.psc:118:121:line-length
 Source/Scripts/ccBGSSSE001_CrabMQ4CrabSpawner.psc:119:121:line-length
 Source/Scripts/ccBGSSSE001_CrabMQ4CrabSpawner.psc:176:121:line-length
@@ -49761,6 +49897,7 @@ Source/Scripts/ccBGSSSE001_CrabMQ4CrabSpawner.psc:265:1:none-form-usage
 Source/Scripts/ccBGSSSE001_CrabMQ4CrabSpawner.psc:265:1:none-form-usage
 Source/Scripts/ccBGSSSE001_CrabMQ4CrabSpawner.psc:266:37:slow-functions
 Source/Scripts/ccBGSSSE001_CrabMQ4CrabSpawner.psc:266:86:slow-functions
+Source/Scripts/ccBGSSSE001_CrabMQ4CrabSpawner.psc:273:1:nesting-depth
 Source/Scripts/ccBGSSSE001_CrabMQ4OnKillCrab.psc:6:1:undefined-event
 Source/Scripts/ccBGSSSE001_CrabMQ4OnKillCrab.psc:7:1:none-form-usage
 Source/Scripts/ccBGSSSE001_CrabMQ4OnKillCrab.psc:8:1:none-form-usage
@@ -49877,6 +50014,7 @@ Source/Scripts/ccBGSSSE001_DLCDetectionScript.psc:290:1:none-form-usage
 Source/Scripts/ccBGSSSE001_DLCDetectionScript.psc:292:1:none-form-usage
 Source/Scripts/ccBGSSSE001_DLCDetectionScript.psc:301:1:none-form-usage
 Source/Scripts/ccBGSSSE001_DLCDetectionScript.psc:305:10:forbidden-functions
+Source/Scripts/ccBGSSSE001_DLCDetectionScript.psc:311:1:nesting-depth
 Source/Scripts/ccBGSSSE001_DLCDetectionScript.psc:314:9:forbidden-functions
 Source/Scripts/ccBGSSSE001_DLCDetectionScript.psc:326:4:strict-boolean
 Source/Scripts/ccBGSSSE001_DLCDetectionScript.psc:328:12:forbidden-functions
@@ -50013,6 +50151,7 @@ Source/Scripts/ccBGSSSE001_FishingMapScript.psc:20:1:none-form-usage
 Source/Scripts/ccBGSSSE001_FishingMapScript.psc:21:1:none-form-usage
 Source/Scripts/ccBGSSSE001_FishingSystemScript.psc:152:121:line-length
 Source/Scripts/ccBGSSSE001_FishingSystemScript.psc:303:121:line-length
+Source/Scripts/ccBGSSSE001_FishingSystemScript.psc:352:1:nesting-depth
 Source/Scripts/ccBGSSSE001_FishingSystemScript.psc:356:11:forbidden-functions
 Source/Scripts/ccBGSSSE001_FishingSystemScript.psc:382:1:none-form-usage
 Source/Scripts/ccBGSSSE001_FishingSystemScript.psc:383:1:none-form-usage
@@ -50224,6 +50363,7 @@ Source/Scripts/ccBGSSSE001_PlayerHitScript.psc:6:121:line-length
 Source/Scripts/ccBGSSSE001_PlayerHitScript.psc:8:1:none-form-usage
 Source/Scripts/ccBGSSSE001_PlayerHitScript.psc:14:121:line-length
 Source/Scripts/ccBGSSSE001_PlayerTrackedCatches.psc:23:1:undefined-event
+Source/Scripts/ccBGSSSE001_PlayerTrackedCatches.psc:28:1:nesting-depth
 Source/Scripts/ccBGSSSE001_PlayerTrackedCatches.psc:32:1:none-form-usage
 Source/Scripts/ccBGSSSE001_PlayerTrackedCatches.psc:32:1:none-form-usage
 Source/Scripts/ccBGSSSE001_PlayerTrackedCatches.psc:32:121:line-length
@@ -50512,6 +50652,7 @@ Source/Scripts/commentaryObjectSCRIPT.psc:13:3:forbidden-functions
 Source/Scripts/commentaryObjectSCRIPT.psc:27:1:none-form-usage
 Source/Scripts/critterBird.psc:64:16:forbidden-functions
 Source/Scripts/critterBird.psc:72:1:short-wait-interval
+Source/Scripts/critterBird.psc:76:1:nesting-depth
 Source/Scripts/critterBird.psc:82:27:unresolved-script
 Source/Scripts/critterBird.psc:152:1:short-wait-interval
 Source/Scripts/critterBird.psc:174:1:numeric-comparison
@@ -50569,6 +50710,7 @@ Source/Scripts/critterFish.psc:284:2:empty-body
 Source/Scripts/critterMoth.psc:58:1:none-form-usage
 Source/Scripts/critterMoth.psc:66:12:forbidden-functions
 Source/Scripts/critterMoth.psc:89:1:short-wait-interval
+Source/Scripts/critterMoth.psc:103:1:nesting-depth
 Source/Scripts/critterMoth.psc:106:13:forbidden-functions
 Source/Scripts/critterMoth.psc:111:121:line-length
 Source/Scripts/critterMoth.psc:122:29:unresolved-script
@@ -50731,6 +50873,7 @@ Source/Scripts/defaultDisableOtherObjectOnActivate.psc:9:1:none-form-usage
 Source/Scripts/defaultDisableOtherObjectOnActivate.psc:11:1:none-form-usage
 Source/Scripts/defaultDisableOtherObjectWhenTaken.psc:9:29:forbidden-functions
 Source/Scripts/defaultDisableOtherObjectWhenTaken.psc:11:1:none-form-usage
+Source/Scripts/defaultDisplayItemInListScript.psc:21:1:nesting-depth
 Source/Scripts/defaultDisplayItemInListScript.psc:26:1:none-form-usage
 Source/Scripts/defaultDisplayItemInListScript.psc:31:1:none-form-usage
 Source/Scripts/defaultDisplayItemInListScript.psc:32:1:none-form-usage
@@ -50801,6 +50944,7 @@ Source/Scripts/defaultFakeSummonSpell.psc:27:1:place-at-me
 Source/Scripts/defaultFakeSummonSpell.psc:28:11:forbidden-functions
 Source/Scripts/defaultFakeSummonSpell.psc:35:1:undefined-event
 Source/Scripts/defaultFakeSummonSpell.psc:37:1:place-at-me
+Source/Scripts/defaultFireWeaponScript.psc:72:1:nesting-depth
 Source/Scripts/defaultFireWeaponScript.psc:72:1:undefined-event
 Source/Scripts/defaultFireWeaponScript.psc:81:4:strict-boolean
 Source/Scripts/defaultFireWeaponScript.psc:92:1:unchecked-cast
@@ -51080,6 +51224,7 @@ Source/Scripts/defaultSetStageTRIGSpecificActor.psc:33:1:none-form-usage
 Source/Scripts/defaultSetStageTRIGSpecificFaction.psc:31:1:unchecked-cast
 Source/Scripts/defaultSetStageTRIGSpecificFaction.psc:32:1:none-form-usage
 Source/Scripts/defaultSetStageTRIGSpecificFaction.psc:33:1:none-form-usage
+Source/Scripts/defaultSetStageTrigOnLeaveSCRIPT.psc:24:1:nesting-depth
 Source/Scripts/defaultSetStageTrigOnLeaveSCRIPT.psc:27:1:none-form-usage
 Source/Scripts/defaultSetStageTrigOnLeaveSCRIPT.psc:29:1:none-form-usage
 Source/Scripts/defaultSetStageTrigOnLeaveSCRIPT.psc:30:1:none-form-usage
@@ -51087,6 +51232,7 @@ Source/Scripts/defaultSetStageTrigOnLeaveSCRIPT.psc:32:6:empty-body
 Source/Scripts/defaultSetStageTrigOnLeaveSCRIPT.psc:38:1:none-form-usage
 Source/Scripts/defaultStartSceneAterDelayTrigScript.psc:24:12:forbidden-functions
 Source/Scripts/defaultStartSceneAterDelayTrigScript.psc:25:1:none-form-usage
+Source/Scripts/defaultStartSceneIfNoCombatTrigScript.psc:18:1:nesting-depth
 Source/Scripts/defaultStartSceneIfNoCombatTrigScript.psc:19:49:forbidden-functions
 Source/Scripts/defaultStartSceneIfNoCombatTrigScript.psc:20:1:unchecked-cast
 Source/Scripts/defaultStartSceneIfNoCombatTrigScript.psc:22:13:forbidden-functions
@@ -51147,6 +51293,7 @@ Source/Scripts/defaultsetStageRefScript.psc:75:121:line-length
 Source/Scripts/defaultsetStageRefScript.psc:86:1:argument-naming
 Source/Scripts/defaultsetStageRefScript.psc:93:1:none-form-usage
 Source/Scripts/defaultsetStageRefScript.psc:95:1:none-form-usage
+Source/Scripts/defaultsetStageTrigSCRIPT.psc:24:1:nesting-depth
 Source/Scripts/defaultsetStageTrigSCRIPT.psc:27:1:none-form-usage
 Source/Scripts/defaultsetStageTrigSCRIPT.psc:29:1:none-form-usage
 Source/Scripts/defaultsetStageTrigSCRIPT.psc:30:1:none-form-usage
@@ -51292,6 +51439,7 @@ Source/Scripts/dlc2DBStatBoosterSCRIPT.psc:45:1:none-form-usage
 Source/Scripts/dlc2DBStatBoosterSCRIPT.psc:45:4:empty-body
 Source/Scripts/dlc2DBStatuePerkActivatorSCRIPT.psc:38:1:argument-naming
 Source/Scripts/dlc2DBStatuePerkActivatorSCRIPT.psc:38:1:cyclomatic-complexity
+Source/Scripts/dlc2DBStatuePerkActivatorSCRIPT.psc:38:1:nesting-depth
 Source/Scripts/dlc2DBStatuePerkActivatorSCRIPT.psc:41:17:forbidden-functions
 Source/Scripts/dlc2DBStatuePerkActivatorSCRIPT.psc:47:1:none-form-usage
 Source/Scripts/dlc2DBStatuePerkActivatorSCRIPT.psc:49:1:none-form-usage
@@ -51456,6 +51604,7 @@ Source/Scripts/dunAnsilvundShrineSCRIPT.psc:27:1:none-form-usage
 Source/Scripts/dunAnsilvundShrineSCRIPT.psc:31:25:forbidden-functions
 Source/Scripts/dunAnsilvundShrineSCRIPT.psc:32:1:none-form-usage
 Source/Scripts/dunArcherPressurePlateScript.psc:31:1:cyclomatic-complexity
+Source/Scripts/dunArcherPressurePlateScript.psc:31:1:nesting-depth
 Source/Scripts/dunArcherPressurePlateScript.psc:31:121:line-length
 Source/Scripts/dunArcherPressurePlateScript.psc:40:23:forbidden-functions
 Source/Scripts/dunArcherPressurePlateScript.psc:45:1:none-form-usage
@@ -51581,6 +51730,7 @@ Source/Scripts/dunBloatedManSindingScript.psc:50:11:forbidden-functions
 Source/Scripts/dunBloatedManSindingScript.psc:56:121:line-length
 Source/Scripts/dunBloatedManSindingScript.psc:57:121:line-length
 Source/Scripts/dunBloatedManSindingScript.psc:58:1:argument-naming
+Source/Scripts/dunBloatedManSindingScript.psc:58:1:nesting-depth
 Source/Scripts/dunBloatedManSindingScript.psc:58:121:line-length
 Source/Scripts/dunBloatedManSindingScript.psc:59:26:forbidden-functions
 Source/Scripts/dunBloatedManSindingScript.psc:61:1:none-form-usage
@@ -51906,6 +52056,7 @@ Source/Scripts/dunDustmansCairnEndController.psc:170:1:none-form-usage
 Source/Scripts/dunDustmansCairnEndController.psc:176:1:none-form-usage
 Source/Scripts/dunDustmansCairnEndController.psc:180:1:none-form-usage
 Source/Scripts/dunDustmansCairnEndController.psc:181:1:none-form-usage
+Source/Scripts/dunDustmansCairnLever.psc:23:1:nesting-depth
 Source/Scripts/dunDustmansCairnLever.psc:25:121:line-length
 Source/Scripts/dunDustmansCairnLever.psc:28:1:none-form-usage
 Source/Scripts/dunDustmansCairnLever.psc:30:1:none-form-usage
@@ -52337,6 +52488,7 @@ Source/Scripts/dunGeirmundsBossBattle.psc:84:1:argument-naming
 Source/Scripts/dunGeirmundsBossBattle.psc:84:1:argument-naming
 Source/Scripts/dunGeirmundsBossBattle.psc:84:1:argument-naming
 Source/Scripts/dunGeirmundsBossBattle.psc:84:121:line-length
+Source/Scripts/dunGeirmundsBossBattle.psc:88:1:nesting-depth
 Source/Scripts/dunGeirmundsBossBattle.psc:125:1:none-form-usage
 Source/Scripts/dunGeirmundsBossBattle.psc:125:47:forbidden-functions
 Source/Scripts/dunGeirmundsBossBattle.psc:131:1:none-form-usage
@@ -53084,6 +53236,7 @@ Source/Scripts/dunMarkarthWizardFadeSteam.psc:24:1:none-form-usage
 Source/Scripts/dunMarkarthWizardFadeSteam.psc:25:1:none-form-usage
 Source/Scripts/dunMarkarthWizardFadeSteam.psc:26:1:none-form-usage
 Source/Scripts/dunMarkarthWizardFadeSteam.psc:27:1:none-form-usage
+Source/Scripts/dunMarkarthWizardForceReferences.psc:65:1:nesting-depth
 Source/Scripts/dunMarkarthWizardForceReferences.psc:66:1:none-form-usage
 Source/Scripts/dunMarkarthWizardForceReferences.psc:67:1:none-form-usage
 Source/Scripts/dunMarkarthWizardForceReferences.psc:71:1:unchecked-cast
@@ -53447,6 +53600,7 @@ Source/Scripts/dunPOISoldiersRaidOnStart.psc:29:1:none-form-usage
 Source/Scripts/dunPOISoldiersRaidOnStart.psc:30:1:none-form-usage
 Source/Scripts/dunPOISoldiersRaidOnStart.psc:31:1:none-form-usage
 Source/Scripts/dunPOISoldiersRaidOnStart.psc:32:1:none-form-usage
+Source/Scripts/dunPOISoldiersRaidOnStart.psc:51:1:nesting-depth
 Source/Scripts/dunPOISoldiersRaidOnStart.psc:53:12:forbidden-functions
 Source/Scripts/dunPOISoldiersRaidOnStart.psc:59:14:forbidden-functions
 Source/Scripts/dunPOISoldiersRaidOnStart.psc:61:40:forbidden-functions
@@ -53558,6 +53712,7 @@ Source/Scripts/dunPotemasMS06BossFightDummy.psc:113:1:none-form-usage
 Source/Scripts/dunPotemasMS06BossFightDummy.psc:119:1:none-form-usage
 Source/Scripts/dunPotemasMS06BossFightDummy.psc:120:1:none-form-usage
 Source/Scripts/dunPotemasMS06BossFightDummy.psc:121:1:none-form-usage
+Source/Scripts/dunPotemasMS06BossFightDummy.psc:126:1:nesting-depth
 Source/Scripts/dunPotemasMS06BossFightDummy.psc:128:1:none-form-usage
 Source/Scripts/dunPotemasMS06BossFightDummy.psc:168:1:none-form-usage
 Source/Scripts/dunPotemasMS06BossFightDummy.psc:175:1:unchecked-cast
@@ -53812,6 +53967,7 @@ Source/Scripts/dunReachwaterRockSigdisBossBattle.psc:112:1:argument-naming
 Source/Scripts/dunReachwaterRockSigdisBossBattle.psc:112:1:argument-naming
 Source/Scripts/dunReachwaterRockSigdisBossBattle.psc:112:1:argument-naming
 Source/Scripts/dunReachwaterRockSigdisBossBattle.psc:112:121:line-length
+Source/Scripts/dunReachwaterRockSigdisBossBattle.psc:116:1:nesting-depth
 Source/Scripts/dunReachwaterRockSigdisBossBattle.psc:150:1:argument-naming
 Source/Scripts/dunReachwaterRockSigdisBossBattle.psc:162:1:none-form-usage
 Source/Scripts/dunReachwaterRockSigdisBossBattle.psc:162:48:forbidden-functions
@@ -53930,6 +54086,7 @@ Source/Scripts/dunRiftenJailLoadCheck.psc:58:1:none-form-usage
 Source/Scripts/dunRiftenJailOpenCellDoor.psc:5:1:argument-naming
 Source/Scripts/dunRiftenJailOpenCellDoor.psc:6:1:none-form-usage
 Source/Scripts/dunRiftenJailOpenCellDoor.psc:6:34:forbidden-functions
+Source/Scripts/dunRiftenJailSetStageOnOpen.psc:22:1:nesting-depth
 Source/Scripts/dunRiftenJailSetStageOnOpen.psc:25:1:none-form-usage
 Source/Scripts/dunRiftenJailSetStageOnOpen.psc:27:26:forbidden-functions
 Source/Scripts/dunRiftenJailSetStageOnOpen.psc:30:15:forbidden-functions
@@ -54440,6 +54597,7 @@ Source/Scripts/karthspireRedoubtCageDoorSCRIPT.psc:33:1:place-at-me
 Source/Scripts/karthspireRedoubtCageDoorSCRIPT.psc:34:1:none-form-usage
 Source/Scripts/magicAbsorbFXScript.psc:39:1:argument-naming
 Source/Scripts/magicAbsorbFXScript.psc:39:1:argument-naming
+Source/Scripts/magicAbsorbFXScript.psc:39:1:nesting-depth
 Source/Scripts/magicAbsorbFXScript.psc:41:3:strict-boolean
 Source/Scripts/magicAbsorbFXScript.psc:47:1:numeric-comparison
 Source/Scripts/magicAbsorbFXScript.psc:62:4:strict-boolean
@@ -54547,6 +54705,7 @@ Source/Scripts/magicProjectileStormScript.psc:110:1:none-form-usage
 Source/Scripts/magicProjectileStormScript.psc:152:1:place-at-me
 Source/Scripts/magicProjectileStormScript.psc:154:121:line-length
 Source/Scripts/magicProjectileStormScript.psc:160:1:cyclomatic-complexity
+Source/Scripts/magicProjectileStormScript.psc:160:1:nesting-depth
 Source/Scripts/magicProjectileStormScript.psc:161:1:none-form-usage
 Source/Scripts/magicProjectileStormScript.psc:166:121:line-length
 Source/Scripts/magicProjectileStormScript.psc:184:121:line-length
@@ -54731,6 +54890,7 @@ Source/Scripts/pDeekusScript.psc:13:1:none-form-usage
 Source/Scripts/pDeekusScript.psc:16:1:none-form-usage
 Source/Scripts/pDeekusScript.psc:17:1:unchecked-cast
 Source/Scripts/pDortheScript.psc:15:1:undefined-event
+Source/Scripts/pDortheScript.psc:20:1:nesting-depth
 Source/Scripts/pDortheScript.psc:28:11:forbidden-functions
 Source/Scripts/pDortheScript.psc:32:1:none-form-usage
 Source/Scripts/pDortheScript.psc:36:1:none-form-usage
@@ -54881,6 +55041,7 @@ Source/Scripts/pVittoriaScript.psc:18:1:none-form-usage
 Source/Scripts/pVittoriaScript.psc:18:43:forbidden-functions
 Source/Scripts/pVittoriaScript.psc:22:1:unchecked-cast
 Source/Scripts/pVittoriaScript.psc:23:1:unchecked-cast
+Source/Scripts/pVoltusScript.psc:11:1:nesting-depth
 Source/Scripts/pVoltusScript.psc:16:1:none-form-usage
 Source/Scripts/pVoltusScript.psc:17:1:none-form-usage
 Source/Scripts/pVoltusScript.psc:23:1:none-form-usage
@@ -55096,6 +55257,7 @@ Source/Scripts/testPhilDwarvenForgeInputBoxSCRIPT.psc:53:121:line-length
 Source/Scripts/testPhilDwarvenForgeInputBoxSCRIPT.psc:54:121:line-length
 Source/Scripts/testPhilDwarvenForgeInputBoxSCRIPT.psc:55:121:line-length
 Source/Scripts/testPhilDwarvenForgeInputBoxSCRIPT.psc:56:121:line-length
+Source/Scripts/testPhilDwarvenForgeInputBoxSCRIPT.psc:67:1:nesting-depth
 Source/Scripts/testPhilDwarvenForgeInputBoxSCRIPT.psc:77:121:line-length
 Source/Scripts/testPhilDwarvenForgeLeverSCRIPT.psc:12:1:argument-naming
 Source/Scripts/testPhilHealerHealCheckEffectSCRIPT.psc:15:1:none-form-usage
@@ -55105,6 +55267,7 @@ Source/Scripts/testPhilSlotMachineCoinSlotSCRIPT.psc:17:21:forbidden-functions
 Source/Scripts/testPhilSlotMachineCoinSlotSCRIPT.psc:18:1:none-form-usage
 Source/Scripts/testPhilSlotMachineLeverSCRIPT.psc:54:1:argument-naming
 Source/Scripts/testPhilSlotMachineLeverSCRIPT.psc:57:1:none-form-usage
+Source/Scripts/testPhilSlotMachineLeverSCRIPT.psc:70:1:nesting-depth
 Source/Scripts/testPhilSlotMachineLeverSCRIPT.psc:129:11:forbidden-functions
 Source/Scripts/testPhilSlotMachineLeverSCRIPT.psc:188:1:none-form-usage
 Source/Scripts/testPhilSlotMachineLeverSCRIPT.psc:191:1:none-form-usage
