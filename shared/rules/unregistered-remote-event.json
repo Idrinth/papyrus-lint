@@ -1,0 +1,18 @@
+{
+  "id": "unregistered-remote-event",
+  "name": "Unregistered remote event handler",
+  "category": "Bugprone",
+  "visitor": "ast",
+  "tags": [
+    "correctness"
+  ],
+  "severity": "warning",
+  "importance": "high",
+  "fixable": false,
+  "games": [
+    "fallout4",
+    "starfield"
+  ],
+  "description": "Flags a remote Event Type.OnFoo(...) handler that this script never RegisterForRemoteEvent's, so the engine will not call it. Fallout 4 / Starfield only.",
+  "definition": "Flags, as a `[warning]`, a remote event handler written as `Event Type.OnFoo(...)` (the Fallout 4 / Starfield qualified form) when the same script never calls `RegisterForRemoteEvent`. Those handlers do not fire unless something registers them; a handler with no registration is dead code. Matches `RegisterForRemoteEvent` by function name alone (case-insensitively), unqualified or through any receiver. When the call's event-name argument is a string literal, only that event leaf is treated as registered (`\"OnCellAttach\"` covers `Event ObjectReference.OnCellAttach`); a non-literal argument is treated as covering every remote handler in the script so a computed name is not a false positive. `UnregisterForRemoteEvent` is not a registration. Registration that lives only on a parent or another script is a known false positive — this rule starts with the same script. Related: `event-registration-lifecycle` pairs Register*/Unregister* in general. Scoped to Fallout 4 and Starfield via the rule's `games` field; Skyrim classic has no remote events."
+}
