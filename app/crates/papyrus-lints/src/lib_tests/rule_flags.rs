@@ -190,6 +190,12 @@ fn each_rule_flag_gates_only_its_own_lint() {
                 config_with(|c| c.rules.identifier_casing = false),
             ),
             (
+                "ScriptName Example\n\nFunction F(Actor target)\nEndFunction\n",
+                hungarian_prefix::RULE,
+                config_with(|c| c.rules.hungarian_prefix = true),
+                Config::default(),
+            ),
+            (
                 "ScriptName myExample\n",
                 type_casing::RULE,
                 Config::default(),

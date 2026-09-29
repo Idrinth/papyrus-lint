@@ -16,6 +16,7 @@ const RUST_TYPES: &[&str] = &[
     "TypeCasing",
     "NamedArguments",
     "MagicNumbers",
+    "Hungarian",
 ];
 
 #[derive(Debug, Deserialize)]

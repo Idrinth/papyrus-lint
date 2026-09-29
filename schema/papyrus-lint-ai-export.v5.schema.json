@@ -159,6 +159,14 @@
             "CONSTANT_CASE"
           ]
         },
+        "hungarian": {
+          "description": "Whether the Hungarian-prefix lint requires type prefixes (allow) or flags them (forbid). The rule itself stays off unless its id is listed in enabled_rules.",
+          "type": "string",
+          "enum": [
+            "allow",
+            "forbid"
+          ]
+        },
         "cyclomatic_complexity_warning": {
           "description": "The cyclomatic complexity a function/event can reach before the cyclomatic-complexity finding's severity is [warning].",
           "type": "integer",

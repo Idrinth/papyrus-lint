@@ -17,6 +17,7 @@
 //! cyclomatic_complexity_error: 20
 //! type_casing: PascalCase
 //! named_arguments: never
+//! hungarian: allow
 //! min_wait_interval: 0.1
 //! magic_numbers: loose
 //! fail_on_warning: false
@@ -42,6 +43,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::Diagnostic;
 
+pub use crate::hungarian_prefix::Hungarian;
 pub use crate::magic_numbers::MagicNumbers;
 pub use crate::named_arguments::NamedArguments;
 pub use crate::type_casing::Style as TypeCasing;

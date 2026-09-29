@@ -427,6 +427,35 @@ fn magic_numbers_round_trips_through_yaml() {
 }
 
 #[test]
+fn parses_hungarian_style() {
+    assert_eq!(
+        parse("hungarian: allow\n").unwrap().hungarian,
+        Hungarian::Allow
+    );
+    assert_eq!(
+        parse("hungarian: forbid\n").unwrap().hungarian,
+        Hungarian::Forbid
+    );
+}
+
+#[test]
+fn rejects_unknown_hungarian_value() {
+    assert!(parse("hungarian: require\n").is_err());
+}
+
+#[test]
+fn hungarian_round_trips_through_yaml() {
+    for style in [Hungarian::Allow, Hungarian::Forbid] {
+        let config = Config {
+            hungarian: style,
+            ..Config::default()
+        };
+        let yaml = to_yaml(&config).unwrap();
+        assert_eq!(parse(&yaml).unwrap(), config);
+    }
+}
+
+#[test]
 fn semicolon_style_reflects_semicolon_flag() {
     assert_eq!(
         Config {
