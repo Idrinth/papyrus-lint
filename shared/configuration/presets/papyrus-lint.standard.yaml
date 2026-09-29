@@ -24,7 +24,8 @@
 # (today's built-in default, and `init`'s own default) and
 # shared/configuration/presets/papyrus-lint.careful.yaml for the other two presets.
 #
-# The only numeric override listed here is `parameter_count_max`. Every
+# The numeric overrides listed here are `parameter_count_max` and the
+# function-length thresholds. Every
 # "low" importance rule is turned off here, except the ones
 # `shared/rules.json` marks `kept_in_standard` (the free formatting rules
 # named above) — see `papyrus-lint-config/build.rs`, which derives this
@@ -34,3 +35,5 @@
 # ===============================================================================
 
 parameter_count_max: 7  # was 5: a middle ground between strict (5) and careful (10)
+function_length_max_code_lines: 20  # was 10: same first-pass leniency as parameter_count_max
+function_length_max_lines: 40       # was 20: physical-line counterpart of the code-line limit

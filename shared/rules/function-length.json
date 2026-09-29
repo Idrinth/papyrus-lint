@@ -1,0 +1,14 @@
+{
+  "id": "function-length",
+  "name": "Function length",
+  "category": "Other",
+  "visitor": "ast",
+  "tags": [
+    "maintainability"
+  ],
+  "severity": "warning",
+  "importance": "medium",
+  "fixable": false,
+  "description": "Flags functions/events whose body is longer than a configurable line count.",
+  "definition": "Flags, as a `[warning]`, a `Function` or `Event` whose body between the header and `EndFunction`/`EndEvent` exceeds `function_length_max_code_lines` (non-blank, non-comment lines; default 10 on the built-in/`strict` preset, 20 on `standard`, and 40 on `careful`) or `function_length_max_lines` (every physical line; default 20 / 40 / 60). Native stubs and CreationKit fragment-wrapper handlers are not counted."
+}

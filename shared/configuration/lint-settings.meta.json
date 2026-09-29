@@ -24,6 +24,8 @@
     "nesting_depth_warning",
     "nesting_depth_error",
     "parameter_count_max",
+    "function_length_max_code_lines",
+    "function_length_max_lines",
     "min_wait_interval",
     "fail_on_warning",
     "fail_on_info",
