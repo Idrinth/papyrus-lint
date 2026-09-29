@@ -160,8 +160,7 @@
     "event_signature_mismatch",
     "circular_dependency",
     "undefined_event",
-    "boolean_simplification",
-    "empty_event_handler"
+    "boolean_simplification"
   ],
   "settings": [
     {
