@@ -100,6 +100,25 @@ impl EncodingEnforced {
             EncodingEnforced::Utf8 => "utf8",
             EncodingEnforced::Windows1252 => "windows-1252",
             EncodingEnforced::Iso88591 => "iso-8859-1",
+      }
+  }
+}
+
+/// Line terminator required by the "Line endings" lint.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum LineEndingsMode {
+    #[default]
+    Lf,
+    Crlf,
+}
+
+impl LineEndingsMode {
+    /// YAML value for this mode.
+    pub fn label(self) -> &'static str {
+        match self {
+            LineEndingsMode::Lf => "lf",
+            LineEndingsMode::Crlf => "crlf",
         }
     }
 }
