@@ -147,3 +147,142 @@ fn config_off_switch_suppresses_diagnostics() {
 
     assert!(diagnostics.iter().all(|diagnostic| diagnostic.rule != RULE));
 }
+
+#[test]
+fn compares_every_supported_statement_shape_structurally() {
+    let bodies = [
+        "        Int value = 1\n",
+        "        value += 1\n",
+        "        Return value\n",
+        "        If ready\n            DoThing()\n        Else\n            DoOther()\n        EndIf\n",
+        "        While ready\n            DoThing()\n        EndWhile\n",
+    ];
+
+    for body in bodies {
+        let source = format!(
+            "ScriptName Example\n\nInt Function Test(Bool ready)\n    If ready\n{body}    Else\n{body}    EndIf\nEndFunction\n"
+        );
+        let diagnostics = check(&source);
+        assert_eq!(diagnostics.len(), 1, "body was not compared: {body:?}");
+    }
+}
+
+#[test]
+fn compares_every_supported_expression_shape_structurally() {
+    let expressions = [
+        "42",
+        "1.5",
+        "\"text\"",
+        "true",
+        "none",
+        "self",
+        "parent",
+        "left + right",
+        "!ready",
+        "DoThing(value, named = 1)",
+        "object.memberValue",
+        "values[index]",
+        "value as Float",
+        "new Int[3]",
+    ];
+
+    for expression in expressions {
+        let source = format!(
+            "ScriptName Example Extends ParentScript\n\nFunction Test(Bool ready)\n    If ready\n        Consume({expression})\n    Else\n        Consume({expression})\n    EndIf\nEndFunction\n"
+        );
+        let diagnostics = check(&source);
+        assert_eq!(
+            diagnostics.len(),
+            1,
+            "expression was not compared: {expression:?}"
+        );
+    }
+}
+
+#[test]
+fn comparison_includes_declaration_and_expression_details() {
+    let differing_pairs = [
+        ("Int value", "Float value"),
+        ("Int value", "Int other"),
+        ("Int value = 1", "Int value = 2"),
+        ("Consume(1)", "Consume(2)"),
+        ("Consume(named = 1)", "Consume(other = 1)"),
+        ("Consume(object.First)", "Consume(object.Second)"),
+        ("Consume(values[0])", "Consume(values[1])"),
+        ("Consume(value as Int)", "Consume(value as Float)"),
+        ("Consume(new Int[2])", "Consume(new Float[2])"),
+    ];
+
+    for (left, right) in differing_pairs {
+        let source = format!(
+            "ScriptName Example\n\nFunction Test(Bool ready)\n    If ready\n        {left}\n    Else\n        {right}\n    EndIf\nEndFunction\n"
+        );
+        assert!(
+            check(&source).is_empty(),
+            "different bodies were treated as equal: {left:?} and {right:?}"
+        );
+    }
+}
+
+#[test]
+fn compares_fallout_struct_construction() {
+    let source = "ScriptName Example\n\nFunction Test(Bool ready, Var value)\n    If ready\n        Consume(new Coordinates)\n        Consume(value is Float)\n    Else\n        Consume(new coordinates)\n        Consume(value is float)\n    EndIf\nEndFunction\n";
+    let ast = papyrus_parser::parse_with_mode(
+        source,
+        papyrus_parser::parser::GameEdition::Fallout4,
+    )
+    .expect("Fallout 4 struct construction should parse");
+    let tokens = papyrus_parser::tokenize(source).unwrap();
+
+    let diagnostics = super::check(
+        source,
+        Some(&ast),
+        Some(&tokens),
+        &crate::config::Config::default(),
+        &mut crate::external_signatures::NoExternalSignatures,
+    );
+
+    assert_eq!(diagnostics.len(), 1);
+}
+
+#[test]
+fn fallout_expression_comparison_includes_type_names() {
+    let source = "ScriptName Example\n\nFunction Test(Bool ready, Var value)\n    If ready\n        Consume(new FirstStruct)\n        Consume(value is Int)\n    Else\n        Consume(new SecondStruct)\n        Consume(value is Float)\n    EndIf\nEndFunction\n";
+    let ast = papyrus_parser::parse_with_mode(
+        source,
+        papyrus_parser::parser::GameEdition::Fallout4,
+    )
+    .expect("Fallout 4 expressions should parse");
+    let tokens = papyrus_parser::tokenize(source).unwrap();
+
+    let diagnostics = super::check(
+        source,
+        Some(&ast),
+        Some(&tokens),
+        &crate::config::Config::default(),
+        &mut crate::external_signatures::NoExternalSignatures,
+    );
+
+    assert!(diagnostics.is_empty());
+}
+
+#[test]
+fn compares_starfield_lock_guards() {
+    let source = "ScriptName Example\n\nFunction Test(Bool ready)\n    If ready\n        TryLockGuard MainGuard\n            DoThing()\n        ElseTryLockGuard\n            Return\n        EndTryLockGuard\n    Else\n        TryLockGuard mainguard\n            DoThing()\n        ElseTryLockGuard\n            Return\n        EndTryLockGuard\n    EndIf\nEndFunction\n";
+    let ast = papyrus_parser::parse_with_mode(
+        source,
+        papyrus_parser::parser::GameEdition::Starfield,
+    )
+    .expect("Starfield lock guards should parse");
+    let tokens = papyrus_parser::tokenize(source).unwrap();
+
+    let diagnostics = super::check(
+        source,
+        Some(&ast),
+        Some(&tokens),
+        &crate::config::Config::default(),
+        &mut crate::external_signatures::NoExternalSignatures,
+    );
+
+    assert_eq!(diagnostics.len(), 1);
+}
