@@ -2,9 +2,9 @@ project_settings:
   - key: compiler_path
     yaml:
       default: 'null'
-      comment: compiler_path
+      comment: "Path to PapyrusCompiler.exe, or null to auto-detect it"
     schema:
-      description: compiler_path
+      description: "Path to PapyrusCompiler.exe, or null/omit to auto-detect it."
       type:
         - string
         - 'null'
@@ -12,9 +12,9 @@ project_settings:
   - key: additional_script_roots
     yaml:
       default: '[]'
-      comment: additional_script_roots
+      comment: "Extra directories (relative to the project root, or absolute) to search\nfor .psc files, besides scripts/source and source/scripts"
     schema:
-      description: additional_script_roots
+      description: "Extra directories (relative to the project root, or absolute) to search for .psc files, besides scripts/source and source/scripts. Used for linting, cross-script resolution, and the compiler -i path."
       type: array
       items:
         type: string
@@ -23,9 +23,9 @@ project_settings:
   - key: lookup_script_roots
     yaml:
       default: '[]'
-      comment: lookup_script_roots
+      comment: "Extra directories searched only as a fallback when resolving other\nscripts for analysis (argument/return types, Extends, autocompletion).\nScripts found only here are never linted, and these directories are\nignored by conflicting-script-versions"
     schema:
-      description: lookup_script_roots
+      description: "Extra directories searched only as a fallback when resolving other scripts for analysis (argument/return types, Extends, autocompletion). Scripts found only here are never linted, and these directories are ignored by conflicting-script-versions."
       type: array
       items:
         type: string
@@ -34,17 +34,17 @@ project_settings:
   - key: compile_check
     yaml:
       default: 'false'
-      comment: compile_check
+      comment: "true, false; also runs PapyrusCompiler.exe (into a throwaway temporary\ndirectory) as part of linting a dropped .psc, reporting its errors\nalongside the lint engine's own. Requires compiler_path to be set/\nauto-detected"
     schema:
-      description: compile_check
+      description: "Also run PapyrusCompiler.exe (into a throwaway temporary directory) as part of linting a .psc, reporting its errors alongside the lint engine. Requires compiler_path to be set or auto-detected."
       type: boolean
       default: false
   - key: strict_achlist_scope
     yaml:
       default: 'false'
-      comment: strict_achlist_scope
+      comment: "true enables strict cross-script resolution and conflicting-script-versions\nchecks for only the achlist's listed entries. false (the default) keeps\nparent-directory search roots. In strict mode, every .psc dependency must\nbe listed in the achlist"
     schema:
-      description: strict_achlist_scope
+      description: "When true, restrict cross-script resolution and conflicting-script-versions to an achlist's listed entries only. When false (the default), parent directories of listed entries are also search roots."
       type: boolean
       default: false
 rules_yaml_comment: Each rule accepts true or false
@@ -55,10 +55,10 @@ settings:
       default: Game::default()
     yaml:
       default: skyrim
-      comment: game
+      comment: "Target game. Currently supported: skyrim, fallout4, starfield"
     ts_type: Game
     ts_alias: Game
-    doc: game
+    doc: "The game whose Papyrus dialect and runtime APIs this project targets.\nDefaults to [`Game::Skyrim`] for compatibility with configurations\ncreated before this key existed."
     ui:
       mount: lint-config-game
       id: game-select
@@ -75,7 +75,7 @@ settings:
       fill_selects:
         - config-picker-game-select
     schema:
-      description: game
+      description: "Game whose Papyrus dialect and runtime APIs the project targets."
       type: string
       enum:
         - skyrim
@@ -88,9 +88,9 @@ settings:
       default: 'false'
     yaml:
       default: 'false'
-      comment: semicolon
+      comment: "true, false"
     ts_type: boolean
-    doc: semicolon
+    doc: "Whether lines are required to end in a semicolon (`true`) or must\nnot (`false`). See the \"Semicolon at end of line\" lint in\nREADME.md."
     ui:
       mount: lint-config-settings
       id: semicolon-style
@@ -104,7 +104,7 @@ settings:
         - value: require
           label: Add to non-empty lines
     schema:
-      description: semicolon
+      description: "Whether lines are required to end in a semicolon (true) or must not (false)."
       type: boolean
       default: false
   - key: indentation
@@ -113,9 +113,9 @@ settings:
       default: Indentation::default()
     yaml:
       default: tab
-      comment: indentation
+      comment: "tab, space"
     ts_type: '"tab" | "space"'
-    doc: indentation
+    doc: "The indentation style enforced by the \"Formatting checks\"/\n\"Indentation\" lint and automatic fix in README.md."
     ui:
       mount: lint-config-settings
       group: indentation
@@ -134,7 +134,7 @@ settings:
       enables_key: indentation_width
       enables_when: space
     schema:
-      description: indentation
+      description: "Expected indentation style, read by the indentation lint and automatic fix."
       type: string
       enum:
         - tab
@@ -146,9 +146,9 @@ settings:
       default: '4'
     yaml:
       default: '4'
-      comment: indentation_width
+      comment: "Non-negative integer; used only when indentation is space"
     ts_type: number
-    doc: indentation_width
+    doc: "The number of spaces per indentation level, used only when\n`indentation` is [`Indentation::Space`]."
     ui:
       mount: lint-config-settings
       group: indentation
@@ -163,7 +163,7 @@ settings:
       treat_zero_as_empty: true
       disabled_by_default: true
     schema:
-      description: indentation_width
+      description: "Spaces per indentation level. Used only when indentation is space. The engine clamps this to 1..16."
       type: integer
       minimum: 1
       maximum: 16
@@ -174,9 +174,9 @@ settings:
       default: '120'
     yaml:
       default: '120'
-      comment: max_line_length
+      comment: "Non-negative integer; maximum characters allowed on one line"
     ts_type: number
-    doc: max_line_length
+    doc: "The maximum number of characters allowed on a line before the\n\"Line length\" lint emits a warning."
     ui:
       mount: lint-config-settings
       id: max-line-length
@@ -186,7 +186,7 @@ settings:
       clamp_min: 1
       treat_zero_as_empty: true
     schema:
-      description: max_line_length
+      description: "Non-negative integer; maximum characters allowed on one line"
       type: integer
       minimum: 0
       default: 120
@@ -196,10 +196,10 @@ settings:
       default: TypeCasing::default()
     yaml:
       default: PascalCase
-      comment: type_casing
+      comment: "PascalCase, camelCase, lowercase, UPPERCASE"
     ts_type: TypeCasingStyle
     ts_alias: TypeCasingStyle
-    doc: type_casing
+    doc: "The casing convention required of a script's declared type name\n(the identifier following `ScriptName`), checked by the \"Type name\ncasing\" lint."
     ui:
       mount: lint-config-settings
       id: type-casing-style
@@ -215,7 +215,7 @@ settings:
         - value: UPPERCASE
           label: UPPERCASE
     schema:
-      description: type_casing
+      description: "Casing convention for a script's declared type name (the identifier following ScriptName)."
       type: string
       enum:
         - PascalCase
@@ -229,10 +229,10 @@ settings:
       default: IdentifierCasing::default()
     yaml:
       default: PascalCase
-      comment: identifier_casing
+      comment: "camelCase, PascalCase, snake_case, CONSTANT_CASE"
     ts_type: IdentifierCasingStyle
     ts_alias: IdentifierCasingStyle
-    doc: identifier_casing
+    doc: "The casing style enforced by the \"Identifier casing\" lint. See\n[`IdentifierCasing`]."
     ui:
       mount: lint-config-settings
       id: identifier-casing-style
@@ -248,7 +248,7 @@ settings:
         - value: CONSTANT_CASE
           label: CONSTANT_CASE
     schema:
-      description: identifier_casing
+      description: "Casing style declared identifiers must match (functions, events, properties, states, parameters, locals)."
       type: string
       enum:
         - camelCase
@@ -262,10 +262,10 @@ settings:
       default: NamedArguments::default()
     yaml:
       default: never
-      comment: named_arguments
+      comment: "always, instead_of_defaults, never"
     ts_type: NamedArgumentsStyle
     ts_alias: NamedArgumentsStyle
-    doc: named_arguments
+    doc: "How strongly the \"Prefer named arguments\" lint prefers Papyrus's\nnamed-argument call syntax (`func(argB = 1)`) over positional\narguments. See [`NamedArguments`]."
     ui:
       mount: lint-config-settings
       id: named-arguments-style
@@ -279,7 +279,7 @@ settings:
         - value: always
           label: Always
     schema:
-      description: named_arguments
+      description: "How strongly a positional call argument should be passed by name instead."
       type: string
       enum:
         - always
@@ -292,10 +292,10 @@ settings:
       default: MagicNumbers::default()
     yaml:
       default: loose
-      comment: magic_numbers
+      comment: "loose, strict"
     ts_type: MagicNumbersMode
     ts_alias: MagicNumbersMode
-    doc: magic_numbers
+    doc: "Whether the \"Magic numbers\" lint also checks the interval argument\nof a `Utility.Wait`/`RegisterForUpdate`/`RegisterForSingleUpdate`/\n`RegisterForUpdateGameTime`/`RegisterForSingleUpdateGameTime` call\n(`strict`), or leaves it unflagged since a hardcoded interval there\nis common and usually self-explanatory (`loose`, the default). See\n[`MagicNumbers`]."
     ui:
       mount: lint-config-settings
       id: magic-numbers-mode
@@ -307,7 +307,7 @@ settings:
         - value: strict
           label: Strict (check every call argument)
     schema:
-      description: magic_numbers
+      description: "Whether the magic-numbers lint also flags Wait/RegisterFor* interval arguments (strict) or leaves them unflagged (loose)."
       type: string
       enum:
         - loose
@@ -319,9 +319,9 @@ settings:
       default: '10'
     yaml:
       default: '10'
-      comment: cyclomatic_complexity_warning
+      comment: "Non-negative integer"
     ts_type: number
-    doc: cyclomatic_complexity_warning
+    doc: "The cyclomatic complexity a function/event can reach before the\n\"Cyclomatic complexity\" lint flags it as a `[warning]`."
     ui:
       mount: lint-config-settings
       group: cyclomatic
@@ -335,7 +335,7 @@ settings:
       clamp_min: 1
       treat_zero_as_empty: true
     schema:
-      description: cyclomatic_complexity_warning
+      description: "Cyclomatic complexity at which the cyclomatic-complexity lint reports a warning."
       type: integer
       minimum: 0
       default: 10
@@ -345,9 +345,9 @@ settings:
       default: '20'
     yaml:
       default: '20'
-      comment: cyclomatic_complexity_error
+      comment: "Non-negative integer"
     ts_type: number
-    doc: cyclomatic_complexity_error
+    doc: "The cyclomatic complexity a function/event can reach before the\n\"Cyclomatic complexity\" lint flags it as an `[error]`. A value below\n[`Self::cyclomatic_complexity_warning`] is treated as equal to it\ninstead (see [`crate::cyclomatic_complexity::check`]), since an\n`[error]` threshold lower than the `[warning]` one it's supposed to\nescalate would otherwise be contradictory."
     ui:
       mount: lint-config-settings
       group: cyclomatic
@@ -361,7 +361,7 @@ settings:
       clamp_min_from: cyclomatic_complexity_warning
       treat_zero_as_empty: true
     schema:
-      description: cyclomatic_complexity_error
+      description: "Cyclomatic complexity at which the cyclomatic-complexity lint reports an error. A value below cyclomatic_complexity_warning is treated as equal to it."
       type: integer
       minimum: 0
       default: 20
@@ -371,9 +371,9 @@ settings:
       default: '0.1'
     yaml:
       default: '0.1'
-      comment: min_wait_interval
+      comment: "Non-negative number"
     ts_type: number
-    doc: min_wait_interval
+    doc: "The interval/duration argument a `Utility.Wait`, `RegisterForUpdate`,\n`RegisterForSingleUpdate`, `RegisterForUpdateGameTime`, or\n`RegisterForSingleUpdateGameTime` call can go below before the\n\"Short wait/update interval\" lint flags it as a `[warning]`."
     ui:
       mount: lint-config-settings
       group: wait
@@ -387,7 +387,7 @@ settings:
       step: 0.01
       clamp_min: 0
     schema:
-      description: min_wait_interval
+      description: "Interval/duration argument a Utility.Wait / RegisterForUpdate / RegisterForSingleUpdate / RegisterForUpdateGameTime / RegisterForSingleUpdateGameTime call can go below before short-wait-interval flags it."
       type: number
       minimum: 0
       default: 0.1
@@ -397,9 +397,9 @@ settings:
       default: 'false'
     yaml:
       default: 'false'
-      comment: fail_on_warning
+      comment: "true, false"
     ts_type: boolean
-    doc: fail_on_warning
+    doc: "Whether the CLI (see `papyrus-lint-cli`) treats a `[warning]`-level\ndiagnostic as a reason to exit non-zero. `false` by default, so a\nproject only fails a lint run on `[error]`-level (and untagged)\ndiagnostics unless it opts in. Has no effect on the desktop app,\nwhich always shows every diagnostic regardless of severity."
     ui:
       mount: lint-config-settings
       group: fail-levels
@@ -410,7 +410,7 @@ settings:
       checkbox_label: Fail on warning
       title: fail_on_warning
     schema:
-      description: fail_on_warning
+      description: "Whether the CLI treats a warning-level diagnostic as a non-zero exit. Has no effect on the desktop app."
       type: boolean
       default: false
   - key: fail_on_info
@@ -419,9 +419,9 @@ settings:
       default: 'false'
     yaml:
       default: 'false'
-      comment: fail_on_info
+      comment: "true, false"
     ts_type: boolean
-    doc: fail_on_info
+    doc: "Like [`Self::fail_on_warning`], but for `[info]`-level diagnostics.\n`false` by default."
     ui:
       mount: lint-config-settings
       group: fail-levels
@@ -431,7 +431,7 @@ settings:
       checkbox_label: Fail on info
       title: fail_on_info
     schema:
-      description: fail_on_info
+      description: "Whether the CLI treats an info-level diagnostic as a non-zero exit. Has no effect on the desktop app."
       type: boolean
       default: false
   - key: bool_like_int
@@ -440,9 +440,9 @@ settings:
       default: 'true'
     yaml:
       default: 'true'
-      comment: bool_like_int
+      comment: "true, false"
     ts_type: boolean
-    doc: bool_like_int
+    doc: "Whether the \"Strict boolean check\" lint accepts an `Int` literal\n`1` or `0` used directly as an `If`/`ElseIf`/`While` condition,\ntreating it as the common \"bool-like\" idiom rather than flagging\nit. `true` by default. Any other `Int` value (a variable, a\nproperty, or a literal other than `1`/`0`) is still flagged\nregardless of this setting."
     ui:
       mount: lint-config-settings
       group: bool-like
@@ -453,7 +453,7 @@ settings:
       checkbox_label: Allow 1/0 as bool-like
       title: bool_like_int
     schema:
-      description: bool_like_int
+      description: "Whether strict-boolean accepts the Int literals 1 and 0 used directly as If/ElseIf/While conditions."
       type: boolean
       default: true
   - key: treat_form_as_bool_for_returns
@@ -462,9 +462,9 @@ settings:
       default: 'false'
     yaml:
       default: 'false'
-      comment: treat_form_as_bool_for_returns
+      comment: "true allows a Bool function to return a non-array Form value, relying on\nPapyrus to treat None as false and an existing Form as true"
     ts_type: boolean
-    doc: treat_form_as_bool_for_returns
+    doc: "Whether the \"Return type check\" lint accepts a non-array Form\nvalue returned from a `Bool` function. Papyrus implicitly treats\n`None` as false and an existing Form as true, but this common idiom\nis rejected by default so return types remain strict unless a\nproject explicitly opts in."
     ui:
       mount: lint-config-settings
       group: treat-form-as-bool
@@ -475,7 +475,7 @@ settings:
       checkbox_label: Treat Forms as Bool for returns
       title: treat_form_as_bool_for_returns
     schema:
-      description: treat_form_as_bool_for_returns
+      description: "Whether return-types accepts a non-array Form value returned from a Bool function, relying on Papyrus's implicit None/existing Form conversion."
       type: boolean
       default: false
   - key: assume_auto_properties_filled
@@ -484,9 +484,9 @@ settings:
       default: 'false'
     yaml:
       default: 'false'
-      comment: assume_auto_properties_filled
+      comment: "true, false; true treats an Auto/AutoReadOnly property as already\nfilled in by the time a function runs instead of possibly None"
     ts_type: boolean
-    doc: assume_auto_properties_filled
+    doc: "Whether the \"None used as an existing Form\" lint treats a\nscript-level `Auto`/`AutoReadOnly` property as already filled in by\nthe time a function runs, rather than possibly still `None` (see\n[`crate::none_form_usage`]). `false` by default, so such a property\nis treated the same as an uninitialized local unless proven\notherwise. Many projects consider that noise, since in practice the\nCK's Property Manager (or another script's `PropertySet`) has\nalready filled every listed property in by the time any function\nruns; setting this to `true` drops that initial assumption. A\nproperty is still tracked (and flagged) once script code assigns it\n`None` directly, the same as a local variable. Has no effect on\n`unchecked_form_parameter`, which never tracks properties at all."
     ui:
       mount: lint-config-settings
       group: assume-auto
@@ -497,6 +497,6 @@ settings:
       checkbox_label: Assume Auto properties are filled
       title: assume_auto_properties_filled
     schema:
-      description: assume_auto_properties_filled
+      description: "Whether none-form-usage treats a script-level Auto/AutoReadOnly property as already filled in by the time a function runs, instead of possibly None."
       type: boolean
       default: false
