@@ -59,6 +59,16 @@ impl GameEdition {
     }
 }
 
+impl From<papyrus_lint_globals::Game> for GameEdition {
+    fn from(game: papyrus_lint_globals::Game) -> Self {
+        match game {
+            papyrus_lint_globals::Game::Skyrim | papyrus_lint_globals::Game::Legacy => Self::Skyrim,
+            papyrus_lint_globals::Game::Fallout4 => Self::Fallout4,
+            papyrus_lint_globals::Game::Starfield => Self::Starfield,
+        }
+    }
+}
+
 pub struct Parser {
     tokens: Vec<Token>,
     pos: usize,

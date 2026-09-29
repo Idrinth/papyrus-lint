@@ -35,6 +35,8 @@ use crate::bundled_blob::{self, IndexEntry};
 
 static SKYRIM_COMPRESSED: &[u8] =
     include_bytes!(concat!(env!("OUT_DIR"), "/skyrim-ast-cache.bin.gz"));
+static LEGACY_COMPRESSED: &[u8] =
+    include_bytes!(concat!(env!("OUT_DIR"), "/legacy-ast-cache.bin.gz"));
 static FALLOUT4_COMPRESSED: &[u8] =
     include_bytes!(concat!(env!("OUT_DIR"), "/fallout4-ast-cache.bin.gz"));
 static STARFIELD_COMPRESSED: &[u8] =
@@ -70,11 +72,15 @@ fn parse_cache(compressed: &[u8]) -> Option<BundledCache> {
 /// game per process.
 fn cache(game: Game) -> Option<&'static BundledCache> {
     static SKYRIM_CACHE: OnceLock<Option<BundledCache>> = OnceLock::new();
+    static LEGACY_CACHE: OnceLock<Option<BundledCache>> = OnceLock::new();
     static FALLOUT4_CACHE: OnceLock<Option<BundledCache>> = OnceLock::new();
     static STARFIELD_CACHE: OnceLock<Option<BundledCache>> = OnceLock::new();
     match game {
         Game::Skyrim => SKYRIM_CACHE
             .get_or_init(|| parse_cache(SKYRIM_COMPRESSED))
+            .as_ref(),
+        Game::Legacy => LEGACY_CACHE
+            .get_or_init(|| parse_cache(LEGACY_COMPRESSED))
             .as_ref(),
         Game::Fallout4 => FALLOUT4_CACHE
             .get_or_init(|| parse_cache(FALLOUT4_COMPRESSED))

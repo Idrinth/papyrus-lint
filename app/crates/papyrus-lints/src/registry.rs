@@ -38,7 +38,9 @@ include!(concat!(env!("OUT_DIR"), "/rules_dispatch.rs"));
 /// `game`. An empty slice means the field was omitted from
 /// `shared/rules.json` and the rule applies to every [`crate::Game`].
 pub(crate) fn rule_applies_to_game(game: crate::Game, allowed: &[crate::Game]) -> bool {
-    allowed.is_empty() || allowed.contains(&game)
+    allowed.is_empty()
+        || allowed.contains(&game)
+        || allowed.contains(&game.rules_game())
 }
 
 fn apply_rule(source: String, enabled: bool, repair: impl FnOnce(&str) -> String) -> String {

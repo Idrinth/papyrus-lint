@@ -73,7 +73,7 @@
       "uniqueItems": true,
       "items": {
         "type": "string",
-        "enum": ["skyrim", "fallout4", "starfield"]
+        "enum": ["skyrim", "legacy", "fallout4", "starfield"]
       }
     }
   },

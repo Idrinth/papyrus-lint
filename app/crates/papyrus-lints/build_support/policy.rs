@@ -69,7 +69,7 @@ pub fn slow_functions(context: &BuildContext, game: Game) -> Vec<SlowFunction> {
 }
 
 pub fn actor_values(context: &BuildContext, game: Game) -> Vec<String> {
-    let relative = format!("shared/rules/data/{game}/actor-values.yaml");
+    let relative = format!("shared/rules/data/{}/actor-values.yaml", game.rules_game());
     if !context.input(&relative).exists() {
         return Vec::new();
     }
@@ -89,7 +89,7 @@ fn load_game<T>(context: &BuildContext, game: Game, filename: &str, description:
 where
     T: serde::de::DeserializeOwned,
 {
-    let relative = format!("shared/rules/data/{game}/{filename}");
+    let relative = format!("shared/rules/data/{}/{filename}", game.rules_game());
     if !context.input(&relative).exists() {
         return Vec::new();
     }

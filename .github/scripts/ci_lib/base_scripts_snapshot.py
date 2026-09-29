@@ -9,11 +9,13 @@ from collections.abc import Sequence
 from pathlib import Path
 
 PRESETS: tuple[str, ...] = ("strict", "standard", "careful")
-GAMES: tuple[str, ...] = ("skyrim", "fallout4", "starfield")
+GAMES: tuple[str, ...] = ("skyrim", "legacy", "fallout4", "starfield")
 SKYRIM_BASE_SCRIPTS_ZIP = Path("shared/scripts/skyrim-scripts.zip")
+LEGACY_BASE_SCRIPTS_ZIP = Path("shared/scripts/legacy-scripts.zip")
 FALLOUT4_BASE_SCRIPTS_ZIP = Path("shared/scripts/fallout4-scripts.zip")
 STARFIELD_BASE_SCRIPTS_ZIP = Path("shared/scripts/starfield-scripts.zip")
 SKYRIM_EXTENDER_SCRIPTS_ZIP = Path("shared/scripts/skyrim-extender-scripts.zip")
+LEGACY_EXTENDER_SCRIPTS_ZIP = Path("shared/scripts/legacy-extender-scripts.zip")
 FALLOUT4_EXTENDER_SCRIPTS_ZIP = Path("shared/scripts/fallout4-extender-scripts.zip")
 STARFIELD_EXTENDER_SCRIPTS_ZIP = Path("shared/scripts/starfield-extender-scripts.zip")
 FIXTURE_DIR = Path("fixtures")
@@ -111,6 +113,10 @@ def render_output(
         path = root / SKYRIM_BASE_SCRIPTS_ZIP
         if extender:
             path = root / SKYRIM_EXTENDER_SCRIPTS_ZIP
+    if game == "legacy":
+        path = root / LEGACY_BASE_SCRIPTS_ZIP
+        if extender:
+            path = root / LEGACY_EXTENDER_SCRIPTS_ZIP
     if game == "fallout4":
         path = root / FALLOUT4_BASE_SCRIPTS_ZIP
         if extender:
