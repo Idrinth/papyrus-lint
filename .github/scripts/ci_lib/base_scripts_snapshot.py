@@ -71,7 +71,7 @@ def run_cli(
         str(cli),
         "lint",
         "--format",
-        "plain",
+        "short",
         "--short-paths",
         "--color",
         "never",
