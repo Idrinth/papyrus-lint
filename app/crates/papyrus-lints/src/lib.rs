@@ -79,6 +79,15 @@ pub fn literal_goto_state_targets(
     goto_state::literal_goto_state_targets(script)
 }
 
+/// Literal `RegisterForRemoteEvent` event-name leaves in `script`, plus
+/// whether any call used a non-literal event name. See
+/// [`unregistered_remote_event::remote_event_registrations`].
+pub fn remote_event_registrations(
+    script: &papyrus_parser::ast::Script,
+) -> unregistered_remote_event::RemoteEventRegistrations {
+    unregistered_remote_event::remote_event_registrations(script)
+}
+
 /// A single lint finding, pointing at the 1-indexed line and column it applies to.
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct Diagnostic {

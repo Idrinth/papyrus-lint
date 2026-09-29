@@ -268,6 +268,10 @@ impl papyrus_lints::ExternalSignatures for FunctionTable {
     fn property_types(&mut self, type_name: &str) -> Vec<String> {
         self.property_types(type_name)
     }
+
+    fn registers_remote_event(&mut self, type_name: &str, event_name: &str) -> Option<bool> {
+        FunctionTable::registers_remote_event(self, type_name, event_name)
+    }
 }
 
 #[cfg(test)]

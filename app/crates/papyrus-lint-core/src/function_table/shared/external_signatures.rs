@@ -248,4 +248,15 @@ impl papyrus_lints::ExternalSignatures for SharedFunctionTable<'_> {
             |table| papyrus_lints::ExternalSignatures::property_types(table, type_name),
         )
     }
+
+    fn registers_remote_event(&mut self, type_name: &str, event_name: &str) -> Option<bool> {
+        self.probe_or_load(
+            |table| table.registers_remote_event_cached(type_name, event_name),
+            |table| {
+                papyrus_lints::ExternalSignatures::registers_remote_event(
+                    table, type_name, event_name,
+                )
+            },
+        )
+    }
 }

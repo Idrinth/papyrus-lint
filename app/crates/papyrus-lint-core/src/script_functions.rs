@@ -174,6 +174,15 @@ pub(crate) struct ScriptFunctions {
     /// [`crate::function_table::FunctionTable::type_exists`] so
     /// `Script:Struct` resolves when `Struct` is declared on `Script`.
     pub(crate) structs: HashSet<String>,
+    /// Lowercased event-name leaves from literal `RegisterForRemoteEvent`
+    /// calls in this script. Used by
+    /// [`crate::function_table::FunctionTable::registers_remote_event`] so
+    /// the "Unregistered remote event" lint can see a parent's registration.
+    pub(crate) registered_remote_events: HashSet<String>,
+    /// Whether this script has a `RegisterForRemoteEvent` whose event name
+    /// is not a string literal, covering every remote handler in ancestry
+    /// checks that reach this script.
+    pub(crate) opaque_remote_event_registration: bool,
 }
 impl ScriptFunctions {
     pub(crate) fn from_script(script: &Script, source: &str) -> Self {
@@ -278,6 +287,7 @@ impl ScriptFunctions {
             .map(|decl| decl.name.to_ascii_lowercase())
             .collect();
 
+        let remote = papyrus_lints::remote_event_registrations(script);
         ScriptFunctions {
             extends: script.extends.clone(),
             functions,
@@ -287,6 +297,8 @@ impl ScriptFunctions {
             goto_state_targets: papyrus_lints::literal_goto_state_targets(script),
             events,
             structs,
+            registered_remote_events: remote.events,
+            opaque_remote_event_registration: remote.opaque,
         }
     }
 }

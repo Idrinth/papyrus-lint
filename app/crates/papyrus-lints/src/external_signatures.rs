@@ -301,6 +301,21 @@ pub trait ExternalSignatures {
     fn property_types(&mut self, _type_name: &str) -> Vec<String> {
         Vec::new()
     }
+
+    /// Whether `type_name` or an ancestor it `Extends` registered for the
+    /// remote event leaf `event_name` via `RegisterForRemoteEvent`. Both
+    /// names are matched case-insensitively. `Some(true)` means a literal
+    /// registration matched, or some script in the chain used a non-literal
+    /// event name (opaque coverage). `Some(false)` means the ancestry was
+    /// fully walked to a root with no registration. `None` means resolution
+    /// was incomplete, so callers must not guess. Used by
+    /// `crate::unregistered_remote_event`.
+    ///
+    /// The default always returns `None`, keeping existing behavior for
+    /// callers that can't resolve scripts (see [`NoExternalSignatures`]).
+    fn registers_remote_event(&mut self, _type_name: &str, _event_name: &str) -> Option<bool> {
+        None
+    }
 }
 
 /// An [`ExternalSignatures`] that never resolves anything, for checking a
