@@ -12,8 +12,32 @@ fn check(source: &str) -> Vec<Diagnostic> {
     )
 }
 
+fn check_starfield(source: &str) -> Vec<Diagnostic> {
+    let ast = papyrus_parser::parse_with_mode(
+        source,
+        papyrus_parser::parser::GameEdition::Starfield,
+    )
+    .ok();
+    let tokens = papyrus_parser::tokenize(source).ok();
+    let config = crate::config::Config {
+        game: crate::Game::Starfield,
+        ..Default::default()
+    };
+    super::check(
+        source,
+        ast.as_ref(),
+        tokens.as_deref(),
+        &config,
+        &mut crate::external_signatures::NoExternalSignatures,
+    )
+}
+
 fn script(body: &str) -> String {
     format!("ScriptName Example\n\nFunction Test()\n{body}EndFunction\n")
+}
+
+fn guarded_script(body: &str) -> String {
+    format!("ScriptName Example\n\nGuard WorkGuard\n\nFunction Test()\n{body}EndFunction\n")
 }
 
 #[test]
@@ -178,6 +202,62 @@ fn flags_overwritten_write_inside_while_body() {
 
     assert_eq!(diagnostics.len(), 1);
     assert_eq!(diagnostics[0].line, 5);
+}
+
+#[test]
+fn flags_overwritten_write_inside_lock_guard() {
+    let diagnostics = check_starfield(&guarded_script(
+        "    LockGuard WorkGuard\n        Int x = 1\n        x = 2\n        Debug.Trace(x)\n    EndLockGuard\n",
+    ));
+
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!(diagnostics[0].line, 7);
+}
+
+#[test]
+fn flags_incoming_write_overwritten_on_both_try_lock_paths() {
+    let diagnostics = check_starfield(&guarded_script(
+        "    Int x = 1\n    TryLockGuard WorkGuard\n        x = 2\n    ElseTryLockGuard\n        x = 3\n    EndTryLockGuard\n    Debug.Trace(x)\n",
+    ));
+
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!(diagnostics[0].line, 6);
+}
+
+#[test]
+fn does_not_flag_incoming_write_overwritten_on_only_one_try_lock_path() {
+    let diagnostics = check_starfield(&guarded_script(
+        "    Int x = 1\n    TryLockGuard WorkGuard\n        x = 2\n    EndTryLockGuard\n    Debug.Trace(x)\n",
+    ));
+
+    assert!(diagnostics.is_empty());
+}
+
+#[test]
+fn does_not_flag_try_lock_write_read_on_the_alternate_path() {
+    let diagnostics = check_starfield(&guarded_script(
+        "    Int x = 1\n    TryLockGuard WorkGuard\n        x = 2\n    ElseTryLockGuard\n        Debug.Trace(x)\n        x = 3\n    EndTryLockGuard\n",
+    ));
+
+    assert!(diagnostics.is_empty());
+}
+
+#[test]
+fn diverging_try_lock_paths_discard_the_incoming_write() {
+    let diagnostics = check_starfield(&guarded_script(
+        "    Int x = 1\n    TryLockGuard WorkGuard\n        Return\n    ElseTryLockGuard\n        Return\n    EndTryLockGuard\n    x = 2\n",
+    ));
+
+    assert!(diagnostics.is_empty());
+}
+
+#[test]
+fn a_named_argument_reads_its_value_before_a_later_write() {
+    let diagnostics = check(&script(
+        "    Int x = 1\n    Consume(value = x)\n    x = 2\n",
+    ));
+
+    assert!(diagnostics.is_empty());
 }
 
 #[test]
