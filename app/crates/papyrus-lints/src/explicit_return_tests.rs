@@ -12,6 +12,26 @@ fn check(source: &str) -> Vec<Diagnostic> {
     )
 }
 
+fn check_starfield(source: &str) -> Vec<Diagnostic> {
+    let ast = papyrus_parser::parse_with_mode(
+        source,
+        papyrus_parser::parser::GameEdition::Starfield,
+    )
+    .ok();
+    let tokens = papyrus_parser::tokenize(source).ok();
+    let config = crate::config::Config {
+        game: crate::Game::Starfield,
+        ..Default::default()
+    };
+    super::check(
+        source,
+        ast.as_ref(),
+        tokens.as_deref(),
+        &config,
+        &mut crate::external_signatures::NoExternalSignatures,
+    )
+}
+
 #[test]
 fn flags_a_typed_function_with_no_return_at_all() {
     let diagnostics =
@@ -140,4 +160,40 @@ fn nested_if_inside_while_still_requires_a_trailing_return() {
         );
 
     assert_eq!(diagnostics.len(), 1);
+}
+
+#[test]
+fn lock_guard_return_covers_the_enclosing_function() {
+    let diagnostics = check_starfield(
+        "ScriptName Example\n\nInt Function Test()\n    LockGuard WorkGuard\n        Return 1\n    EndLockGuard\nEndFunction\n",
+    );
+
+    assert!(diagnostics.is_empty());
+}
+
+#[test]
+fn lock_guard_without_a_return_does_not_cover_the_enclosing_function() {
+    let diagnostics = check_starfield(
+        "ScriptName Example\n\nInt Function Test()\n    LockGuard WorkGuard\n        Int value = 1\n    EndLockGuard\nEndFunction\n",
+    );
+
+    assert_eq!(diagnostics.len(), 1);
+}
+
+#[test]
+fn try_lock_guard_requires_returns_from_both_paths() {
+    let diagnostics = check_starfield(
+        "ScriptName Example\n\nInt Function Test()\n    TryLockGuard WorkGuard\n        Return 1\n    ElseTryLockGuard\n        Int value = 2\n    EndTryLockGuard\nEndFunction\n",
+    );
+
+    assert_eq!(diagnostics.len(), 1);
+}
+
+#[test]
+fn try_lock_guard_with_returns_on_both_paths_covers_the_function() {
+    let diagnostics = check_starfield(
+        "ScriptName Example\n\nInt Function Test()\n    TryLockGuard WorkGuard\n        Return 1\n    ElseTryLockGuard\n        Return 2\n    EndTryLockGuard\nEndFunction\n",
+    );
+
+    assert!(diagnostics.is_empty());
 }

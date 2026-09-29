@@ -18,6 +18,7 @@ const RUST_TYPES: &[&str] = &[
     "MagicNumbers",
     "Hungarian",
     "Utf8BomMode",
+    "LineEndingsMode",
 ];
 
 #[derive(Debug, Deserialize)]

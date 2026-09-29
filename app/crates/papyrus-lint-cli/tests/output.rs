@@ -472,3 +472,25 @@ fn short_format_prints_compact_finding_lines_without_a_summary() {
     assert!(!stdout.contains("PapyrusLinterCLI:"));
     assert!(!stdout.contains("http"));
 }
+
+#[test]
+fn short_format_prints_parser_errors_as_compact_locations() {
+    let dir = tempfile::tempdir().expect("failed to create temp directory");
+    let script = dir.path().join("scripts/source/Broken.psc");
+    write_file(&script, "ScriptName Broken\nFunction Broken(\n");
+
+    let output = run_cli(&["--format", "short", &script.to_string_lossy()]);
+
+    assert_eq!(output.status.code(), Some(1));
+    assert!(output.stderr.is_empty());
+    let stdout = String::from_utf8(output.stdout).expect("stdout should be UTF-8");
+    let lines: Vec<&str> = stdout.lines().filter(|line| !line.is_empty()).collect();
+    assert_eq!(
+        lines.len(),
+        1,
+        "expected one parser error line, got {stdout:?}"
+    );
+    assert!(lines[0].starts_with(&script.to_string_lossy().to_string()));
+    assert!(lines[0].ends_with(":parse"));
+    assert!(!stdout.contains("expected"));
+}
