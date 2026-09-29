@@ -64,8 +64,8 @@ impl AstLint for Collect {
             }
         }
 
-        let max_code = ctx.config.function_length_max_code_lines.max(1);
-        let max_lines = ctx.config.function_length_max_lines.max(1);
+        let max_code = ctx.config.function_length_max_code_lines;
+        let max_lines = ctx.config.function_length_max_lines;
         let over_code = code > max_code;
         let over_lines = physical > max_lines;
         if !over_code && !over_lines {

@@ -93,6 +93,16 @@ fn checks_events_too() {
 }
 
 #[test]
+fn zero_thresholds_flag_a_one_line_body() {
+    let source = function_with_code_lines(1);
+    let diagnostics = check(&source, 0, 0);
+    assert_eq!(diagnostics.len(), 1);
+    assert!(diagnostics[0]
+        .message
+        .contains("has 1 lines of code (maximum: 0) and 1 lines (maximum: 0)"));
+}
+
+#[test]
 fn skips_native_stubs() {
     let source = "ScriptName Example\n\nFunction Hidden() Native\n";
     assert!(check(source, 0, 0).is_empty());
