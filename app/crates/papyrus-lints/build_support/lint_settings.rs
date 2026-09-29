@@ -1,5 +1,5 @@
 //! Generates `Config` (every field except [`Rules`]) from
-//! `shared/configuration/lint-settings.json`.
+//! `shared/configuration/lint-settings.yaml`.
 
 use super::renderer::Renderer;
 use super::BuildContext;
@@ -26,15 +26,26 @@ struct LintSettingsFile {
 #[derive(Debug, Deserialize)]
 struct LintSetting {
     key: String,
-    rust_type: String,
-    rust_default: String,
-    yaml_default: String,
+    rust: RustMeta,
+    yaml: YamlMeta,
     doc: String,
+}
+
+#[derive(Debug, Deserialize)]
+struct RustMeta {
+    #[serde(rename = "type")]
+    type_name: String,
+    default: String,
+}
+
+#[derive(Debug, Deserialize)]
+struct YamlMeta {
+    default: String,
 }
 
 pub fn compile(context: &BuildContext) {
     let file: LintSettingsFile =
-        context.load_json("shared/configuration/lint-settings.json", "lint settings");
+        context.load_yaml("shared/configuration/lint-settings.yaml", "lint settings");
     let relative = "shared/configuration/papyrus-lint.default.yaml";
     let source = context.load_text(relative, "default config");
     let top = default_config_top(&source);
@@ -44,33 +55,33 @@ pub fn compile(context: &BuildContext) {
 
 fn validate(settings: &[LintSetting], top: &BTreeMap<String, String>) {
     if settings.is_empty() {
-        panic!("shared/configuration/lint-settings.json has no settings");
+        panic!("shared/configuration/lint-settings.yaml has no settings");
     }
     let mut seen = BTreeSet::new();
     for setting in settings {
         if !seen.insert(setting.key.clone()) {
             panic!(
-                "shared/configuration/lint-settings.json lists `{}` more than once",
+                "shared/configuration/lint-settings.yaml lists `{}` more than once",
                 setting.key
             );
         }
-        if !RUST_TYPES.contains(&setting.rust_type.as_str()) {
+        if !RUST_TYPES.contains(&setting.rust.type_name.as_str()) {
             panic!(
-                "shared/configuration/lint-settings.json: `{}` has unknown rust_type `{}`",
-                setting.key, setting.rust_type
+                "shared/configuration/lint-settings.yaml: `{}` has unknown rust.type `{}`",
+                setting.key, setting.rust.type_name
             );
         }
-        if setting.rust_default.contains(['\n', ';', '{']) {
+        if setting.rust.default.contains(['\n', ';', '{']) {
             panic!(
-                "shared/configuration/lint-settings.json: `{}` rust_default must be a single expression",
+                "shared/configuration/lint-settings.yaml: `{}` rust.default must be a single expression",
                 setting.key
             );
         }
         match top.get(&setting.key) {
-            Some(value) if value == &setting.yaml_default => {}
+            Some(value) if value == &setting.yaml.default => {}
             Some(value) => panic!(
-                "shared/configuration/papyrus-lint.default.yaml sets {} to {value}, but shared/configuration/lint-settings.json says {}",
-                setting.key, setting.yaml_default
+                "shared/configuration/papyrus-lint.default.yaml sets {} to {value}, but shared/configuration/lint-settings.yaml says {}",
+                setting.key, setting.yaml.default
             ),
             None => panic!(
                 "shared/configuration/papyrus-lint.default.yaml is missing {}; add it next to the other top-level keys",
@@ -109,7 +120,7 @@ fn render(settings: &[LintSetting]) -> String {
     out.line("/// they change). Fields absent from the YAML fall back to their default.");
     out.line("/// File I/O for that YAML lives in `papyrus-lint-config`.");
     out.line("///");
-    out.line("/// Generated from `shared/configuration/lint-settings.json` by `build.rs`.");
+    out.line("/// Generated from `shared/configuration/lint-settings.yaml` by `build.rs`.");
     out.line("/// Do not edit by hand. `rules` is the exception: that struct is");
     out.line("/// generated from `shared/rules.json`.");
     out.line("#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]");
@@ -123,7 +134,7 @@ fn render(settings: &[LintSetting]) -> String {
                     out.line(format_args!("/// {line}"));
                 }
             }
-            out.line(format_args!("pub {}: {},", setting.key, setting.rust_type));
+            out.line(format_args!("pub {}: {},", setting.key, setting.rust.type_name));
         }
         out.line("/// Per-ruleset enable/disable switches. Every ruleset is enabled by");
         out.line("/// default unless `shared/rules.json` sets `enabled_by_default: false`;");
@@ -137,7 +148,7 @@ fn render(settings: &[LintSetting]) -> String {
     for setting in settings {
         out.line(format_args!(
             "            {}: {},",
-            setting.key, setting.rust_default
+            setting.key, setting.rust.default
         ));
     }
     out.line("            rules: Rules::default(),");
