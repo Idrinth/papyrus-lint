@@ -1,0 +1,32 @@
+{
+  "key": "nesting_depth_info",
+  "rust": {
+    "type": "usize",
+    "default": "4"
+  },
+  "yaml": {
+    "default": "4",
+    "comment": "Non-negative integer"
+  },
+  "ts_type": "number",
+  "doc": "The nesting depth a function/event can reach before the\n\"Nesting depth\" lint flags it as `[info]`. Values below 1 are treated as 1.",
+  "ui": {
+    "mount": "lint-config-settings",
+    "group": "nesting-depth",
+    "group_kind": "fieldset",
+    "group_legend": "Nesting depth thresholds",
+    "row": true,
+    "id": "nesting-depth-info",
+    "widget": "number",
+    "label": "Info at",
+    "min": 1,
+    "clamp_min": 1,
+    "treat_zero_as_empty": true
+  },
+  "schema": {
+    "description": "Nesting depth at which the nesting-depth lint reports info. Values below 1 are treated as 1.",
+    "type": "integer",
+    "minimum": 0,
+    "default": 4
+  }
+}

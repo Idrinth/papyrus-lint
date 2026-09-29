@@ -1,0 +1,32 @@
+{
+  "key": "nesting_depth_warning",
+  "rust": {
+    "type": "usize",
+    "default": "6"
+  },
+  "yaml": {
+    "default": "6",
+    "comment": "Non-negative integer"
+  },
+  "ts_type": "number",
+  "doc": "The nesting depth a function/event can reach before the\n\"Nesting depth\" lint flags it as a `[warning]`. A value below\n[`Self::nesting_depth_info`] is treated as equal to it.",
+  "ui": {
+    "mount": "lint-config-settings",
+    "group": "nesting-depth",
+    "group_kind": "fieldset",
+    "row": true,
+    "id": "nesting-depth-warning",
+    "widget": "number",
+    "label": "Warning at",
+    "min": 1,
+    "clamp_min": 1,
+    "clamp_min_from": "nesting_depth_info",
+    "treat_zero_as_empty": true
+  },
+  "schema": {
+    "description": "Nesting depth at which the nesting-depth lint reports a warning. A value below nesting_depth_info is treated as equal to it.",
+    "type": "integer",
+    "minimum": 0,
+    "default": 6
+  }
+}
