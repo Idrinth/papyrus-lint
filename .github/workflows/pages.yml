@@ -86,6 +86,9 @@ jobs:
       - name: Build rules.json from shared/rules/
         run: python3 .github/scripts/build_rules_json.py
 
+      - name: Install PyYAML for config generation
+        run: pip install PyYAML==6.0.2
+
       - name: Generate default configuration
         shell: bash
         run: python3 .github/scripts/generate_default_config.py
