@@ -287,3 +287,66 @@ fn repair_leaves_invalid_or_declaration_free_source_unchanged() {
 fn pascal_case_is_the_default_style() {
     assert_eq!(Style::default(), Style::PascalCase);
 }
+
+#[test]
+fn direct_check_without_tokens_returns_no_diagnostics() {
+    let config = crate::config::Config {
+        type_casing: Style::PascalCase,
+        ..Default::default()
+    };
+
+    assert!(super::check(
+        "ScriptName badName\n",
+        None,
+        None,
+        &config,
+        &mut crate::external_signatures::NoExternalSignatures,
+    )
+    .is_empty());
+}
+
+#[test]
+fn checks_only_the_first_script_name_statement() {
+    assert!(check(
+        "ScriptName GoodName\nScriptName badName\n",
+        Style::PascalCase,
+    )
+    .is_empty());
+}
+
+#[test]
+fn repair_handles_crlf_and_utf8_before_the_declaration() {
+    let source = "; Héader 🌍\r\nScriptName exampleScript\r\n";
+
+    assert_eq!(
+        repair(source, Style::PascalCase),
+        "; Héader 🌍\r\nScriptName ExampleScript\r\n"
+    );
+}
+
+#[test]
+fn configuration_can_disable_the_rule() {
+    let mut config = crate::config::Config {
+        type_casing: Style::PascalCase,
+        ..Default::default()
+    };
+    config.rules.type_casing = false;
+
+    assert!(crate::lint("ScriptName badName\n", &config).is_empty());
+}
+
+#[test]
+fn line_and_file_disable_comments_suppress_diagnostics() {
+    let mut config = crate::config::Config {
+        type_casing: Style::PascalCase,
+        ..Default::default()
+    };
+    config.rules.type_casing = true;
+
+    assert!(crate::lint("ScriptName badName ; @disable type-casing\n", &config).is_empty());
+    assert!(crate::lint(
+        "; @disable-file type-casing\nScriptName badName\n",
+        &config,
+    )
+    .is_empty());
+}
