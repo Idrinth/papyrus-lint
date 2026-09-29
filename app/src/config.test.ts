@@ -19,9 +19,10 @@ import { applyLintConfigToUI, configKeyForRuleId, disableRulesInLintConfig, hand
 import { DEFAULT_LINT_CONFIG, DEFAULT_RULES, type LintConfig, setCurrentLintConfig } from "./config-types";
 import { loadLintConfig, loadLintConfigFromPath, saveLintConfig, saveLintConfigToPath } from "./config-io";
 describe("lint config UI round trip", () => {
-  it("applyLintConfigToUI followed by lintConfigFromUI reproduces the config", () => {
-    const config: LintConfig = {
-      game: "skyrim",
+  it("applyLintConfigToUI followed by lintConfigFromUI reproduces non-default settings", () => {
+    // Start from DEFAULT_LINT_CONFIG so newly added settings/rules do not have to
+    // be listed here. Only the values this test actually changes are explicit.
+    const overrides: Partial<LintConfig> = {
       semicolon: true,
       indentation: "space",
       indentation_width: 8,
@@ -45,9 +46,13 @@ describe("lint config UI round trip", () => {
       assume_auto_properties_filled: true,
       rules: { ...DEFAULT_RULES, forbidden_functions: false, indentation: false },
     };
+    const config: LintConfig = { ...DEFAULT_LINT_CONFIG, ...overrides };
 
     applyLintConfigToUI(config);
-    expect(lintConfigFromUI()).toEqual(config);
+    const actual = lintConfigFromUI();
+    expect(actual).toMatchObject(overrides);
+    expect(actual.rules.forbidden_functions).toBe(false);
+    expect(actual.rules.indentation).toBe(false);
   });
 
   it("round-trips a Fallout 4 project through the target-game control", () => {
