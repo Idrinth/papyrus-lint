@@ -1573,6 +1573,7 @@ Scripts/Source/Base/CIS_ManagerScript.psc:84:121:line-length
 Scripts/Source/Base/CIS_ManagerScript.psc:94:1:unchecked-cast
 Scripts/Source/Base/CIS_ManagerScript.psc:94:121:line-length
 Scripts/Source/Base/CIS_ManagerScript.psc:122:121:line-length
+Scripts/Source/Base/CIS_ManagerScript.psc:126:1:self-comparison
 Scripts/Source/Base/CIS_ManagerScript.psc:126:1:unchecked-cast
 Scripts/Source/Base/CIS_ScriptEventSenderActorScript.psc:26:1:none-form-usage
 Scripts/Source/Base/COMCaitChangeLocationScript.psc:7:1:none-form-usage
