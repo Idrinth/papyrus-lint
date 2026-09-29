@@ -7,7 +7,7 @@
   "additionalProperties": false,
   "properties": {
     "game": {
-      "description": "Game whose Papyrus dialect and runtime APIs the project targets.",
+      "description": "game",
       "type": "string",
       "enum": [
         "skyrim",
@@ -17,7 +17,7 @@
       "default": "skyrim"
     },
     "compiler_path": {
-      "description": "Path to PapyrusCompiler.exe, or null/omit to auto-detect it.",
+      "description": "compiler_path",
       "type": [
         "string",
         "null"
@@ -25,7 +25,7 @@
       "default": null
     },
     "additional_script_roots": {
-      "description": "Extra directories (relative to the project root, or absolute) to search for .psc files, besides scripts/source and source/scripts. Used for linting, cross-script resolution, and the compiler -i path.",
+      "description": "additional_script_roots",
       "type": "array",
       "items": {
         "type": "string",
@@ -34,7 +34,7 @@
       "default": []
     },
     "lookup_script_roots": {
-      "description": "Extra directories searched only as a fallback when resolving other scripts for analysis (argument/return types, Extends, autocompletion). Scripts found only here are never linted, and these directories are ignored by conflicting-script-versions.",
+      "description": "lookup_script_roots",
       "type": "array",
       "items": {
         "type": "string",
@@ -43,22 +43,22 @@
       "default": []
     },
     "compile_check": {
-      "description": "Also run PapyrusCompiler.exe (into a throwaway temporary directory) as part of linting a .psc, reporting its errors alongside the lint engine. Requires compiler_path to be set or auto-detected.",
+      "description": "compile_check",
       "type": "boolean",
       "default": false
     },
     "strict_achlist_scope": {
-      "description": "When true, restrict cross-script resolution and conflicting-script-versions to an achlist's listed entries only. When false (the default), parent directories of listed entries are also search roots.",
+      "description": "strict_achlist_scope",
       "type": "boolean",
       "default": false
     },
     "semicolon": {
-      "description": "Whether lines are required to end in a semicolon (true) or must not (false).",
+      "description": "semicolon",
       "type": "boolean",
       "default": false
     },
     "indentation": {
-      "description": "Expected indentation style, read by the indentation lint and automatic fix.",
+      "description": "indentation",
       "type": "string",
       "enum": [
         "tab",
@@ -67,20 +67,20 @@
       "default": "tab"
     },
     "indentation_width": {
-      "description": "Spaces per indentation level. Used only when indentation is space. The engine clamps this to 1..16.",
+      "description": "indentation_width",
       "type": "integer",
       "minimum": 1,
       "maximum": 16,
       "default": 4
     },
     "max_line_length": {
-      "description": "Non-negative integer; maximum characters allowed on one line",
+      "description": "max_line_length",
       "type": "integer",
       "minimum": 0,
       "default": 120
     },
     "identifier_casing": {
-      "description": "Casing style declared identifiers must match (functions, events, properties, states, parameters, locals).",
+      "description": "identifier_casing",
       "type": "string",
       "enum": [
         "camelCase",
@@ -91,19 +91,19 @@
       "default": "PascalCase"
     },
     "cyclomatic_complexity_warning": {
-      "description": "Cyclomatic complexity at which the cyclomatic-complexity lint reports a warning.",
+      "description": "cyclomatic_complexity_warning",
       "type": "integer",
       "minimum": 0,
       "default": 10
     },
     "cyclomatic_complexity_error": {
-      "description": "Cyclomatic complexity at which the cyclomatic-complexity lint reports an error. A value below cyclomatic_complexity_warning is treated as equal to it.",
+      "description": "cyclomatic_complexity_error",
       "type": "integer",
       "minimum": 0,
       "default": 20
     },
     "type_casing": {
-      "description": "Casing convention for a script's declared type name (the identifier following ScriptName).",
+      "description": "type_casing",
       "type": "string",
       "enum": [
         "PascalCase",
@@ -114,7 +114,7 @@
       "default": "PascalCase"
     },
     "named_arguments": {
-      "description": "How strongly a positional call argument should be passed by name instead.",
+      "description": "named_arguments",
       "type": "string",
       "enum": [
         "always",
@@ -124,13 +124,13 @@
       "default": "never"
     },
     "min_wait_interval": {
-      "description": "Interval/duration argument a Utility.Wait / RegisterForUpdate / RegisterForSingleUpdate / RegisterForUpdateGameTime / RegisterForSingleUpdateGameTime call can go below before short-wait-interval flags it.",
+      "description": "min_wait_interval",
       "type": "number",
       "minimum": 0,
       "default": 0.1
     },
     "magic_numbers": {
-      "description": "Whether the magic-numbers lint also flags Wait/RegisterFor* interval arguments (strict) or leaves them unflagged (loose).",
+      "description": "magic_numbers",
       "type": "string",
       "enum": [
         "loose",
@@ -139,27 +139,27 @@
       "default": "loose"
     },
     "fail_on_warning": {
-      "description": "Whether the CLI treats a warning-level diagnostic as a non-zero exit. Has no effect on the desktop app.",
+      "description": "fail_on_warning",
       "type": "boolean",
       "default": false
     },
     "fail_on_info": {
-      "description": "Whether the CLI treats an info-level diagnostic as a non-zero exit. Has no effect on the desktop app.",
+      "description": "fail_on_info",
       "type": "boolean",
       "default": false
     },
     "bool_like_int": {
-      "description": "Whether strict-boolean accepts the Int literals 1 and 0 used directly as If/ElseIf/While conditions.",
+      "description": "bool_like_int",
       "type": "boolean",
       "default": true
     },
     "treat_form_as_bool_for_returns": {
-      "description": "Whether return-types accepts a non-array Form value returned from a Bool function, relying on Papyrus's implicit None/existing Form conversion.",
+      "description": "treat_form_as_bool_for_returns",
       "type": "boolean",
       "default": false
     },
     "assume_auto_properties_filled": {
-      "description": "Whether none-form-usage treats a script-level Auto/AutoReadOnly property as already filled in by the time a function runs, instead of possibly None.",
+      "description": "assume_auto_properties_filled",
       "type": "boolean",
       "default": false
     },
@@ -303,11 +303,6 @@
           "type": "boolean",
           "default": true
         },
-        "contradictory_condition": {
-          "description": "Contradictory condition",
-          "type": "boolean",
-          "default": true
-        },
         "unreachable_elseif": {
           "description": "Unreachable elseif",
           "type": "boolean",
@@ -320,11 +315,6 @@
         },
         "empty_body": {
           "description": "Empty loop/conditional body",
-          "type": "boolean",
-          "default": true
-        },
-        "empty_event_handler": {
-          "description": "Empty event handler",
           "type": "boolean",
           "default": true
         },
@@ -493,6 +483,11 @@
           "type": "boolean",
           "default": true
         },
+        "auto_state_oninit_misunderstanding": {
+          "description": "OnInit inside non-Auto state",
+          "type": "boolean",
+          "default": true
+        },
         "conflicting_script_versions": {
           "description": "Conflicting script versions",
           "type": "boolean",
@@ -655,6 +650,16 @@
         },
         "boolean_simplification": {
           "description": "Boolean simplification",
+          "type": "boolean",
+          "default": true
+        },
+        "contradictory_condition": {
+          "description": "Contradictory condition",
+          "type": "boolean",
+          "default": true
+        },
+        "empty_event_handler": {
+          "description": "Empty event handler",
           "type": "boolean",
           "default": true
         },
