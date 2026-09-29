@@ -31,6 +31,7 @@
     "fail_on_info",
     "bool_like_int",
     "treat_form_as_bool_for_returns",
-    "assume_auto_properties_filled"
+    "assume_auto_properties_filled",
+    "encoding_enforced"
   ]
 }

@@ -1,0 +1,31 @@
+{
+  "key": "encoding_enforced",
+  "rust": {
+    "type": "EncodingEnforced",
+    "default": "EncodingEnforced::default()"
+  },
+  "yaml": {
+    "default": "utf8",
+    "comment": "utf8, windows-1252, iso-8859-1"
+  },
+  "ts_type": "EncodingEnforced",
+  "ts_alias": "EncodingEnforced",
+  "doc": "File encoding the \"Forced encoding\" lint requires. Ignored while `rules.forced_encoding` is off.",
+  "ui": {
+    "mount": "lint-config-settings",
+    "id": "encoding-enforced",
+    "widget": "select",
+    "label": "Forced encoding",
+    "options": [
+      { "value": "utf8", "label": "UTF-8" },
+      { "value": "windows-1252", "label": "Windows-1252" },
+      { "value": "iso-8859-1", "label": "ISO-8859-1" }
+    ]
+  },
+  "schema": {
+    "description": "Required file encoding when the forced-encoding rule is enabled.",
+    "type": "string",
+    "enum": ["utf8", "windows-1252", "iso-8859-1"],
+    "default": "utf8"
+  }
+}
