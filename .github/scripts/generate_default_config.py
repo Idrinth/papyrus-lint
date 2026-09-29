@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Generate shared/configuration/papyrus-lint.default.yaml from lint-settings + rules.
 
-Run after editing shared/configuration/lint-settings.json or shared/rules/*.json
+Run after editing shared/configuration/lint-settings.yaml or shared/rules/*.json
 (and after build_rules_json.py). The output is a build/release/docs artifact and
 is git-ignored — not a source of truth.
 """
