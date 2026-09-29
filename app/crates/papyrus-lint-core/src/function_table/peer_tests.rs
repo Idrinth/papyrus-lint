@@ -86,6 +86,62 @@ fn same_folder_peer_resolves_without_a_script_index() {
 }
 
 #[test]
+fn namespace_package_peer_resolves_from_the_filesystem_without_an_index() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    let package = root.path().join("scripts/source/CreationClub");
+    let referrer = write(
+        &package.join("Fragments/Terminals"),
+        "TERM_Example.psc",
+        "ScriptName CreationClub:Fragments:Terminals:TERM_Example\n",
+    );
+    let peer = write(
+        &package.join("VRWorkshops"),
+        "VRWorkshopParentScript.PSC",
+        "ScriptName CreationClub:VRWorkshops:VRWorkshopParentScript\n",
+    );
+
+    let _scope = enter_peer_scope(
+        &referrer,
+        "ScriptName CreationClub:Fragments:Terminals:TERM_Example\n",
+    );
+    let hit = resolve_peer_path("vrworkshopparentscript", None, true)
+        .expect("the only matching package leaf should resolve");
+
+    assert_eq!(hit.path, peer);
+    assert!(matches!(hit.origin, ScriptOrigin::Project));
+}
+
+#[test]
+fn filesystem_package_lookup_rejects_ambiguous_or_out_of_scope_leaves() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    let package = root.path().join("scripts/source/CreationClub");
+    let referrer = write(
+        &package.join("Fragments"),
+        "Fragment.psc",
+        "ScriptName CreationClub:Fragments:Fragment\n",
+    );
+    write(
+        &package.join("One"),
+        "Shared.psc",
+        "ScriptName CreationClub:One:Shared\n",
+    );
+    write(
+        &package.join("Two"),
+        "SHARED.PSC",
+        "ScriptName CreationClub:Two:Shared\n",
+    );
+
+    let _scope = enter_peer_scope(&referrer, "ScriptName CreationClub:Fragments:Fragment\n");
+    assert!(resolve_peer_path("shared", None, true).is_none());
+    assert!(resolve_peer_path("missing", None, true).is_none());
+
+    drop(_scope);
+    let _package_scope =
+        enter_peer_scope(&package.join("Root.psc"), "ScriptName CreationClub:Root\n");
+    assert!(resolve_peer_path("shared", None, true).is_none());
+}
+
+#[test]
 fn namespaced_duplicates_stay_distinct_for_conflicts_and_global_lookup() {
     let root = tempfile::tempdir().expect("failed to create temp dir");
     let user = root.path().join("scripts/source/User");
