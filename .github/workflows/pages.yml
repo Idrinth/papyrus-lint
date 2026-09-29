@@ -90,6 +90,10 @@ jobs:
         shell: bash
         run: python3 .github/scripts/generate_default_config.py
 
+      - name: Generate configuration schema
+        shell: bash
+        run: python3 .github/scripts/generate_config_schema.py
+
       - name: Install dependencies
         run: pip install -r pages/requirements-build.txt
 
