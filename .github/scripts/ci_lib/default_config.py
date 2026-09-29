@@ -22,16 +22,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-try:
-    import yaml
-except ImportError:  # pragma: no cover - CI jobs may not have preinstalled PyYAML
-    import subprocess
-    import sys
-
-    subprocess.check_call(
-        [sys.executable, "-m", "pip", "install", "--user", "-q", "PyYAML==6.0.2"]
-    )
-    import yaml
+import yaml
 
 RULE_ID_TO_CONFIG_KEY = {
     "float-to-int": "float_int_conversion",
