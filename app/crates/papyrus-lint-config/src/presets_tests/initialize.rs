@@ -109,13 +109,19 @@ fn init_merges_an_executable_adjacent_base_config_over_the_defaults() {
         .expect("init should succeed");
     let generated = fs::read_to_string(&path).expect("failed to read generated config");
 
-    // The base's own settings win...
+    // The base's own settings win — including project-only keys that are
+    // not on `Config` — without depending on today's built-in defaults.
     assert!(generated.contains("compiler_path: /opt/PapyrusCompiler.exe\n"));
     assert!(generated.contains("semicolon: true\n"));
-    // ...while everything the base didn't set still falls back to the
-    // built-in default.
-    assert!(generated.contains("indentation: tab\n"));
-    assert!(generated.contains("strict_achlist_scope: false\n"));
+    // Everything the base didn't set still falls back to the built-in
+    // default, whatever those values happen to be.
+    assert_eq!(
+        load_config_from_path(&path).expect("generated config should parse"),
+        papyrus_lints::Config {
+            semicolon: true,
+            ..papyrus_lints::Config::default()
+        }
+    );
 }
 
 #[test]
