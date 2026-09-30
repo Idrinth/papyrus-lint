@@ -15,6 +15,27 @@ fn resolves_properties_and_variables_at_script_scope() {
 }
 
 #[test]
+fn resolves_properties_declared_inside_a_group() {
+    let script = parse_with_mode(
+        r#"
+ScriptName Example
+
+Group AutoFill
+    Actor Property CREW_EliteCrew_Vasco_ShutdownZeroG Mandatory Const Auto
+EndGroup
+"#,
+        GameEdition::Fallout4,
+    )
+    .unwrap();
+    let env = TypeEnv::for_script(&script);
+    assert_eq!(
+        env.lookup("CREW_EliteCrew_Vasco_ShutdownZeroG"),
+        Some(&scalar("Actor"))
+    );
+    assert_eq!(env.lookup("AutoFill"), None);
+}
+
+#[test]
 fn identifier_lookup_is_case_insensitive() {
     let script = parse(
             "ScriptName Example\n\nInt Property Count = 1 Auto\n\nFunction Test(Float aValue)\nEndFunction\n",

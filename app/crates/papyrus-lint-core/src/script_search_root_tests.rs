@@ -1,7 +1,7 @@
 use super::*;
 
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 fn write_file(dir: &std::path::Path, name: &str) -> PathBuf {
     let path = dir.join(name);
@@ -111,4 +111,33 @@ fn non_utf8_directory_names_are_not_conventional_roots() {
     assert!(!is_conventional_script_root(
         &PathBuf::from(non_utf8).join("source")
     ));
+}
+
+#[test]
+fn relative_path_keeps_namespace_folder_under_cased_scripts_source() {
+    let relative = strip_prefix_ignore_ascii_case(
+        Path::new("/game/Scripts/Source/NativeTerminal/ContainerScript.psc"),
+        Path::new("/game/scripts/source"),
+    )
+    .expect("cased Scripts/Source should still strip");
+    assert_eq!(relative, Path::new("NativeTerminal/ContainerScript.psc"));
+}
+
+#[test]
+fn relative_path_from_inferred_root_keeps_native_terminal_namespace() {
+    let relative = relative_path_from_inferred_root(
+        Path::new("/mods/StarfieldBaseScripts/Scripts/Source/NativeTerminal/ContainerScript.psc"),
+        Path::new("/mods/StarfieldBaseScripts"),
+    )
+    .expect("conventional Scripts/Source ancestor should be used");
+    assert_eq!(relative, Path::new("NativeTerminal/ContainerScript.psc"));
+}
+
+#[test]
+fn relative_path_from_inferred_root_ignores_flat_custom_folders() {
+    assert!(relative_path_from_inferred_root(
+        Path::new("/mods/MyMod/MyQuest.psc"),
+        Path::new("/mods/MyMod"),
+    )
+    .is_none());
 }

@@ -28,9 +28,18 @@ pub struct TypeEnv {
 
 impl TypeEnv {
     /// Builds the script-level scope from its properties and variables.
+    ///
+    /// Properties declared inside a `Group .. EndGroup` block live on
+    /// [`Script::groups`], not [`Script::properties`]. They are still
+    /// script-scoped names, so they belong in this environment the same
+    /// way ungrouped properties do.
     pub fn for_script(script: &Script) -> Self {
         let mut scope = HashMap::new();
-        for property in &script.properties {
+        for property in script
+            .properties
+            .iter()
+            .chain(script.groups.iter().flat_map(|group| &group.properties))
+        {
             scope.insert(
                 property.name.to_ascii_lowercase(),
                 property.type_name.clone(),
