@@ -1,0 +1,14 @@
+{
+  "id": "unused-function",
+  "name": "Unused private function",
+  "category": "Other",
+  "visitor": "ast",
+  "tags": [
+    "maintainability"
+  ],
+  "severity": "info",
+  "importance": "low",
+  "fixable": false,
+  "description": "Flags a private/internal Function that nothing in the same script calls.",
+  "definition": "Flags, as an `[info]`, a `Function` marked private or internal that has no call site in the same script. A function is treated as private/internal when its header carries `; @private` / `; @internal`, a preceding comment line does, its access level is `Private`, or Starfield's `Private`/`Internal` flag is set. Public and protected functions are never flagged: they may be called from another script or from a mod outside the linted set. `Event`s, `Native` functions, and CreationKit `Fragment_<digits>` entry points are never flagged, matching `unnecessary-function`. A function that overrides a parent script's identically-named function is never flagged when that parent can be resolved, because the parent (or engine dispatch through it) is the call site. A same-script use is an unqualified `Name(...)` call or `Self.Name(...)`; a call through another object or `Parent` is not counted. Cross-script project calls are not counted yet."
+}
