@@ -4386,6 +4386,7 @@ Scripts/Source/Base/DN136_AttackKlaxonDestScript.psc:39:36:forbidden-functions
 Scripts/Source/Base/DN136_AttackKlaxonDestScript.psc:45:15:forbidden-functions
 Scripts/Source/Base/DN136_AttackKlaxonDestScript.psc:49:6:strict-boolean
 Scripts/Source/Base/DN136_AttackKlaxonDestScript.psc:67:20:forbidden-functions
+Scripts/Source/Base/DN136_AttackKlaxonDestScript.psc:67:20:unused-getter
 Scripts/Source/Base/DN136_AttackKlaxonDestScript.psc:68:19:forbidden-functions
 Scripts/Source/Base/DN136_AttackKlaxonDestScript.psc:68:34:forbidden-functions
 Scripts/Source/Base/DN136_AttackKlaxonDestScript.psc:77:13:forbidden-functions
@@ -25884,6 +25885,7 @@ Scripts/Source/Base/Fragments/Quests/QF_Tutorial_00160147.psc:422:11:forbidden-f
 Scripts/Source/Base/Fragments/Quests/QF_Tutorial_00160147.psc:423:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_Tutorial_00160147.psc:437:11:forbidden-functions
 Scripts/Source/Base/Fragments/Quests/QF_Tutorial_00160147.psc:438:1:none-form-usage
+Scripts/Source/Base/Fragments/Quests/QF_Tutorial_00160147.psc:453:8:unused-getter
 Scripts/Source/Base/Fragments/Quests/QF_Tutorial_00160147.psc:455:11:forbidden-functions
 Scripts/Source/Base/Fragments/Quests/QF_Tutorial_00160147.psc:456:13:forbidden-functions
 Scripts/Source/Base/Fragments/Quests/QF_Tutorial_00160147.psc:457:1:none-form-usage
@@ -38002,6 +38004,7 @@ Scripts/Source/Base/PrestonMinutemenScript.psc:16:1:none-form-usage
 Scripts/Source/Base/PrestonMinutemenScript.psc:16:1:none-form-usage
 Scripts/Source/Base/PrestonMinutemenScript.psc:17:14:forbidden-functions
 Scripts/Source/Base/PrestonMinutemenScript.psc:19:1:none-form-usage
+Scripts/Source/Base/ProjectorScript.psc:39:3:empty-body
 Scripts/Source/Base/ProjectorScript.psc:95:2:empty-body
 Scripts/Source/Base/ProjectorScript.psc:104:2:strict-boolean
 Scripts/Source/Base/ProjectorScript.psc:137:1:nesting-depth
@@ -43696,10 +43699,12 @@ Scripts/Source/DLC01/DLC01/DLC01MQ04SetStageOnActivate.psc:9:121:line-length
 Scripts/Source/DLC01/DLC01/DLC01MQ04SetStageOnActivate.psc:12:1:unchecked-cast
 Scripts/Source/DLC01/DLC01/DLC01MQ04SetStageOnActivate.psc:15:13:forbidden-functions
 Scripts/Source/DLC01/DLC01/DLC01MQ04SetStageOnActivate.psc:16:1:unchecked-cast
+Scripts/Source/DLC01/DLC01/DLC01MQ04SetStageOnActivate.psc:16:58:unused-getter
 Scripts/Source/DLC01/DLC01/DLC01MQ04SetStageOnActivate.psc:20:1:none-form-usage
 Scripts/Source/DLC01/DLC01/DLC01MQ04SetStageOnActivate.psc:24:1:unchecked-cast
 Scripts/Source/DLC01/DLC01/DLC01MQ04SetStageOnActivate.psc:27:13:forbidden-functions
 Scripts/Source/DLC01/DLC01/DLC01MQ04SetStageOnActivate.psc:28:1:unchecked-cast
+Scripts/Source/DLC01/DLC01/DLC01MQ04SetStageOnActivate.psc:28:31:unused-getter
 Scripts/Source/DLC01/DLC01/DLC01MQ04SetStageOnActivate.psc:32:1:none-form-usage
 Scripts/Source/DLC01/DLC01/DLC01MQ04SetStageOnActivate.psc:36:1:none-form-usage
 Scripts/Source/DLC01/DLC01/DLC01MQ05MechanistHelmetScript.psc:1:12:script-filename-mismatch
@@ -43877,6 +43882,7 @@ Scripts/Source/DLC01/DLC01/DLC01_KlaxonDestScript.psc:32:36:forbidden-functions
 Scripts/Source/DLC01/DLC01/DLC01_KlaxonDestScript.psc:37:14:forbidden-functions
 Scripts/Source/DLC01/DLC01/DLC01_KlaxonDestScript.psc:41:5:strict-boolean
 Scripts/Source/DLC01/DLC01/DLC01_KlaxonDestScript.psc:54:20:forbidden-functions
+Scripts/Source/DLC01/DLC01/DLC01_KlaxonDestScript.psc:54:20:unused-getter
 Scripts/Source/DLC01/DLC01/DLC01_KlaxonDestScript.psc:55:19:forbidden-functions
 Scripts/Source/DLC01/DLC01/DLC01_KlaxonDestScript.psc:55:34:forbidden-functions
 Scripts/Source/DLC01/DLC01/DLC01_KlaxonJailDestScript.psc:1:12:script-filename-mismatch
@@ -43891,6 +43897,7 @@ Scripts/Source/DLC01/DLC01/DLC01_KlaxonJailDestScript.psc:44:16:forbidden-functi
 Scripts/Source/DLC01/DLC01/DLC01_KlaxonJailDestScript.psc:51:7:strict-boolean
 Scripts/Source/DLC01/DLC01/DLC01_KlaxonJailDestScript.psc:57:7:strict-boolean
 Scripts/Source/DLC01/DLC01/DLC01_KlaxonJailDestScript.psc:72:20:forbidden-functions
+Scripts/Source/DLC01/DLC01/DLC01_KlaxonJailDestScript.psc:72:20:unused-getter
 Scripts/Source/DLC01/DLC01/DLC01_KlaxonJailDestScript.psc:73:19:forbidden-functions
 Scripts/Source/DLC01/DLC01/DLC01_KlaxonJailDestScript.psc:73:34:forbidden-functions
 Scripts/Source/DLC01/DLC01/DLC01_MechanistDoorControlScript.psc:1:12:script-filename-mismatch
@@ -46814,12 +46821,14 @@ Scripts/Source/DLC02/DLC02/DLC02TrapSpikes.psc:45:9:forbidden-functions
 Scripts/Source/DLC02/DLC02/DLC02TrapSpikes.psc:46:9:forbidden-functions
 Scripts/Source/DLC02/DLC02/DLC02TrapSpikes.psc:63:9:forbidden-functions
 Scripts/Source/DLC02/DLC02/DLC02TrapSpikes.psc:66:10:forbidden-functions
+Scripts/Source/DLC02/DLC02/DLC02TrapSpikes.psc:70:4:strict-boolean
 Scripts/Source/DLC02/DLC02/DLC02TrapSpikes.psc:76:11:forbidden-functions
 Scripts/Source/DLC02/DLC02/DLC02TrapSpikes.psc:78:11:forbidden-functions
 Scripts/Source/DLC02/DLC02/DLC02TrapSpikes.psc:80:12:forbidden-functions
 Scripts/Source/DLC02/DLC02/DLC02TrapSpikes.psc:88:10:forbidden-functions
 Scripts/Source/DLC02/DLC02/DLC02TrapSpikes.psc:92:11:forbidden-functions
 Scripts/Source/DLC02/DLC02/DLC02TrapSpikes.psc:94:11:forbidden-functions
+Scripts/Source/DLC02/DLC02/DLC02TrapSpikes.psc:99:4:strict-boolean
 Scripts/Source/DLC02/DLC02/DLC02TrapSpikes.psc:135:2:strict-boolean
 Scripts/Source/DLC02/DLC02/DLC02TrapSpikes.psc:139:50:forbidden-functions
 Scripts/Source/DLC02/DLC02/DLC02TrapSpikes.psc:140:42:slow-functions
@@ -46842,7 +46851,9 @@ Scripts/Source/DLC02/DLC02/DLC02TrapSpring.psc:36:9:forbidden-functions
 Scripts/Source/DLC02/DLC02/DLC02TrapSpring.psc:37:9:forbidden-functions
 Scripts/Source/DLC02/DLC02/DLC02TrapSpring.psc:54:9:forbidden-functions
 Scripts/Source/DLC02/DLC02/DLC02TrapSpring.psc:57:10:forbidden-functions
+Scripts/Source/DLC02/DLC02/DLC02TrapSpring.psc:61:4:strict-boolean
 Scripts/Source/DLC02/DLC02/DLC02TrapSpring.psc:66:10:forbidden-functions
+Scripts/Source/DLC02/DLC02/DLC02TrapSpring.psc:71:4:strict-boolean
 Scripts/Source/DLC02/DLC02/DLC02TrapSpring.psc:86:8:forbidden-functions
 Scripts/Source/DLC02/DLC02/DLC02TrapSpring.psc:87:8:forbidden-functions
 Scripts/Source/DLC02/DLC02/DLC02TrapSpring.psc:105:50:forbidden-functions
@@ -62883,11 +62894,13 @@ Scripts/Source/DLC05/DLC05/WeaponRackScript.psc:78:54:forbidden-functions
 Scripts/Source/DLC05/DLC05/WeaponRackScript.psc:79:1:none-form-usage
 Scripts/Source/DLC05/DLC05/WeaponRackScript.psc:82:6:strict-boolean
 Scripts/Source/DLC05/DLC05/WeaponRackScript.psc:87:12:forbidden-functions
+Scripts/Source/DLC05/DLC05/WeaponRackScript.psc:89:5:unused-getter
 Scripts/Source/DLC05/DLC05/WeaponRackScript.psc:94:2:unused-getter
 Scripts/Source/DLC05/DLC05/WeaponRackScript.psc:95:8:forbidden-functions
 Scripts/Source/DLC05/DLC05/WeaponRackScript.psc:95:121:line-length
 Scripts/Source/DLC05/DLC05/WeaponRackScript.psc:97:9:forbidden-functions
 Scripts/Source/DLC05/DLC05/WeaponRackScript.psc:100:9:forbidden-functions
+Scripts/Source/DLC05/DLC05/WeaponRackScript.psc:108:2:unused-getter
 Scripts/Source/DLC05/DLC05/WeaponRackScript.psc:111:1:nesting-depth
 Scripts/Source/DLC05/DLC05/WeaponRackScript.psc:112:8:forbidden-functions
 Scripts/Source/DLC05/DLC05/WeaponRackScript.psc:114:2:strict-boolean

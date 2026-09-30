@@ -24375,6 +24375,7 @@ Source/Scripts/DLC1SoulCairnWispWallCHILDScript.psc:7:52:trailing-whitespace
 Source/Scripts/DLC1SoulCairnWispWallCHILDScript.psc:11:35:trailing-whitespace
 Source/Scripts/DLC1SoulCairnWispWallCHILDScript.psc:19:13:forbidden-functions
 Source/Scripts/DLC1SoulCairnWispWallCHILDScript.psc:22:1:unchecked-cast
+Source/Scripts/DLC1SoulCairnWispWallCHILDScript.psc:22:38:unused-getter
 Source/Scripts/DLC1SoulCairnWispWallCHILDScript.psc:28:1:indentation
 Source/Scripts/DLC1SoulCairnWispWallCHILDScript.psc:31:1:indentation
 Source/Scripts/DLC1SoulCairnWispWallCHILDScript.psc:37:1:unchecked-cast
@@ -24700,6 +24701,7 @@ Source/Scripts/DLC1VCEmberToggleScript.psc:4:70:semicolon
 Source/Scripts/DLC1VCEmberToggleScript.psc:5:1:semicolon
 Source/Scripts/DLC1VCEmberToggleScript.psc:7:1:semicolon
 Source/Scripts/DLC1VCEmberToggleScript.psc:8:69:semicolon
+Source/Scripts/DLC1VCEmberToggleScript.psc:22:4:strict-boolean
 Source/Scripts/DLC1VCEmberToggleScript.psc:26:7:forbidden-functions
 Source/Scripts/DLC1VCEmberToggleScript.psc:27:5:forbidden-functions
 Source/Scripts/DLC1VCEmberToggleScript.psc:29:1:indentation
@@ -26878,13 +26880,17 @@ Source/Scripts/DLC1WordWallTriggerScript.psc:357:1:none-form-usage
 Source/Scripts/DLC1WordWallTriggerScript.psc:358:7:trailing-whitespace
 Source/Scripts/DLC1_2StateActivatorWithGlobal.psc:26:121:line-length
 Source/Scripts/DLC1_2StateActivatorWithGlobal.psc:26:127:trailing-whitespace
+Source/Scripts/DLC1_2StateActivatorWithGlobal.psc:42:1:cyclomatic-complexity
+Source/Scripts/DLC1_2StateActivatorWithGlobal.psc:45:1:none-form-usage
 Source/Scripts/DLC1_2StateActivatorWithGlobal.psc:47:34:exclamation-spacing
 Source/Scripts/DLC1_2StateActivatorWithGlobal.psc:52:1:trailing-whitespace
 Source/Scripts/DLC1_2StateActivatorWithGlobal.psc:60:1:trailing-whitespace
 Source/Scripts/DLC1_2StateActivatorWithGlobal.psc:61:1:indentation
+Source/Scripts/DLC1_2StateActivatorWithGlobal.psc:62:1:none-form-usage
 Source/Scripts/DLC1_2StateActivatorWithGlobal.psc:62:10:exclamation-spacing
 Source/Scripts/DLC1_2StateActivatorWithGlobal.psc:64:34:exclamation-spacing
 Source/Scripts/DLC1_2StateActivatorWithGlobal.psc:69:1:trailing-whitespace
+Source/Scripts/DLC1_2StateActivatorWithGlobal.psc:86:1:none-form-usage
 Source/Scripts/DLC1_2StateActivatorWithGlobal.psc:87:1:indentation
 Source/Scripts/DLC1_2StateActivatorWithGlobal.psc:87:62:trailing-whitespace
 Source/Scripts/DLC1_2StateActivatorWithGlobal.psc:88:1:indentation
@@ -43259,6 +43265,7 @@ Source/Scripts/DLC2dunBook3SeekerScript.psc:1:50:trailing-whitespace
 Source/Scripts/DLC2dunBook3SeekerScript.psc:5:35:trailing-whitespace
 Source/Scripts/DLC2dunBook3SeekerScript.psc:20:15:forbidden-functions
 Source/Scripts/DLC2dunBook3SeekerScript.psc:23:1:unchecked-cast
+Source/Scripts/DLC2dunBook3SeekerScript.psc:23:48:unused-getter
 Source/Scripts/DLC2dunBook3SeekerScript.psc:29:1:unchecked-cast
 Source/Scripts/DLC2dunBookLevel4Bend.psc:11:1:indentation
 Source/Scripts/DLC2dunBookLevel4Bend.psc:12:1:indentation
@@ -47925,6 +47932,7 @@ Source/Scripts/FavorDialogueScript.psc:122:1:unchecked-cast
 Source/Scripts/FavorDialogueScript.psc:124:1:none-form-usage
 Source/Scripts/FavorDialogueScript.psc:125:1:none-form-usage
 Source/Scripts/FavorDialogueScript.psc:125:1:unchecked-cast
+Source/Scripts/FavorDialogueScript.psc:125:50:unused-getter
 Source/Scripts/FavorDialogueScript.psc:132:1:none-form-usage
 Source/Scripts/FavorDialogueScript.psc:150:39:trailing-whitespace
 Source/Scripts/FavorFollowerControlQuestScript.psc:10:44:trailing-whitespace
@@ -104742,6 +104750,7 @@ Source/Scripts/dunBluePalaceWabbajackSCRIPT.psc:260:1:trailing-whitespace
 Source/Scripts/dunBluePalaceWabbajackSCRIPT.psc:272:1:place-at-me
 Source/Scripts/dunBluePalaceWabbajackSCRIPT.psc:273:1:trailing-whitespace
 Source/Scripts/dunBluePalaceWabbajackSCRIPT.psc:276:1:unchecked-cast
+Source/Scripts/dunBluePalaceWabbajackSCRIPT.psc:276:47:unused-getter
 Source/Scripts/dunBluePalaceWabbajackSCRIPT.psc:277:1:trailing-whitespace
 Source/Scripts/dunBluePalaceWabbajackSCRIPT.psc:279:1:trailing-whitespace
 Source/Scripts/dunBluePalaceWabbajackSCRIPT.psc:280:1:place-at-me
