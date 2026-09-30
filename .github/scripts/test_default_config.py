@@ -52,7 +52,10 @@ def _write_inputs(root: Path) -> None:
     config_dir.mkdir(parents=True)
     rules_dir.mkdir(parents=True)
     (root / "schema").mkdir()
-    config_dir.joinpath("lint-settings.generated.yaml").write_text(yaml.safe_dump(settings, sort_keys=False), encoding="utf-8")
+    config_dir.joinpath("lint-settings.generated.yaml").write_text(
+        yaml.safe_dump(settings, sort_keys=False),
+        encoding="utf-8"
+    )
     rules_dir.joinpath("line-length.json").write_text(
         json.dumps(
             {
