@@ -156,11 +156,26 @@ pub(crate) fn file_uri_to_path(uri: &str) -> Option<PathBuf> {
         .strip_prefix("localhost")
         .or_else(|| rest.strip_prefix("//localhost"))
         .unwrap_or(rest);
-    if !rest.starts_with('/') {
+    let decoded = percent_decode(rest)?;
+    if let Some(windows) = windows_drive_path(&decoded) {
+        return Some(windows);
+    }
+    decoded.starts_with('/').then(|| PathBuf::from(decoded))
+}
+
+/// `file:///C:/...` decodes to `/C:/...`. That leading slash makes a POSIX
+/// path, so walking parents never finds `papyrus-lint.yaml` on Windows.
+fn windows_drive_path(decoded: &str) -> Option<PathBuf> {
+    let path = decoded.strip_prefix('/').unwrap_or(decoded);
+    let mut chars = path.chars();
+    let drive = chars.next()?;
+    if !drive.is_ascii_alphabetic() {
         return None;
     }
-    let decoded = percent_decode(rest)?;
-    Some(PathBuf::from(decoded))
+    match chars.next()? {
+        ':' | '|' => Some(PathBuf::from(path)),
+        _ => None,
+    }
 }
 
 fn percent_decode(input: &str) -> Option<String> {
