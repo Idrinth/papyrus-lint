@@ -43,16 +43,16 @@ def _nested_game_setting() -> dict:
 
 def _write_inputs(root: Path) -> None:
     settings = {
-        "project_settings": [],
+        "project": [],
         "settings": [_nested_game_setting()],
-        "rules_yaml_comment": "rules",
+        "rules_comment": "rules",
     }
     config_dir = root / "shared" / "configuration"
     rules_dir = root / "shared" / "rules"
     config_dir.mkdir(parents=True)
     rules_dir.mkdir(parents=True)
     (root / "schema").mkdir()
-    config_dir.joinpath("lint-settings.yaml").write_text(yaml.safe_dump(settings, sort_keys=False), encoding="utf-8")
+    config_dir.joinpath("lint-settings.generated.yaml").write_text(yaml.safe_dump(settings, sort_keys=False), encoding="utf-8")
     rules_dir.joinpath("line-length.json").write_text(
         json.dumps(
             {
@@ -148,7 +148,7 @@ class DefaultConfigTests(unittest.TestCase):
             root = Path(directory)
             config_dir = root / "shared" / "configuration"
             config_dir.mkdir(parents=True)
-            config_dir.joinpath("lint-settings.yaml").write_text("- game\n", encoding="utf-8")
+            config_dir.joinpath("lint-settings.generated.yaml").write_text("- game\n", encoding="utf-8")
 
             with self.assertRaisesRegex(ValueError, "must contain a mapping"):
                 load_lint_settings(root)
