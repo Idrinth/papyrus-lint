@@ -115,6 +115,56 @@ fn checks_nested_and_inside_or() {
 }
 
 #[test]
+fn checks_nested_conditions_inside_expression_shapes() {
+    let diagnostics = check(
+        "ScriptName Example\n\nBool Function Accept(Bool value)\n    Return value\nEndFunction\n\nFunction Test(Int x, Bool[] values)\n    If Accept(x > 10 && x < 5)\n    EndIf\n    If !(x == 1 && x == 2)\n    EndIf\n    If values[(x > 8 && x < 3) as Int]\n    EndIf\nEndFunction\n",
+    );
+
+    assert_eq!(diagnostics.len(), 3);
+    assert_eq!(
+        diagnostics.iter().map(|diagnostic| diagnostic.line).collect::<Vec<_>>(),
+        vec![8, 10, 12]
+    );
+}
+
+#[test]
+fn handles_negative_float_and_reversed_bounds() {
+    let diagnostics = check(
+        "ScriptName Example\n\nFunction Test(Float value)\n    If value >= -1.5 && -2.0 > value\n    EndIf\n    If -1.5 <= value && value <= -1.5\n    EndIf\nEndFunction\n",
+    );
+
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!(diagnostics[0].line, 4);
+}
+
+#[test]
+fn compares_parent_and_object_member_references_case_insensitively() {
+    let diagnostics = check(
+        "ScriptName Example\n\nFunction Test(Example other)\n    If Parent.Count > 3 && Parent.Count < 1\n    EndIf\n    If other.Count > 3 && OTHER.count < 1\n    EndIf\n    If Self.Count > 3 && Parent.Count < 1\n    EndIf\nEndFunction\n",
+    );
+
+    assert_eq!(diagnostics.len(), 2);
+}
+
+#[test]
+fn caps_diagnostics_for_a_long_contradictory_chain() {
+    let diagnostics = check(
+        "ScriptName Example\n\nFunction Test(Int x)\n    If x == 1 && x == 2 && x == 3 && x == 4\n    EndIf\nEndFunction\n",
+    );
+
+    assert_eq!(diagnostics.len(), 3);
+}
+
+#[test]
+fn ignores_non_numeric_and_non_comparison_clauses() {
+    let diagnostics = check(
+        "ScriptName Example\n\nFunction Test(Int x, String name, Bool ready)\n    If ready && ready\n    EndIf\n    If name == \"one\" && name == \"two\"\n    EndIf\n    If x + 1 && x + 2\n    EndIf\nEndFunction\n",
+    );
+
+    assert!(diagnostics.is_empty());
+}
+
+#[test]
 fn does_not_crash_on_unparseable_source() {
     assert!(check("ScriptName Example\n\nFunction Test(\nEndFunction\n").is_empty());
 }
