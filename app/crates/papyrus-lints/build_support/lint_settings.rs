@@ -6,22 +6,6 @@ use super::BuildContext;
 use serde::Deserialize;
 use std::collections::{BTreeMap, BTreeSet};
 
-const RUST_TYPES: &[&str] = &[
-    "bool",
-    "usize",
-    "f64",
-    "Game",
-    "Indentation",
-    "IdentifierCasing",
-    "TypeCasing",
-    "NamedArguments",
-    "MagicNumbers",
-    "Hungarian",
-    "Utf8BomMode",
-    "EncodingEnforced",
-    "LineEndingsMode",
-];
-
 #[derive(Debug, Deserialize)]
 struct LintSettingsFile {
     settings: Vec<LintSetting>,
@@ -67,12 +51,6 @@ fn validate(settings: &[LintSetting], top: &BTreeMap<String, String>) {
             panic!(
                 "shared/configuration/lint-settings.yaml lists `{}` more than once",
                 setting.key
-            );
-        }
-        if !RUST_TYPES.contains(&setting.rust.type_name.as_str()) {
-            panic!(
-                "shared/configuration/lint-settings.yaml: `{}` has unknown rust.type `{}`",
-                setting.key, setting.rust.type_name
             );
         }
         if setting.rust.default.contains(['\n', ';', '{']) {
