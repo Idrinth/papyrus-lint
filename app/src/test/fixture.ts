@@ -15,10 +15,10 @@ export const FIXTURE_HTML = `
     <div class="tabs">
       <div class="tabs__list" role="tablist">
         <button type="button" id="tab-import" class="tabs__tab" role="tab" aria-selected="true">Import</button>
-        <button type="button" id="tab-settings" class="tabs__tab" role="tab" aria-selected="false">Settings</button>
+        <button type="button" id="tab-settings" class="tabs__tab" role="tab" aria-selected="false" hidden>Settings</button>
         <button type="button" id="tab-presets" class="tabs__tab" role="tab" aria-selected="false" hidden>Presets</button>
-        <button type="button" id="tab-files" class="tabs__tab" role="tab" aria-selected="false">Files</button>
-        <button type="button" id="tab-lint" class="tabs__tab" role="tab" aria-selected="false">Lint results</button>
+        <button type="button" id="tab-files" class="tabs__tab" role="tab" aria-selected="false" hidden>Files</button>
+        <button type="button" id="tab-lint" class="tabs__tab" role="tab" aria-selected="false" hidden>Lint results</button>
         <button type="button" id="tab-contact" class="tabs__tab" role="tab" aria-selected="false">Contact</button>
       </div>
 
