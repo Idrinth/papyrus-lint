@@ -131,19 +131,55 @@ fn returns_no_diagnostics_for_a_script_that_fails_to_parse() {
 }
 
 fn repair(source: &str) -> String {
-    super::repair(
-        source,
-        None,
-        None,
-        &crate::config::Config::default(),
-    )
+    super::repair(source, None, None, &crate::config::Config::default())
 }
 
 #[test]
 fn repair_deletes_a_self_assignment() {
-    let source = "ScriptName Example\n\nFunction Test()\n    Int a = 1\n    a = a\n    a = 2\nEndFunction\n";
+    let source =
+        "ScriptName Example\n\nFunction Test()\n    Int a = 1\n    a = a\n    a = 2\nEndFunction\n";
     let repaired = repair(source);
     assert!(!repaired.contains("a = a"));
     assert!(repaired.contains("a = 2"));
     assert!(check(&repaired).is_empty());
+}
+
+#[test]
+fn repair_returns_invalid_and_clean_source_unchanged() {
+    let invalid = "ScriptName Example\n\nFunction Test(\n    a = a\nEndFunction\n";
+    assert_eq!(repair(invalid), invalid);
+
+    let clean = "ScriptName Example\n\nFunction Test(Int a)\n    a += a\nEndFunction\n";
+    assert_eq!(repair(clean), clean);
+}
+
+#[test]
+fn repair_deletes_a_final_self_assignment_without_a_line_ending() {
+    let source = "ScriptName Example\n\nFunction Test(Int a)\n    a = a\nEndFunction";
+
+    assert_eq!(
+        repair(source),
+        "ScriptName Example\n\nFunction Test(Int a)\nEndFunction"
+    );
+}
+
+#[test]
+fn repair_finds_self_assignments_in_nested_control_flow() {
+    let source = "ScriptName Example\n\nFunction Test(Int a, Bool ready)\n    If ready\n        a = a\n    ElseIf !ready\n        a = a\n    Else\n        a = a\n    EndIf\n    While ready\n        a = a\n    EndWhile\nEndFunction\n";
+
+    let repaired = repair(source);
+
+    assert_eq!(repaired.matches("a = a").count(), 0);
+    assert!(repaired.contains("ElseIf !ready"));
+    assert!(check(&repaired).is_empty());
+}
+
+#[test]
+fn repair_preserves_crlf_endings_and_non_matching_assignments() {
+    let source = "ScriptName Example\r\n\r\nFunction Test(Int a, Int b)\r\n    a = b\r\n    a = a\r\n    b = a\r\nEndFunction\r\n";
+
+    assert_eq!(
+        repair(source),
+        "ScriptName Example\r\n\r\nFunction Test(Int a, Int b)\r\n    a = b\r\n    b = a\r\nEndFunction\r\n"
+    );
 }
