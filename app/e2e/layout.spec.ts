@@ -7,6 +7,21 @@ import { expect, test, type Page } from "@playwright/test";
 // longer matches its underlying element's dimensions would all pass there
 // unnoticed.
 
+// Settings / Files / Lint start hidden until something makes them usable.
+// Layout specs still need those panels' boxes, so reveal the buttons first.
+const PROJECT_TABS = ["settings", "files", "lint"] as const;
+
+async function revealProjectTabs(page: Page) {
+  await page.evaluate((ids) => {
+    for (const id of ids) {
+      const button = document.querySelector<HTMLButtonElement>(`#tab-${id}`);
+      if (button) {
+        button.hidden = false;
+      }
+    }
+  }, PROJECT_TABS);
+}
+
 test("renders the main layout with real, non-zero dimensions", async ({ page }) => {
   await page.goto("/");
 
@@ -31,6 +46,7 @@ test("renders the main layout with real, non-zero dimensions", async ({ page }) 
 
 test("switching tabs shows exactly one panel with a real box, hides the rest", async ({ page }) => {
   await page.goto("/");
+  await revealProjectTabs(page);
 
   const tabIds = ["import", "settings", "files", "lint", "contact"] as const;
 
@@ -99,6 +115,7 @@ test("layout does not overflow horizontally at the app's default window size", a
   // expected to look right at out of the box.
   await page.setViewportSize({ width: 800, height: 600 });
   await page.goto("/");
+  await revealProjectTabs(page);
 
   // A layout that only works down to some minimum width tends to fail
   // silently by growing wider than the viewport instead of shrinking - this
