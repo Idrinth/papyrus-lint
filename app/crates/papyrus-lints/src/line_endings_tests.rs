@@ -39,6 +39,26 @@ fn crlf_flags_lf() {
 }
 
 #[test]
+fn crlf_accepts_crlf() {
+    assert!(check_with(
+        "ScriptName Example\r\nInt x = 1\r\n",
+        LineEndingsMode::Crlf,
+    )
+    .is_empty());
+}
+
+#[test]
+fn crlf_reports_the_first_lf_after_valid_lines() {
+    let diagnostics = check_with(
+        "ScriptName Example\r\nInt x = 1\r\nInt y = 2\n",
+        LineEndingsMode::Crlf,
+    );
+
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!((diagnostics[0].line, diagnostics[0].column), (3, 10));
+}
+
+#[test]
 fn flags_mixed_endings_at_first_offender() {
     let diagnostics = check_with("ScriptName Example\nInt x = 1\r\n", LineEndingsMode::Lf);
     assert_eq!(diagnostics.len(), 1);
@@ -87,6 +107,20 @@ fn repair_converts_lf_to_crlf() {
     assert_eq!(
         repair_with("ScriptName Example\nInt x = 1\n", LineEndingsMode::Crlf),
         "ScriptName Example\r\nInt x = 1\r\n"
+    );
+}
+
+#[test]
+fn repair_normalizes_every_kind_of_terminator() {
+    let source = "ScriptName Example\r\nInt x = 1\nInt y = 2\rInt z = 3";
+
+    assert_eq!(
+        repair_with(source, LineEndingsMode::Lf),
+        "ScriptName Example\nInt x = 1\nInt y = 2\nInt z = 3"
+    );
+    assert_eq!(
+        repair_with(source, LineEndingsMode::Crlf),
+        "ScriptName Example\r\nInt x = 1\r\nInt y = 2\r\nInt z = 3"
     );
 }
 
