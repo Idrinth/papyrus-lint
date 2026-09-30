@@ -314,3 +314,47 @@ fn unqualified_struct_lookup_is_a_read_lock_hit_after_it_is_loaded() {
     assert!(shared.declares_struct_in_ancestry("child", "DailyUpdateData"));
     assert!(!shared.declares_struct_in_ancestry("child", "Missing"));
 }
+
+#[test]
+fn event_and_descendant_queries_fill_the_cache_then_use_read_locks() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    write_script(
+        root.path(),
+        "Base",
+        "ScriptName Base\n\nEvent OnReady()\nEndEvent\n\nState Busy\nEndState\n",
+    );
+    write_script(
+        root.path(),
+        "Child",
+        "ScriptName Child Extends Base\n\nEvent OnInit()\n    GotoState(\"Busy\")\n    RegisterForRemoteEvent(Self, \"OnCellAttach\")\nEndEvent\n",
+    );
+    let table = RwLock::new(
+        FunctionTable::new(root.path().to_path_buf()).with_game(papyrus_lints::Game::Fallout4),
+    );
+    let mut shared = SharedFunctionTable(&table);
+
+    assert!(shared.descendant_targets_state("Base", "Busy"));
+    assert_eq!(shared.has_event("Child", "OnReady"), Some(true));
+    assert_eq!(
+        shared.registers_remote_event("Child", "OnCellAttach"),
+        Some(true)
+    );
+
+    // All three queries now have complete cached answers. Holding another
+    // read guard proves that repeated calls do not try to take a write lock.
+    let _held = table
+        .read()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    assert!(shared.descendant_targets_state("base", "busy"));
+    assert!(!shared.descendant_targets_state("base", "Missing"));
+    assert_eq!(shared.has_event("child", "onready"), Some(true));
+    assert_eq!(shared.has_event("child", "Missing"), Some(false));
+    assert_eq!(
+        shared.registers_remote_event("child", "oncellattach"),
+        Some(true)
+    );
+    assert_eq!(
+        shared.registers_remote_event("child", "Missing"),
+        Some(false)
+    );
+}
