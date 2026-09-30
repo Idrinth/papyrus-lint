@@ -5,7 +5,7 @@ Lint/fix behavior is configured via an optional `papyrus-lint.yaml` (or
 The complete, annotated default file is generated from the per-setting JSON
 files in [`project-settings/`](../shared/configuration/project-settings) and
 [`lint-settings/`](../shared/configuration/lint-settings) (one file per key;
-order is [`lint-settings.meta.json`](../shared/configuration/lint-settings.meta.json))
+order is [`lint-settings.yaml`](../shared/configuration/lint-settings.yaml))
 and from [`shared/rules/`](../shared/rules/). It is the reference for the
 available keys, accepted values, and rule switches. Regenerate the git-ignored
 default artifact with `python3 .github/scripts/generate_default_config.py`

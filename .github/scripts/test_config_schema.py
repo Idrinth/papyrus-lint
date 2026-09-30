@@ -26,7 +26,7 @@ SPEC.loader.exec_module(generate_config_schema)
 
 def fixture() -> tuple[dict, list[dict]]:
     settings = {
-        "project_settings": [
+        "project": [
             {
                 "key": "compiler_path",
                 "yaml": {"comment": "Compiler\npath", "default": "null"},
@@ -49,7 +49,7 @@ def fixture() -> tuple[dict, list[dict]]:
                 "schema": {"type": "integer"},
             },
         ],
-        "rules_yaml_comment": "rules",
+        "rules_comment": "rules",
     }
     rules = [
         {"id": "first-rule", "name": "First rule", "enabled_by_default": False},
@@ -64,7 +64,7 @@ def write_inputs(root: Path) -> None:
     rules_dir = root / "shared" / "rules"
     config_dir.mkdir(parents=True)
     rules_dir.mkdir(parents=True)
-    config_dir.joinpath("lint-settings.yaml").write_text(
+    config_dir.joinpath("lint-settings.generated.yaml").write_text(
         yaml.safe_dump(settings, sort_keys=False), encoding="utf-8"
     )
     for rule in rules:

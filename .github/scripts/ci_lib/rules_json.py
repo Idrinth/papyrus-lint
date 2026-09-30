@@ -21,25 +21,19 @@ def assemble_rules(rules_dir: Path) -> list[dict]:
 
     Each file's own `id` field must match its file name (minus `.json`),
     catching a rule renamed on one side but not the other.
+    Repair sequence lives in shared/rule-order.yaml, so a leftover
+    `repair_order` field on a rule file is dropped rather than copied.
     """
     paths = sorted(rules_dir.glob("*.json"))
     if not paths:
         raise ValueError(f"no rule files found in {rules_dir}")
 
     rules = []
-    repair_orders = {}
     for path in paths:
         rule = json.loads(path.read_text(encoding="utf-8"))
         if rule.get("id") != path.stem:
             raise ValueError(f"{path}: `id` is {rule.get('id')!r}, expected {path.stem!r} to match the file name")
-        repair_order = rule.get("repair_order")
-        if repair_order in repair_orders:
-            raise ValueError(
-                f"{path}: `repair_order` {repair_order!r} is already used by "
-                f"{repair_orders[repair_order]}"
-            )
-        if repair_order is not None:
-            repair_orders[repair_order] = path
+        rule.pop("repair_order", None)
         rules.append(rule)
     return rules
 

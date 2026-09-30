@@ -12,10 +12,10 @@ shell, and `app/src/README.md` for the UI). Do not copy them here.
   any of the commands below that touch it.
 - Setting metadata: edit `shared/configuration/project-settings/<key>.json`
   or `shared/configuration/lint-settings/<key>.json` (and the order list in
-  `lint-settings.meta.json`). `shared/configuration/lint-settings.yaml` is
+  `lint-settings.yaml`). `shared/configuration/lint-settings.generated.yaml` is
   git-ignored. `python3 .github/scripts/generate_default_config.py` refreshes
   it; run `python3 .github/scripts/build_lint_settings_yaml.py` first only
-  when a Rust build will not go through that script. Don't edit the YAML.
+  when a Rust build will not go through that script. Don't edit the generated YAML.
 - Full desktop app: `npm run tauri dev` / `npm run tauri build` (from `app/`).
   The desktop shell is built with [Tauri](https://tauri.app/), so building
   it requires Tauri's platform prerequisites (a Rust toolchain, plus the

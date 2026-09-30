@@ -35,18 +35,16 @@ class MainTests(unittest.TestCase):
                 json.dumps({"key": "game", "yaml": {"default": "skyrim", "comment": "Game"}}),
                 encoding="utf-8",
             )
-            meta = root / "lint-settings.meta.json"
+            meta = root / "lint-settings.yaml"
             meta.write_text(
-                json.dumps(
-                    {
-                        "rules_yaml_comment": "Each rule accepts true or false",
-                        "project_settings": ["compiler_path"],
-                        "settings": ["game"],
-                    }
-                ),
+                "rules_comment: Each rule accepts true or false\n"
+                "project:\n"
+                "  - compiler_path\n"
+                "settings:\n"
+                "  - game\n",
                 encoding="utf-8",
             )
-            out_path = root / "lint-settings.yaml"
+            out_path = root / "lint-settings.generated.yaml"
             output = io.StringIO()
 
             with (

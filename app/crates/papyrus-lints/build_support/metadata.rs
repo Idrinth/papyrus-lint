@@ -16,8 +16,6 @@ pub struct RuleMetadata {
     /// nodes), `"tokens"` (the lexer stream), or `"none"` (project-level,
     /// post-pass, or a raw source-line scan that is neither).
     pub visitor: String,
-    #[serde(default)]
-    pub repair_order: Option<u32>,
     #[serde(default = "enabled_by_default")]
     pub enabled_by_default: bool,
     /// Optional allow-list of `Game::as_str()` values this rule runs for.
@@ -66,6 +64,17 @@ pub fn load(context: &BuildContext) -> Vec<RuleMetadata> {
     context.load_json("shared/rules.json", "rule metadata")
 }
 
+#[derive(Debug, Deserialize)]
+struct RuleOrderFile {
+    repair: Vec<String>,
+}
+
+pub fn load_repair_order(context: &BuildContext) -> Vec<String> {
+    context
+        .load_yaml::<RuleOrderFile>("shared/rule-order.yaml", "repair order")
+        .repair
+}
+
 pub fn config_key(id: &str) -> String {
     mapped_name(id, RULE_ID_TO_CONFIG_KEY)
 }
@@ -81,7 +90,7 @@ fn mapped_name(id: &str, overrides: &[(&str, &str)]) -> String {
         .map_or_else(|| id.replace('-', "_"), |(_, name)| (*name).to_string())
 }
 
-pub fn validate(rules: &[RuleMetadata]) -> Result<(), ValidationError> {
+pub fn validate(rules: &[RuleMetadata], repair_order: &[String]) -> Result<(), ValidationError> {
     let mut seen = HashSet::new();
     for rule in rules {
         if !seen.insert(rule.id.as_str()) {
@@ -124,32 +133,47 @@ pub fn validate(rules: &[RuleMetadata]) -> Result<(), ValidationError> {
         }
         let no_source = NO_SOURCE_CHECK_IDS.contains(&rule.id.as_str());
         let external_repair = EXTERNAL_REPAIR_IDS.contains(&rule.id.as_str());
-        if no_source && rule.repair_order.is_some() {
+        if no_source && repair_order.iter().any(|id| id == rule.id.as_str()) {
             return fail(format!(
-                "shared/rules.json: {} is a project/post-pass rule and must not have `repair_order`",
+                "shared/rule-order.yaml: {} is a project/post-pass rule and must not be listed under `repair`",
                 rule.id
             ));
         }
-        if rule.repair_order.is_some() && !rule.fixable {
+        if external_repair && repair_order.iter().any(|id| id == rule.id.as_str()) {
             return fail(format!(
-                "shared/rules.json: {} has `repair_order` but is not fixable",
+                "shared/rule-order.yaml: {} is repaired outside apply_repairs and must not be listed under `repair`",
                 rule.id
             ));
         }
-        if rule.fixable && !external_repair && !no_source && rule.repair_order.is_none() {
-            return fail(format!("shared/rules.json: {} is fixable and needs `repair_order` (or belong to EXTERNAL_REPAIR_IDS)", rule.id));
-        }
-        if external_repair && rule.repair_order.is_some() {
-            return fail(format!("shared/rules.json: {} is repaired outside apply_repairs and must not have `repair_order`", rule.id));
+        if rule.fixable
+            && !external_repair
+            && !no_source
+            && !repair_order.iter().any(|id| id == rule.id.as_str())
+        {
+            return fail(format!(
+                "shared/rule-order.yaml: {} is fixable and must be listed under `repair` (or belong to EXTERNAL_REPAIR_IDS)",
+                rule.id
+            ));
         }
     }
-    let mut orders: Vec<_> = rules.iter().filter_map(|rule| rule.repair_order).collect();
-    orders.sort_unstable();
-    let expected: Vec<_> = (1..=orders.len() as u32).collect();
-    if orders != expected {
-        return fail(format!(
-            "shared/rules.json `repair_order` values must be 1..=N without gaps, got {orders:?}"
-        ));
+    let mut seen_order = HashSet::new();
+    let by_id: HashMap<_, _> = rules.iter().map(|rule| (rule.id.as_str(), rule)).collect();
+    for id in repair_order {
+        if !seen_order.insert(id.as_str()) {
+            return fail(format!(
+                "shared/rule-order.yaml lists `{id}` more than once under `repair`"
+            ));
+        }
+        let Some(rule) = by_id.get(id.as_str()) else {
+            return fail(format!(
+                "shared/rule-order.yaml lists `{id}` under `repair` but shared/rules.json has no matching id"
+            ));
+        };
+        if !rule.fixable {
+            return fail(format!(
+                "shared/rule-order.yaml lists `{id}` under `repair` but that rule is not fixable"
+            ));
+        }
     }
     Ok(())
 }
