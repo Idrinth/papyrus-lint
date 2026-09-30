@@ -108,10 +108,12 @@ fn rejects_invalid_repair_metadata() {
         .contains("must be listed under `repair`"));
     let mut gap = rule("gap");
     gap.fixable = true;
-    assert!(validate(&[gap], &["gap".to_string(), "gap".to_string()], &[])
-        .unwrap_err()
-        .to_string()
-        .contains("more than once"));
+    assert!(
+        validate(&[gap], &["gap".to_string(), "gap".to_string()], &[])
+            .unwrap_err()
+            .to_string()
+            .contains("more than once")
+    );
 }
 
 #[test]
@@ -141,14 +143,10 @@ fn rejects_repair_orders_on_special_case_rules() {
     let mut project_rule = rule("stale-compiled-output");
     project_rule.fixable = true;
     assert!(
-        validate(
-            &[project_rule],
-            &["stale-compiled-output".to_string()],
-            &[]
-        )
-        .unwrap_err()
-        .to_string()
-        .contains("project/post-pass rule")
+        validate(&[project_rule], &["stale-compiled-output".to_string()], &[]
+            .unwrap_err()
+            .to_string()
+            .contains("project/post-pass rule")
     );
 
     let mut external_repair = rule("unused-import");
@@ -173,10 +171,12 @@ fn rejects_unknown_or_unfixable_external_repair_ids() {
         .contains("no matching id"));
 
     let not_fixable = rule("unused-import");
-    assert!(validate(&[not_fixable], &[], &["unused-import".to_string()])
-        .unwrap_err()
-        .to_string()
-        .contains("not fixable"));
+    assert!(
+        validate(&[not_fixable], &[], &["unused-import".to_string()])
+            .unwrap_err()
+            .to_string()
+            .contains("not fixable")
+    );
 }
 
 #[test]
