@@ -8,7 +8,7 @@
   ],
   "severity": "warning",
   "importance": "low",
-  "kept_in_standard": true,
+  "kept_in_standard": false,
   "fixable": true,
   "description": "Requires, allows, or forbids a leading UTF-8 BOM.",
   "definition": "Requires, as a `[warning]`, a leading UTF-8 BOM (`EF BB BF` / U+FEFF) to match `utf8_bom_mode`: `forbidden` flags a BOM, `required` flags a missing BOM, `allowed` never flags. Finding is at line 1. Automatically fixable: the fix strips or inserts the BOM."
