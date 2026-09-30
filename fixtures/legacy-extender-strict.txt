@@ -1,3 +1,4 @@
+scripts/Source/ActiveMagicEffect.psc:1:36:line-endings
 scripts/Source/ActiveMagicEffect.psc:5:1:identifier-casing
 scripts/Source/ActiveMagicEffect.psc:20:1:identifier-casing
 scripts/Source/ActiveMagicEffect.psc:20:1:identifier-casing
@@ -156,6 +157,7 @@ scripts/Source/ActiveMagicEffect.psc:422:1:identifier-casing
 scripts/Source/ActiveMagicEffect.psc:422:1:identifier-casing
 scripts/Source/ActiveMagicEffect.psc:429:1:identifier-casing
 scripts/Source/ActiveMagicEffect.psc:433:37:final-newline
+scripts/Source/Actor.psc:1:48:line-endings
 scripts/Source/Actor.psc:18:1:identifier-casing
 scripts/Source/Actor.psc:18:1:unnecessary-function
 scripts/Source/Actor.psc:18:10:deprecated-functions
@@ -451,6 +453,7 @@ scripts/Source/Actor.psc:940:74:trailing-whitespace
 scripts/Source/Actor.psc:941:1:identifier-casing
 scripts/Source/Actor.psc:941:1:identifier-casing
 scripts/Source/Actor.psc:941:64:final-newline
+scripts/Source/ActorBase.psc:1:41:line-endings
 scripts/Source/ActorBase.psc:34:1:identifier-casing
 scripts/Source/ActorBase.psc:37:1:identifier-casing
 scripts/Source/ActorBase.psc:40:1:identifier-casing
@@ -482,6 +485,7 @@ scripts/Source/ActorBase.psc:105:1:identifier-casing
 scripts/Source/ActorBase.psc:109:1:identifier-casing
 scripts/Source/ActorBase.psc:113:1:identifier-casing
 scripts/Source/ActorBase.psc:116:40:final-newline
+scripts/Source/ActorValueInfo.psc:1:46:line-endings
 scripts/Source/ActorValueInfo.psc:4:1:identifier-casing
 scripts/Source/ActorValueInfo.psc:5:1:identifier-casing
 scripts/Source/ActorValueInfo.psc:5:1:unnecessary-function
@@ -507,6 +511,7 @@ scripts/Source/ActorValueInfo.psc:60:1:identifier-casing
 scripts/Source/ActorValueInfo.psc:63:1:identifier-casing
 scripts/Source/ActorValueInfo.psc:66:1:identifier-casing
 scripts/Source/ActorValueInfo.psc:66:53:final-newline
+scripts/Source/Alias.psc:1:24:line-endings
 scripts/Source/Alias.psc:7:1:identifier-casing
 scripts/Source/Alias.psc:7:1:identifier-casing
 scripts/Source/Alias.psc:10:121:line-length
@@ -578,8 +583,11 @@ scripts/Source/Alias.psc:190:1:identifier-casing
 scripts/Source/Alias.psc:190:1:identifier-casing
 scripts/Source/Alias.psc:197:1:identifier-casing
 scripts/Source/Alias.psc:198:9:final-newline
+scripts/Source/Ammo.psc:1:36:line-endings
+scripts/Source/Apparatus.psc:1:47:line-endings
 scripts/Source/Apparatus.psc:7:1:identifier-casing
 scripts/Source/Apparatus.psc:7:40:final-newline
+scripts/Source/Armor.psc:1:37:line-endings
 scripts/Source/Armor.psc:9:1:identifier-casing
 scripts/Source/Armor.psc:10:1:identifier-casing
 scripts/Source/Armor.psc:10:1:unnecessary-function
@@ -698,6 +706,7 @@ scripts/Source/Armor.psc:163:26:assignment-operator-spacing
 scripts/Source/Armor.psc:164:1:identifier-casing
 scripts/Source/Armor.psc:164:14:unused-property
 scripts/Source/Armor.psc:164:26:assignment-operator-spacing
+scripts/Source/ArmorAddon.psc:1:42:line-endings
 scripts/Source/ArmorAddon.psc:4:1:identifier-casing
 scripts/Source/ArmorAddon.psc:4:1:identifier-casing
 scripts/Source/ArmorAddon.psc:7:1:identifier-casing
@@ -719,9 +728,12 @@ scripts/Source/ArmorAddon.psc:35:1:identifier-casing
 scripts/Source/ArmorAddon.psc:39:1:identifier-casing
 scripts/Source/ArmorAddon.psc:39:1:unnecessary-function
 scripts/Source/ArmorAddon.psc:41:12:final-newline
+scripts/Source/Art.psc:1:35:line-endings
 scripts/Source/Art.psc:4:1:identifier-casing
 scripts/Source/Art.psc:4:42:final-newline
+scripts/Source/Book.psc:1:36:line-endings
 scripts/Source/Book.psc:8:34:final-newline
+scripts/Source/Cell.psc:1:36:line-endings
 scripts/Source/Cell.psc:19:1:identifier-casing
 scripts/Source/Cell.psc:22:1:identifier-casing
 scripts/Source/Cell.psc:25:1:identifier-casing
@@ -752,6 +764,7 @@ scripts/Source/Cell.psc:42:1:indentation
 scripts/Source/Cell.psc:44:1:indentation
 scripts/Source/Cell.psc:45:1:indentation
 scripts/Source/Cell.psc:45:38:final-newline
+scripts/Source/ColorComponent.psc:1:33:line-endings
 scripts/Source/ColorComponent.psc:3:1:identifier-casing
 scripts/Source/ColorComponent.psc:4:1:identifier-casing
 scripts/Source/ColorComponent.psc:5:1:identifier-casing
@@ -774,8 +787,10 @@ scripts/Source/ColorComponent.psc:18:1:identifier-casing
 scripts/Source/ColorComponent.psc:19:1:identifier-casing
 scripts/Source/ColorComponent.psc:19:1:identifier-casing
 scripts/Source/ColorComponent.psc:19:55:final-newline
+scripts/Source/ColorForm.psc:1:41:line-endings
 scripts/Source/ColorForm.psc:4:1:identifier-casing
 scripts/Source/ColorForm.psc:28:12:final-newline
+scripts/Source/CombatStyle.psc:1:43:line-endings
 scripts/Source/CombatStyle.psc:15:1:identifier-casing
 scripts/Source/CombatStyle.psc:16:1:identifier-casing
 scripts/Source/CombatStyle.psc:17:1:identifier-casing
@@ -804,6 +819,7 @@ scripts/Source/CombatStyle.psc:67:1:identifier-casing
 scripts/Source/CombatStyle.psc:68:1:identifier-casing
 scripts/Source/CombatStyle.psc:69:1:identifier-casing
 scripts/Source/CombatStyle.psc:71:1:final-newline
+scripts/Source/ConstructibleObject.psc:1:57:line-endings
 scripts/Source/ConstructibleObject.psc:7:1:identifier-casing
 scripts/Source/ConstructibleObject.psc:11:1:identifier-casing
 scripts/Source/ConstructibleObject.psc:17:1:identifier-casing
@@ -814,10 +830,12 @@ scripts/Source/ConstructibleObject.psc:22:1:identifier-casing
 scripts/Source/ConstructibleObject.psc:22:1:identifier-casing
 scripts/Source/ConstructibleObject.psc:26:1:identifier-casing
 scripts/Source/ConstructibleObject.psc:26:54:final-newline
+scripts/Source/DefaultObjectManager.psc:1:52:line-endings
 scripts/Source/DefaultObjectManager.psc:4:1:identifier-casing
 scripts/Source/DefaultObjectManager.psc:7:1:identifier-casing
 scripts/Source/DefaultObjectManager.psc:7:1:identifier-casing
 scripts/Source/DefaultObjectManager.psc:355:44:final-newline
+scripts/Source/Enchantment.psc:1:43:line-endings
 scripts/Source/Enchantment.psc:11:1:identifier-casing
 scripts/Source/Enchantment.psc:14:1:identifier-casing
 scripts/Source/Enchantment.psc:17:1:identifier-casing
@@ -831,8 +849,10 @@ scripts/Source/Enchantment.psc:32:1:identifier-casing
 scripts/Source/Enchantment.psc:37:33:trailing-whitespace
 scripts/Source/Enchantment.psc:41:1:identifier-casing
 scripts/Source/Enchantment.psc:41:64:final-newline
+scripts/Source/EquipSlot.psc:1:41:line-endings
 scripts/Source/EquipSlot.psc:7:1:identifier-casing
 scripts/Source/EquipSlot.psc:7:46:final-newline
+scripts/Source/Faction.psc:1:39:line-endings
 scripts/Source/Faction.psc:25:1:identifier-casing
 scripts/Source/Faction.psc:34:1:identifier-casing
 scripts/Source/Faction.psc:40:1:identifier-casing
@@ -908,9 +928,11 @@ scripts/Source/Faction.psc:125:1:identifier-casing
 scripts/Source/Faction.psc:128:1:identifier-casing
 scripts/Source/Faction.psc:131:1:identifier-casing
 scripts/Source/Faction.psc:131:48:final-newline
+scripts/Source/Flora.psc:1:42:line-endings
 scripts/Source/Flora.psc:6:1:identifier-casing
 scripts/Source/Flora.psc:9:1:identifier-casing
 scripts/Source/Flora.psc:9:49:final-newline
+scripts/Source/Form.psc:1:23:line-endings
 scripts/Source/Form.psc:10:1:identifier-casing
 scripts/Source/Form.psc:16:1:identifier-casing
 scripts/Source/Form.psc:16:1:identifier-casing
@@ -993,6 +1015,7 @@ scripts/Source/Form.psc:274:1:identifier-casing
 scripts/Source/Form.psc:277:1:identifier-casing
 scripts/Source/Form.psc:277:1:identifier-casing
 scripts/Source/Form.psc:280:34:final-newline
+scripts/Source/FormList.psc:1:33:line-endings
 scripts/Source/FormList.psc:4:1:identifier-casing
 scripts/Source/FormList.psc:8:1:identifier-casing
 scripts/Source/FormList.psc:14:1:identifier-casing
@@ -1000,6 +1023,7 @@ scripts/Source/FormList.psc:17:1:identifier-casing
 scripts/Source/FormList.psc:20:1:identifier-casing
 scripts/Source/FormList.psc:31:1:identifier-casing
 scripts/Source/FormList.psc:31:39:final-newline
+scripts/Source/FormType.psc:1:27:line-endings
 scripts/Source/FormType.psc:3:1:identifier-casing
 scripts/Source/FormType.psc:3:14:unused-property
 scripts/Source/FormType.psc:3:20:assignment-operator-spacing
@@ -1271,6 +1295,7 @@ scripts/Source/FormType.psc:136:1:identifier-casing
 scripts/Source/FormType.psc:136:14:unused-property
 scripts/Source/FormType.psc:137:1:identifier-casing
 scripts/Source/FormType.psc:137:14:unused-property
+scripts/Source/Game.psc:1:23:line-endings
 scripts/Source/Game.psc:4:1:identifier-casing
 scripts/Source/Game.psc:7:1:identifier-casing
 scripts/Source/Game.psc:10:1:identifier-casing
@@ -1777,6 +1802,7 @@ scripts/Source/Game.psc:439:1:indentation
 scripts/Source/Game.psc:440:1:identifier-casing
 scripts/Source/Game.psc:440:1:indentation
 scripts/Source/Game.psc:440:49:final-newline
+scripts/Source/GameData.psc:1:27:line-endings
 scripts/Source/GameData.psc:2:1:trailing-whitespace
 scripts/Source/GameData.psc:8:14:unused-property
 scripts/Source/GameData.psc:9:14:unused-property
@@ -1839,6 +1865,7 @@ scripts/Source/GameData.psc:34:1:trailing-whitespace
 scripts/Source/GameData.psc:35:1:identifier-casing
 scripts/Source/GameData.psc:35:1:identifier-casing
 scripts/Source/GameData.psc:35:89:final-newline
+scripts/Source/HeadPart.psc:1:40:line-endings
 scripts/Source/HeadPart.psc:3:1:identifier-casing
 scripts/Source/HeadPart.psc:3:14:unused-property
 scripts/Source/HeadPart.psc:4:1:identifier-casing
@@ -1860,6 +1887,7 @@ scripts/Source/HeadPart.psc:19:1:identifier-casing
 scripts/Source/HeadPart.psc:20:1:identifier-casing
 scripts/Source/HeadPart.psc:24:1:identifier-casing
 scripts/Source/HeadPart.psc:27:35:final-newline
+scripts/Source/Ingredient.psc:1:35:line-endings
 scripts/Source/Ingredient.psc:7:1:identifier-casing
 scripts/Source/Ingredient.psc:20:1:identifier-casing
 scripts/Source/Ingredient.psc:23:1:identifier-casing
@@ -1873,6 +1901,7 @@ scripts/Source/Ingredient.psc:41:1:identifier-casing
 scripts/Source/Ingredient.psc:41:1:identifier-casing
 scripts/Source/Ingredient.psc:44:1:identifier-casing
 scripts/Source/Ingredient.psc:56:48:final-newline
+scripts/Source/Input.psc:1:24:line-endings
 scripts/Source/Input.psc:4:1:identifier-casing
 scripts/Source/Input.psc:7:1:identifier-casing
 scripts/Source/Input.psc:10:1:identifier-casing
@@ -1884,6 +1913,7 @@ scripts/Source/Input.psc:35:1:identifier-casing
 scripts/Source/Input.psc:35:1:identifier-casing
 scripts/Source/Input.psc:38:1:identifier-casing
 scripts/Source/Input.psc:38:60:final-newline
+scripts/Source/Keyword.psc:1:39:line-endings
 scripts/Source/Keyword.psc:4:1:identifier-casing
 scripts/Source/Keyword.psc:4:1:identifier-casing
 scripts/Source/Keyword.psc:4:1:identifier-casing
@@ -1907,6 +1937,7 @@ scripts/Source/Keyword.psc:13:1:indentation
 scripts/Source/Keyword.psc:15:1:indentation
 scripts/Source/Keyword.psc:16:1:indentation
 scripts/Source/Keyword.psc:16:35:final-newline
+scripts/Source/LeveledActor.psc:1:44:line-endings
 scripts/Source/LeveledActor.psc:4:1:identifier-casing
 scripts/Source/LeveledActor.psc:4:1:identifier-casing
 scripts/Source/LeveledActor.psc:11:1:identifier-casing
@@ -1917,6 +1948,7 @@ scripts/Source/LeveledActor.psc:16:1:identifier-casing
 scripts/Source/LeveledActor.psc:17:1:identifier-casing
 scripts/Source/LeveledActor.psc:17:1:identifier-casing
 scripts/Source/LeveledActor.psc:17:46:final-newline
+scripts/Source/LeveledItem.psc:1:43:line-endings
 scripts/Source/LeveledItem.psc:4:1:identifier-casing
 scripts/Source/LeveledItem.psc:4:1:identifier-casing
 scripts/Source/LeveledItem.psc:4:1:identifier-casing
@@ -1930,6 +1962,7 @@ scripts/Source/LeveledItem.psc:22:1:identifier-casing
 scripts/Source/LeveledItem.psc:23:1:identifier-casing
 scripts/Source/LeveledItem.psc:23:1:identifier-casing
 scripts/Source/LeveledItem.psc:23:46:final-newline
+scripts/Source/LeveledSpell.psc:1:44:line-endings
 scripts/Source/LeveledSpell.psc:4:1:identifier-casing
 scripts/Source/LeveledSpell.psc:4:1:identifier-casing
 scripts/Source/LeveledSpell.psc:11:1:identifier-casing
@@ -1937,6 +1970,7 @@ scripts/Source/LeveledSpell.psc:14:1:identifier-casing
 scripts/Source/LeveledSpell.psc:16:1:identifier-casing
 scripts/Source/LeveledSpell.psc:17:1:identifier-casing
 scripts/Source/LeveledSpell.psc:17:1:identifier-casing
+scripts/Source/MagicEffect.psc:1:43:line-endings
 scripts/Source/MagicEffect.psc:6:1:identifier-casing
 scripts/Source/MagicEffect.psc:9:1:identifier-casing
 scripts/Source/MagicEffect.psc:29:1:identifier-casing
@@ -1960,6 +1994,7 @@ scripts/Source/MagicEffect.psc:76:1:identifier-casing
 scripts/Source/MagicEffect.psc:79:1:identifier-casing
 scripts/Source/MagicEffect.psc:82:1:identifier-casing
 scripts/Source/MagicEffect.psc:94:24:final-newline
+scripts/Source/Math.psc:1:23:line-endings
 scripts/Source/Math.psc:4:1:identifier-casing
 scripts/Source/Math.psc:4:1:identifier-casing
 scripts/Source/Math.psc:7:1:identifier-casing
@@ -1996,6 +2031,7 @@ scripts/Source/Math.psc:47:1:identifier-casing
 scripts/Source/Math.psc:48:1:identifier-casing
 scripts/Source/Math.psc:49:1:identifier-casing
 scripts/Source/Math.psc:49:45:final-newline
+scripts/Source/ModEvent.psc:1:27:line-endings
 scripts/Source/ModEvent.psc:4:1:semicolon
 scripts/Source/ModEvent.psc:6:1:semicolon
 scripts/Source/ModEvent.psc:8:1:semicolon
@@ -2020,6 +2056,7 @@ scripts/Source/ModEvent.psc:50:1:identifier-casing
 scripts/Source/ModEvent.psc:50:1:identifier-casing
 scripts/Source/ModEvent.psc:51:1:identifier-casing
 scripts/Source/ModEvent.psc:51:1:identifier-casing
+scripts/Source/NetImmerse.psc:1:29:line-endings
 scripts/Source/NetImmerse.psc:7:1:identifier-casing
 scripts/Source/NetImmerse.psc:7:1:identifier-casing
 scripts/Source/NetImmerse.psc:7:1:identifier-casing
@@ -2146,6 +2183,7 @@ scripts/Source/NetImmerse.psc:87:1:identifier-casing
 scripts/Source/NetImmerse.psc:87:1:identifier-casing
 scripts/Source/NetImmerse.psc:87:1:unnecessary-function
 scripts/Source/NetImmerse.psc:89:12:final-newline
+scripts/Source/ObjectReference.psc:1:47:line-endings
 scripts/Source/ObjectReference.psc:3:1:function-length
 scripts/Source/ObjectReference.psc:3:1:identifier-casing
 scripts/Source/ObjectReference.psc:3:1:identifier-casing
@@ -2537,8 +2575,10 @@ scripts/Source/ObjectReference.psc:816:121:line-length
 scripts/Source/ObjectReference.psc:822:1:identifier-casing
 scripts/Source/ObjectReference.psc:828:1:identifier-casing
 scripts/Source/ObjectReference.psc:834:55:final-newline
+scripts/Source/Outfit.psc:1:38:line-endings
 scripts/Source/Outfit.psc:7:1:identifier-casing
 scripts/Source/Outfit.psc:7:39:final-newline
+scripts/Source/Perk.psc:1:36:line-endings
 scripts/Source/Perk.psc:9:1:identifier-casing
 scripts/Source/Perk.psc:10:1:identifier-casing
 scripts/Source/Perk.psc:10:1:identifier-casing
@@ -2566,6 +2606,7 @@ scripts/Source/Perk.psc:31:1:identifier-casing
 scripts/Source/Perk.psc:31:1:identifier-casing
 scripts/Source/Perk.psc:31:1:identifier-casing
 scripts/Source/Perk.psc:31:65:final-newline
+scripts/Source/Potion.psc:1:31:line-endings
 scripts/Source/Potion.psc:17:1:identifier-casing
 scripts/Source/Potion.psc:20:1:identifier-casing
 scripts/Source/Potion.psc:23:1:identifier-casing
@@ -2577,6 +2618,7 @@ scripts/Source/Potion.psc:35:1:identifier-casing
 scripts/Source/Potion.psc:38:1:identifier-casing
 scripts/Source/Potion.psc:38:1:identifier-casing
 scripts/Source/Potion.psc:53:48:final-newline
+scripts/Source/Quest.psc:1:37:line-endings
 scripts/Source/Quest.psc:8:121:line-length
 scripts/Source/Quest.psc:9:121:line-length
 scripts/Source/Quest.psc:10:121:line-length
@@ -2712,6 +2754,7 @@ scripts/Source/Quest.psc:259:1:identifier-casing
 scripts/Source/Quest.psc:262:1:identifier-casing
 scripts/Source/Quest.psc:265:1:identifier-casing
 scripts/Source/Quest.psc:268:37:final-newline
+scripts/Source/Race.psc:1:36:line-endings
 scripts/Source/Race.psc:8:1:identifier-casing
 scripts/Source/Race.psc:11:1:identifier-casing
 scripts/Source/Race.psc:14:1:identifier-casing
@@ -2811,8 +2854,10 @@ scripts/Source/Race.psc:216:1:unnecessary-function
 scripts/Source/Race.psc:224:1:unnecessary-function
 scripts/Source/Race.psc:228:1:unnecessary-function
 scripts/Source/Race.psc:231:1:final-newline
+scripts/Source/SKSE.psc:1:23:line-endings
 scripts/Source/SKSE.psc:20:1:identifier-casing
 scripts/Source/SKSE.psc:20:57:final-newline
+scripts/Source/Scroll.psc:1:38:line-endings
 scripts/Source/Scroll.psc:4:1:identifier-casing
 scripts/Source/Scroll.psc:4:1:identifier-casing
 scripts/Source/Scroll.psc:4:65:assignment-operator-spacing
@@ -2830,6 +2875,7 @@ scripts/Source/Scroll.psc:38:1:identifier-casing
 scripts/Source/Scroll.psc:38:1:identifier-casing
 scripts/Source/Scroll.psc:42:1:identifier-casing
 scripts/Source/Scroll.psc:54:48:final-newline
+scripts/Source/Shout.psc:1:37:line-endings
 scripts/Source/Shout.psc:4:1:identifier-casing
 scripts/Source/Shout.psc:5:1:identifier-casing
 scripts/Source/Shout.psc:6:1:identifier-casing
@@ -2840,7 +2886,9 @@ scripts/Source/Shout.psc:9:1:identifier-casing
 scripts/Source/Shout.psc:10:1:identifier-casing
 scripts/Source/Shout.psc:10:1:identifier-casing
 scripts/Source/Shout.psc:10:54:final-newline
+scripts/Source/SoulGem.psc:1:45:line-endings
 scripts/Source/SoulGem.psc:6:33:final-newline
+scripts/Source/Sound.psc:1:37:line-endings
 scripts/Source/Sound.psc:2:1:unused-import
 scripts/Source/Sound.psc:5:1:identifier-casing
 scripts/Source/Sound.psc:8:1:identifier-casing
@@ -2848,11 +2896,13 @@ scripts/Source/Sound.psc:11:1:identifier-casing
 scripts/Source/Sound.psc:14:1:identifier-casing
 scripts/Source/Sound.psc:14:1:identifier-casing
 scripts/Source/Sound.psc:19:48:final-newline
+scripts/Source/SoundDescriptor.psc:1:47:line-endings
 scripts/Source/SoundDescriptor.psc:4:1:identifier-casing
 scripts/Source/SoundDescriptor.psc:7:1:identifier-casing
 scripts/Source/SoundDescriptor.psc:10:1:identifier-casing
 scripts/Source/SoundDescriptor.psc:13:1:identifier-casing
 scripts/Source/SoundDescriptor.psc:13:54:final-newline
+scripts/Source/SpawnerTask.psc:1:30:line-endings
 scripts/Source/SpawnerTask.psc:5:1:semicolon
 scripts/Source/SpawnerTask.psc:7:1:semicolon
 scripts/Source/SpawnerTask.psc:12:1:semicolon
@@ -2881,6 +2931,7 @@ scripts/Source/SpawnerTask.psc:52:1:semicolon
 scripts/Source/SpawnerTask.psc:53:1:identifier-casing
 scripts/Source/SpawnerTask.psc:57:1:semicolon
 scripts/Source/SpawnerTask.psc:58:1:identifier-casing
+scripts/Source/Spell.psc:1:37:line-endings
 scripts/Source/Spell.psc:4:1:identifier-casing
 scripts/Source/Spell.psc:4:1:identifier-casing
 scripts/Source/Spell.psc:4:65:assignment-operator-spacing
@@ -2905,6 +2956,7 @@ scripts/Source/Spell.psc:63:1:identifier-casing
 scripts/Source/Spell.psc:63:1:identifier-casing
 scripts/Source/Spell.psc:67:1:identifier-casing
 scripts/Source/Spell.psc:79:48:final-newline
+scripts/Source/StringUtil.psc:1:29:line-endings
 scripts/Source/StringUtil.psc:5:96:semicolon
 scripts/Source/StringUtil.psc:16:1:identifier-casing
 scripts/Source/StringUtil.psc:19:1:identifier-casing
@@ -2924,13 +2976,16 @@ scripts/Source/StringUtil.psc:42:1:identifier-casing
 scripts/Source/StringUtil.psc:45:1:identifier-casing
 scripts/Source/StringUtil.psc:45:1:identifier-casing
 scripts/Source/StringUtil.psc:45:62:final-newline
+scripts/Source/TextureSet.psc:1:42:line-endings
 scripts/Source/TextureSet.psc:9:1:identifier-casing
 scripts/Source/TextureSet.psc:12:1:identifier-casing
 scripts/Source/TextureSet.psc:12:1:identifier-casing
 scripts/Source/TextureSet.psc:12:61:final-newline
+scripts/Source/TreeObject.psc:1:42:line-endings
 scripts/Source/TreeObject.psc:4:1:identifier-casing
 scripts/Source/TreeObject.psc:7:1:identifier-casing
 scripts/Source/TreeObject.psc:7:49:final-newline
+scripts/Source/UI.psc:1:21:line-endings
 scripts/Source/UI.psc:40:1:semicolon
 scripts/Source/UI.psc:42:39:semicolon
 scripts/Source/UI.psc:47:1:identifier-casing
@@ -3008,6 +3063,7 @@ scripts/Source/UI.psc:107:1:identifier-casing
 scripts/Source/UI.psc:116:1:identifier-casing
 scripts/Source/UI.psc:116:1:identifier-casing
 scripts/Source/UI.psc:119:41:final-newline
+scripts/Source/UICallback.psc:1:29:line-endings
 scripts/Source/UICallback.psc:4:1:semicolon
 scripts/Source/UICallback.psc:14:1:semicolon
 scripts/Source/UICallback.psc:18:1:semicolon
@@ -3033,6 +3089,7 @@ scripts/Source/UICallback.psc:45:1:identifier-casing
 scripts/Source/UICallback.psc:46:1:identifier-casing
 scripts/Source/UICallback.psc:46:1:identifier-casing
 scripts/Source/UICallback.psc:46:62:final-newline
+scripts/Source/Utility.psc:1:26:line-endings
 scripts/Source/Utility.psc:6:1:identifier-casing
 scripts/Source/Utility.psc:20:1:identifier-casing
 scripts/Source/Utility.psc:20:1:identifier-casing
@@ -3092,6 +3149,7 @@ scripts/Source/Utility.psc:83:1:identifier-casing
 scripts/Source/Utility.psc:83:1:identifier-casing
 scripts/Source/Utility.psc:83:1:identifier-casing
 scripts/Source/Utility.psc:83:93:final-newline
+scripts/Source/Weapon.psc:1:38:line-endings
 scripts/Source/Weapon.psc:4:1:identifier-casing
 scripts/Source/Weapon.psc:4:1:identifier-casing
 scripts/Source/Weapon.psc:10:1:identifier-casing
@@ -3114,6 +3172,7 @@ scripts/Source/Weapon.psc:71:1:identifier-casing
 scripts/Source/Weapon.psc:75:1:identifier-casing
 scripts/Source/Weapon.psc:79:1:identifier-casing
 scripts/Source/Weapon.psc:83:1:identifier-casing
+scripts/Source/Weather.psc:1:39:line-endings
 scripts/Source/Weather.psc:3:51:trailing-whitespace
 scripts/Source/Weather.psc:7:1:identifier-casing
 scripts/Source/Weather.psc:7:38:assignment-operator-spacing
@@ -3127,6 +3186,7 @@ scripts/Source/Weather.psc:10:61:assignment-operator-spacing
 scripts/Source/Weather.psc:17:1:identifier-casing
 scripts/Source/Weather.psc:61:1:identifier-casing
 scripts/Source/Weather.psc:61:1:identifier-casing
+scripts/Source/WornObject.psc:1:29:line-endings
 scripts/Source/WornObject.psc:13:1:identifier-casing
 scripts/Source/WornObject.psc:13:1:identifier-casing
 scripts/Source/WornObject.psc:13:1:identifier-casing
