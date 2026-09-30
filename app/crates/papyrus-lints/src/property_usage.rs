@@ -3,7 +3,7 @@
 //! A name on another object (`other.Score`) is not a use of this script's
 //! `Score`. `self.Score` and a bare `Score` identifier are.
 
-use papyrus_parser::ast::{AssignOp, Expr, FunctionDecl, PropertyDecl, Script, Stmt};
+use papyrus_parser::ast::{Expr, FunctionDecl, PropertyDecl, Script, Stmt};
 use papyrus_parser::comment_annotations::parse_line_annotations;
 use std::collections::{HashMap, HashSet};
 
@@ -160,7 +160,9 @@ fn walk_stmt(stmt: &Stmt, names: &HashSet<String>, usage: &mut HashMap<String, U
             walk_expr_as_read(condition, names, usage);
             walk_body(body, names, usage);
         }
-        Stmt::LockGuard { body, else_body, .. } => {
+        Stmt::LockGuard {
+            body, else_body, ..
+        } => {
             walk_body(body, names, usage);
             walk_body(else_body, names, usage);
         }
@@ -244,7 +246,9 @@ fn collect_backing_from_body(body: &[Stmt], params: &HashSet<String>, fields: &m
                 collect_backing_from_body(else_body, params, fields);
             }
             Stmt::While { body, .. } => collect_backing_from_body(body, params, fields),
-            Stmt::LockGuard { body, else_body, .. } => {
+            Stmt::LockGuard {
+                body, else_body, ..
+            } => {
                 collect_backing_from_body(body, params, fields);
                 collect_backing_from_body(else_body, params, fields);
             }
