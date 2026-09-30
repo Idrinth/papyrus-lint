@@ -96,7 +96,10 @@ fn whitespace_repair_preserves_identifier_and_type_casing() {
 #[test]
 fn repair_is_idempotent_and_clears_fixable_diagnostics() {
     let source = "ScriptName Example  \r\n\r\nFunction Run(Int left,Int right)\r\nEndFunction\r\n";
-    let config = Config::default();
+    let mut config = Config::default();
+    // Isolate trailing-whitespace / comma-spacing / identifier-casing from
+    // the default `line-endings` rewrite to LF.
+    config.rules.line_endings = false;
 
     let repaired = repair(source, &config);
 
