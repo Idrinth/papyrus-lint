@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Generates app/src/config-types.ts from shared/rules/*.json,
-// shared/configuration/papyrus-lint.default.yaml, and shared/configuration/lint-settings.yaml.
+// shared/configuration/papyrus-lint.default.yaml, and shared/configuration/lint-settings.generated.yaml.
 // Mirrors papyrus-lints/build.rs writing Rules / default_rules() and Config
 // into $OUT_DIR.
 
@@ -39,7 +39,7 @@ export const RULE_ID_TO_CONFIG_KEY = {
 const HEADER = [
   "// Generated from `shared/rules/*.json`,",
   "// `shared/configuration/papyrus-lint.default.yaml`, and",
-  "// `shared/configuration/lint-settings.yaml` by",
+  "// `shared/configuration/lint-settings.generated.yaml` by",
   "// `app/scripts/generate-config-types.mjs`. Do not edit by hand.",
   "",
 ].join("\n");
@@ -351,7 +351,7 @@ export function renderConfigTypes(rules, defaultYaml, settings) {
   lines.push("}");
   lines.push("");
   lines.push("export const LINT_SETTINGS: readonly LintSetting[] = [");
-  // Declaration order in lint-settings.yaml is the UI order.
+  // Declaration order in lint-settings.yaml (via the generated aggregate) is the UI order.
   for (const setting of settings) {
     lines.push(`  ${JSON.stringify(lintSettingForTs(setting))},`);
   }
@@ -395,7 +395,7 @@ if (isMain) {
   const count = writeConfigTypes({
     rulesDir: path.join(repoRoot, "shared", "rules"),
     defaultYamlPath: path.join(repoRoot, "shared", "configuration", "papyrus-lint.default.yaml"),
-    settingsPath: path.join(repoRoot, "shared", "configuration", "lint-settings.yaml"),
+    settingsPath: path.join(repoRoot, "shared", "configuration", "lint-settings.generated.yaml"),
     outPath: path.join(appDir, "src", "config-types.ts"),
   });
   console.log(`Wrote ${count} rule flags to app/src/config-types.ts.`);
