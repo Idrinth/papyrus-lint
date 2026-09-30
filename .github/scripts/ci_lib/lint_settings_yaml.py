@@ -1,9 +1,9 @@
-"""Assembles shared/configuration/lint-settings.yaml from per-setting JSON.
+"""Assembles shared/configuration/lint-settings.generated.yaml from per-setting JSON.
 
 Each project setting lives in shared/configuration/project-settings/<key>.json
 and each lint setting in shared/configuration/lint-settings/<key>.json.
 Declaration order (the Settings tab order) and the rules-section comment
-live in shared/configuration/lint-settings.meta.json.
+live in shared/configuration/lint-settings.yaml.
 
 The combined YAML is git-ignored. Rust build scripts,
 app/scripts/generate-config-types.mjs, and the default-config/schema
@@ -20,10 +20,12 @@ import json
 import re
 from pathlib import Path
 
+import yaml
+
 HEADER = """\
 # Generated from `shared/configuration/project-settings/*.json`,
 # `shared/configuration/lint-settings/*.json`, and
-# `shared/configuration/lint-settings.meta.json` by
+# `shared/configuration/lint-settings.yaml` by
 # `.github/scripts/build_lint_settings_yaml.py`. Do not edit by hand.
 """
 
@@ -70,37 +72,35 @@ def assemble_lint_settings(
     meta_path: Path,
 ) -> dict:
     """Reads the meta file's declaration order and returns the combined
-    document: project_settings, rules_yaml_comment, then settings.
+    document: project, rules_comment, then settings.
 
     Each listed key must have a `<key>.json` whose `key` field matches the
     file name. A JSON file that the meta list does not name is an error,
     same as a listed key with no file.
     """
     meta = _load_meta(meta_path)
-    project_settings = _load_listed(
-        project_settings_dir, meta["project_settings"], meta_path, "project_settings"
-    )
+    project = _load_listed(project_settings_dir, meta["project"], meta_path, "project")
     settings = _load_listed(lint_settings_dir, meta["settings"], meta_path, "settings")
-    _reject_shared_keys(project_settings, settings)
+    _reject_shared_keys(project, settings)
     return {
-        "project_settings": project_settings,
-        "rules_yaml_comment": meta["rules_yaml_comment"],
+        "project": project,
+        "rules_comment": meta["rules_comment"],
         "settings": settings,
     }
 
 
 def render_lint_settings_yaml(document: dict, *, header: bool = True) -> str:
-    """Renders *document* in the checked-in lint-settings.yaml style.
+    """Renders *document* in the generated lint-settings.generated.yaml style.
 
     Prose fields (`comment`, `description`, `doc`) stay double-quoted with
     escaped newlines. Strings YAML 1.1 would otherwise read as null, bool,
     or a number stay single-quoted. Everything else that is a plain scalar
     stays unquoted, which is what the hand-written file did.
     """
-    lines: list[str] = ["project_settings:"]
-    _emit_setting_list(lines, document["project_settings"])
+    lines: list[str] = ["project:"]
+    _emit_setting_list(lines, document["project"])
     lines.append(
-        f"rules_yaml_comment: {_format_scalar(document['rules_yaml_comment'], 'rules_yaml_comment')}"
+        f"rules_comment: {_format_scalar(document['rules_comment'], 'rules_comment')}"
     )
     lines.append("settings:")
     _emit_setting_list(lines, document["settings"])
@@ -113,13 +113,13 @@ def render_lint_settings_yaml(document: dict, *, header: bool = True) -> str:
 def _load_meta(meta_path: Path) -> dict:
     if not meta_path.is_file():
         raise ValueError(f"{meta_path} does not exist")
-    meta = json.loads(meta_path.read_text(encoding="utf-8"))
+    meta = yaml.safe_load(meta_path.read_text(encoding="utf-8"))
     if not isinstance(meta, dict):
-        raise ValueError(f"{meta_path} must contain a JSON object")
-    comment = meta.get("rules_yaml_comment")
+        raise ValueError(f"{meta_path} must contain a mapping")
+    comment = meta.get("rules_comment")
     if not isinstance(comment, str):
-        raise ValueError(f"{meta_path}: `rules_yaml_comment` must be a string")
-    for field in ("project_settings", "settings"):
+        raise ValueError(f"{meta_path}: `rules_comment` must be a string")
+    for field in ("project", "settings"):
         order = meta.get(field)
         if not isinstance(order, list) or not order:
             raise ValueError(f"{meta_path}: `{field}` must be a non-empty list of setting keys")
@@ -163,7 +163,7 @@ def _reject_shared_keys(project_settings: list[dict], settings: list[dict]) -> N
     overlap = sorted({item["key"] for item in project_settings} & {item["key"] for item in settings})
     if overlap:
         raise ValueError(
-            f"setting {overlap[0]!r} is listed under both project_settings and settings"
+            f"setting {overlap[0]!r} is listed under both project and settings"
         )
 
 
