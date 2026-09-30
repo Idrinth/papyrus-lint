@@ -137,10 +137,12 @@ fn accepts_external_repairs_without_an_apply_repairs_order() {
 fn rejects_repair_orders_on_special_case_rules() {
     let mut project_rule = rule("stale-compiled-output");
     project_rule.fixable = true;
-    assert!(validate(&[project_rule], &["stale-compiled-output".to_string()])
-        .unwrap_err()
-        .to_string()
-        .contains("project/post-pass rule"));
+    assert!(
+        validate(&[project_rule], &["stale-compiled-output".to_string()])
+            .unwrap_err()
+            .to_string()
+            .contains("project/post-pass rule")
+    );
 
     let mut external_repair = rule("unused-import");
     external_repair.fixable = true;
