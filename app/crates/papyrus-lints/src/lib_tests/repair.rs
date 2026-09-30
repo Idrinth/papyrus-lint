@@ -9,7 +9,8 @@ fn combined_repair_applies_comma_spacing_and_trailing_whitespace() {
     let config = Config::default();
     let repaired = repair("Call(1,2)  \r\n", &config);
 
-    assert_eq!(repaired, "Call(1, 2)\r\n");
+    // Default `line_endings_mode` is lf, so combined repair also normalizes CRLF.
+    assert_eq!(repaired, "Call(1, 2)\n");
     assert!(lint(&repaired, &config).is_empty());
 }
 
@@ -18,7 +19,8 @@ fn combined_repair_closes_whitespace_interrupting_a_chain() {
     let config = Config::default();
     let repaired = repair("SomeProperty . DoThing() .Other()  \r\n", &config);
 
-    assert_eq!(repaired, "SomeProperty.DoThing().Other()\r\n");
+    // Default `line_endings_mode` is lf, so combined repair also normalizes CRLF.
+    assert_eq!(repaired, "SomeProperty.DoThing().Other()\n");
     assert!(lint(&repaired, &config).is_empty());
 }
 
@@ -80,6 +82,8 @@ fn repair_skips_disabled_rules() {
         rules: config::Rules {
             trailing_whitespace: false,
             comma_spacing: false,
+            // Combined repair would otherwise rewrite CRLF to the default lf mode.
+            line_endings: false,
             ..config::Rules::default()
         },
         ..Config::default()

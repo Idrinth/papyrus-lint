@@ -1,0 +1,16 @@
+{
+  "id": "line-endings",
+  "name": "Line endings",
+  "category": "Formatting",
+  "visitor": "none",
+  "tags": [
+    "style"
+  ],
+  "severity": "warning",
+  "importance": "low",
+  "kept_in_standard": true,
+  "fixable": true,
+  "repair_order": 25,
+  "description": "Requires every line terminator in a file to be the configured lf (\\n) or crlf (\\r\\n).",
+  "definition": "Requires, as a `[warning]`, every line terminator in a file to match `line_endings_mode` (`lf` for `\\n`, `crlf` for `\\r\\n`). Mixed endings and the opposite terminator are both flagged, at the first offending line. A file with no terminators is left to `final-newline`. Automatically fixable: the fix rewrites every terminator to the configured mode and does not invent a missing final newline."
+}

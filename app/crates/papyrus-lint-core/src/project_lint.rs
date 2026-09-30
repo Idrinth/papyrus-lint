@@ -84,6 +84,12 @@ pub fn lint_script<E: ExternalSignatures>(
                 lint.project_root,
                 lint.additional_roots,
             )
+            .or_else(|| {
+                crate::script_search_root::relative_path_from_inferred_root(
+                    path,
+                    lint.project_root,
+                )
+            })
             .or_else(|| path.file_name().map(PathBuf::from));
             if let Some(relative) = relative {
                 project_diagnostics.extend(papyrus_lints::script_filename_mismatch::check(
