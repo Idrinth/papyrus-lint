@@ -27,3 +27,9 @@ repair:
   - line-endings
   - forced-encoding
   - utf8-bom
+
+# Fixable rules repaired outside apply_repairs.
+external_repair:
+  - unused-import
+  - argument-naming
+  - missing-override

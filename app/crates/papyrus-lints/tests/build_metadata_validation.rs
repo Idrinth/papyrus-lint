@@ -34,12 +34,12 @@ fn rule(id: &str) -> RuleMetadata {
 
 #[test]
 fn accepts_consistent_metadata() {
-    assert_eq!(validate(&[rule("example")], &[]), Ok(()));
+    assert_eq!(validate(&[rule("example")], &[], &[]), Ok(()));
 }
 
 #[test]
 fn rejects_duplicate_ids() {
-    let error = validate(&[rule("duplicate"), rule("duplicate")], &[]).unwrap_err();
+    let error = validate(&[rule("duplicate"), rule("duplicate")], &[], &[]).unwrap_err();
     assert!(error
         .to_string()
         .contains("lists `duplicate` more than once"));
@@ -49,19 +49,19 @@ fn rejects_duplicate_ids() {
 fn rejects_invalid_tags_and_importance() {
     let mut no_tags = rule("no-tags");
     no_tags.tags.clear();
-    assert!(validate(&[no_tags], &[])
+    assert!(validate(&[no_tags], &[], &[])
         .unwrap_err()
         .to_string()
         .contains("has no tags"));
     let mut invalid = rule("invalid");
     invalid.importance = "urgent".to_string();
-    assert!(validate(&[invalid], &[])
+    assert!(validate(&[invalid], &[], &[])
         .unwrap_err()
         .to_string()
         .contains("unknown importance"));
     let mut visitor = rule("visitor");
     visitor.visitor = "cfg".to_string();
-    assert!(validate(&[visitor], &[])
+    assert!(validate(&[visitor], &[], &[])
         .unwrap_err()
         .to_string()
         .contains("unknown visitor"));
@@ -71,23 +71,23 @@ fn rejects_invalid_tags_and_importance() {
 fn accepts_known_games_allow_list() {
     let mut scoped = rule("skyrim-only");
     scoped.games = vec!["skyrim".to_string()];
-    assert_eq!(validate(&[scoped], &[]), Ok(()));
+    assert_eq!(validate(&[scoped], &[], &[]), Ok(()));
     let mut multi = rule("two-games");
     multi.games = vec!["skyrim".to_string(), "fallout4".to_string()];
-    assert_eq!(validate(&[multi], &[]), Ok(()));
+    assert_eq!(validate(&[multi], &[], &[]), Ok(()));
 }
 
 #[test]
 fn rejects_unknown_or_duplicate_games() {
     let mut unknown = rule("unknown-game");
     unknown.games = vec!["oblivion".to_string()];
-    assert!(validate(&[unknown], &[])
+    assert!(validate(&[unknown], &[], &[])
         .unwrap_err()
         .to_string()
         .contains("unknown game"));
     let mut duplicate = rule("dup-game");
     duplicate.games = vec!["skyrim".to_string(), "skyrim".to_string()];
-    assert!(validate(&[duplicate], &[])
+    assert!(validate(&[duplicate], &[], &[])
         .unwrap_err()
         .to_string()
         .contains("duplicate game"));
@@ -96,19 +96,19 @@ fn rejects_unknown_or_duplicate_games() {
 #[test]
 fn rejects_invalid_repair_metadata() {
     let not_fixable = rule("not-fixable");
-    assert!(validate(&[not_fixable], &["not-fixable".to_string()])
+    assert!(validate(&[not_fixable], &["not-fixable".to_string()], &[])
         .unwrap_err()
         .to_string()
         .contains("not fixable"));
     let mut missing_order = rule("missing-order");
     missing_order.fixable = true;
-    assert!(validate(&[missing_order], &[])
+    assert!(validate(&[missing_order], &[], &[])
         .unwrap_err()
         .to_string()
         .contains("must be listed under `repair`"));
     let mut gap = rule("gap");
     gap.fixable = true;
-    assert!(validate(&[gap], &["gap".to_string(), "gap".to_string()])
+    assert!(validate(&[gap], &["gap".to_string(), "gap".to_string()], &[])
         .unwrap_err()
         .to_string()
         .contains("more than once"));
@@ -130,7 +130,10 @@ fn accepts_external_repairs_without_an_apply_repairs_order() {
     let mut unused_import = rule("unused-import");
     unused_import.fixable = true;
 
-    assert_eq!(validate(&[unused_import], &[]), Ok(()));
+    assert_eq!(
+        validate(&[unused_import], &[], &["unused-import".to_string()]),
+        Ok(())
+    );
 }
 
 #[test]
@@ -138,18 +141,42 @@ fn rejects_repair_orders_on_special_case_rules() {
     let mut project_rule = rule("stale-compiled-output");
     project_rule.fixable = true;
     assert!(
-        validate(&[project_rule], &["stale-compiled-output".to_string()])
-            .unwrap_err()
-            .to_string()
-            .contains("project/post-pass rule")
+        validate(
+            &[project_rule],
+            &["stale-compiled-output".to_string()],
+            &[]
+        )
+        .unwrap_err()
+        .to_string()
+        .contains("project/post-pass rule")
     );
 
     let mut external_repair = rule("unused-import");
     external_repair.fixable = true;
-    assert!(validate(&[external_repair], &["unused-import".to_string()])
+    assert!(validate(
+        &[external_repair],
+        &["unused-import".to_string()],
+        &["unused-import".to_string()]
+    )
+    .unwrap_err()
+    .to_string()
+    .contains("repaired outside apply_repairs"));
+}
+
+#[test]
+fn rejects_unknown_or_unfixable_external_repair_ids() {
+    let mut unused_import = rule("unused-import");
+    unused_import.fixable = true;
+    assert!(validate(&[], &[], &["unused-import".to_string()])
         .unwrap_err()
         .to_string()
-        .contains("repaired outside apply_repairs"));
+        .contains("no matching id"));
+
+    let not_fixable = rule("unused-import");
+    assert!(validate(&[not_fixable], &[], &["unused-import".to_string()])
+        .unwrap_err()
+        .to_string()
+        .contains("not fixable"));
 }
 
 #[test]
