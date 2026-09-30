@@ -21,6 +21,7 @@ fn no_external_signatures_leaves_member_metadata_unresolved() {
         external.registers_remote_event("Child", "OnCellAttach"),
         None
     );
+    assert_eq!(external.has_event("Child", "OnInit"), None);
 }
 
 #[test]
@@ -43,6 +44,7 @@ fn no_external_signatures_does_not_invent_relationships_or_members() {
     assert!(!external.is_subtype("Armor", "Form"));
     assert!(!external.has_property("Form", "Name"));
     assert!(!external.has_field("Form", "Value"));
+    assert!(!external.descendant_targets_state("Parent", "Active"));
     assert!(external.ancestor_states("UnknownScript").is_empty());
     assert!(external.property_types("UnknownScript").is_empty());
 }
