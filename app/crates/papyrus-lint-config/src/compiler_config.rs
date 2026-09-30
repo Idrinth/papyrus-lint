@@ -8,9 +8,7 @@ use crate::project_file::{load_project_file, load_project_file_from_path, save_p
 /// PapyrusCompiler.exe path override it stores, if any (an empty string is
 /// treated the same as no override).
 pub fn load_compiler_path(dir: &Path) -> Result<Option<String>, String> {
-    Ok(trimmed_compiler_path(
-        load_project_file(dir)?.compiler_path,
-    ))
+    Ok(trimmed_compiler_path(load_project_file(dir)?.compiler_path))
 }
 
 /// Reads an explicit config file at `path` (see [`crate::load_config_from_path`])

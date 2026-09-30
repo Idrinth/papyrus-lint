@@ -387,10 +387,7 @@ pub(super) fn check_compiler(
 
     match load_compile_check(project_root, config_path) {
         Ok(true) => {
-            if matches!(
-                resolve_compiler_path(project_root, config_path),
-                Ok(None)
-            ) {
+            if matches!(resolve_compiler_path(project_root, config_path), Ok(None)) {
                 checks.push(DoctorCheck::warning(
                     "compile_check is enabled but no PapyrusCompiler.exe could be resolved"
                         .to_string(),
