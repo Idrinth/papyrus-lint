@@ -152,3 +152,25 @@ fn matches_writes_case_insensitively() {
 
     assert!(diagnostics.is_empty());
 }
+
+#[test]
+fn does_not_treat_member_on_another_object_as_a_write() {
+    let diagnostics = check(
+        "ScriptName Example\n\
+         Int _count\n\
+         Int Property Count\n\
+           Int Function Get()\n\
+             Return _count\n\
+           EndFunction\n\
+           Function Set(Int value)\n\
+             _count = value\n\
+           EndFunction\n\
+         EndProperty\n\
+         Function Tick(ObjectReference other)\n\
+           other.Count = 1\n\
+         EndFunction\n",
+    );
+
+    assert_eq!(diagnostics.len(), 1);
+    assert!(diagnostics[0].message.contains("Count"));
+}

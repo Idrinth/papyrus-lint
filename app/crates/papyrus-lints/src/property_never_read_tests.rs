@@ -124,6 +124,15 @@ fn does_not_flag_unrelated_locals() {
 }
 
 #[test]
+fn does_not_treat_member_on_another_object_as_a_write() {
+    let diagnostics = check(
+        "ScriptName Example\n\nInt Property Count Auto\n\nFunction Tick(ObjectReference other)\n  other.Count = 1\nEndFunction\n",
+    );
+
+    assert!(diagnostics.is_empty());
+}
+
+#[test]
 fn does_not_crash_on_unparseable_source() {
     let diagnostics = check("ScriptName Example\n\nInt Property MyValue = \"unterminated\n");
     assert!(diagnostics.is_empty());

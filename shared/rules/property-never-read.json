@@ -2,7 +2,7 @@
   "id": "property-never-read",
   "name": "Write-only script properties",
   "category": "Other",
-  "visitor": "tokens",
+  "visitor": "ast",
   "tags": [
     "maintainability"
   ],

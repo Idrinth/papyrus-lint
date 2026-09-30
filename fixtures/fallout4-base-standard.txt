@@ -12265,6 +12265,7 @@ Scripts/Source/Base/DN136_AttackKlaxonDestScript.psc:39:36:forbidden-functions
 Scripts/Source/Base/DN136_AttackKlaxonDestScript.psc:45:15:forbidden-functions
 Scripts/Source/Base/DN136_AttackKlaxonDestScript.psc:49:6:strict-boolean
 Scripts/Source/Base/DN136_AttackKlaxonDestScript.psc:67:20:forbidden-functions
+Scripts/Source/Base/DN136_AttackKlaxonDestScript.psc:67:20:unused-getter
 Scripts/Source/Base/DN136_AttackKlaxonDestScript.psc:68:19:forbidden-functions
 Scripts/Source/Base/DN136_AttackKlaxonDestScript.psc:68:34:forbidden-functions
 Scripts/Source/Base/DN136_AttackKlaxonDestScript.psc:77:13:forbidden-functions
@@ -45648,6 +45649,7 @@ Scripts/Source/Base/Fragments/Quests/QF_Tutorial_00160147.psc:438:1:indentation
 Scripts/Source/Base/Fragments/Quests/QF_Tutorial_00160147.psc:438:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_Tutorial_00160147.psc:452:4:exclamation-spacing
 Scripts/Source/Base/Fragments/Quests/QF_Tutorial_00160147.psc:453:1:indentation
+Scripts/Source/Base/Fragments/Quests/QF_Tutorial_00160147.psc:453:8:unused-getter
 Scripts/Source/Base/Fragments/Quests/QF_Tutorial_00160147.psc:455:1:indentation
 Scripts/Source/Base/Fragments/Quests/QF_Tutorial_00160147.psc:455:11:forbidden-functions
 Scripts/Source/Base/Fragments/Quests/QF_Tutorial_00160147.psc:456:1:indentation
@@ -67851,6 +67853,7 @@ Scripts/Source/Base/ProjectorScript.psc:10:1:indentation
 Scripts/Source/Base/ProjectorScript.psc:11:1:indentation
 Scripts/Source/Base/ProjectorScript.psc:16:1:indentation
 Scripts/Source/Base/ProjectorScript.psc:17:1:indentation
+Scripts/Source/Base/ProjectorScript.psc:39:3:empty-body
 Scripts/Source/Base/ProjectorScript.psc:58:5:exclamation-spacing
 Scripts/Source/Base/ProjectorScript.psc:83:5:exclamation-spacing
 Scripts/Source/Base/ProjectorScript.psc:95:2:empty-body
@@ -82193,6 +82196,7 @@ Scripts/Source/DLC01/DLC01/DLC01MQ04SetStageOnActivate.psc:15:1:indentation
 Scripts/Source/DLC01/DLC01/DLC01MQ04SetStageOnActivate.psc:15:13:forbidden-functions
 Scripts/Source/DLC01/DLC01/DLC01MQ04SetStageOnActivate.psc:16:1:indentation
 Scripts/Source/DLC01/DLC01/DLC01MQ04SetStageOnActivate.psc:16:1:unchecked-cast
+Scripts/Source/DLC01/DLC01/DLC01MQ04SetStageOnActivate.psc:16:58:unused-getter
 Scripts/Source/DLC01/DLC01/DLC01MQ04SetStageOnActivate.psc:17:1:indentation
 Scripts/Source/DLC01/DLC01/DLC01MQ04SetStageOnActivate.psc:18:1:indentation
 Scripts/Source/DLC01/DLC01/DLC01MQ04SetStageOnActivate.psc:19:1:indentation
@@ -82209,6 +82213,7 @@ Scripts/Source/DLC01/DLC01/DLC01MQ04SetStageOnActivate.psc:27:1:indentation
 Scripts/Source/DLC01/DLC01/DLC01MQ04SetStageOnActivate.psc:27:13:forbidden-functions
 Scripts/Source/DLC01/DLC01/DLC01MQ04SetStageOnActivate.psc:28:1:indentation
 Scripts/Source/DLC01/DLC01/DLC01MQ04SetStageOnActivate.psc:28:1:unchecked-cast
+Scripts/Source/DLC01/DLC01/DLC01MQ04SetStageOnActivate.psc:28:31:unused-getter
 Scripts/Source/DLC01/DLC01/DLC01MQ04SetStageOnActivate.psc:29:1:indentation
 Scripts/Source/DLC01/DLC01/DLC01MQ04SetStageOnActivate.psc:30:1:indentation
 Scripts/Source/DLC01/DLC01/DLC01MQ04SetStageOnActivate.psc:31:1:indentation
@@ -82639,6 +82644,7 @@ Scripts/Source/DLC01/DLC01/DLC01_KlaxonDestScript.psc:32:36:forbidden-functions
 Scripts/Source/DLC01/DLC01/DLC01_KlaxonDestScript.psc:37:14:forbidden-functions
 Scripts/Source/DLC01/DLC01/DLC01_KlaxonDestScript.psc:41:5:strict-boolean
 Scripts/Source/DLC01/DLC01/DLC01_KlaxonDestScript.psc:54:20:forbidden-functions
+Scripts/Source/DLC01/DLC01/DLC01_KlaxonDestScript.psc:54:20:unused-getter
 Scripts/Source/DLC01/DLC01/DLC01_KlaxonDestScript.psc:55:19:forbidden-functions
 Scripts/Source/DLC01/DLC01/DLC01_KlaxonDestScript.psc:55:34:forbidden-functions
 Scripts/Source/DLC01/DLC01/DLC01_KlaxonDestScript.psc:67:14:trailing-whitespace
@@ -82657,6 +82663,7 @@ Scripts/Source/DLC01/DLC01/DLC01_KlaxonJailDestScript.psc:44:16:forbidden-functi
 Scripts/Source/DLC01/DLC01/DLC01_KlaxonJailDestScript.psc:51:7:strict-boolean
 Scripts/Source/DLC01/DLC01/DLC01_KlaxonJailDestScript.psc:57:7:strict-boolean
 Scripts/Source/DLC01/DLC01/DLC01_KlaxonJailDestScript.psc:72:20:forbidden-functions
+Scripts/Source/DLC01/DLC01/DLC01_KlaxonJailDestScript.psc:72:20:unused-getter
 Scripts/Source/DLC01/DLC01/DLC01_KlaxonJailDestScript.psc:73:19:forbidden-functions
 Scripts/Source/DLC01/DLC01/DLC01_KlaxonJailDestScript.psc:73:34:forbidden-functions
 Scripts/Source/DLC01/DLC01/DLC01_KlaxonJailDestScript.psc:85:14:trailing-whitespace
@@ -86946,9 +86953,11 @@ Scripts/Source/DLC02/DLC02/DLC02TrapSpikes.psc:35:1:indentation
 Scripts/Source/DLC02/DLC02/DLC02TrapSpikes.psc:45:9:forbidden-functions
 Scripts/Source/DLC02/DLC02/DLC02TrapSpikes.psc:46:9:forbidden-functions
 Scripts/Source/DLC02/DLC02/DLC02TrapSpikes.psc:47:22:exclamation-spacing
+Scripts/Source/DLC02/DLC02/DLC02TrapSpikes.psc:61:1:cyclomatic-complexity
 Scripts/Source/DLC02/DLC02/DLC02TrapSpikes.psc:63:9:forbidden-functions
 Scripts/Source/DLC02/DLC02/DLC02TrapSpikes.psc:65:6:exclamation-spacing
 Scripts/Source/DLC02/DLC02/DLC02TrapSpikes.psc:66:10:forbidden-functions
+Scripts/Source/DLC02/DLC02/DLC02TrapSpikes.psc:70:4:strict-boolean
 Scripts/Source/DLC02/DLC02/DLC02TrapSpikes.psc:73:7:exclamation-spacing
 Scripts/Source/DLC02/DLC02/DLC02TrapSpikes.psc:76:11:forbidden-functions
 Scripts/Source/DLC02/DLC02/DLC02TrapSpikes.psc:76:63:trailing-whitespace
@@ -86966,6 +86975,7 @@ Scripts/Source/DLC02/DLC02/DLC02TrapSpikes.psc:92:11:forbidden-functions
 Scripts/Source/DLC02/DLC02/DLC02TrapSpikes.psc:93:35:comma-spacing
 Scripts/Source/DLC02/DLC02/DLC02TrapSpikes.psc:93:47:trailing-whitespace
 Scripts/Source/DLC02/DLC02/DLC02TrapSpikes.psc:94:11:forbidden-functions
+Scripts/Source/DLC02/DLC02/DLC02TrapSpikes.psc:99:4:strict-boolean
 Scripts/Source/DLC02/DLC02/DLC02TrapSpikes.psc:117:5:exclamation-spacing
 Scripts/Source/DLC02/DLC02/DLC02TrapSpikes.psc:135:2:strict-boolean
 Scripts/Source/DLC02/DLC02/DLC02TrapSpikes.psc:139:5:exclamation-spacing
@@ -87026,9 +87036,11 @@ Scripts/Source/DLC02/DLC02/DLC02TrapSpring.psc:38:22:exclamation-spacing
 Scripts/Source/DLC02/DLC02/DLC02TrapSpring.psc:54:9:forbidden-functions
 Scripts/Source/DLC02/DLC02/DLC02TrapSpring.psc:56:6:exclamation-spacing
 Scripts/Source/DLC02/DLC02/DLC02TrapSpring.psc:57:10:forbidden-functions
+Scripts/Source/DLC02/DLC02/DLC02TrapSpring.psc:61:4:strict-boolean
 Scripts/Source/DLC02/DLC02/DLC02TrapSpring.psc:64:1:indentation
 Scripts/Source/DLC02/DLC02/DLC02TrapSpring.psc:65:32:exclamation-spacing
 Scripts/Source/DLC02/DLC02/DLC02TrapSpring.psc:66:10:forbidden-functions
+Scripts/Source/DLC02/DLC02/DLC02TrapSpring.psc:71:4:strict-boolean
 Scripts/Source/DLC02/DLC02/DLC02TrapSpring.psc:86:8:forbidden-functions
 Scripts/Source/DLC02/DLC02/DLC02TrapSpring.psc:87:8:forbidden-functions
 Scripts/Source/DLC02/DLC02/DLC02TrapSpring.psc:105:5:exclamation-spacing
@@ -115196,12 +115208,14 @@ Scripts/Source/DLC05/DLC05/WeaponRackScript.psc:87:1:indentation
 Scripts/Source/DLC05/DLC05/WeaponRackScript.psc:87:12:forbidden-functions
 Scripts/Source/DLC05/DLC05/WeaponRackScript.psc:88:1:indentation
 Scripts/Source/DLC05/DLC05/WeaponRackScript.psc:89:1:indentation
+Scripts/Source/DLC05/DLC05/WeaponRackScript.psc:89:5:unused-getter
 Scripts/Source/DLC05/DLC05/WeaponRackScript.psc:94:2:unused-getter
 Scripts/Source/DLC05/DLC05/WeaponRackScript.psc:95:8:forbidden-functions
 Scripts/Source/DLC05/DLC05/WeaponRackScript.psc:95:121:line-length
 Scripts/Source/DLC05/DLC05/WeaponRackScript.psc:97:9:forbidden-functions
 Scripts/Source/DLC05/DLC05/WeaponRackScript.psc:100:9:forbidden-functions
 Scripts/Source/DLC05/DLC05/WeaponRackScript.psc:105:29:trailing-whitespace
+Scripts/Source/DLC05/DLC05/WeaponRackScript.psc:108:2:unused-getter
 Scripts/Source/DLC05/DLC05/WeaponRackScript.psc:111:1:nesting-depth
 Scripts/Source/DLC05/DLC05/WeaponRackScript.psc:112:8:forbidden-functions
 Scripts/Source/DLC05/DLC05/WeaponRackScript.psc:114:2:strict-boolean

@@ -1,16 +1,13 @@
 //! Flags script properties that are declared but never referenced.
 //!
-//! Like the other lints in this crate, this works on lexer tokens rather
-//! than the parsed AST, so it still runs on scripts that don't parse
-//! cleanly. Properties are matched by name alone (case-insensitively, as
-//! Papyrus identifiers are), so a property that shares its name with a
-//! member on some other object (e.g. `akRef.Foo` where `Foo` isn't this
-//! script's property) is treated as used; this only produces false
-//! negatives, never false positives.
+//! This works from the parsed AST: a property name on another object
+//! (`akRef.Foo`) is not a use of this script's `Foo`. Scripts that do
+//! not parse are left unchecked, like other correctness rules.
 
-use crate::visitor::{LintVisitor, Store, TokenLint, VisitCtx};
+use crate::property_usage;
+use crate::visitor::{AstLint, LintVisitor, Store, VisitCtx};
 use crate::Diagnostic;
-use papyrus_parser::token::{Keyword, Token, TokenKind};
+use papyrus_parser::ast::Script;
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "unused-property";
@@ -18,59 +15,30 @@ pub const RULE: &str = "unused-property";
 #[derive(Default)]
 struct Collect {
     store: Store,
-    decls: Vec<(String, String, usize, usize, usize)>,
-    uses: Vec<(String, usize)>,
 }
 
-impl TokenLint for Collect {
+impl AstLint for Collect {
     fn store(&mut self) -> &mut Store {
         &mut self.store
     }
 
-    fn visit_token(
-        &mut self,
-        token: &Token,
-        index: usize,
-        tokens: &[Token],
-        _ctx: &mut VisitCtx<'_>,
-    ) {
-        if let TokenKind::Identifier(name) = &token.kind {
-            self.uses.push((name.to_ascii_lowercase(), index));
-        }
-        if !matches!(token.kind, TokenKind::Keyword(Keyword::Property)) {
-            return;
-        }
-        if !preceded_by_type_name(tokens, index) {
-            return;
-        }
-        let Some(name_token) = tokens.get(index + 1) else {
-            return;
-        };
-        let TokenKind::Identifier(name) = &name_token.kind else {
-            return;
-        };
-        self.decls.push((
-            name.to_ascii_lowercase(),
-            name.clone(),
-            index + 1,
-            name_token.line,
-            name_token.col,
-        ));
-    }
-
-    fn finish(&mut self, _ctx: &mut VisitCtx<'_>) {
-        for (lower, name, decl_index, line, column) in &self.decls {
-            let used = self
-                .uses
-                .iter()
-                .any(|(candidate, index)| index != decl_index && candidate == lower);
+    fn visit_script(&mut self, script: &Script, _ctx: &mut VisitCtx<'_>) {
+        let usage = property_usage::collect_usage(script);
+        for property in property_usage::all_properties(script) {
+            let lower = property.name.to_ascii_lowercase();
+            let used = usage
+                .get(&lower)
+                .is_some_and(|entry| entry.read || entry.written);
             if used {
                 continue;
             }
             self.store.emit(
-                *line,
-                *column,
-                format!("[warning] Property '{name}' is declared but never used"),
+                property.line,
+                1,
+                format!(
+                    "[warning] Property '{}' is declared but never used",
+                    property.name
+                ),
                 RULE,
             );
         }
@@ -78,7 +46,7 @@ impl TokenLint for Collect {
 }
 
 pub fn visitor() -> LintVisitor {
-    LintVisitor::Tokens(Box::new(Collect::default()))
+    LintVisitor::Ast(Box::new(Collect::default()))
 }
 
 /// Checks `source` for `Property` declarations whose name is never used
@@ -92,22 +60,6 @@ pub fn check(
     external: &mut impl crate::external_signatures::ExternalSignatures,
 ) -> Vec<Diagnostic> {
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
-}
-
-fn preceded_by_type_name(tokens: &[Token], property_index: usize) -> bool {
-    if property_index == 0 {
-        return false;
-    }
-
-    if matches!(tokens[property_index - 1].kind, TokenKind::Identifier(_)) {
-        return true;
-    }
-
-    // An array type name: `Identifier [ ] Property`.
-    property_index >= 3
-        && matches!(tokens[property_index - 1].kind, TokenKind::RBracket)
-        && matches!(tokens[property_index - 2].kind, TokenKind::LBracket)
-        && matches!(tokens[property_index - 3].kind, TokenKind::Identifier(_))
 }
 
 #[cfg(test)]

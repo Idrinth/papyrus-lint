@@ -10719,6 +10719,7 @@ Source/Scripts/DLC1SoulCairnKeeperSCRIPT.psc:20:3:forbidden-functions
 Source/Scripts/DLC1SoulCairnKeeperSCRIPT.psc:27:1:none-form-usage
 Source/Scripts/DLC1SoulCairnWispWallCHILDScript.psc:19:13:forbidden-functions
 Source/Scripts/DLC1SoulCairnWispWallCHILDScript.psc:22:1:unchecked-cast
+Source/Scripts/DLC1SoulCairnWispWallCHILDScript.psc:22:38:unused-getter
 Source/Scripts/DLC1SoulCairnWispWallCHILDScript.psc:37:1:unchecked-cast
 Source/Scripts/DLC1SoulCairnWispWallCHILDScript.psc:45:1:unchecked-cast
 Source/Scripts/DLC1SoulPackageScript.psc:6:121:line-length
@@ -10786,6 +10787,7 @@ Source/Scripts/DLC1VCBoatDoorScript.psc:12:28:forbidden-functions
 Source/Scripts/DLC1VCBoatDoorScript.psc:13:24:forbidden-functions
 Source/Scripts/DLC1VCBossRoomAttachTrackerScript.psc:7:1:unchecked-cast
 Source/Scripts/DLC1VCBossRoomAttachTrackerScript.psc:11:1:unchecked-cast
+Source/Scripts/DLC1VCEmberToggleScript.psc:22:4:strict-boolean
 Source/Scripts/DLC1VCEmberToggleScript.psc:26:7:forbidden-functions
 Source/Scripts/DLC1VCEmberToggleScript.psc:27:5:forbidden-functions
 Source/Scripts/DLC1VCEmberToggleScript.psc:33:7:forbidden-functions
@@ -11904,6 +11906,9 @@ Source/Scripts/DLC1WordWallTriggerScript.psc:353:1:none-form-usage
 Source/Scripts/DLC1WordWallTriggerScript.psc:356:1:none-form-usage
 Source/Scripts/DLC1WordWallTriggerScript.psc:357:1:none-form-usage
 Source/Scripts/DLC1_2StateActivatorWithGlobal.psc:26:121:line-length
+Source/Scripts/DLC1_2StateActivatorWithGlobal.psc:45:1:none-form-usage
+Source/Scripts/DLC1_2StateActivatorWithGlobal.psc:62:1:none-form-usage
+Source/Scripts/DLC1_2StateActivatorWithGlobal.psc:86:1:none-form-usage
 Source/Scripts/DLC1_2StateActivatorWithGlobal.psc:96:1:none-form-usage
 Source/Scripts/DLC1_2StateActivatorWithGlobal.psc:119:1:argument-naming
 Source/Scripts/DLC1_2StateActivatorWithGlobal.psc:142:1:none-form-usage
@@ -20364,6 +20369,7 @@ Source/Scripts/DLC2dunBook3HallReturn01.psc:17:1:none-form-usage
 Source/Scripts/DLC2dunBook3HallReturn01.psc:19:1:none-form-usage
 Source/Scripts/DLC2dunBook3SeekerScript.psc:20:15:forbidden-functions
 Source/Scripts/DLC2dunBook3SeekerScript.psc:23:1:unchecked-cast
+Source/Scripts/DLC2dunBook3SeekerScript.psc:23:48:unused-getter
 Source/Scripts/DLC2dunBook3SeekerScript.psc:29:1:unchecked-cast
 Source/Scripts/DLC2dunBookLevel4Bend.psc:23:45:forbidden-functions
 Source/Scripts/DLC2dunBookLevel4Bend.psc:24:1:unchecked-cast
@@ -22516,6 +22522,7 @@ Source/Scripts/FavorDialogueScript.psc:122:1:unchecked-cast
 Source/Scripts/FavorDialogueScript.psc:124:1:none-form-usage
 Source/Scripts/FavorDialogueScript.psc:125:1:none-form-usage
 Source/Scripts/FavorDialogueScript.psc:125:1:unchecked-cast
+Source/Scripts/FavorDialogueScript.psc:125:50:unused-getter
 Source/Scripts/FavorDialogueScript.psc:132:1:none-form-usage
 Source/Scripts/FavorJarlsMakeFriendsScript.psc:138:1:cyclomatic-complexity
 Source/Scripts/FavorJarlsMakeFriendsScript.psc:145:1:none-form-usage
@@ -52131,6 +52138,7 @@ Source/Scripts/dunBluePalaceWabbajackSCRIPT.psc:258:1:unchecked-cast
 Source/Scripts/dunBluePalaceWabbajackSCRIPT.psc:259:1:unchecked-cast
 Source/Scripts/dunBluePalaceWabbajackSCRIPT.psc:272:1:place-at-me
 Source/Scripts/dunBluePalaceWabbajackSCRIPT.psc:276:1:unchecked-cast
+Source/Scripts/dunBluePalaceWabbajackSCRIPT.psc:276:47:unused-getter
 Source/Scripts/dunBluePalaceWabbajackSCRIPT.psc:280:1:place-at-me
 Source/Scripts/dunBluePalaceWabbajackSCRIPT.psc:286:1:unchecked-cast
 Source/Scripts/dunBluePalaceWabbajackSCRIPT.psc:290:1:place-at-me

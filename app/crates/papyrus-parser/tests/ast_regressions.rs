@@ -140,7 +140,7 @@ fn reports_missing_block_terminators_at_end_of_file() {
         ),
         (
             "ScriptName Broken\nInt Property Value\nFunction Get()\n",
-            "expected keyword EndProperty, found Eof",
+            "expected keyword EndFunction, found Eof",
         ),
     ] {
         let PapyrusError::Parse(error) = parse(source).expect_err("the block is unterminated")

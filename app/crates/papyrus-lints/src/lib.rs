@@ -21,6 +21,7 @@ mod disable_comments;
 mod external_signatures;
 mod fragment_code;
 mod nodiscard_comments;
+mod property_usage;
 mod registry;
 mod state_count;
 mod state_reference;

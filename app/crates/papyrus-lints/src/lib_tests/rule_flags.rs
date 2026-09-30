@@ -51,7 +51,7 @@ fn each_rule_flag_gates_only_its_own_lint() {
                 config_with(|c| c.rules.slow_functions = false),
             ),
             (
-                "Function Test()\n  GetValue()\nEndFunction\n",
+                "ScriptName Example\nFunction Test()\n  GetValue()\nEndFunction\n",
                 unused_getter::RULE,
                 Config::default(),
                 config_with(|c| c.rules.unused_getter = false),

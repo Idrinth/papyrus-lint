@@ -9049,6 +9049,7 @@ Scripts/Source/Dawnguard/DLC1SoulCairnKeeperSCRIPT.psc:27:1:none-form-usage
 Scripts/Source/Dawnguard/DLC1SoulCairnWispWallCHILDScript.psc:19:13:forbidden-functions
 Scripts/Source/Dawnguard/DLC1SoulCairnWispWallCHILDScript.psc:22:1:unchecked-cast
 Scripts/Source/Dawnguard/DLC1SoulCairnWispWallCHILDScript.psc:22:1:unresolved-script
+Scripts/Source/Dawnguard/DLC1SoulCairnWispWallCHILDScript.psc:22:38:unused-getter
 Scripts/Source/Dawnguard/DLC1SoulCairnWispWallCHILDScript.psc:37:1:unchecked-cast
 Scripts/Source/Dawnguard/DLC1SoulCairnWispWallCHILDScript.psc:37:1:unresolved-script
 Scripts/Source/Dawnguard/DLC1SoulCairnWispWallCHILDScript.psc:45:1:unchecked-cast
@@ -9132,6 +9133,7 @@ Scripts/Source/Dawnguard/DLC1VCBoatDoorScript.psc:12:28:forbidden-functions
 Scripts/Source/Dawnguard/DLC1VCBoatDoorScript.psc:13:24:forbidden-functions
 Scripts/Source/Dawnguard/DLC1VCBossRoomAttachTrackerScript.psc:7:1:unchecked-cast
 Scripts/Source/Dawnguard/DLC1VCBossRoomAttachTrackerScript.psc:11:1:unchecked-cast
+Scripts/Source/Dawnguard/DLC1VCEmberToggleScript.psc:22:4:strict-boolean
 Scripts/Source/Dawnguard/DLC1VCEmberToggleScript.psc:26:7:forbidden-functions
 Scripts/Source/Dawnguard/DLC1VCEmberToggleScript.psc:27:5:forbidden-functions
 Scripts/Source/Dawnguard/DLC1VCEmberToggleScript.psc:33:7:forbidden-functions
@@ -10371,6 +10373,9 @@ Scripts/Source/Dawnguard/DLC1WordWallTriggerScript.psc:353:1:none-form-usage
 Scripts/Source/Dawnguard/DLC1WordWallTriggerScript.psc:356:1:none-form-usage
 Scripts/Source/Dawnguard/DLC1WordWallTriggerScript.psc:357:1:none-form-usage
 Scripts/Source/Dawnguard/DLC1_2StateActivatorWithGlobal.psc:26:121:line-length
+Scripts/Source/Dawnguard/DLC1_2StateActivatorWithGlobal.psc:45:1:none-form-usage
+Scripts/Source/Dawnguard/DLC1_2StateActivatorWithGlobal.psc:62:1:none-form-usage
+Scripts/Source/Dawnguard/DLC1_2StateActivatorWithGlobal.psc:86:1:none-form-usage
 Scripts/Source/Dawnguard/DLC1_2StateActivatorWithGlobal.psc:95:8:forbidden-functions
 Scripts/Source/Dawnguard/DLC1_2StateActivatorWithGlobal.psc:96:1:none-form-usage
 Scripts/Source/Dawnguard/DLC1_2StateActivatorWithGlobal.psc:119:1:argument-naming
@@ -20731,6 +20736,7 @@ Scripts/Source/Dragonborn/DLC2dunBook3HallReturn01.psc:17:1:none-form-usage
 Scripts/Source/Dragonborn/DLC2dunBook3HallReturn01.psc:19:1:none-form-usage
 Scripts/Source/Dragonborn/DLC2dunBook3SeekerScript.psc:20:15:forbidden-functions
 Scripts/Source/Dragonborn/DLC2dunBook3SeekerScript.psc:23:1:unchecked-cast
+Scripts/Source/Dragonborn/DLC2dunBook3SeekerScript.psc:23:48:unused-getter
 Scripts/Source/Dragonborn/DLC2dunBook3SeekerScript.psc:29:1:unchecked-cast
 Scripts/Source/Dragonborn/DLC2dunBookLevel4Bend.psc:23:45:forbidden-functions
 Scripts/Source/Dragonborn/DLC2dunBookLevel4Bend.psc:24:1:unchecked-cast
@@ -23079,6 +23085,7 @@ Scripts/Source/FavorDialogueScript.psc:122:1:unchecked-cast
 Scripts/Source/FavorDialogueScript.psc:124:1:none-form-usage
 Scripts/Source/FavorDialogueScript.psc:125:1:none-form-usage
 Scripts/Source/FavorDialogueScript.psc:125:1:unchecked-cast
+Scripts/Source/FavorDialogueScript.psc:125:50:unused-getter
 Scripts/Source/FavorDialogueScript.psc:132:1:none-form-usage
 Scripts/Source/FavorJarlsMakeFriendsScript.psc:138:1:cyclomatic-complexity
 Scripts/Source/FavorJarlsMakeFriendsScript.psc:145:1:none-form-usage
@@ -52064,6 +52071,7 @@ Scripts/Source/dunBluePalaceWabbajackSCRIPT.psc:258:1:unchecked-cast
 Scripts/Source/dunBluePalaceWabbajackSCRIPT.psc:259:1:unchecked-cast
 Scripts/Source/dunBluePalaceWabbajackSCRIPT.psc:272:1:place-at-me
 Scripts/Source/dunBluePalaceWabbajackSCRIPT.psc:276:1:unchecked-cast
+Scripts/Source/dunBluePalaceWabbajackSCRIPT.psc:276:47:unused-getter
 Scripts/Source/dunBluePalaceWabbajackSCRIPT.psc:280:1:place-at-me
 Scripts/Source/dunBluePalaceWabbajackSCRIPT.psc:286:1:unchecked-cast
 Scripts/Source/dunBluePalaceWabbajackSCRIPT.psc:290:1:place-at-me
