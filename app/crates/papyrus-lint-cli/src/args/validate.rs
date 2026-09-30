@@ -15,92 +15,94 @@ use crate::output::{normalize_tag_filter, ColorChoice, OutputFormat};
 /// lint/fix run or `--blob` needs before any of the actual work
 /// (resolving paths, loading config, linting) begins. `fix` is supplied by
 /// the `lint` vs `fix` subcommand rather than a positional token.
-pub(super) fn validate(raw: RawArgs, fix: bool) -> Result<ParsedCommand, ArgsError> {
-    let quiet_warnings = raw.quiet_warnings;
-    let quiet_info = raw.quiet_info;
-    let short_paths = raw.short_paths;
-    let progress = raw.progress;
-    let dry_run = raw.dry_run;
-    let hash_source = raw.hash_source;
-    let config_path: Option<PathBuf> = raw.config.map(PathBuf::from);
-    let output_path: Option<PathBuf> = raw.output.map(PathBuf::from);
-    let cli_script_roots: Vec<String> = raw.script_root;
-    let type_filter = raw.type_filter;
-    let line_filter = raw.line;
-    let tag_filter = raw.tag;
-    let format_flag = raw.format;
-    let color_flag = raw.color;
-    let threads_flag = raw.threads;
-    let blob_flag = raw.blob;
-    let args = raw.positionals;
-
-    let output_format = parse_output_format(format_flag.as_deref())?;
-
-    if hash_source && output_format != OutputFormat::Ai {
+pub(super) fn validate(mut raw: RawArgs, fix: bool) -> Result<ParsedCommand, ArgsError> {
+    let output_format = parse_output_format(raw.format.as_deref())?;
+    if raw.hash_source && output_format != OutputFormat::Ai {
         return Err(ArgsError::HashSourceRequiresAi);
     }
+    let color_choice = parse_color_choice(raw.color.as_deref())?;
 
-    let color_choice = parse_color_choice(color_flag.as_deref())?;
-
-    if let Some(source) = blob_flag {
-        if fix {
-            return Err(ArgsError::BlobWithFixFlags);
-        }
-        return parse_blob_command(
-            source,
-            &args,
-            dry_run,
-            type_filter.as_deref(),
-            line_filter.as_deref(),
-            progress,
-            &cli_script_roots,
-            threads_flag.as_deref(),
-            tag_filter,
-            config_path,
-            output_format,
-            hash_source,
-            quiet_warnings,
-            quiet_info,
-            color_choice,
-            output_path,
-        );
+    if let Some(source) = raw.blob.take() {
+        return validate_blob(raw, source, fix, output_format, color_choice);
     }
 
+    validate_lint(raw, fix, output_format, color_choice)
+}
+
+fn validate_blob(
+    raw: RawArgs,
+    source: String,
+    fix: bool,
+    output_format: OutputFormat,
+    color_choice: ColorChoice,
+) -> Result<ParsedCommand, ArgsError> {
+    if fix {
+        return Err(ArgsError::BlobWithFixFlags);
+    }
+    parse_blob_command(
+        source,
+        &raw.positionals,
+        raw.dry_run,
+        raw.type_filter.as_deref(),
+        raw.line.as_deref(),
+        raw.progress,
+        &raw.script_root,
+        raw.threads.as_deref(),
+        raw.tag,
+        raw.config.map(PathBuf::from),
+        output_format,
+        raw.hash_source,
+        raw.quiet_warnings,
+        raw.quiet_info,
+        color_choice,
+        raw.output.map(PathBuf::from),
+    )
+}
+
+fn validate_lint(
+    raw: RawArgs,
+    fix: bool,
+    output_format: OutputFormat,
+    color_choice: ColorChoice,
+) -> Result<ParsedCommand, ArgsError> {
+    let config_path = raw.config.map(PathBuf::from);
+    let output_path = raw.output.map(PathBuf::from);
+
     let input_path = parse_lint_positionals(
-        &args,
+        &raw.positionals,
         fix,
-        type_filter.as_deref(),
-        line_filter.as_deref(),
-        dry_run,
+        raw.type_filter.as_deref(),
+        raw.line.as_deref(),
+        raw.dry_run,
     )?;
 
-    if progress && output_path.is_none() {
+    if raw.progress && output_path.is_none() {
         return Err(ArgsError::ProgressRequiresOutput);
     }
 
-    if type_filter.is_some() && tag_filter.is_some() {
+    if raw.type_filter.is_some() && raw.tag.is_some() {
         return Err(ArgsError::TypeAndTagConflict);
     }
 
-    let tag_filter = normalize_tag_filter(tag_filter).map_err(ArgsError::UnknownTag)?;
+    let tag_filter = normalize_tag_filter(raw.tag).map_err(ArgsError::UnknownTag)?;
 
-    let rule_filter = parse_rule_filter(type_filter)?;
-    let target_line = parse_line_filter(line_filter)?;
-    let thread_count = parse_thread_count(threads_flag)?;
+    let rule_filter = parse_rule_filter(raw.type_filter)?;
+    let target_line = parse_line_filter(raw.line)?;
+    let thread_count = parse_thread_count(raw.threads)?;
 
     Ok(ParsedCommand::Lint(LintArgs {
         fix,
         input_path,
         output_format,
-        quiet_warnings,
-        quiet_info,
-        short_paths,
-        progress,
-        dry_run,
-        hash_source,
+        quiet_warnings: raw.quiet_warnings,
+        quiet_info: raw.quiet_info,
+        short_paths: raw.short_paths,
+        progress: raw.progress,
+        dry_run: raw.dry_run,
+        hash_source: raw.hash_source,
         config_path,
         output_path,
-        cli_script_roots,
+        cli_script_roots: raw.script_root,
         tag_filter,
         rule_filter,
         target_line,

@@ -128,6 +128,12 @@ struct PreparedSource {
     plain_text: Vec<u8>,
 }
 
+struct LintProgress<'a> {
+    completed: AtomicUsize,
+    total: AtomicUsize,
+    stdout: Mutex<&'a mut (dyn Write + Send)>,
+}
+
 /// Reads and parses every lint target, then every script a type name in
 /// those ASTs resolves to, optionally in parallel via `--threads`.
 /// Reports "Parsing: n/total" as each on-disk file finishes when `progress`
@@ -229,39 +235,22 @@ fn process_scripts<'a>(
         ignores,
     } = scan;
 
-    let progress_stdout: Mutex<&mut (dyn Write + Send)> = Mutex::new(stdout);
-
-    collision_cache::preload(
-        lint_config.game,
-        script_paths
-            .iter()
-            .chain(script_index.values().flatten())
-            .chain(scripts_by_name.values().flatten()),
-    );
-    let parsed_files = parse_scripts(
-        &function_table,
+    let progress = LintProgress {
+        completed: AtomicUsize::new(0),
+        total: AtomicUsize::new(total_scripts),
+        stdout: Mutex::new(stdout),
+    };
+    let parsed_files = parse_and_preload_scripts(
+        &mut function_table,
         &script_paths,
+        &script_index,
+        &scripts_by_name,
+        lint,
         lint_config.game,
-        lint.thread_count,
-        lint.progress,
-        &progress_stdout,
+        &progress.stdout,
     );
-    if lint.progress && total_scripts > 0 {
-        // Ends the "Parsing" bar's line so "Linting"'s own `\r`-updated one
-        // starts fresh below it instead of overwriting it mid-word.
-        let mut stdout = progress_stdout
-            .lock()
-            .unwrap_or_else(|poisoned| poisoned.into_inner());
-        let _ = writeln!(stdout);
-    }
-    collision_cache::flush();
-
-    preload_function_table(&mut function_table, &script_paths, &parsed_files);
     let (function_table_root, function_table_additional_roots, function_table) =
         share_function_table(function_table);
-
-    let progress_completed = AtomicUsize::new(0);
-    let lint_total = AtomicUsize::new(total_scripts);
 
     let lint_context = LintContext {
         lint_config: &lint_config,
@@ -310,18 +299,56 @@ fn process_scripts<'a>(
                     dry_run: lint.dry_run,
                     progress: lint.progress,
                 },
-                &progress_completed,
-                &lint_total,
-                &progress_stdout,
+                &progress.completed,
+                &progress.total,
+                &progress.stdout,
             )
         },
     );
 
     collision_cache::flush();
-    let stdout = progress_stdout
+    let stdout = progress
+        .stdout
         .into_inner()
         .unwrap_or_else(|poisoned| poisoned.into_inner());
     (file_results, stdout)
+}
+
+fn parse_and_preload_scripts(
+    function_table: &mut FunctionTable,
+    script_paths: &[PathBuf],
+    script_index: &std::collections::HashMap<String, Vec<PathBuf>>,
+    scripts_by_name: &std::collections::HashMap<String, Vec<PathBuf>>,
+    lint: &LintArgs,
+    game: papyrus_lints::Game,
+    progress_stdout: &Mutex<&mut (dyn Write + Send)>,
+) -> ClosedScripts<Result<ParsedFile, String>> {
+    collision_cache::preload(
+        game,
+        script_paths
+            .iter()
+            .chain(script_index.values().flatten())
+            .chain(scripts_by_name.values().flatten()),
+    );
+    let parsed_files = parse_scripts(
+        function_table,
+        script_paths,
+        game,
+        lint.thread_count,
+        lint.progress,
+        progress_stdout,
+    );
+    if lint.progress && !script_paths.is_empty() {
+        // Ends the "Parsing" bar's line so "Linting"'s own `\r`-updated one
+        // starts fresh below it instead of overwriting it mid-word.
+        let mut stdout = progress_stdout
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        let _ = writeln!(stdout);
+    }
+    collision_cache::flush();
+    preload_function_table(function_table, script_paths, &parsed_files);
+    parsed_files
 }
 
 /// Every script is otherwise independent, so this table's own cache (of
