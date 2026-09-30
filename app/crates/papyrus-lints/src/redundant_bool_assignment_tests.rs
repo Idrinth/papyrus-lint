@@ -1,4 +1,5 @@
 use super::*;
+use papyrus_parser::ast::BinaryOp;
 
 fn check(source: &str) -> Vec<Diagnostic> {
     let ast = papyrus_parser::parse(source).ok();
@@ -344,4 +345,85 @@ fn repair_helpers_cover_malformed_and_boundary_inputs() {
         replacement: "ignored".to_string(),
     }];
     assert_eq!(apply_edits("012345", &invalid_hits), "012345");
+}
+
+#[test]
+fn repair_helpers_cover_target_rendering_and_token_boundaries() {
+    let member = Expr::Member {
+        object: Box::new(Expr::Self_),
+        property: "Flag".to_string(),
+    };
+    let indexed_by_name = Expr::Index {
+        object: Box::new(member.clone()),
+        index: Box::new(Expr::Identifier("slot".to_string())),
+    };
+    let indexed_by_number = Expr::Index {
+        object: Box::new(Expr::Identifier("flags".to_string())),
+        index: Box::new(Expr::Literal(Literal::int(2))),
+    };
+    let unsupported_index = Expr::Index {
+        object: Box::new(Expr::Identifier("flags".to_string())),
+        index: Box::new(Expr::Self_),
+    };
+
+    assert_eq!(render_target(&Expr::Self_), Some("Self".to_string()));
+    assert_eq!(render_target(&member), Some("Self.Flag".to_string()));
+    assert_eq!(
+        render_target(&indexed_by_name),
+        Some("Self.Flag[slot]".to_string())
+    );
+    assert_eq!(
+        render_target(&indexed_by_number),
+        Some("flags[2]".to_string())
+    );
+    assert_eq!(render_target(&unsupported_index), None);
+    assert_eq!(render_target(&Expr::Parent), None);
+
+    let nested = "If ready\n    If ready\n    EndIf\nEndIf\n";
+    let nested_tokens = papyrus_parser::tokenize(nested).unwrap();
+    assert_eq!(end_if_line(&nested_tokens, 1), Some(4));
+    assert_eq!(end_if_line(&nested_tokens, 2), Some(3));
+
+    let incomplete_tokens = papyrus_parser::tokenize("If ready\n").unwrap();
+    assert_eq!(end_if_line(&incomplete_tokens, 1), None);
+    assert_eq!(end_if_line(&incomplete_tokens, 9), None);
+    assert_eq!(line_indent("\t  value", 0), "\t  ");
+    assert_eq!(line_indent("    ", 0), "    ");
+    assert_eq!(lexeme_end("\"line\nrest", 0), 5);
+    assert_eq!(lexeme_end("+ value", 0), 1);
+}
+
+#[test]
+fn comparison_inversion_rejects_ambiguous_or_mismatched_text() {
+    fn binary(op: papyrus_parser::ast::BinaryOp) -> Expr {
+        Expr::Binary {
+            left: Box::new(Expr::Identifier("left".to_string())),
+            op,
+            right: Box::new(Expr::Identifier("right".to_string())),
+        }
+    }
+
+    assert_eq!(
+        invert_simple_comparison("items[index > 0] > limit", &binary(BinaryOp::Gt)),
+        Some("items[index > 0] <= limit".to_string())
+    );
+    assert_eq!(
+        invert_simple_comparison("left > middle > right", &binary(BinaryOp::Gt)),
+        None
+    );
+    assert_eq!(
+        invert_simple_comparison("left >= right", &binary(BinaryOp::Gt)),
+        None
+    );
+    assert_eq!(
+        invert_simple_comparison("left > right", &Expr::Identifier("left".to_string())),
+        None
+    );
+    assert_eq!(
+        invert_simple_comparison("left + right", &binary(BinaryOp::Add)),
+        None
+    );
+
+    assert_eq!(render_negated("! ((ready))"), "(ready)");
+    assert_eq!(render_negated("ready"), "! ready");
 }
