@@ -2,7 +2,7 @@
 //! filtered-repair coverage of every advertised fixable rule.
 
 use papyrus_lints::{
-    repair_filtered, tags::tags_for, Config, NamedArguments, FIXABLE_RULE_IDS, KNOWN_RULE_IDS,
+    repair_filtered, tags::tags_for, Config, FIXABLE_RULE_IDS, KNOWN_RULE_IDS,
 };
 use std::collections::HashSet;
 
@@ -34,17 +34,6 @@ fn every_known_rule_id_resolves_to_published_tags() {
 
 #[test]
 fn a_published_fixable_rule_works_through_the_filtered_public_api() {
-    let mut property_config = Config::default();
-    property_config.rules.property_sorting = true;
-
-    let named_arguments_config = Config {
-        named_arguments: NamedArguments::Always,
-        ..Config::default()
-    };
-
-    let mut unused_disable_config = Config::default();
-    unused_disable_config.rules.unused_disable = true;
-
     let default_config = Config::default();
     let cases = [
         (

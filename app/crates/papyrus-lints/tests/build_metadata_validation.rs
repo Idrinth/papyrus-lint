@@ -10,6 +10,10 @@ impl BuildContext {
     pub fn load_json<T>(&self, _: &str, _: &str) -> T {
         unreachable!()
     }
+
+    pub fn load_yaml<T>(&self, _: &str, _: &str) -> T {
+        unreachable!()
+    }
 }
 
 use metadata::{config_key, module_name, order_by_config, validate, RuleMetadata};
