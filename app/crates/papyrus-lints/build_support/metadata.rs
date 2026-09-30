@@ -145,7 +145,11 @@ pub fn validate(rules: &[RuleMetadata], repair_order: &[String]) -> Result<(), V
                 rule.id
             ));
         }
-        if rule.fixable && !external_repair && !no_source && !repair_order.iter().any(|id| id == rule.id.as_str()) {
+        if rule.fixable
+            && !external_repair
+            && !no_source
+            && !repair_order.iter().any(|id| id == rule.id.as_str())
+        {
             return fail(format!(
                 "shared/rule-order.yaml: {} is fixable and must be listed under `repair` (or belong to EXTERNAL_REPAIR_IDS)",
                 rule.id
