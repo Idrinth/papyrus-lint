@@ -32,11 +32,33 @@ pub fn auto_detect_compiler_path(dir: &Path) -> Option<PathBuf> {
 /// an auto-detected path (see [`auto_detect_compiler_path`]). Returns
 /// `None` if neither is available.
 pub fn resolve_compiler_path(dir: &Path) -> Result<Option<String>, String> {
-    if let Some(path) = crate::compiler_config::load_compiler_path(dir)? {
+    resolve_compiler_path_from(crate::compiler_config::load_compiler_path(dir)?, dir)
+}
+
+/// Resolves PapyrusCompiler.exe using an explicit config file at
+/// `config_path` for the override (see [`crate::compiler_config::load_compiler_path_from_path`]),
+/// then falling back to auto-detection relative to `project_root`. Used so
+/// a `--config <path>` override still supplies `compiler_path` from the
+/// file it names, while auto-detection stays anchored on the project.
+pub fn resolve_compiler_path_from_path(
+    config_path: &Path,
+    project_root: &Path,
+) -> Result<Option<String>, String> {
+    resolve_compiler_path_from(
+        crate::compiler_config::load_compiler_path_from_path(config_path)?,
+        project_root,
+    )
+}
+
+fn resolve_compiler_path_from(
+    explicit: Option<String>,
+    project_root: &Path,
+) -> Result<Option<String>, String> {
+    if let Some(path) = explicit {
         return Ok(Some(path));
     }
 
-    Ok(auto_detect_compiler_path(dir).map(|path| path.to_string_lossy().into_owned()))
+    Ok(auto_detect_compiler_path(project_root).map(|path| path.to_string_lossy().into_owned()))
 }
 
 #[cfg(test)]
