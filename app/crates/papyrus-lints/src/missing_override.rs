@@ -133,6 +133,73 @@ pub fn check_with<E: ExternalSignatures + ?Sized>(
         .collect()
 }
 
+/// Adds `; @override` on headers [`check`] would flag — which, without a
+/// resolver, is none at all. See [`repair_with`].
+#[allow(dead_code)]
+pub fn repair(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+) -> String {
+    let _ = (ast, tokens, config);
+    repair_with(source, &mut crate::external_signatures::NoExternalSignatures)
+}
+
+/// Appends `; @override` to every top-level override header [`check_with`]
+/// flags through `external`. An existing trailing comment is extended with
+/// `@override` rather than a second `;`. Scripts that don't parse, or that
+/// have nothing to flag, are returned unchanged.
+pub fn repair_with<E: ExternalSignatures + ?Sized>(source: &str, external: &mut E) -> String {
+    let ast = papyrus_parser::parse(source).ok();
+    let lines_to_mark: std::collections::HashSet<usize> = check_with(source, ast.as_ref(), external)
+        .into_iter()
+        .map(|diagnostic| diagnostic.line)
+        .collect();
+    if lines_to_mark.is_empty() {
+        return source.to_string();
+    }
+
+    let mut result = String::with_capacity(source.len() + lines_to_mark.len() * 12);
+    let mut rest = source;
+    let mut line_number = 1usize;
+    while !rest.is_empty() {
+        let (line_and_ending, remainder) = match rest.find('\n') {
+            Some(index) => (&rest[..=index], &rest[index + 1..]),
+            None => (rest, ""),
+        };
+        if lines_to_mark.contains(&line_number) {
+            let (line, ending) = match line_and_ending.strip_suffix('\n') {
+                Some(line) => (line, "\n"),
+                None => (line_and_ending, ""),
+            };
+            result.push_str(&add_override_to_line(line));
+            result.push_str(ending);
+        } else {
+            result.push_str(line_and_ending);
+        }
+        rest = remainder;
+        line_number += 1;
+    }
+    result
+}
+
+fn add_override_to_line(line: &str) -> String {
+    let (content, trailing_cr) = match line.strip_suffix('\r') {
+        Some(stripped) => (stripped, "\r"),
+        None => (line, ""),
+    };
+    if line_has_override(content) {
+        return line.to_string();
+    }
+    let separator = if crate::unused_nodiscard::line_comment_text(content).is_some() {
+        " "
+    } else {
+        " ; "
+    };
+    format!("{content}{separator}@override{trailing_cr}")
+}
+
 fn header_has_override(lines: &[String], line: usize) -> bool {
     header_has_override_refs(
         &lines.iter().map(String::as_str).collect::<Vec<_>>(),
