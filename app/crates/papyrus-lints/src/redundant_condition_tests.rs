@@ -82,9 +82,51 @@ fn normalizes_literal_on_the_left() {
 }
 
 #[test]
+fn handles_every_reversed_relational_operator() {
+    for condition in [
+        "10 > x && 20 > x",
+        "10 >= x && 20 >= x",
+        "10 < x && 5 < x",
+        "10 <= x && 5 <= x",
+    ] {
+        let source = format!(
+            "ScriptName Example\n\nFunction Test(Int x)\n    If {condition}\n    EndIf\nEndFunction\n"
+        );
+        assert_eq!(check(&source).len(), 1, "condition: {condition}");
+    }
+}
+
+#[test]
+fn handles_negative_float_thresholds_and_inclusive_bounds() {
+    let diagnostics = check(
+        "ScriptName Example\n\nFunction Test(Float x)\n    If x >= -1.5 && x > -1.5\n    EndIf\n    If x <= -1.5 || x < -1.5\n    EndIf\nEndFunction\n",
+    );
+
+    assert_eq!(diagnostics.len(), 2);
+}
+
+#[test]
+fn recognizes_equality_as_a_single_point_interval() {
+    let diagnostics = check(
+        "ScriptName Example\n\nFunction Test(Int x)\n    If x == 5 && x >= 5\n    EndIf\n    If x == 5 || x >= 5\n    EndIf\nEndFunction\n",
+    );
+
+    assert_eq!(diagnostics.len(), 2);
+}
+
+#[test]
 fn matches_member_property_access() {
     let diagnostics = check(
         "ScriptName Example\n\nFunction Test()\n    If Self.Health > 10 && Self.Health > 5\n    EndIf\nEndFunction\n",
+    );
+
+    assert_eq!(diagnostics.len(), 1);
+}
+
+#[test]
+fn matches_case_insensitive_properties_on_the_same_object() {
+    let diagnostics = check(
+        "ScriptName Example\n\nFunction Test(Actor target)\n    If target.Health > 10 && TARGET.health > 5\n    EndIf\nEndFunction\n",
     );
 
     assert_eq!(diagnostics.len(), 1);
@@ -148,4 +190,26 @@ fn respects_config_off_switch() {
     config.rules.redundant_condition = false;
     let diagnostics = crate::lint(source, &config);
     assert!(diagnostics.iter().all(|diagnostic| diagnostic.rule != RULE));
+}
+
+#[test]
+fn respects_line_and_file_disable_directives() {
+    let line_disabled: Vec<_> = crate::lint(
+        "ScriptName Example\n\nFunction Test(Int x)\n    If x > 10 && x > 5 ; @disable redundant-condition\n    EndIf\n    If x > 10 && x > 5\n    EndIf\nEndFunction\n",
+        &crate::config::Config::default(),
+    )
+    .into_iter()
+    .filter(|diagnostic| diagnostic.rule == RULE)
+    .collect();
+    assert_eq!(line_disabled.len(), 1);
+    assert_eq!(line_disabled[0].line, 6);
+
+    let file_disabled: Vec<_> = crate::lint(
+        "; @disable-file redundant-condition\nScriptName Example\n\nFunction Test(Int x)\n    If x > 10 && x > 5\n    EndIf\nEndFunction\n",
+        &crate::config::Config::default(),
+    )
+    .into_iter()
+    .filter(|diagnostic| diagnostic.rule == RULE)
+    .collect();
+    assert!(file_disabled.is_empty());
 }
