@@ -508,9 +508,15 @@ fn doctor_reports_positive_directory_and_explicit_path_checks() {
     write_file(&compiler, "compiler fixture");
     write_file(
         &project.join("papyrus-lint.yaml"),
-        &format!("compiler_path: {}\n", compiler.display()),
+        "trailing_whitespace: false\n",
     );
-    write_file(&config_path, "trailing_whitespace: true\n");
+    write_file(
+        &config_path,
+        &format!(
+            "trailing_whitespace: true\ncompiler_path: {}\n",
+            compiler.display()
+        ),
+    );
 
     let (code, stdout, stderr) = run_captured(&[
         "doctor".to_string(),

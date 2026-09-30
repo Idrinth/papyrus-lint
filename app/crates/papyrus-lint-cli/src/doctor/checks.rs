@@ -351,8 +351,12 @@ pub(super) fn check_conventional_roots(project_root: &Path, checks: &mut Vec<Doc
     }
 }
 
-pub(super) fn check_compiler(project_root: &Path, checks: &mut Vec<DoctorCheck>) {
-    match config::load_compiler_path(project_root) {
+pub(super) fn check_compiler(
+    project_root: &Path,
+    config_path: Option<&Path>,
+    checks: &mut Vec<DoctorCheck>,
+) {
+    match load_compiler_path(project_root, config_path) {
         Ok(Some(path)) => {
             if Path::new(&path).is_file() {
                 checks.push(DoctorCheck::ok(format!(
@@ -381,9 +385,9 @@ pub(super) fn check_compiler(project_root: &Path, checks: &mut Vec<DoctorCheck>)
         ))),
     }
 
-    match config::load_compile_check(project_root) {
+    match load_compile_check(project_root, config_path) {
         Ok(true) => {
-            if matches!(config::resolve_compiler_path(project_root), Ok(None)) {
+            if matches!(resolve_compiler_path(project_root, config_path), Ok(None)) {
                 checks.push(DoctorCheck::warning(
                     "compile_check is enabled but no PapyrusCompiler.exe could be resolved"
                         .to_string(),
@@ -394,5 +398,32 @@ pub(super) fn check_compiler(project_root: &Path, checks: &mut Vec<DoctorCheck>)
         Err(err) => checks.push(DoctorCheck::error(format!(
             "failed to load compile_check: {err}"
         ))),
+    }
+}
+
+fn load_compiler_path(
+    project_root: &Path,
+    config_path: Option<&Path>,
+) -> Result<Option<String>, String> {
+    config_path.map_or_else(
+        || config::load_compiler_path(project_root),
+        config::load_compiler_path_from_path,
+    )
+}
+
+fn load_compile_check(project_root: &Path, config_path: Option<&Path>) -> Result<bool, String> {
+    config_path.map_or_else(
+        || config::load_compile_check(project_root),
+        config::load_compile_check_from_path,
+    )
+}
+
+fn resolve_compiler_path(
+    project_root: &Path,
+    config_path: Option<&Path>,
+) -> Result<Option<String>, String> {
+    match config_path {
+        Some(path) => config::resolve_compiler_path_from_path(path, project_root),
+        None => config::resolve_compiler_path(project_root),
     }
 }

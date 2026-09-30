@@ -88,7 +88,7 @@ pub(crate) fn run_doctor(raw: DoctorArgs, stdout: &mut impl Write) -> u8 {
     );
 
     check_conventional_roots(&project_root, &mut checks);
-    check_compiler(&project_root, &mut checks);
+    check_compiler(&project_root, config_path.as_deref(), &mut checks);
 
     let success = !checks.iter().any(|check| check.status != DoctorStatus::Ok);
     write_doctor_report(json, &project_root, checks, success, stdout);
@@ -102,3 +102,6 @@ pub(crate) fn run_doctor(raw: DoctorArgs, stdout: &mut impl Write) -> u8 {
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod config_override_tests;

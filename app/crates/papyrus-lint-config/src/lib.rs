@@ -29,9 +29,12 @@ mod script_roots;
 mod yaml_merge;
 
 pub use achlist_config::{load_strict_achlist_scope, load_strict_achlist_scope_from_path};
-pub use compiler::{auto_detect_compiler_path, resolve_compiler_path};
+pub use compiler::{
+    auto_detect_compiler_path, resolve_compiler_path, resolve_compiler_path_from_path,
+};
 pub use compiler_config::{
-    load_compile_check, load_compiler_path, save_compile_check, save_compiler_path,
+    load_compile_check, load_compile_check_from_path, load_compiler_path,
+    load_compiler_path_from_path, save_compile_check, save_compiler_path,
 };
 pub use lint_config::{
     lint_config_to_yaml, load_config, load_config_from_path, parse_lint_yaml, save_config,
