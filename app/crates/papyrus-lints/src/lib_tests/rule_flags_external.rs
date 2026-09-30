@@ -38,11 +38,8 @@ fn missing_override_flag_gates_only_its_own_lint() {
     let source = "ScriptName Example Extends ParentScript\n\nFunction DoThing()\nEndFunction\n";
 
     let enabled_config = config_with(|c| c.rules.missing_override = true);
-    let enabled = lint_with_external_arguments(
-        source,
-        &enabled_config,
-        &mut FakeExternalWithParentFunction,
-    );
+    let enabled =
+        lint_with_external_arguments(source, &enabled_config, &mut FakeExternalWithParentFunction);
     assert!(enabled.iter().any(|d| d.rule == missing_override::RULE));
 
     let disabled = lint_with_external_arguments(
