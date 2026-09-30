@@ -224,7 +224,7 @@ describe("generate-config-types", () => {
   it("renders the repository lint settings against the default YAML and rules", () => {
     const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
     const settings = loadYamlFile(
-      path.join(repoRoot, "shared/configuration/lint-settings.yaml"),
+      path.join(repoRoot, "shared/configuration/lint-settings.generated.yaml"),
     ).settings;
     const rendered = renderConfigTypes(
       assembleRules(path.join(repoRoot, "shared/rules")),

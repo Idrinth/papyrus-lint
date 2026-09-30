@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Build the git-ignored shared/configuration/lint-settings.yaml.
+"""Build the git-ignored shared/configuration/lint-settings.generated.yaml.
 
 The assembly lives in ci_lib/lint_settings_yaml.py; this is just the CLI
 entrypoint. Run it after editing a file under
 shared/configuration/project-settings/, shared/configuration/lint-settings/,
-or shared/configuration/lint-settings.meta.json, and before a Rust build
+or shared/configuration/lint-settings.yaml, and before a Rust build
 that does not already run generate_default_config.py (that script refreshes
 this file itself).
 """
@@ -34,13 +34,13 @@ def main() -> int:
     parser.add_argument(
         "--meta",
         type=Path,
-        default=Path("shared/configuration/lint-settings.meta.json"),
-        help="declaration order and rules_yaml_comment",
+        default=Path("shared/configuration/lint-settings.yaml"),
+        help="declaration order and rules_comment",
     )
     parser.add_argument(
         "--out",
         type=Path,
-        default=Path("shared/configuration/lint-settings.yaml"),
+        default=Path("shared/configuration/lint-settings.generated.yaml"),
         help="path to write the combined YAML to",
     )
     args = parser.parse_args()
@@ -48,7 +48,7 @@ def main() -> int:
     document = assemble_lint_settings(args.project_settings_dir, args.lint_settings_dir, args.meta)
     args.out.write_text(render_lint_settings_yaml(document), encoding="utf-8")
     print(
-        f"Wrote {len(document['project_settings'])} project settings and "
+        f"Wrote {len(document['project'])} project settings and "
         f"{len(document['settings'])} lint settings to {args.out}."
     )
     return 0
