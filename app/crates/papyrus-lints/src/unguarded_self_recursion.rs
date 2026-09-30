@@ -178,12 +178,23 @@ fn scan_linear_body(
                     ..
                 } if all_branches_recurse(branches, else_body, *else_line, name_lower) => {
                     for branch in branches {
+                        if folded_truth(&branch.condition) == Some(false) {
+                            continue;
+                        }
                         for expr in branch.body.iter().flat_map(stmt_exprs) {
                             find_self_calls(expr, name_lower, diagnostics);
                         }
+                        if folded_truth(&branch.condition) == Some(true) {
+                            break;
+                        }
                     }
-                    for expr in else_body.iter().flat_map(stmt_exprs) {
-                        find_self_calls(expr, name_lower, diagnostics);
+                    if !branches
+                        .iter()
+                        .any(|branch| folded_truth(&branch.condition) == Some(true))
+                    {
+                        for expr in else_body.iter().flat_map(stmt_exprs) {
+                            find_self_calls(expr, name_lower, diagnostics);
+                        }
                     }
                 }
                 Stmt::While {
@@ -370,11 +381,15 @@ fn all_branches_recurse(
     else_line: Option<usize>,
     name_lower: &str,
 ) -> bool {
-    else_line.is_some()
-        && branches
-            .iter()
-            .all(|branch| branch_recurses(&branch.body, name_lower))
-        && branch_recurses(else_body, name_lower)
+    for branch in branches {
+        match folded_truth(&branch.condition) {
+            Some(false) => continue,
+            Some(true) => return branch_recurses(&branch.body, name_lower),
+            None if !branch_recurses(&branch.body, name_lower) => return false,
+            None => {}
+        }
+    }
+    else_line.is_some() && branch_recurses(else_body, name_lower)
 }
 
 /// Whether `body` directly contains a self-call among its own top-level
