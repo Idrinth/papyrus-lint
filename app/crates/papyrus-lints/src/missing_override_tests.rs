@@ -148,3 +148,66 @@ fn flags_each_matching_top_level_declaration() {
         .collect();
     assert_eq!(locations, vec![(3, 1), (6, 1)]);
 }
+
+fn repair_with_ext(source: &str) -> String {
+    super::repair_with(source, &mut FakeExternal)
+}
+
+#[test]
+fn repair_adds_override_to_the_header() {
+    let repaired = repair_with_ext(
+        "ScriptName Example Extends ParentScript\n\nFunction DoThing()\nEndFunction\n",
+    );
+
+    assert_eq!(
+        repaired,
+        "ScriptName Example Extends ParentScript\n\nFunction DoThing() ; @override\nEndFunction\n"
+    );
+}
+
+#[test]
+fn repair_extends_an_existing_trailing_comment() {
+    let repaired = repair_with_ext(
+        "ScriptName Example Extends ParentScript\n\nFunction DoThing() ; keep this\nEndFunction\n",
+    );
+
+    assert_eq!(
+        repaired,
+        "ScriptName Example Extends ParentScript\n\nFunction DoThing() ; keep this @override\nEndFunction\n"
+    );
+}
+
+#[test]
+fn repair_leaves_an_already_annotated_header_alone() {
+    let source =
+        "ScriptName Example Extends ParentScript\n\nFunction DoThing() ; @override\nEndFunction\n";
+
+    assert_eq!(repair_with_ext(source), source);
+}
+
+#[test]
+fn repair_without_a_resolver_never_changes_anything() {
+    let source = "ScriptName Example Extends ParentScript\n\nFunction DoThing()\nEndFunction\n";
+    let repaired = super::repair(source, None, None, &crate::config::Config::default());
+
+    assert_eq!(repaired, source);
+}
+
+#[test]
+fn repair_preserves_crlf_line_endings() {
+    let repaired = repair_with_ext(
+        "ScriptName Example Extends ParentScript\r\n\r\nFunction DoThing()\r\nEndFunction\r\n",
+    );
+
+    assert_eq!(
+        repaired,
+        "ScriptName Example Extends ParentScript\r\n\r\nFunction DoThing() ; @override\r\nEndFunction\r\n"
+    );
+}
+
+#[test]
+fn repair_does_not_crash_on_unparseable_source() {
+    let source = "ScriptName Example Extends ParentScript\n\nFunction DoThing(\nEndFunction\n";
+
+    assert_eq!(repair_with_ext(source), source);
+}
