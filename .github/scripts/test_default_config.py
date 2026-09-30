@@ -93,7 +93,7 @@ class DefaultConfigTests(unittest.TestCase):
         rules_block = text.split("\nrules:\n", 1)[1].strip().splitlines()
         keys = [line.split(":", 1)[0].strip() for line in rules_block if line.strip()]
         self.assertEqual(keys, sorted(keys))
-        self.assertEqual(keys[0], "argument_naming")
+        self.assertEqual(keys[0], alphabetical_rule_keys(rules)[0])
 
     def test_render_schema_covers_games_and_all_rules(self) -> None:
         settings = load_lint_settings(ROOT)
