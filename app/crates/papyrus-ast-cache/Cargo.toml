@@ -26,6 +26,7 @@ encoding_rs = "0.8"
 zip = { version = "2", default-features = false, features = ["deflate"] }
 
 [dev-dependencies]
+encoding_rs = "0.8"
 tempfile = "3"
 zip = { version = "2", default-features = false, features = ["deflate"] }
 

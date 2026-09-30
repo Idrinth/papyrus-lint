@@ -13,3 +13,25 @@ pub fn decode_psc_bytes(bytes: &[u8]) -> String {
             .into_owned(),
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::decode_psc_bytes;
+
+    #[test]
+    fn valid_utf8_is_preserved() {
+        let source = "ScriptName Café\n; λ\n";
+
+        assert_eq!(decode_psc_bytes(source.as_bytes()), source);
+    }
+
+    #[test]
+    fn invalid_utf8_is_decoded_as_windows_1252() {
+        let source = b"ScriptName Price\n; \x80 and \x93quotes\x94\n";
+
+        assert_eq!(
+            decode_psc_bytes(source),
+            "ScriptName Price\n; € and “quotes”\n"
+        );
+    }
+}
