@@ -3,6 +3,7 @@ import { type ProjectInfo } from "./backend-types";
 import { currentLintConfig, type Game } from "./config-types";
 import { markLintResultsStale } from "./drop";
 import { type ConfigSelectionResult } from "./main-types";
+import { setTabAvailable } from "./main-tabs";
 import { applyConfigPreset } from "./presets-api";
 import { promptForConfigSelection } from "./presets-picker";
 import { loadCompileCheck, loadCompilerPath, loadLookupScriptRoots, loadProjectInfo, loadScriptRoots, loadStrictAchlistScope, saveCompileCheck, saveCompilerPath, saveLookupScriptRoots, saveScriptRoots } from "./project-io";
@@ -115,7 +116,9 @@ export function handleCompileCheckChanged() {
 // wrapping every Settings tab control (settingsFieldsetEl) handles
 // keyboard/mouse interaction and accessibility on its own; the notice
 // paragraph is a sibling of that fieldset (so it stays visible/announced
-// while locked) explaining why the tab is inert.
+// while locked) explaining why the tab is inert. The tab button itself is
+// also hidden while locked, so an empty/inert Settings destination is not
+// offered in the tab list until a configuration has actually been picked.
 export function setSettingsLocked(locked: boolean) {
   if (settingsFieldsetEl) {
     settingsFieldsetEl.disabled = locked;
@@ -123,6 +126,7 @@ export function setSettingsLocked(locked: boolean) {
   if (settingsLockedNoticeEl) {
     settingsLockedNoticeEl.hidden = !locked;
   }
+  setTabAvailable("settings", !locked);
 }
 
 export async function useProjectDir(dir: string) {
