@@ -54,7 +54,7 @@ jobs:
             const game = '${{ inputs.game }}';
             const preset = '${{ inputs.preset }}';
             const scripts = '${{ inputs.scripts }}';
-            const games = game === 'all' ? ['skyrim', 'fallout4', 'starfield'] : [game];
+            const games = game === 'all' ? ['skyrim', 'fallout4', 'starfield', 'legacy'] : [game];
             const presets = preset === 'all' ? ['strict', 'standard', 'careful'] : [preset];
             const extenders = scripts === 'all'
               ? ['yes', 'no']
