@@ -209,6 +209,26 @@ fn does_not_flag_an_if_with_no_else_even_when_every_branch_recurses() {
 }
 
 #[test]
+fn exhaustive_if_ignores_branches_after_an_always_true_condition() {
+    let source = "ScriptName Example\n\nFunction Foo()\n    If True\n        Foo()\n    Else\n        Return\n        Foo()\n    EndIf\nEndFunction\n";
+
+    let diagnostics = check(source);
+
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!(diagnostics[0].line, 5);
+}
+
+#[test]
+fn exhaustive_if_ignores_always_false_branches() {
+    let source = "ScriptName Example\n\nFunction Foo()\n    If False\n        Return\n    Else\n        Foo()\n    EndIf\nEndFunction\n";
+
+    let diagnostics = check(source);
+
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!(diagnostics[0].line, 7);
+}
+
+#[test]
 fn does_not_crash_on_unparseable_source() {
     assert!(check("ScriptName Example\n\nFunction Foo(\nEndFunction\n").is_empty());
 }
