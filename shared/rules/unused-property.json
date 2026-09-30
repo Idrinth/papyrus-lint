@@ -2,7 +2,7 @@
   "id": "unused-property",
   "name": "Unused script properties",
   "category": "Other",
-  "visitor": "tokens",
+  "visitor": "ast",
   "tags": [
     "maintainability"
   ],
@@ -10,5 +10,5 @@
   "importance": "low",
   "fixable": false,
   "description": "Flags Property declarations whose name is never referenced anywhere else in the script.",
-  "definition": "Flags `Property` declarations whose name is never referenced anywhere else in the script."
+  "definition": "Flags `Property` declarations whose name is never referenced anywhere else in the script. Matching uses the AST: `other.Foo` is not a use of this script's `Foo`. Unparseable scripts emit nothing."
 }
