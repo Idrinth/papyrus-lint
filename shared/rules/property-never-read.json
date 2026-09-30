@@ -1,0 +1,14 @@
+{
+  "id": "property-never-read",
+  "name": "Write-only script properties",
+  "category": "Other",
+  "visitor": "tokens",
+  "tags": [
+    "maintainability"
+  ],
+  "severity": "info",
+  "importance": "low",
+  "fixable": false,
+  "description": "Flags Property declarations that are assigned in this script but whose value is never read.",
+  "definition": "Flags `Property` declarations that are written (`name = ...` or a compound `name += ...`) somewhere in this script but never read. A name that is never referenced at all is left to `unused-property`. A `; @external` annotation on the declaration line opts the property out, for values consumed by the editor, MCM, or another script."
+}
