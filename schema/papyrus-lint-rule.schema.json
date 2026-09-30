@@ -62,10 +62,6 @@
     "kept_in_standard": {
       "type": "boolean"
     },
-    "repair_order": {
-      "type": "integer",
-      "minimum": 1
-    },
     "games": {
       "description": "If set, this rule only runs when the project's `game` config value is one of these. Omit the field so the rule applies to every game (backward compatible).",
       "type": "array",
@@ -74,15 +70,6 @@
       "items": {
         "type": "string",
         "enum": ["skyrim", "legacy", "fallout4", "starfield"]
-      }
-    }
-  },
-  "dependentSchemas": {
-    "repair_order": {
-      "properties": {
-        "fixable": {
-          "const": true
-        }
       }
     }
   }

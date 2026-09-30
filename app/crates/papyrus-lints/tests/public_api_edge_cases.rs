@@ -61,7 +61,7 @@ fn empty_source_is_a_stable_noop() {
 
 #[test]
 fn clean_source_is_not_rewritten() {
-    let source = "ScriptName Example\r\n\r\nFunction Run(Int Left, Int Right)\r\n\tCall(Left, Right)\r\nEndFunction\r\n";
+    let source = "ScriptName Example\n\nFunction Run(Int Left, Int Right)\n\tCall(Left, Right)\nEndFunction\r\n";
     let config = Config::default();
 
     assert_eq!(repair(source, &config), source);

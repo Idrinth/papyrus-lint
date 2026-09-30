@@ -36,13 +36,14 @@ class AssembleRulesTests(unittest.TestCase):
         ):
             assemble_rules(Path(directory))
 
-    def test_rejects_duplicate_repair_orders(self) -> None:
+    def test_drops_repair_order_left_on_a_rule_file(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             self.write_rule(directory, "first-rule", id="first-rule", repair_order=1)
-            self.write_rule(directory, "second-rule", id="second-rule", repair_order=1)
 
-            with self.assertRaisesRegex(ValueError, "`repair_order` 1 is already used"):
-                assemble_rules(Path(directory))
+            rules = assemble_rules(Path(directory))
+
+            self.assertEqual(["first-rule"], [rule["id"] for rule in rules])
+            self.assertNotIn("repair_order", rules[0])
 
 
 class RenderRulesJsonTests(unittest.TestCase):

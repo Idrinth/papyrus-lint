@@ -1,9 +1,7 @@
 //! Black-box tests for the crate-level published rule catalog and
 //! filtered-repair coverage of every advertised fixable rule.
 
-use papyrus_lints::{
-    repair_filtered, tags::tags_for, Config, FIXABLE_RULE_IDS, KNOWN_RULE_IDS,
-};
+use papyrus_lints::{repair_filtered, tags::tags_for, Config, FIXABLE_RULE_IDS, KNOWN_RULE_IDS};
 use std::collections::HashSet;
 
 #[test]
@@ -35,14 +33,12 @@ fn every_known_rule_id_resolves_to_published_tags() {
 #[test]
 fn a_published_fixable_rule_works_through_the_filtered_public_api() {
     let default_config = Config::default();
-    let cases = [
-        (
-            "identifier-casing",
-            "ScriptName Example\n\nFunction Run(Int left)\nEndFunction\n",
-            "ScriptName Example\n\nFunction Run(Int Left)\nEndFunction\n",
-            &default_config,
-        ),
-    ];
+    let cases = [(
+        "identifier-casing",
+        "ScriptName Example\n\nFunction Run(Int left)\nEndFunction\n",
+        "ScriptName Example\n\nFunction Run(Int Left)\nEndFunction\n",
+        &default_config,
+    )];
 
     for (rule, source, expected, config) in cases {
         assert_eq!(
