@@ -28,7 +28,9 @@ impl AstLint for Collect {
     }
 }
 
-fn flag_discarded(expr: &Expr, store: &mut Store) {
+/// Report at most one getter per discarded expression, matching the old
+/// token visitor's `find_map` over top-level operands.
+fn flag_discarded(expr: &Expr, store: &mut Store) -> bool {
     match expr {
         Expr::Call {
             callee,
@@ -50,15 +52,16 @@ fn flag_discarded(expr: &Expr, store: &mut Store) {
                         ),
                         RULE,
                     );
+                    return true;
                 }
             }
+            false
         }
         Expr::Binary { left, right, .. } => {
-            flag_discarded(left, store);
-            flag_discarded(right, store);
+            flag_discarded(left, store) || flag_discarded(right, store)
         }
         Expr::Unary { operand, .. } => flag_discarded(operand, store),
-        _ => {}
+        _ => false,
     }
 }
 
@@ -84,6 +87,17 @@ pub fn check(
     config: &crate::config::Config,
     external: &mut impl crate::external_signatures::ExternalSignatures,
 ) -> Vec<Diagnostic> {
+    if ast.is_none() {
+        let wrapped = format!("ScriptName _UnusedGetterSnippet\n{source}");
+        if let Ok(wrapped_ast) = papyrus_parser::parse(&wrapped) {
+            let mut diagnostics =
+                crate::visitor::run(visitor(), &wrapped, Some(&wrapped_ast), tokens, config, external);
+            for diagnostic in &mut diagnostics {
+                diagnostic.line = diagnostic.line.saturating_sub(1);
+            }
+            return diagnostics;
+        }
+    }
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
 }
 
