@@ -10,7 +10,6 @@
   "importance": "low",
   "kept_in_standard": true,
   "fixable": true,
-  "repair_order": 6,
   "description": "Requires whitespace after commas in argument lists.",
   "definition": "Requires, as a `[warning]`, whitespace after commas in argument lists."
 }
