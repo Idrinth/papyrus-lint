@@ -59,4 +59,5 @@ compiled `.pex` output, and never needs the personal-data stripping
 described above — the compiled output is discarded either way. The CLI
 honors the same setting during a normal lint/fix run (not just its own
 `doctor` subcommand's validation of it), reading `compile_check` and
-`compiler_path` from the resolved project's `papyrus-lint.yaml`/`.yml`.
+`compiler_path` from the resolved project's `papyrus-lint.yaml`/`.yml`,
+or from the file named by `--config` when that override is given.

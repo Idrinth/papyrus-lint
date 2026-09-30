@@ -39,6 +39,32 @@ fn save_compile_check_false_clears_it() {
 }
 
 #[test]
+fn load_compile_check_from_path_reads_an_explicit_file() {
+    let dir = tempfile::tempdir().expect("failed to create temp dir");
+    let path = dir.path().join("custom-config.yaml");
+    fs::write(&path, "compile_check: true\n").expect("failed to write test config file");
+
+    assert!(load_compile_check_from_path(&path).expect("loading should succeed"));
+}
+
+#[test]
+fn load_compile_check_from_path_defaults_to_false_when_unset() {
+    let dir = tempfile::tempdir().expect("failed to create temp dir");
+    let path = dir.path().join("custom-config.yaml");
+    fs::write(&path, "semicolon: true\n").expect("failed to write test config file");
+
+    assert!(!load_compile_check_from_path(&path).expect("loading should succeed"));
+}
+
+#[test]
+fn load_compile_check_from_path_errors_when_the_file_is_missing() {
+    let dir = tempfile::tempdir().expect("failed to create temp dir");
+    let path = dir.path().join("missing-config.yaml");
+
+    assert!(load_compile_check_from_path(&path).is_err());
+}
+
+#[test]
 fn saved_config_omits_compile_check_when_disabled() {
     let dir = tempfile::tempdir().expect("failed to create temp dir");
 
