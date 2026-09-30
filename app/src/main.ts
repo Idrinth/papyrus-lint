@@ -19,7 +19,7 @@ import { bindProjectSettings } from "./project-settings";
 import { bindTheme } from "./theme";
 import { bindWatchMode } from "./watch";
 import { bindContextMenu } from "./context-menu";
-import { TAB_IDS, switchTab } from "./main-tabs";
+import { TAB_IDS, setTabAvailable, switchTab } from "./main-tabs";
 let appVersionEl: HTMLElement | null;
 let dropZoneEl: HTMLElement | null;
 let dropZoneLoadingEl: HTMLElement | null;
@@ -28,7 +28,7 @@ let resultEl: HTMLElement | null;
 let resultTitleEl: HTMLElement | null;
 let resultListEl: HTMLElement | null;
 
-export { TAB_IDS, switchTab } from "./main-tabs";
+export { TAB_IDS, setTabAvailable, switchTab } from "./main-tabs";
 
 export function showError(message: string) {
   if (dropZoneErrorEl) {
@@ -85,6 +85,7 @@ export function showResult(path: string, entries: string[], base: string | null)
     }),
   );
   resultEl.removeAttribute("hidden");
+  setTabAvailable("files", true);
   switchTab("files");
 }
 
@@ -121,6 +122,12 @@ window.addEventListener("DOMContentLoaded", () => {
   bindTheme();
   bindWatchMode();
   bindContextMenu();
+
+  // Files and Lint have nothing to show until a drop succeeds. Hide them
+  // up front even if markup left the buttons visible, matching Settings
+  // (locked) and Presets (no user presets).
+  setTabAvailable("files", false);
+  setTabAvailable("lint", false);
 
   for (const id of TAB_IDS) {
     const button = document.querySelector<HTMLButtonElement>(`#tab-${id}`);

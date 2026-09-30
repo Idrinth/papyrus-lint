@@ -21,7 +21,7 @@ import { handleDroppedPaths } from "./drop";
 import { type RuleTagsInfo, type PscParseOutcome } from "./backend-types";
 import { applyRuleTags, clearError, showError, showResult } from "./main";
 import { escapeAttr, levelOf, severityOf } from "./main-severity";
-import { switchTab } from "./main-tabs";
+import { setTabAvailable, switchTab } from "./main-tabs";
 describe("severity helpers", () => {
   it("levelOf extracts a recognized bracketed prefix", () => {
     expect(levelOf("[error] boom")).toBe("error");
@@ -60,6 +60,34 @@ describe("switchTab", () => {
     expect(settingsTab.getAttribute("aria-selected")).toBe("true");
     expect(importTab.getAttribute("aria-selected")).toBe("false");
     expect(settingsTab.classList.contains("tabs__tab--active")).toBe(true);
+  });
+
+  it("reveals a previously hidden tab when switching to it", () => {
+    const filesTab = document.querySelector<HTMLButtonElement>("#tab-files")!;
+    expect(filesTab.hidden).toBe(true);
+    switchTab("files");
+    expect(filesTab.hidden).toBe(false);
+    expect(filesTab.classList.contains("tabs__tab--active")).toBe(true);
+  });
+});
+
+describe("setTabAvailable", () => {
+  it("hides a project tab and falls back to import when that tab was active", () => {
+    switchTab("lint");
+    setTabAvailable("lint", false);
+
+    expect(document.querySelector<HTMLButtonElement>("#tab-lint")!.hidden).toBe(true);
+    expect(document.querySelector<HTMLElement>("#panel-import")!.hidden).toBe(false);
+    expect(document.querySelector<HTMLButtonElement>("#tab-import")!.classList.contains("tabs__tab--active")).toBe(
+      true,
+    );
+  });
+
+  it("does not hide Import or Contact", () => {
+    setTabAvailable("import", false);
+    setTabAvailable("contact", false);
+    expect(document.querySelector<HTMLButtonElement>("#tab-import")!.hidden).toBe(false);
+    expect(document.querySelector<HTMLButtonElement>("#tab-contact")!.hidden).toBe(false);
   });
 });
 
@@ -113,6 +141,7 @@ describe("showError / clearError / showResult", () => {
     expect(document.querySelectorAll("#achlist-result-list > li")).toHaveLength(2);
     expect(document.querySelector("#achlist-result")!.hasAttribute("hidden")).toBe(false);
     expect(document.querySelector<HTMLElement>("#panel-files")!.hidden).toBe(false);
+    expect(document.querySelector<HTMLButtonElement>("#tab-files")!.hidden).toBe(false);
   });
 
   it("showResult displays entries relative to the given base directory", () => {
