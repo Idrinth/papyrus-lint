@@ -112,6 +112,9 @@ mod entry;
 mod ops;
 mod version;
 
+#[cfg(test)]
+mod psc_decode;
+
 /// Guards every public on-disk accessor below against concurrent access
 /// from multiple lint workers at once — see the module docs above for why
 /// this is needed despite each entry living in its own file. Bundled-cache
