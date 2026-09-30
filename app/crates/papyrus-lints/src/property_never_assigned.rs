@@ -12,6 +12,7 @@
 
 use crate::visitor::{LintVisitor, Store, TokenLint, VisitCtx};
 use crate::Diagnostic;
+use papyrus_parser::comment_annotations::parse_line_annotations;
 use papyrus_parser::token::{Keyword, Token, TokenKind};
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
@@ -22,6 +23,7 @@ struct Collect {
     store: Store,
     decls: Vec<PropertyInfo>,
     writes: Vec<(String, usize)>,
+    lines: Vec<String>,
 }
 
 struct PropertyInfo {
@@ -39,6 +41,10 @@ struct PropertyInfo {
 impl TokenLint for Collect {
     fn store(&mut self) -> &mut Store {
         &mut self.store
+    }
+
+    fn begin(&mut self, ctx: &mut VisitCtx<'_>) {
+        self.lines = ctx.source.split('\n').map(str::to_string).collect();
     }
 
     fn visit_token(
@@ -75,7 +81,7 @@ impl TokenLint for Collect {
         let body_start = header_end + 1;
         let body_end = matching_end_property(tokens, body_start).unwrap_or(tokens.len());
         let backing = backing_fields(tokens, body_start, body_end);
-        let external = header_is_external(tokens, index, header_end);
+        let external = line_has_external(&self.lines, name_token.line);
 
         self.decls.push(PropertyInfo {
             lower: name.to_ascii_lowercase(),
@@ -178,13 +184,15 @@ fn header_is_auto(tokens: &[Token], start: usize, end: usize) -> bool {
         })
 }
 
-fn header_is_external(tokens: &[Token], start: usize, end: usize) -> bool {
-    tokens[start..=end.min(tokens.len().saturating_sub(1))]
-        .iter()
-        .any(|token| match &token.kind {
-            TokenKind::CommentAnnotation(name) => name.eq_ignore_ascii_case("external"),
-            _ => false,
-        })
+fn line_has_external(lines: &[String], line: usize) -> bool {
+    let Some(index) = line.checked_sub(1) else {
+        return false;
+    };
+    lines.get(index).is_some_and(|source_line| {
+        parse_line_annotations(source_line)
+            .iter()
+            .any(|annotation| annotation.name.eq_ignore_ascii_case("external"))
+    })
 }
 
 fn matching_end_property(tokens: &[Token], start: usize) -> Option<usize> {
@@ -242,7 +250,7 @@ fn function_span(tokens: &[Token], start: usize, limit: usize) -> (usize, Vec<St
     while index < limit {
         match &tokens[index].kind {
             TokenKind::Keyword(Keyword::EndFunction) => return (index, params),
-            TokenKind::Identifier(name) => {
+            TokenKind::Identifier(_) => {
                 if tokens
                     .get(index + 1)
                     .is_some_and(|next| matches!(next.kind, TokenKind::Identifier(_)))
@@ -257,6 +265,16 @@ fn function_span(tokens: &[Token], start: usize, limit: usize) -> (usize, Vec<St
         }
     }
     (limit, params)
+}
+
+fn is_simple_returned_identifier(tokens: &[Token], index: usize) -> bool {
+    if index == 0 || !matches!(tokens[index - 1].kind, TokenKind::Keyword(Keyword::Return)) {
+        return false;
+    }
+    !matches!(
+        tokens.get(index + 1).map(|token| &token.kind),
+        Some(TokenKind::Dot | TokenKind::LParen | TokenKind::LBracket)
+    )
 }
 
 fn collect_backing_from_function(
@@ -275,12 +293,9 @@ fn collect_backing_from_function(
                 continue;
             }
             let assigned = is_assignment_target(tokens, index);
-            let returned = index > 0
-                && matches!(tokens[index - 1].kind, TokenKind::Keyword(Keyword::Return));
-            if assigned || returned {
-                if !fields.iter().any(|existing| existing == &lower) {
-                    fields.push(lower);
-                }
+            let returned = is_simple_returned_identifier(tokens, index);
+            if (assigned || returned) && !fields.iter().any(|existing| existing == &lower) {
+                fields.push(lower);
             }
         }
         index += 1;
