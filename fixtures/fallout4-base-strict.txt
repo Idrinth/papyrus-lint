@@ -63,6 +63,7 @@ Scripts/Source/Base/AODogmeatQuestScript.psc:37:1:identifier-casing
 Scripts/Source/Base/AODogmeatQuestScript.psc:37:1:identifier-casing
 Scripts/Source/Base/AODogmeatQuestScript.psc:42:1:indentation
 Scripts/Source/Base/AODogmeatQuestScript.psc:44:1:indentation
+Scripts/Source/Base/AODogmeatQuestScript.psc:45:1:alias-cast-without-getreference
 Scripts/Source/Base/AODogmeatQuestScript.psc:45:1:indentation
 Scripts/Source/Base/AODogmeatQuestScript.psc:45:1:unchecked-cast
 Scripts/Source/Base/AODogmeatQuestScript.psc:46:1:indentation
@@ -2954,6 +2955,7 @@ Scripts/Source/Base/BoS100FightMonitor.psc:517:1:indentation
 Scripts/Source/Base/BoS100FightMonitor.psc:518:1:indentation
 Scripts/Source/Base/BoS100FightMonitor.psc:521:1:identifier-casing
 Scripts/Source/Base/BoS100FightMonitor.psc:521:1:unnecessary-function
+Scripts/Source/Base/BoS100FightMonitor.psc:523:1:alias-cast-without-getreference
 Scripts/Source/Base/BoS100FightMonitor.psc:523:1:unchecked-cast
 Scripts/Source/Base/BoS100FightMonitor.psc:525:1:indentation
 Scripts/Source/Base/BoS100FightMonitor.psc:526:1:indentation
@@ -13070,6 +13072,7 @@ Scripts/Source/Base/CryopodLever01SpouseScript.psc:8:26:forbidden-functions
 Scripts/Source/Base/CryopodLever01SpouseScript.psc:12:1:none-form-usage
 Scripts/Source/Base/CryopodLever01SpouseScript.psc:21:1:identifier-casing
 Scripts/Source/Base/CryopodLever01SpouseScript.psc:22:26:forbidden-functions
+Scripts/Source/Base/CryopodLever01SpouseScript.psc:26:1:alias-cast-without-getreference
 Scripts/Source/Base/CryopodLever01SpouseScript.psc:26:1:unchecked-cast
 Scripts/Source/Base/CryopodLever01SpouseScript.psc:28:1:none-form-usage
 Scripts/Source/Base/CryopodLever01SpouseScript.psc:37:1:identifier-casing
@@ -14814,6 +14817,7 @@ Scripts/Source/Base/DN029SecondWaveAScript.psc:23:1:identifier-casing
 Scripts/Source/Base/DN029SecondWaveAScript.psc:24:1:none-form-usage
 Scripts/Source/Base/DN029SecondWaveAScript.psc:25:1:none-form-usage
 Scripts/Source/Base/DN029SecondWaveAScript.psc:27:1:indentation
+Scripts/Source/Base/DN029SecondWaveAScript.psc:32:1:alias-cast-without-getreference
 Scripts/Source/Base/DN029SecondWaveAScript.psc:32:1:indentation
 Scripts/Source/Base/DN029SecondWaveAScript.psc:32:1:unchecked-cast
 Scripts/Source/Base/DN029SecondWaveAScript.psc:33:1:indentation
@@ -14907,6 +14911,7 @@ Scripts/Source/Base/DN029SecondWaveBScript.psc:68:121:line-length
 Scripts/Source/Base/DN029SecondWaveBScript.psc:69:1:indentation
 Scripts/Source/Base/DN029SecondWaveBScript.psc:71:1:indentation
 Scripts/Source/Base/DN029SecondWaveBScript.psc:72:1:indentation
+Scripts/Source/Base/DN029SecondWaveBScript.psc:78:1:alias-cast-without-getreference
 Scripts/Source/Base/DN029SecondWaveBScript.psc:78:1:indentation
 Scripts/Source/Base/DN029SecondWaveBScript.psc:78:1:unchecked-cast
 Scripts/Source/Base/DN029SecondWaveBScript.psc:79:1:indentation
@@ -15317,6 +15322,7 @@ Scripts/Source/Base/DN035QuestScript.psc:189:1:setvalue-in-loop
 Scripts/Source/Base/DN035QuestScript.psc:189:1:unchecked-cast
 Scripts/Source/Base/DN035QuestScript.psc:195:1:setvalue-in-loop
 Scripts/Source/Base/DN035QuestScript.psc:195:1:unchecked-cast
+Scripts/Source/Base/DN035QuestScript.psc:196:1:alias-cast-without-getreference
 Scripts/Source/Base/DN035QuestScript.psc:196:1:unchecked-cast
 Scripts/Source/Base/DN035QuestScript.psc:198:1:setvalue-in-loop
 Scripts/Source/Base/DN035QuestScript.psc:198:1:unchecked-cast
@@ -18727,6 +18733,7 @@ Scripts/Source/Base/DN119FightController.psc:167:115:exclamation-spacing
 Scripts/Source/Base/DN119FightController.psc:167:121:line-length
 Scripts/Source/Base/DN119FightController.psc:170:1:indentation
 Scripts/Source/Base/DN119FightController.psc:172:1:indentation
+Scripts/Source/Base/DN119FightController.psc:173:1:alias-cast-without-getreference
 Scripts/Source/Base/DN119FightController.psc:173:1:unchecked-cast
 Scripts/Source/Base/DN119FightController.psc:176:1:indentation
 Scripts/Source/Base/DN119FightController.psc:176:121:line-length
@@ -19190,14 +19197,17 @@ Scripts/Source/Base/DN131_CommonsTriggerScript.psc:46:1:identifier-casing
 Scripts/Source/Base/DN131_CommonsTriggerScript.psc:47:8:forbidden-functions
 Scripts/Source/Base/DN131_CommonsTriggerScript.psc:49:45:forbidden-functions
 Scripts/Source/Base/DN131_CommonsTriggerScript.psc:50:121:line-length
+Scripts/Source/Base/DN131_CommonsTriggerScript.psc:51:1:alias-cast-without-getreference
 Scripts/Source/Base/DN131_CommonsTriggerScript.psc:51:1:unchecked-cast
 Scripts/Source/Base/DN131_CommonsTriggerScript.psc:55:1:unchecked-cast
 Scripts/Source/Base/DN131_CommonsTriggerScript.psc:58:1:unchecked-cast
 Scripts/Source/Base/DN131_CommonsTriggerScript.psc:63:1:identifier-casing
 Scripts/Source/Base/DN131_CommonsTriggerScript.psc:72:121:line-length
 Scripts/Source/Base/DN131_CommonsTriggerScript.psc:73:1:identifier-casing
+Scripts/Source/Base/DN131_CommonsTriggerScript.psc:77:1:alias-cast-without-getreference
 Scripts/Source/Base/DN131_CommonsTriggerScript.psc:77:1:unchecked-cast
 Scripts/Source/Base/DN131_CommonsTriggerScript.psc:79:121:line-length
+Scripts/Source/Base/DN131_CommonsTriggerScript.psc:82:1:alias-cast-without-getreference
 Scripts/Source/Base/DN131_CommonsTriggerScript.psc:82:1:unchecked-cast
 Scripts/Source/Base/DN131_CommonsTriggerScript.psc:86:9:forbidden-functions
 Scripts/Source/Base/DN131_RETriggerManagerScript.psc:1:12:type-casing
@@ -41350,13 +41360,21 @@ Scripts/Source/Base/Fragments/Quests/QF_DN011_000FF3C2.psc:170:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_DN011_000FF3C2.psc:171:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_DN011_000FF3C2.psc:172:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_DN011_000FF3C2.psc:180:7:forbidden-functions
+Scripts/Source/Base/Fragments/Quests/QF_DN011_000FF3C2.psc:181:1:alias-cast-without-getreference
 Scripts/Source/Base/Fragments/Quests/QF_DN011_000FF3C2.psc:181:1:unchecked-cast
+Scripts/Source/Base/Fragments/Quests/QF_DN011_000FF3C2.psc:182:1:alias-cast-without-getreference
 Scripts/Source/Base/Fragments/Quests/QF_DN011_000FF3C2.psc:182:1:unchecked-cast
+Scripts/Source/Base/Fragments/Quests/QF_DN011_000FF3C2.psc:183:1:alias-cast-without-getreference
 Scripts/Source/Base/Fragments/Quests/QF_DN011_000FF3C2.psc:183:1:unchecked-cast
+Scripts/Source/Base/Fragments/Quests/QF_DN011_000FF3C2.psc:184:1:alias-cast-without-getreference
 Scripts/Source/Base/Fragments/Quests/QF_DN011_000FF3C2.psc:184:1:unchecked-cast
+Scripts/Source/Base/Fragments/Quests/QF_DN011_000FF3C2.psc:185:1:alias-cast-without-getreference
 Scripts/Source/Base/Fragments/Quests/QF_DN011_000FF3C2.psc:185:1:unchecked-cast
+Scripts/Source/Base/Fragments/Quests/QF_DN011_000FF3C2.psc:186:1:alias-cast-without-getreference
 Scripts/Source/Base/Fragments/Quests/QF_DN011_000FF3C2.psc:186:1:unchecked-cast
+Scripts/Source/Base/Fragments/Quests/QF_DN011_000FF3C2.psc:187:1:alias-cast-without-getreference
 Scripts/Source/Base/Fragments/Quests/QF_DN011_000FF3C2.psc:187:1:unchecked-cast
+Scripts/Source/Base/Fragments/Quests/QF_DN011_000FF3C2.psc:188:1:alias-cast-without-getreference
 Scripts/Source/Base/Fragments/Quests/QF_DN011_000FF3C2.psc:188:1:unchecked-cast
 Scripts/Source/Base/Fragments/Quests/QF_DN011_000FF3C2.psc:196:7:forbidden-functions
 Scripts/Source/Base/Fragments/Quests/QF_DN011_000FF3C2.psc:197:1:none-form-usage
@@ -41762,11 +41780,17 @@ Scripts/Source/Base/Fragments/Quests/QF_DN029SecondWaveA_000ADCA6.psc:69:1:none-
 Scripts/Source/Base/Fragments/Quests/QF_DN029SecondWaveA_000ADCA6.psc:72:4:exclamation-spacing
 Scripts/Source/Base/Fragments/Quests/QF_DN029SecondWaveA_000ADCA6.psc:73:1:indentation
 Scripts/Source/Base/Fragments/Quests/QF_DN029SecondWaveA_000ADCA6.psc:73:1:none-form-usage
+Scripts/Source/Base/Fragments/Quests/QF_DN029SecondWaveA_000ADCA6.psc:76:1:alias-cast-without-getreference
 Scripts/Source/Base/Fragments/Quests/QF_DN029SecondWaveA_000ADCA6.psc:76:1:unchecked-cast
+Scripts/Source/Base/Fragments/Quests/QF_DN029SecondWaveA_000ADCA6.psc:77:1:alias-cast-without-getreference
 Scripts/Source/Base/Fragments/Quests/QF_DN029SecondWaveA_000ADCA6.psc:77:1:unchecked-cast
+Scripts/Source/Base/Fragments/Quests/QF_DN029SecondWaveA_000ADCA6.psc:78:1:alias-cast-without-getreference
 Scripts/Source/Base/Fragments/Quests/QF_DN029SecondWaveA_000ADCA6.psc:78:1:unchecked-cast
+Scripts/Source/Base/Fragments/Quests/QF_DN029SecondWaveA_000ADCA6.psc:79:1:alias-cast-without-getreference
 Scripts/Source/Base/Fragments/Quests/QF_DN029SecondWaveA_000ADCA6.psc:79:1:unchecked-cast
+Scripts/Source/Base/Fragments/Quests/QF_DN029SecondWaveA_000ADCA6.psc:80:1:alias-cast-without-getreference
 Scripts/Source/Base/Fragments/Quests/QF_DN029SecondWaveA_000ADCA6.psc:80:1:unchecked-cast
+Scripts/Source/Base/Fragments/Quests/QF_DN029SecondWaveA_000ADCA6.psc:81:1:alias-cast-without-getreference
 Scripts/Source/Base/Fragments/Quests/QF_DN029SecondWaveA_000ADCA6.psc:81:1:unchecked-cast
 Scripts/Source/Base/Fragments/Quests/QF_DN029SecondWaveA_000ADCA6.psc:82:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_DN029SecondWaveA_000ADCA6.psc:83:1:none-form-usage
@@ -41934,6 +41958,7 @@ Scripts/Source/Base/Fragments/Quests/QF_DN035_000EF40C.psc:16:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_DN035_000EF40C.psc:17:1:indentation
 Scripts/Source/Base/Fragments/Quests/QF_DN035_000EF40C.psc:17:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_DN035_000EF40C.psc:18:1:indentation
+Scripts/Source/Base/Fragments/Quests/QF_DN035_000EF40C.psc:25:1:alias-cast-without-getreference
 Scripts/Source/Base/Fragments/Quests/QF_DN035_000EF40C.psc:25:1:unchecked-cast
 Scripts/Source/Base/Fragments/Quests/QF_DN035_000EF40C.psc:28:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_DN035_000EF40C.psc:29:1:indentation
@@ -45664,6 +45689,7 @@ Scripts/Source/Base/Fragments/Quests/QF_DN130_RR302_0002F461.psc:136:1:indentati
 Scripts/Source/Base/Fragments/Quests/QF_DN130_RR302_0002F461.psc:136:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_DN130_RR302_0002F461.psc:137:1:indentation
 Scripts/Source/Base/Fragments/Quests/QF_DN130_RR302_0002F461.psc:137:1:unchecked-cast
+Scripts/Source/Base/Fragments/Quests/QF_DN130_RR302_0002F461.psc:138:1:alias-cast-without-getreference
 Scripts/Source/Base/Fragments/Quests/QF_DN130_RR302_0002F461.psc:138:1:indentation
 Scripts/Source/Base/Fragments/Quests/QF_DN130_RR302_0002F461.psc:138:1:unchecked-cast
 Scripts/Source/Base/Fragments/Quests/QF_DN130_RR302_0002F461.psc:139:1:indentation
@@ -45685,6 +45711,7 @@ Scripts/Source/Base/Fragments/Quests/QF_DN130_RR302_0002F461.psc:173:1:indentati
 Scripts/Source/Base/Fragments/Quests/QF_DN130_RR302_0002F461.psc:173:1:unchecked-cast
 Scripts/Source/Base/Fragments/Quests/QF_DN130_RR302_0002F461.psc:173:1:unchecked-cast
 Scripts/Source/Base/Fragments/Quests/QF_DN130_RR302_0002F461.psc:173:31:exclamation-spacing
+Scripts/Source/Base/Fragments/Quests/QF_DN130_RR302_0002F461.psc:174:1:alias-cast-without-getreference
 Scripts/Source/Base/Fragments/Quests/QF_DN130_RR302_0002F461.psc:174:1:indentation
 Scripts/Source/Base/Fragments/Quests/QF_DN130_RR302_0002F461.psc:174:1:unchecked-cast
 Scripts/Source/Base/Fragments/Quests/QF_DN130_RR302_0002F461.psc:175:1:indentation
@@ -47786,6 +47813,7 @@ Scripts/Source/Base/Fragments/Quests/QF_DialogueInstituteShaunKid_00152BFD.psc:8
 Scripts/Source/Base/Fragments/Quests/QF_DialogueInstituteShaunKid_00152BFD.psc:14:1:unnecessary-function
 Scripts/Source/Base/Fragments/Quests/QF_DialogueInstituteShaunKid_00152BFD.psc:16:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_DialogueInstituteShaunKid_00152BFD.psc:22:1:unnecessary-function
+Scripts/Source/Base/Fragments/Quests/QF_DialogueInstituteShaunKid_00152BFD.psc:24:1:alias-cast-without-getreference
 Scripts/Source/Base/Fragments/Quests/QF_DialogueInstituteShaunKid_00152BFD.psc:24:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_DialogueInstituteShaunKid_00152BFD.psc:24:1:unchecked-cast
 Scripts/Source/Base/Fragments/Quests/QF_DialogueInstituteShaunKid_00152BFD.psc:24:78:slow-functions
@@ -48265,6 +48293,7 @@ Scripts/Source/Base/Fragments/Quests/QF_DogmeatQuest_0006DFAF.psc:280:1:unnecess
 Scripts/Source/Base/Fragments/Quests/QF_DogmeatQuest_0006DFAF.psc:282:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_DogmeatQuest_0006DFAF.psc:282:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_DogmeatQuest_0006DFAF.psc:288:1:unnecessary-function
+Scripts/Source/Base/Fragments/Quests/QF_DogmeatQuest_0006DFAF.psc:291:1:alias-cast-without-getreference
 Scripts/Source/Base/Fragments/Quests/QF_DogmeatQuest_0006DFAF.psc:291:1:unchecked-cast
 Scripts/Source/Base/Fragments/Quests/QF_DogmeatQuest_0006DFAF.psc:299:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_DogmeatQuest_0006DFAF.psc:300:1:none-form-usage
@@ -50379,7 +50408,9 @@ Scripts/Source/Base/Fragments/Quests/QF_Inst307Fight_00174029.psc:404:1:none-for
 Scripts/Source/Base/Fragments/Quests/QF_Inst307Fight_00174029.psc:407:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_Inst307Fight_00174029.psc:408:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_Inst307Fight_00174029.psc:409:1:none-form-usage
+Scripts/Source/Base/Fragments/Quests/QF_Inst307Fight_00174029.psc:419:1:alias-cast-without-getreference
 Scripts/Source/Base/Fragments/Quests/QF_Inst307Fight_00174029.psc:419:1:unchecked-cast
+Scripts/Source/Base/Fragments/Quests/QF_Inst307Fight_00174029.psc:420:1:alias-cast-without-getreference
 Scripts/Source/Base/Fragments/Quests/QF_Inst307Fight_00174029.psc:420:1:unchecked-cast
 Scripts/Source/Base/Fragments/Quests/QF_Inst307Fight_00174029.psc:423:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_Inst307Fight_00174029.psc:424:1:none-form-usage
@@ -53295,6 +53326,7 @@ Scripts/Source/Base/Fragments/Quests/QF_MQ102_0001CC2A.psc:180:9:forbidden-funct
 Scripts/Source/Base/Fragments/Quests/QF_MQ102_0001CC2A.psc:183:24:forbidden-functions
 Scripts/Source/Base/Fragments/Quests/QF_MQ102_0001CC2A.psc:185:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_MQ102_0001CC2A.psc:191:1:none-form-usage
+Scripts/Source/Base/Fragments/Quests/QF_MQ102_0001CC2A.psc:196:1:alias-cast-without-getreference
 Scripts/Source/Base/Fragments/Quests/QF_MQ102_0001CC2A.psc:196:1:unchecked-cast
 Scripts/Source/Base/Fragments/Quests/QF_MQ102_0001CC2A.psc:204:1:useless-downcast
 Scripts/Source/Base/Fragments/Quests/QF_MQ102_0001CC2A.psc:212:1:none-form-usage
@@ -53383,11 +53415,17 @@ Scripts/Source/Base/Fragments/Quests/QF_MQ102_0001CC2A.psc:574:1:indentation
 Scripts/Source/Base/Fragments/Quests/QF_MQ102_0001CC2A.psc:578:1:indentation
 Scripts/Source/Base/Fragments/Quests/QF_MQ102_0001CC2A.psc:582:1:indentation
 Scripts/Source/Base/Fragments/Quests/QF_MQ102_0001CC2A.psc:592:1:none-form-usage
+Scripts/Source/Base/Fragments/Quests/QF_MQ102_0001CC2A.psc:595:1:alias-cast-without-getreference
 Scripts/Source/Base/Fragments/Quests/QF_MQ102_0001CC2A.psc:595:1:unchecked-cast
+Scripts/Source/Base/Fragments/Quests/QF_MQ102_0001CC2A.psc:596:1:alias-cast-without-getreference
 Scripts/Source/Base/Fragments/Quests/QF_MQ102_0001CC2A.psc:596:1:unchecked-cast
+Scripts/Source/Base/Fragments/Quests/QF_MQ102_0001CC2A.psc:597:1:alias-cast-without-getreference
 Scripts/Source/Base/Fragments/Quests/QF_MQ102_0001CC2A.psc:597:1:unchecked-cast
+Scripts/Source/Base/Fragments/Quests/QF_MQ102_0001CC2A.psc:598:1:alias-cast-without-getreference
 Scripts/Source/Base/Fragments/Quests/QF_MQ102_0001CC2A.psc:598:1:unchecked-cast
+Scripts/Source/Base/Fragments/Quests/QF_MQ102_0001CC2A.psc:599:1:alias-cast-without-getreference
 Scripts/Source/Base/Fragments/Quests/QF_MQ102_0001CC2A.psc:599:1:unchecked-cast
+Scripts/Source/Base/Fragments/Quests/QF_MQ102_0001CC2A.psc:600:1:alias-cast-without-getreference
 Scripts/Source/Base/Fragments/Quests/QF_MQ102_0001CC2A.psc:600:1:unchecked-cast
 Scripts/Source/Base/Fragments/Quests/QF_MQ102_0001CC2A.psc:608:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_MQ102_0001CC2A.psc:611:1:none-form-usage
@@ -53805,6 +53843,7 @@ Scripts/Source/Base/Fragments/Quests/QF_MQ105_000229E6.psc:74:1:unnecessary-func
 Scripts/Source/Base/Fragments/Quests/QF_MQ105_000229E6.psc:76:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_MQ105_000229E6.psc:88:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_MQ105_000229E6.psc:89:1:none-form-usage
+Scripts/Source/Base/Fragments/Quests/QF_MQ105_000229E6.psc:92:1:alias-cast-without-getreference
 Scripts/Source/Base/Fragments/Quests/QF_MQ105_000229E6.psc:92:1:unchecked-cast
 Scripts/Source/Base/Fragments/Quests/QF_MQ105_000229E6.psc:92:62:operator-spacing
 Scripts/Source/Base/Fragments/Quests/QF_MQ105_000229E6.psc:92:62:operator-spacing
@@ -54826,12 +54865,14 @@ Scripts/Source/Base/Fragments/Quests/QF_MQ206_000B1752.psc:316:1:identifier-casi
 Scripts/Source/Base/Fragments/Quests/QF_MQ206_000B1752.psc:316:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_MQ206_000B1752.psc:318:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_MQ206_000B1752.psc:319:6:forbidden-functions
+Scripts/Source/Base/Fragments/Quests/QF_MQ206_000B1752.psc:327:1:alias-cast-without-getreference
 Scripts/Source/Base/Fragments/Quests/QF_MQ206_000B1752.psc:327:1:unchecked-cast
 Scripts/Source/Base/Fragments/Quests/QF_MQ206_000B1752.psc:328:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_MQ206_000B1752.psc:336:1:useless-downcast
 Scripts/Source/Base/Fragments/Quests/QF_MQ206_000B1752.psc:340:24:forbidden-functions
 Scripts/Source/Base/Fragments/Quests/QF_MQ206_000B1752.psc:343:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_MQ206_000B1752.psc:343:1:none-form-usage
+Scripts/Source/Base/Fragments/Quests/QF_MQ206_000B1752.psc:346:1:alias-cast-without-getreference
 Scripts/Source/Base/Fragments/Quests/QF_MQ206_000B1752.psc:346:1:unchecked-cast
 Scripts/Source/Base/Fragments/Quests/QF_MQ206_000B1752.psc:348:53:assignment-operator-spacing
 Scripts/Source/Base/Fragments/Quests/QF_MQ206_000B1752.psc:348:53:assignment-operator-spacing
@@ -58776,7 +58817,9 @@ Scripts/Source/Base/Fragments/Quests/QF_MS13_00022A04.psc:51:1:identifier-casing
 Scripts/Source/Base/Fragments/Quests/QF_MS13_00022A04.psc:51:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_MS13_00022A04.psc:52:1:identifier-casing
 Scripts/Source/Base/Fragments/Quests/QF_MS13_00022A04.psc:52:1:none-form-usage
+Scripts/Source/Base/Fragments/Quests/QF_MS13_00022A04.psc:53:1:alias-cast-without-getreference
 Scripts/Source/Base/Fragments/Quests/QF_MS13_00022A04.psc:53:1:unchecked-cast
+Scripts/Source/Base/Fragments/Quests/QF_MS13_00022A04.psc:54:1:alias-cast-without-getreference
 Scripts/Source/Base/Fragments/Quests/QF_MS13_00022A04.psc:54:1:unchecked-cast
 Scripts/Source/Base/Fragments/Quests/QF_MS13_00022A04.psc:56:7:forbidden-functions
 Scripts/Source/Base/Fragments/Quests/QF_MS13_00022A04.psc:59:7:forbidden-functions
@@ -68592,6 +68635,7 @@ Scripts/Source/Base/Fragments/Quests/QF_RESceneKMK09_001B224B.psc:1:77:line-endi
 Scripts/Source/Base/Fragments/Quests/QF_RESceneKMK09_001B224B.psc:7:1:useless-downcast
 Scripts/Source/Base/Fragments/Quests/QF_RESceneKMK09_001B224B.psc:11:7:forbidden-functions
 Scripts/Source/Base/Fragments/Quests/QF_RESceneKMK09_001B224B.psc:18:1:unnecessary-function
+Scripts/Source/Base/Fragments/Quests/QF_RESceneKMK09_001B224B.psc:20:1:alias-cast-without-getreference
 Scripts/Source/Base/Fragments/Quests/QF_RESceneKMK09_001B224B.psc:20:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_RESceneKMK09_001B224B.psc:20:1:unchecked-cast
 Scripts/Source/Base/Fragments/Quests/QF_RESceneKMK09_001B224B.psc:28:1:useless-downcast
@@ -69544,6 +69588,7 @@ Scripts/Source/Base/Fragments/Quests/QF_RETravelKMK_MS10_00148BAB.psc:1:77:line-
 Scripts/Source/Base/Fragments/Quests/QF_RETravelKMK_MS10_00148BAB.psc:7:1:useless-downcast
 Scripts/Source/Base/Fragments/Quests/QF_RETravelKMK_MS10_00148BAB.psc:11:7:forbidden-functions
 Scripts/Source/Base/Fragments/Quests/QF_RETravelKMK_MS10_00148BAB.psc:18:1:unnecessary-function
+Scripts/Source/Base/Fragments/Quests/QF_RETravelKMK_MS10_00148BAB.psc:20:1:alias-cast-without-getreference
 Scripts/Source/Base/Fragments/Quests/QF_RETravelKMK_MS10_00148BAB.psc:20:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_RETravelKMK_MS10_00148BAB.psc:20:1:unchecked-cast
 Scripts/Source/Base/Fragments/Quests/QF_RETravelKMK_MS10_00148BAB.psc:26:1:unnecessary-function
@@ -69615,6 +69660,7 @@ Scripts/Source/Base/Fragments/Quests/QF_RETravelKMK_MS19_B_001488F9.psc:1:77:lin
 Scripts/Source/Base/Fragments/Quests/QF_RETravelKMK_MS19_B_001488F9.psc:7:1:useless-downcast
 Scripts/Source/Base/Fragments/Quests/QF_RETravelKMK_MS19_B_001488F9.psc:11:7:forbidden-functions
 Scripts/Source/Base/Fragments/Quests/QF_RETravelKMK_MS19_B_001488F9.psc:18:1:unnecessary-function
+Scripts/Source/Base/Fragments/Quests/QF_RETravelKMK_MS19_B_001488F9.psc:20:1:alias-cast-without-getreference
 Scripts/Source/Base/Fragments/Quests/QF_RETravelKMK_MS19_B_001488F9.psc:20:1:none-form-usage
 Scripts/Source/Base/Fragments/Quests/QF_RETravelKMK_MS19_B_001488F9.psc:20:1:unchecked-cast
 Scripts/Source/Base/Fragments/Quests/QF_RETravelKMK_MS19_B_001488F9.psc:26:1:unnecessary-function
@@ -95423,8 +95469,10 @@ Scripts/Source/Base/GenericBrawlScript.psc:4:1:none-form-usage
 Scripts/Source/Base/GenericBrawlScript.psc:5:1:none-form-usage
 Scripts/Source/Base/GenericBrawlScript.psc:5:26:assignment-operator-spacing
 Scripts/Source/Base/GenericBrawlScript.psc:7:8:forbidden-functions
+Scripts/Source/Base/GenericBrawlScript.psc:11:1:alias-cast-without-getreference
 Scripts/Source/Base/GenericBrawlScript.psc:11:1:unchecked-cast
 Scripts/Source/Base/GenericBrawlScript.psc:12:2:strict-boolean
+Scripts/Source/Base/GenericBrawlScript.psc:14:1:alias-cast-without-getreference
 Scripts/Source/Base/GenericBrawlScript.psc:14:1:unchecked-cast
 Scripts/Source/Base/GenericBrawlScript.psc:19:8:forbidden-functions
 Scripts/Source/Base/GenericBrawlScript.psc:19:47:assignment-operator-spacing
@@ -98587,6 +98635,7 @@ Scripts/Source/Base/Inst307FightQuestScript.psc:325:1:function-length
 Scripts/Source/Base/Inst307FightQuestScript.psc:327:121:line-length
 Scripts/Source/Base/Inst307FightQuestScript.psc:336:1:identifier-casing
 Scripts/Source/Base/Inst307FightQuestScript.psc:337:1:identifier-casing
+Scripts/Source/Base/Inst307FightQuestScript.psc:340:1:alias-cast-without-getreference
 Scripts/Source/Base/Inst307FightQuestScript.psc:340:1:unchecked-cast
 Scripts/Source/Base/Inst307FightQuestScript.psc:353:121:line-length
 Scripts/Source/Base/Inst307FightQuestScript.psc:365:1:identifier-casing
@@ -98646,8 +98695,11 @@ Scripts/Source/Base/Inst307FightQuestScript.psc:587:121:line-length
 Scripts/Source/Base/Inst307FightQuestScript.psc:588:1:unchecked-cast
 Scripts/Source/Base/Inst307FightQuestScript.psc:589:121:line-length
 Scripts/Source/Base/Inst307FightQuestScript.psc:596:31:exclamation-spacing
+Scripts/Source/Base/Inst307FightQuestScript.psc:615:1:alias-cast-without-getreference
 Scripts/Source/Base/Inst307FightQuestScript.psc:615:1:unchecked-cast
+Scripts/Source/Base/Inst307FightQuestScript.psc:616:1:alias-cast-without-getreference
 Scripts/Source/Base/Inst307FightQuestScript.psc:616:1:unchecked-cast
+Scripts/Source/Base/Inst307FightQuestScript.psc:617:1:alias-cast-without-getreference
 Scripts/Source/Base/Inst307FightQuestScript.psc:617:1:unchecked-cast
 Scripts/Source/Base/Inst307FightQuestScript.psc:639:9:trailing-whitespace
 Scripts/Source/Base/Inst307FightQuestScript.psc:662:80:trailing-whitespace
@@ -98664,6 +98716,7 @@ Scripts/Source/Base/Inst307FightQuestScript.psc:710:1:identifier-casing
 Scripts/Source/Base/Inst307FightQuestScript.psc:711:1:identifier-casing
 Scripts/Source/Base/Inst307FightQuestScript.psc:724:11:exclamation-spacing
 Scripts/Source/Base/Inst307FightQuestScript.psc:728:15:exclamation-spacing
+Scripts/Source/Base/Inst307FightQuestScript.psc:731:1:alias-cast-without-getreference
 Scripts/Source/Base/Inst307FightQuestScript.psc:731:1:unchecked-cast
 Scripts/Source/Base/Inst307FightQuestScript.psc:733:73:trailing-whitespace
 Scripts/Source/Base/Inst307FightQuestScript.psc:739:40:exclamation-spacing
@@ -98776,6 +98829,7 @@ Scripts/Source/Base/Inst307FightQuestScript.psc:1143:1:unchecked-cast
 Scripts/Source/Base/Inst307FightQuestScript.psc:1154:1:cyclomatic-complexity
 Scripts/Source/Base/Inst307FightQuestScript.psc:1154:1:function-length
 Scripts/Source/Base/Inst307FightQuestScript.psc:1158:1:identifier-casing
+Scripts/Source/Base/Inst307FightQuestScript.psc:1160:1:alias-cast-without-getreference
 Scripts/Source/Base/Inst307FightQuestScript.psc:1160:1:unchecked-cast
 Scripts/Source/Base/Inst307FightQuestScript.psc:1179:1:identifier-casing
 Scripts/Source/Base/Inst307FightQuestScript.psc:1180:1:identifier-casing
@@ -98809,10 +98863,15 @@ Scripts/Source/Base/Inst307FightQuestScript.psc:1290:1:unchecked-cast
 Scripts/Source/Base/Inst307FightQuestScript.psc:1290:1:unchecked-cast
 Scripts/Source/Base/Inst307FightQuestScript.psc:1290:121:line-length
 Scripts/Source/Base/Inst307FightQuestScript.psc:1299:1:identifier-casing
+Scripts/Source/Base/Inst307FightQuestScript.psc:1302:1:alias-cast-without-getreference
 Scripts/Source/Base/Inst307FightQuestScript.psc:1302:1:unchecked-cast
+Scripts/Source/Base/Inst307FightQuestScript.psc:1305:1:alias-cast-without-getreference
 Scripts/Source/Base/Inst307FightQuestScript.psc:1305:1:unchecked-cast
+Scripts/Source/Base/Inst307FightQuestScript.psc:1308:1:alias-cast-without-getreference
 Scripts/Source/Base/Inst307FightQuestScript.psc:1308:1:unchecked-cast
+Scripts/Source/Base/Inst307FightQuestScript.psc:1311:1:alias-cast-without-getreference
 Scripts/Source/Base/Inst307FightQuestScript.psc:1311:1:unchecked-cast
+Scripts/Source/Base/Inst307FightQuestScript.psc:1314:1:alias-cast-without-getreference
 Scripts/Source/Base/Inst307FightQuestScript.psc:1314:1:unchecked-cast
 Scripts/Source/Base/Inst307FightQuestScript.psc:1326:1:unnecessary-function
 Scripts/Source/Base/Inst307FightQuestScript.psc:1327:6:exclamation-spacing
@@ -98821,8 +98880,11 @@ Scripts/Source/Base/Inst307FightQuestScript.psc:1340:1:identifier-casing
 Scripts/Source/Base/Inst307FightQuestScript.psc:1359:1:function-length
 Scripts/Source/Base/Inst307FightQuestScript.psc:1359:1:identifier-casing
 Scripts/Source/Base/Inst307FightQuestScript.psc:1377:2:empty-body
+Scripts/Source/Base/Inst307FightQuestScript.psc:1385:1:alias-cast-without-getreference
 Scripts/Source/Base/Inst307FightQuestScript.psc:1385:1:unchecked-cast
+Scripts/Source/Base/Inst307FightQuestScript.psc:1386:1:alias-cast-without-getreference
 Scripts/Source/Base/Inst307FightQuestScript.psc:1386:1:unchecked-cast
+Scripts/Source/Base/Inst307FightQuestScript.psc:1387:1:alias-cast-without-getreference
 Scripts/Source/Base/Inst307FightQuestScript.psc:1387:1:unchecked-cast
 Scripts/Source/Base/Inst307FightQuestScript.psc:1392:1:cyclomatic-complexity
 Scripts/Source/Base/Inst307FightQuestScript.psc:1392:1:function-length
@@ -99072,6 +99134,7 @@ Scripts/Source/Base/Inst307Fight_BeaconQuestRespawn01.psc:19:1:function-override
 Scripts/Source/Base/Inst307Fight_BeaconQuestRespawn01.psc:19:1:identifier-casing
 Scripts/Source/Base/Inst307Fight_BeaconQuestRespawn01.psc:21:1:identifier-casing
 Scripts/Source/Base/Inst307Fight_BeaconQuestRespawn01.psc:26:9:forbidden-functions
+Scripts/Source/Base/Inst307Fight_BeaconQuestRespawn01.psc:28:1:alias-cast-without-getreference
 Scripts/Source/Base/Inst307Fight_BeaconQuestRespawn01.psc:28:1:unchecked-cast
 Scripts/Source/Base/Inst307Fight_BeaconQuestRespawn01.psc:36:1:cyclomatic-complexity
 Scripts/Source/Base/Inst307Fight_BeaconQuestRespawn01.psc:36:1:function-length
@@ -99083,6 +99146,7 @@ Scripts/Source/Base/Inst307Fight_BeaconQuestRespawn01.psc:38:121:line-length
 Scripts/Source/Base/Inst307Fight_BeaconQuestRespawn01.psc:41:1:indentation
 Scripts/Source/Base/Inst307Fight_BeaconQuestRespawn01.psc:42:11:forbidden-functions
 Scripts/Source/Base/Inst307Fight_BeaconQuestRespawn01.psc:43:1:indentation
+Scripts/Source/Base/Inst307Fight_BeaconQuestRespawn01.psc:44:1:alias-cast-without-getreference
 Scripts/Source/Base/Inst307Fight_BeaconQuestRespawn01.psc:44:1:unchecked-cast
 Scripts/Source/Base/Inst307Fight_BeaconQuestRespawn01.psc:47:1:indentation
 Scripts/Source/Base/Inst307Fight_BeaconQuestRespawn01.psc:47:121:line-length
@@ -99106,6 +99170,7 @@ Scripts/Source/Base/Inst307Fight_BeaconQuestRespawn02.psc:19:1:function-override
 Scripts/Source/Base/Inst307Fight_BeaconQuestRespawn02.psc:19:1:identifier-casing
 Scripts/Source/Base/Inst307Fight_BeaconQuestRespawn02.psc:21:1:identifier-casing
 Scripts/Source/Base/Inst307Fight_BeaconQuestRespawn02.psc:26:9:forbidden-functions
+Scripts/Source/Base/Inst307Fight_BeaconQuestRespawn02.psc:28:1:alias-cast-without-getreference
 Scripts/Source/Base/Inst307Fight_BeaconQuestRespawn02.psc:28:1:unchecked-cast
 Scripts/Source/Base/Inst307Fight_BeaconQuestRespawn02.psc:36:1:cyclomatic-complexity
 Scripts/Source/Base/Inst307Fight_BeaconQuestRespawn02.psc:36:1:function-length
@@ -99117,6 +99182,7 @@ Scripts/Source/Base/Inst307Fight_BeaconQuestRespawn02.psc:38:121:line-length
 Scripts/Source/Base/Inst307Fight_BeaconQuestRespawn02.psc:41:1:indentation
 Scripts/Source/Base/Inst307Fight_BeaconQuestRespawn02.psc:42:11:forbidden-functions
 Scripts/Source/Base/Inst307Fight_BeaconQuestRespawn02.psc:43:1:indentation
+Scripts/Source/Base/Inst307Fight_BeaconQuestRespawn02.psc:44:1:alias-cast-without-getreference
 Scripts/Source/Base/Inst307Fight_BeaconQuestRespawn02.psc:44:1:unchecked-cast
 Scripts/Source/Base/Inst307Fight_BeaconQuestRespawn02.psc:47:1:indentation
 Scripts/Source/Base/Inst307Fight_BeaconQuestRespawn02.psc:47:121:line-length
@@ -99140,6 +99206,7 @@ Scripts/Source/Base/Inst307Fight_BeaconQuestRespawn03.psc:19:1:function-override
 Scripts/Source/Base/Inst307Fight_BeaconQuestRespawn03.psc:19:1:identifier-casing
 Scripts/Source/Base/Inst307Fight_BeaconQuestRespawn03.psc:21:1:identifier-casing
 Scripts/Source/Base/Inst307Fight_BeaconQuestRespawn03.psc:26:9:forbidden-functions
+Scripts/Source/Base/Inst307Fight_BeaconQuestRespawn03.psc:28:1:alias-cast-without-getreference
 Scripts/Source/Base/Inst307Fight_BeaconQuestRespawn03.psc:28:1:unchecked-cast
 Scripts/Source/Base/Inst307Fight_BeaconQuestRespawn03.psc:36:1:cyclomatic-complexity
 Scripts/Source/Base/Inst307Fight_BeaconQuestRespawn03.psc:36:1:function-length
@@ -99151,6 +99218,7 @@ Scripts/Source/Base/Inst307Fight_BeaconQuestRespawn03.psc:38:121:line-length
 Scripts/Source/Base/Inst307Fight_BeaconQuestRespawn03.psc:41:1:indentation
 Scripts/Source/Base/Inst307Fight_BeaconQuestRespawn03.psc:42:11:forbidden-functions
 Scripts/Source/Base/Inst307Fight_BeaconQuestRespawn03.psc:43:1:indentation
+Scripts/Source/Base/Inst307Fight_BeaconQuestRespawn03.psc:44:1:alias-cast-without-getreference
 Scripts/Source/Base/Inst307Fight_BeaconQuestRespawn03.psc:44:1:unchecked-cast
 Scripts/Source/Base/Inst307Fight_BeaconQuestRespawn03.psc:47:1:indentation
 Scripts/Source/Base/Inst307Fight_BeaconQuestRespawn03.psc:47:121:line-length
@@ -99248,6 +99316,7 @@ Scripts/Source/Base/Inst307Fight_P3BoSQuestRespawnScript.psc:17:121:line-length
 Scripts/Source/Base/Inst307Fight_P3BoSQuestRespawnScript.psc:20:1:indentation
 Scripts/Source/Base/Inst307Fight_P3BoSQuestRespawnScript.psc:21:11:forbidden-functions
 Scripts/Source/Base/Inst307Fight_P3BoSQuestRespawnScript.psc:22:1:indentation
+Scripts/Source/Base/Inst307Fight_P3BoSQuestRespawnScript.psc:23:1:alias-cast-without-getreference
 Scripts/Source/Base/Inst307Fight_P3BoSQuestRespawnScript.psc:23:1:unchecked-cast
 Scripts/Source/Base/Inst307Fight_P3BoSQuestRespawnScript.psc:26:1:indentation
 Scripts/Source/Base/Inst307Fight_P3BoSQuestRespawnScript.psc:26:121:line-length
@@ -99255,6 +99324,7 @@ Scripts/Source/Base/Inst307Fight_P3BoSQuestRespawnScript.psc:33:1:function-overr
 Scripts/Source/Base/Inst307Fight_P3BoSQuestRespawnScript.psc:33:1:identifier-casing
 Scripts/Source/Base/Inst307Fight_P3BoSQuestRespawnScript.psc:35:1:identifier-casing
 Scripts/Source/Base/Inst307Fight_P3BoSQuestRespawnScript.psc:36:1:indentation
+Scripts/Source/Base/Inst307Fight_P3BoSQuestRespawnScript.psc:40:1:alias-cast-without-getreference
 Scripts/Source/Base/Inst307Fight_P3BoSQuestRespawnScript.psc:40:1:unchecked-cast
 Scripts/Source/Base/Inst307Fight_P3BoSQuestRespawnScript.psc:41:1:indentation
 Scripts/Source/Base/Inst307Fight_P3BoSQuestRespawnScript.psc:43:1:indentation
@@ -99316,6 +99386,7 @@ Scripts/Source/Base/Inst307Fight_ReinforceRespawnQScript.psc:27:1:function-lengt
 Scripts/Source/Base/Inst307Fight_ReinforceRespawnQScript.psc:27:1:function-override
 Scripts/Source/Base/Inst307Fight_ReinforceRespawnQScript.psc:27:1:identifier-casing
 Scripts/Source/Base/Inst307Fight_ReinforceRespawnQScript.psc:27:1:identifier-casing
+Scripts/Source/Base/Inst307Fight_ReinforceRespawnQScript.psc:29:1:alias-cast-without-getreference
 Scripts/Source/Base/Inst307Fight_ReinforceRespawnQScript.psc:29:1:identifier-casing
 Scripts/Source/Base/Inst307Fight_ReinforceRespawnQScript.psc:29:121:line-length
 Scripts/Source/Base/Inst307Fight_ReinforceRespawnQScript.psc:31:121:line-length
@@ -99423,6 +99494,7 @@ Scripts/Source/Base/Inst307_ZoneQuestRespawnScript.psc:41:1:indentation
 Scripts/Source/Base/Inst307_ZoneQuestRespawnScript.psc:46:1:function-length
 Scripts/Source/Base/Inst307_ZoneQuestRespawnScript.psc:46:1:identifier-casing
 Scripts/Source/Base/Inst307_ZoneQuestRespawnScript.psc:46:1:identifier-casing
+Scripts/Source/Base/Inst307_ZoneQuestRespawnScript.psc:47:1:alias-cast-without-getreference
 Scripts/Source/Base/Inst307_ZoneQuestRespawnScript.psc:47:1:identifier-casing
 Scripts/Source/Base/Inst307_ZoneQuestRespawnScript.psc:51:9:forbidden-functions
 Scripts/Source/Base/Inst307_ZoneQuestRespawnScript.psc:51:121:line-length
@@ -99445,6 +99517,7 @@ Scripts/Source/Base/Inst307_ZoneQuestRespawnScript.psc:80:1:function-length
 Scripts/Source/Base/Inst307_ZoneQuestRespawnScript.psc:80:1:identifier-casing
 Scripts/Source/Base/Inst307_ZoneQuestRespawnScript.psc:80:1:identifier-casing
 Scripts/Source/Base/Inst307_ZoneQuestRespawnScript.psc:80:1:unnecessary-function
+Scripts/Source/Base/Inst307_ZoneQuestRespawnScript.psc:86:1:alias-cast-without-getreference
 Scripts/Source/Base/Inst307_ZoneQuestRespawnScript.psc:86:1:identifier-casing
 Scripts/Source/Base/Inst307_ZoneQuestRespawnScript.psc:86:1:unchecked-cast
 Scripts/Source/Base/Inst307_ZoneQuestRespawnScript.psc:88:1:identifier-casing
@@ -99454,6 +99527,7 @@ Scripts/Source/Base/Inst307_ZoneQuestRespawnScript.psc:92:34:forbidden-functions
 Scripts/Source/Base/Inst307_ZoneQuestRespawnScript.psc:93:34:forbidden-functions
 Scripts/Source/Base/Inst307_ZoneQuestRespawnScript.psc:94:34:forbidden-functions
 Scripts/Source/Base/Inst307_ZoneQuestRespawnScript.psc:117:1:identifier-casing
+Scripts/Source/Base/Inst307_ZoneQuestRespawnScript.psc:118:1:alias-cast-without-getreference
 Scripts/Source/Base/Inst307_ZoneQuestRespawnScript.psc:118:1:identifier-casing
 Scripts/Source/Base/Inst307_ZoneQuestRespawnScript.psc:119:1:unchecked-cast
 Scripts/Source/Base/Inst307_ZoneQuestRespawnScript.psc:119:1:unchecked-cast
@@ -101156,6 +101230,7 @@ Scripts/Source/Base/MQ03QuestScript.psc:51:25:unused-property
 Scripts/Source/Base/MQ03QuestScript.psc:52:25:unused-property
 Scripts/Source/Base/MQ03QuestScript.psc:58:20:unused-property
 Scripts/Source/Base/MQ03QuestScript.psc:62:1:unnecessary-function
+Scripts/Source/Base/MQ03QuestScript.psc:63:1:alias-cast-without-getreference
 Scripts/Source/Base/MQ03QuestScript.psc:63:1:unchecked-cast
 Scripts/Source/Base/MQ03QuestScript.psc:66:121:line-length
 Scripts/Source/Base/MQ03QuestScript.psc:68:1:none-form-usage
@@ -101221,6 +101296,7 @@ Scripts/Source/Base/MQ03QuestScript.psc:205:1:indentation
 Scripts/Source/Base/MQ03QuestScript.psc:206:1:indentation
 Scripts/Source/Base/MQ03QuestScript.psc:207:8:trailing-whitespace
 Scripts/Source/Base/MQ03QuestScript.psc:209:23:forbidden-functions
+Scripts/Source/Base/MQ03QuestScript.psc:210:1:alias-cast-without-getreference
 Scripts/Source/Base/MQ03QuestScript.psc:210:1:unchecked-cast
 Scripts/Source/Base/MQ03QuestScript.psc:214:1:none-form-usage
 Scripts/Source/Base/MQ03QuestScript.psc:214:62:boolean-simplification
@@ -102735,6 +102811,7 @@ Scripts/Source/Base/MQ203Script.psc:901:1:identifier-casing
 Scripts/Source/Base/MQ203Script.psc:903:1:identifier-casing
 Scripts/Source/Base/MQ203Script.psc:904:1:identifier-casing
 Scripts/Source/Base/MQ203Script.psc:905:1:identifier-casing
+Scripts/Source/Base/MQ203Script.psc:908:1:alias-cast-without-getreference
 Scripts/Source/Base/MQ203Script.psc:908:1:unchecked-cast
 Scripts/Source/Base/MQ203Script.psc:923:121:line-length
 Scripts/Source/Base/MQ203Script.psc:933:1:identifier-casing
@@ -107315,6 +107392,7 @@ Scripts/Source/Base/MessageInABottleScript.psc:3:16:unused-property
 Scripts/Source/Base/MessageInABottleScript.psc:9:1:indentation
 Scripts/Source/Base/MessageInABottleScript.psc:10:1:none-form-usage
 Scripts/Source/Base/MessageInABottleScript.psc:10:31:forbidden-functions
+Scripts/Source/Base/MessageInABottleScript.psc:11:1:alias-cast-without-getreference
 Scripts/Source/Base/MessageInABottleScript.psc:11:1:unchecked-cast
 Scripts/Source/Base/MessageInABottleScript.psc:12:9:forbidden-functions
 Scripts/Source/Base/MessageInABottleScript.psc:17:9:final-newline
@@ -108568,6 +108646,7 @@ Scripts/Source/Base/MinDefendCastleAttackScript.psc:763:1:indentation
 Scripts/Source/Base/MinDefendCastleAttackScript.psc:766:1:indentation
 Scripts/Source/Base/MinDefendCastleAttackScript.psc:767:1:indentation
 Scripts/Source/Base/MinDefendCastleAttackScript.psc:768:1:indentation
+Scripts/Source/Base/MinDefendCastleAttackScript.psc:770:1:alias-cast-without-getreference
 Scripts/Source/Base/MinDefendCastleAttackScript.psc:770:1:indentation
 Scripts/Source/Base/MinDefendCastleAttackScript.psc:770:1:unchecked-cast
 Scripts/Source/Base/MinDefendCastleAttackScript.psc:773:54:semicolon
@@ -114379,15 +114458,19 @@ Scripts/Source/Base/REScript.psc:288:1:identifier-casing
 Scripts/Source/Base/REScript.psc:290:1:identifier-casing
 Scripts/Source/Base/REScript.psc:291:1:identifier-casing
 Scripts/Source/Base/REScript.psc:293:3:strict-boolean
+Scripts/Source/Base/REScript.psc:297:1:alias-cast-without-getreference
 Scripts/Source/Base/REScript.psc:297:1:unchecked-cast
+Scripts/Source/Base/REScript.psc:307:1:alias-cast-without-getreference
 Scripts/Source/Base/REScript.psc:307:1:unchecked-cast
 Scripts/Source/Base/REScript.psc:315:1:none-form-usage
 Scripts/Source/Base/REScript.psc:315:72:trailing-whitespace
+Scripts/Source/Base/REScript.psc:320:1:alias-cast-without-getreference
 Scripts/Source/Base/REScript.psc:320:1:unchecked-cast
 Scripts/Source/Base/REScript.psc:320:121:line-length
 Scripts/Source/Base/REScript.psc:322:1:identifier-casing
 Scripts/Source/Base/REScript.psc:324:1:none-form-usage
 Scripts/Source/Base/REScript.psc:324:121:line-length
+Scripts/Source/Base/REScript.psc:333:1:alias-cast-without-getreference
 Scripts/Source/Base/REScript.psc:333:1:unchecked-cast
 Scripts/Source/Base/REScript.psc:335:1:none-form-usage
 Scripts/Source/Base/REScript.psc:343:1:identifier-casing
@@ -131717,6 +131800,7 @@ Scripts/Source/Base/defaultQuestRespawnScript.psc:78:1:indentation
 Scripts/Source/Base/defaultQuestRespawnScript.psc:80:1:indentation
 Scripts/Source/Base/defaultQuestRespawnScript.psc:85:1:function-length
 Scripts/Source/Base/defaultQuestRespawnScript.psc:85:1:identifier-casing
+Scripts/Source/Base/defaultQuestRespawnScript.psc:86:1:alias-cast-without-getreference
 Scripts/Source/Base/defaultQuestRespawnScript.psc:86:1:identifier-casing
 Scripts/Source/Base/defaultQuestRespawnScript.psc:91:1:indentation
 Scripts/Source/Base/defaultQuestRespawnScript.psc:92:1:indentation
@@ -131725,6 +131809,7 @@ Scripts/Source/Base/defaultQuestRespawnScript.psc:96:121:line-length
 Scripts/Source/Base/defaultQuestRespawnScript.psc:102:1:function-length
 Scripts/Source/Base/defaultQuestRespawnScript.psc:102:1:identifier-casing
 Scripts/Source/Base/defaultQuestRespawnScript.psc:102:1:identifier-casing
+Scripts/Source/Base/defaultQuestRespawnScript.psc:103:1:alias-cast-without-getreference
 Scripts/Source/Base/defaultQuestRespawnScript.psc:103:1:identifier-casing
 Scripts/Source/Base/defaultQuestRespawnScript.psc:105:121:line-length
 Scripts/Source/Base/defaultQuestRespawnScript.psc:108:1:indentation
@@ -131766,6 +131851,7 @@ Scripts/Source/Base/defaultQuestRespawnScriptA.psc:11:115:exclamation-spacing
 Scripts/Source/Base/defaultQuestRespawnScriptA.psc:11:121:line-length
 Scripts/Source/Base/defaultQuestRespawnScriptA.psc:14:1:indentation
 Scripts/Source/Base/defaultQuestRespawnScriptA.psc:16:1:indentation
+Scripts/Source/Base/defaultQuestRespawnScriptA.psc:17:1:alias-cast-without-getreference
 Scripts/Source/Base/defaultQuestRespawnScriptA.psc:17:1:unchecked-cast
 Scripts/Source/Base/defaultQuestRespawnScriptA.psc:20:1:indentation
 Scripts/Source/Base/defaultQuestRespawnScriptA.psc:20:121:line-length
@@ -131782,6 +131868,7 @@ Scripts/Source/Base/defaultQuestRespawnScriptB.psc:11:115:exclamation-spacing
 Scripts/Source/Base/defaultQuestRespawnScriptB.psc:11:121:line-length
 Scripts/Source/Base/defaultQuestRespawnScriptB.psc:14:1:indentation
 Scripts/Source/Base/defaultQuestRespawnScriptB.psc:16:1:indentation
+Scripts/Source/Base/defaultQuestRespawnScriptB.psc:17:1:alias-cast-without-getreference
 Scripts/Source/Base/defaultQuestRespawnScriptB.psc:17:1:unchecked-cast
 Scripts/Source/Base/defaultQuestRespawnScriptB.psc:20:1:indentation
 Scripts/Source/Base/defaultQuestRespawnScriptB.psc:20:121:line-length
@@ -136262,8 +136349,11 @@ Scripts/Source/DLC01/DLC01/DLC01LairQuestScript.psc:878:1:identifier-casing
 Scripts/Source/DLC01/DLC01/DLC01LairQuestScript.psc:897:1:semicolon
 Scripts/Source/DLC01/DLC01/DLC01LairQuestScript.psc:901:1:unnecessary-function
 Scripts/Source/DLC01/DLC01/DLC01LairQuestScript.psc:905:1:function-length
+Scripts/Source/DLC01/DLC01/DLC01LairQuestScript.psc:907:1:alias-cast-without-getreference
 Scripts/Source/DLC01/DLC01/DLC01LairQuestScript.psc:907:1:unchecked-cast
+Scripts/Source/DLC01/DLC01/DLC01LairQuestScript.psc:908:1:alias-cast-without-getreference
 Scripts/Source/DLC01/DLC01/DLC01LairQuestScript.psc:908:1:unchecked-cast
+Scripts/Source/DLC01/DLC01/DLC01LairQuestScript.psc:909:1:alias-cast-without-getreference
 Scripts/Source/DLC01/DLC01/DLC01LairQuestScript.psc:909:1:unchecked-cast
 Scripts/Source/DLC01/DLC01/DLC01LairQuestScript.psc:910:1:trailing-whitespace
 Scripts/Source/DLC01/DLC01/DLC01LairQuestScript.psc:911:1:identifier-casing
@@ -136285,8 +136375,11 @@ Scripts/Source/DLC01/DLC01/DLC01LairQuestScript.psc:933:1:indentation
 Scripts/Source/DLC01/DLC01/DLC01LairQuestScript.psc:934:1:indentation
 Scripts/Source/DLC01/DLC01/DLC01LairQuestScript.psc:935:10:trailing-whitespace
 Scripts/Source/DLC01/DLC01/DLC01LairQuestScript.psc:936:1:trailing-whitespace
+Scripts/Source/DLC01/DLC01/DLC01LairQuestScript.psc:938:1:alias-cast-without-getreference
 Scripts/Source/DLC01/DLC01/DLC01LairQuestScript.psc:938:1:unchecked-cast
+Scripts/Source/DLC01/DLC01/DLC01LairQuestScript.psc:939:1:alias-cast-without-getreference
 Scripts/Source/DLC01/DLC01/DLC01LairQuestScript.psc:939:1:unchecked-cast
+Scripts/Source/DLC01/DLC01/DLC01LairQuestScript.psc:940:1:alias-cast-without-getreference
 Scripts/Source/DLC01/DLC01/DLC01LairQuestScript.psc:940:1:unchecked-cast
 Scripts/Source/DLC01/DLC01/DLC01LairQuestScript.psc:942:10:forbidden-functions
 Scripts/Source/DLC01/DLC01/DLC01LairQuestScript.psc:946:1:function-length
@@ -136707,6 +136800,7 @@ Scripts/Source/DLC01/DLC01/DLC01Lair_TrashbotQuestRespawnScript.psc:44:1:functio
 Scripts/Source/DLC01/DLC01/DLC01Lair_TrashbotQuestRespawnScript.psc:44:1:function-override
 Scripts/Source/DLC01/DLC01/DLC01Lair_TrashbotQuestRespawnScript.psc:44:1:identifier-casing
 Scripts/Source/DLC01/DLC01/DLC01Lair_TrashbotQuestRespawnScript.psc:44:1:identifier-casing
+Scripts/Source/DLC01/DLC01/DLC01Lair_TrashbotQuestRespawnScript.psc:45:1:alias-cast-without-getreference
 Scripts/Source/DLC01/DLC01/DLC01Lair_TrashbotQuestRespawnScript.psc:45:1:identifier-casing
 Scripts/Source/DLC01/DLC01/DLC01Lair_TrashbotQuestRespawnScript.psc:47:121:line-length
 Scripts/Source/DLC01/DLC01/DLC01Lair_TrashbotQuestRespawnScript.psc:50:1:indentation
@@ -140369,6 +140463,7 @@ Scripts/Source/DLC01/DLC01/Fragments/Quests/QF_DLC01Lair_010008BB.psc:898:1:usel
 Scripts/Source/DLC01/DLC01/Fragments/Quests/QF_DLC01Lair_010008BB.psc:907:5:exclamation-spacing
 Scripts/Source/DLC01/DLC01/Fragments/Quests/QF_DLC01Lair_010008BB.psc:908:1:indentation
 Scripts/Source/DLC01/DLC01/Fragments/Quests/QF_DLC01Lair_010008BB.psc:915:1:unnecessary-function
+Scripts/Source/DLC01/DLC01/Fragments/Quests/QF_DLC01Lair_010008BB.psc:929:1:alias-cast-without-getreference
 Scripts/Source/DLC01/DLC01/Fragments/Quests/QF_DLC01Lair_010008BB.psc:929:1:unchecked-cast
 Scripts/Source/DLC01/DLC01/Fragments/Quests/QF_DLC01Lair_010008BB.psc:931:1:identifier-casing
 Scripts/Source/DLC01/DLC01/Fragments/Quests/QF_DLC01Lair_010008BB.psc:932:1:none-form-usage
@@ -140395,6 +140490,7 @@ Scripts/Source/DLC01/DLC01/Fragments/Quests/QF_DLC01Lair_010008BB.psc:945:1:inde
 Scripts/Source/DLC01/DLC01/Fragments/Quests/QF_DLC01Lair_010008BB.psc:945:1:unchecked-cast
 Scripts/Source/DLC01/DLC01/Fragments/Quests/QF_DLC01Lair_010008BB.psc:946:1:indentation
 Scripts/Source/DLC01/DLC01/Fragments/Quests/QF_DLC01Lair_010008BB.psc:947:1:indentation
+Scripts/Source/DLC01/DLC01/Fragments/Quests/QF_DLC01Lair_010008BB.psc:951:1:alias-cast-without-getreference
 Scripts/Source/DLC01/DLC01/Fragments/Quests/QF_DLC01Lair_010008BB.psc:951:1:unchecked-cast
 Scripts/Source/DLC01/DLC01/Fragments/Quests/QF_DLC01Lair_010008BB.psc:954:9:forbidden-functions
 Scripts/Source/DLC01/DLC01/Fragments/Quests/QF_DLC01Lair_010008BB.psc:955:27:exclamation-spacing
@@ -157363,6 +157459,7 @@ Scripts/Source/DLC03/DLC03/Fragments/Quests/QF_DLC03CoA_FFNucleus01_0101055C.psc
 Scripts/Source/DLC03/DLC03/Fragments/Quests/QF_DLC03CoA_FFNucleus01_0101055C.psc:38:1:none-form-usage
 Scripts/Source/DLC03/DLC03/Fragments/Quests/QF_DLC03CoA_FFNucleus01_0101055C.psc:41:4:exclamation-spacing
 Scripts/Source/DLC03/DLC03/Fragments/Quests/QF_DLC03CoA_FFNucleus01_0101055C.psc:42:1:indentation
+Scripts/Source/DLC03/DLC03/Fragments/Quests/QF_DLC03CoA_FFNucleus01_0101055C.psc:44:1:alias-cast-without-getreference
 Scripts/Source/DLC03/DLC03/Fragments/Quests/QF_DLC03CoA_FFNucleus01_0101055C.psc:44:1:indentation
 Scripts/Source/DLC03/DLC03/Fragments/Quests/QF_DLC03CoA_FFNucleus01_0101055C.psc:44:1:unchecked-cast
 Scripts/Source/DLC03/DLC03/Fragments/Quests/QF_DLC03CoA_FFNucleus01_0101055C.psc:45:1:indentation
@@ -157371,6 +157468,7 @@ Scripts/Source/DLC03/DLC03/Fragments/Quests/QF_DLC03CoA_FFNucleus01_0101055C.psc
 Scripts/Source/DLC03/DLC03/Fragments/Quests/QF_DLC03CoA_FFNucleus01_0101055C.psc:47:1:indentation
 Scripts/Source/DLC03/DLC03/Fragments/Quests/QF_DLC03CoA_FFNucleus01_0101055C.psc:51:4:exclamation-spacing
 Scripts/Source/DLC03/DLC03/Fragments/Quests/QF_DLC03CoA_FFNucleus01_0101055C.psc:52:1:indentation
+Scripts/Source/DLC03/DLC03/Fragments/Quests/QF_DLC03CoA_FFNucleus01_0101055C.psc:54:1:alias-cast-without-getreference
 Scripts/Source/DLC03/DLC03/Fragments/Quests/QF_DLC03CoA_FFNucleus01_0101055C.psc:54:1:indentation
 Scripts/Source/DLC03/DLC03/Fragments/Quests/QF_DLC03CoA_FFNucleus01_0101055C.psc:54:1:unchecked-cast
 Scripts/Source/DLC03/DLC03/Fragments/Quests/QF_DLC03CoA_FFNucleus01_0101055C.psc:55:1:indentation
@@ -161508,6 +161606,7 @@ Scripts/Source/DLC03/DLC03/Fragments/Quests/QF_DLC03PostQuestTreasureDig_0104D2F
 Scripts/Source/DLC03/DLC03/Fragments/Quests/QF_DLC03PostQuestTreasureDig_0104D2F5.psc:32:9:forbidden-functions
 Scripts/Source/DLC03/DLC03/Fragments/Quests/QF_DLC03PostQuestTreasureDig_0104D2F5.psc:35:1:none-form-usage
 Scripts/Source/DLC03/DLC03/Fragments/Quests/QF_DLC03PostQuestTreasureDig_0104D2F5.psc:36:9:forbidden-functions
+Scripts/Source/DLC03/DLC03/Fragments/Quests/QF_DLC03PostQuestTreasureDig_0104D2F5.psc:37:1:alias-cast-without-getreference
 Scripts/Source/DLC03/DLC03/Fragments/Quests/QF_DLC03PostQuestTreasureDig_0104D2F5.psc:37:1:unchecked-cast
 Scripts/Source/DLC03/DLC03/Fragments/Quests/QF_DLC03PostQuestTreasureDig_0104D2F5.psc:37:58:chain-whitespace
 Scripts/Source/DLC03/DLC03/Fragments/Quests/QF_DLC03PostQuestTreasureDig_0104D2F5.psc:40:9:forbidden-functions
@@ -161725,6 +161824,7 @@ Scripts/Source/DLC03/DLC03/Fragments/Quests/QF_DLC03WorkshopRadiantOwned_0100EB4
 Scripts/Source/DLC03/DLC03/Fragments/Quests/QF_DLC03WorkshopRadiantOwned_0100EB4C.psc:31:1:none-form-usage
 Scripts/Source/DLC03/DLC03/Fragments/Quests/QF_DLC03WorkshopRadiantOwned_0100EB4C.psc:32:2:strict-boolean
 Scripts/Source/DLC03/DLC03/Fragments/Quests/QF_DLC03WorkshopRadiantOwned_0100EB4C.psc:33:1:none-form-usage
+Scripts/Source/DLC03/DLC03/Fragments/Quests/QF_DLC03WorkshopRadiantOwned_0100EB4C.psc:37:1:alias-cast-without-getreference
 Scripts/Source/DLC03/DLC03/Fragments/Quests/QF_DLC03WorkshopRadiantOwned_0100EB4C.psc:37:1:unchecked-cast
 Scripts/Source/DLC03/DLC03/Fragments/Quests/QF_DLC03WorkshopRadiantOwned_0100EB4C.psc:40:1:none-form-usage
 Scripts/Source/DLC03/DLC03/Fragments/Quests/QF_DLC03WorkshopRadiantOwned_0100EB4C.psc:43:1:none-form-usage
@@ -161753,6 +161853,7 @@ Scripts/Source/DLC03/DLC03/Fragments/Quests/QF_DLC03WorkshopRadiantOwned_0100EB4
 Scripts/Source/DLC03/DLC03/Fragments/Quests/QF_DLC03WorkshopRadiantOwned_0100EB4C.psc:259:1:useless-downcast
 Scripts/Source/DLC03/DLC03/Fragments/Quests/QF_DLC03WorkshopRadiantOwned_0100EB4C.psc:269:1:unnecessary-function
 Scripts/Source/DLC03/DLC03/Fragments/Quests/QF_DLC03WorkshopRadiantOwned_0100EB4C.psc:279:1:useless-downcast
+Scripts/Source/DLC03/DLC03/Fragments/Quests/QF_DLC03WorkshopRadiantOwned_0100EB4C.psc:293:1:alias-cast-without-getreference
 Scripts/Source/DLC03/DLC03/Fragments/Quests/QF_DLC03WorkshopRadiantOwned_0100EB4C.psc:293:1:unchecked-cast
 Scripts/Source/DLC03/DLC03/Fragments/Quests/QF_DLC03WorkshopRadiantOwned_0100EB4C.psc:301:1:useless-downcast
 Scripts/Source/DLC03/DLC03/Fragments/Quests/QF_DLC03WorkshopRadiantOwned_0100EB4C.psc:327:1:useless-downcast
@@ -161762,6 +161863,7 @@ Scripts/Source/DLC03/DLC03/Fragments/Quests/QF_DLC03WorkshopRadiantOwned_0100EB4
 Scripts/Source/DLC03/DLC03/Fragments/Quests/QF_DLC03WorkshopRadiantOwned_0100EB4C.psc:373:1:useless-downcast
 Scripts/Source/DLC03/DLC03/Fragments/Quests/QF_DLC03WorkshopRadiantOwned_0100EB4C.psc:377:7:forbidden-functions
 Scripts/Source/DLC03/DLC03/Fragments/Quests/QF_DLC03WorkshopRadiantOwned_0100EB4C.psc:379:1:none-form-usage
+Scripts/Source/DLC03/DLC03/Fragments/Quests/QF_DLC03WorkshopRadiantOwned_0100EB4C.psc:383:1:alias-cast-without-getreference
 Scripts/Source/DLC03/DLC03/Fragments/Quests/QF_DLC03WorkshopRadiantOwned_0100EB4C.psc:383:1:unchecked-cast
 Scripts/Source/DLC03/DLC03/Fragments/Quests/QF_DLC03WorkshopRadiantOwned_0100EB4C.psc:386:1:unchecked-cast
 Scripts/Source/DLC03/DLC03/Fragments/Quests/QF_DLC03WorkshopRadiantOwned_0100EB4C.psc:386:1:useless-downcast
@@ -165166,8 +165268,10 @@ Scripts/Source/DLC03/DLC03/V118_IntroScript.psc:12:1:identifier-casing
 Scripts/Source/DLC03/DLC03/V118_IntroScript.psc:15:1:identifier-casing
 Scripts/Source/DLC03/DLC03/V118_IntroScript.psc:18:1:none-form-usage
 Scripts/Source/DLC03/DLC03/V118_IntroScript.psc:18:42:forbidden-functions
+Scripts/Source/DLC03/DLC03/V118_IntroScript.psc:20:1:alias-cast-without-getreference
 Scripts/Source/DLC03/DLC03/V118_IntroScript.psc:20:1:unchecked-cast
 Scripts/Source/DLC03/DLC03/V118_IntroScript.psc:23:1:unnecessary-function
+Scripts/Source/DLC03/DLC03/V118_IntroScript.psc:24:1:alias-cast-without-getreference
 Scripts/Source/DLC03/DLC03/V118_IntroScript.psc:24:1:unchecked-cast
 Scripts/Source/DLC03/DLC03/V118_IntroScript.psc:27:1:function-length
 Scripts/Source/DLC03/DLC03/V118_IntroScript.psc:28:8:forbidden-functions

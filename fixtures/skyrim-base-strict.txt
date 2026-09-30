@@ -4282,8 +4282,10 @@ Source/Scripts/BYOHRelationshipAdoptionScript.psc:736:1:indentation
 Source/Scripts/BYOHRelationshipAdoptionScript.psc:737:1:indentation
 Source/Scripts/BYOHRelationshipAdoptionScript.psc:739:1:indentation
 Source/Scripts/BYOHRelationshipAdoptionScript.psc:742:1:none-form-usage
+Source/Scripts/BYOHRelationshipAdoptionScript.psc:743:1:alias-cast-without-getreference
 Source/Scripts/BYOHRelationshipAdoptionScript.psc:743:1:unchecked-cast
 Source/Scripts/BYOHRelationshipAdoptionScript.psc:744:1:none-form-usage
+Source/Scripts/BYOHRelationshipAdoptionScript.psc:745:1:alias-cast-without-getreference
 Source/Scripts/BYOHRelationshipAdoptionScript.psc:745:1:unchecked-cast
 Source/Scripts/BYOHRelationshipAdoptionScript.psc:746:3:empty-body
 Source/Scripts/BYOHRelationshipAdoptionScript.psc:747:1:indentation
@@ -4298,7 +4300,9 @@ Source/Scripts/BYOHRelationshipAdoptionScript.psc:774:1:identifier-casing
 Source/Scripts/BYOHRelationshipAdoptionScript.psc:779:1:identifier-casing
 Source/Scripts/BYOHRelationshipAdoptionScript.psc:785:1:trailing-whitespace
 Source/Scripts/BYOHRelationshipAdoptionScript.psc:787:1:none-form-usage
+Source/Scripts/BYOHRelationshipAdoptionScript.psc:788:1:alias-cast-without-getreference
 Source/Scripts/BYOHRelationshipAdoptionScript.psc:788:1:unchecked-cast
+Source/Scripts/BYOHRelationshipAdoptionScript.psc:790:1:alias-cast-without-getreference
 Source/Scripts/BYOHRelationshipAdoptionScript.psc:790:1:unchecked-cast
 Source/Scripts/BYOHRelationshipAdoptionScript.psc:792:1:trailing-whitespace
 Source/Scripts/BYOHRelationshipAdoptionScript.psc:793:1:indentation
@@ -4308,7 +4312,9 @@ Source/Scripts/BYOHRelationshipAdoptionScript.psc:797:1:identifier-casing
 Source/Scripts/BYOHRelationshipAdoptionScript.psc:797:1:unused-local-variable
 Source/Scripts/BYOHRelationshipAdoptionScript.psc:798:1:trailing-whitespace
 Source/Scripts/BYOHRelationshipAdoptionScript.psc:800:1:none-form-usage
+Source/Scripts/BYOHRelationshipAdoptionScript.psc:801:1:alias-cast-without-getreference
 Source/Scripts/BYOHRelationshipAdoptionScript.psc:801:1:unchecked-cast
+Source/Scripts/BYOHRelationshipAdoptionScript.psc:803:1:alias-cast-without-getreference
 Source/Scripts/BYOHRelationshipAdoptionScript.psc:803:1:unchecked-cast
 Source/Scripts/BYOHRelationshipAdoptionScript.psc:805:1:trailing-whitespace
 Source/Scripts/BYOHRelationshipAdoptionScript.psc:806:1:indentation
@@ -4873,9 +4879,13 @@ Source/Scripts/BYOH_QF_BYOHHouseBanditAttack_010008A8.psc:169:53:slow-functions
 Source/Scripts/BYOH_QF_BYOHHouseBanditAttack_010008A8.psc:170:1:none-form-usage
 Source/Scripts/BYOH_QF_BYOHHouseBanditAttack_010008A8.psc:171:1:none-form-usage
 Source/Scripts/BYOH_QF_BYOHHouseBanditAttack_010008A8.psc:181:1:useless-downcast
+Source/Scripts/BYOH_QF_BYOHHouseBanditAttack_010008A8.psc:189:1:alias-cast-without-getreference
 Source/Scripts/BYOH_QF_BYOHHouseBanditAttack_010008A8.psc:189:1:unchecked-cast
+Source/Scripts/BYOH_QF_BYOHHouseBanditAttack_010008A8.psc:190:1:alias-cast-without-getreference
 Source/Scripts/BYOH_QF_BYOHHouseBanditAttack_010008A8.psc:190:1:unchecked-cast
+Source/Scripts/BYOH_QF_BYOHHouseBanditAttack_010008A8.psc:191:1:alias-cast-without-getreference
 Source/Scripts/BYOH_QF_BYOHHouseBanditAttack_010008A8.psc:191:1:unchecked-cast
+Source/Scripts/BYOH_QF_BYOHHouseBanditAttack_010008A8.psc:192:1:alias-cast-without-getreference
 Source/Scripts/BYOH_QF_BYOHHouseBanditAttack_010008A8.psc:192:1:unchecked-cast
 Source/Scripts/BYOH_QF_BYOHHouseBanditAttack_010008A8.psc:201:1:identifier-casing
 Source/Scripts/BYOH_QF_BYOHHouseBanditAttack_010008A8.psc:201:1:indentation
@@ -4965,7 +4975,9 @@ Source/Scripts/BYOH_QF_BYOHHouseBanditAttack_01005207.psc:92:1:none-form-usage
 Source/Scripts/BYOH_QF_BYOHHouseBanditAttack_01005207.psc:119:1:useless-downcast
 Source/Scripts/BYOH_QF_BYOHHouseBanditAttack_01005207.psc:128:1:none-form-usage
 Source/Scripts/BYOH_QF_BYOHHouseBanditAttack_01005207.psc:129:1:none-form-usage
+Source/Scripts/BYOH_QF_BYOHHouseBanditAttack_01005207.psc:133:1:alias-cast-without-getreference
 Source/Scripts/BYOH_QF_BYOHHouseBanditAttack_01005207.psc:133:1:unchecked-cast
+Source/Scripts/BYOH_QF_BYOHHouseBanditAttack_01005207.psc:134:1:alias-cast-without-getreference
 Source/Scripts/BYOH_QF_BYOHHouseBanditAttack_01005207.psc:134:1:unchecked-cast
 Source/Scripts/BYOH_QF_BYOHHouseBanditAttack_01005207.psc:144:1:none-form-usage
 Source/Scripts/BYOH_QF_BYOHHouseBanditAttack_01005207.psc:144:1:none-form-usage
@@ -5133,6 +5145,7 @@ Source/Scripts/BYOH_QF_BYOHHouseGiantAttack_01000C3E.psc:47:24:unused-property
 Source/Scripts/BYOH_QF_BYOHHouseGiantAttack_01000C3E.psc:52:25:unused-property
 Source/Scripts/BYOH_QF_BYOHHouseGiantAttack_01000C3E.psc:57:25:unused-property
 Source/Scripts/BYOH_QF_BYOHHouseGiantAttack_01000C3E.psc:63:1:useless-downcast
+Source/Scripts/BYOH_QF_BYOHHouseGiantAttack_01000C3E.psc:71:1:alias-cast-without-getreference
 Source/Scripts/BYOH_QF_BYOHHouseGiantAttack_01000C3E.psc:71:1:unchecked-cast
 Source/Scripts/BYOH_QF_BYOHHouseGiantAttack_01000C3E.psc:80:1:none-form-usage
 Source/Scripts/BYOH_QF_BYOHHouseGiantAttack_01000C3E.psc:80:1:none-form-usage
@@ -5305,8 +5318,11 @@ Source/Scripts/BYOH_QF_BYOHHouseWolfAttack_01000C39.psc:52:24:unused-property
 Source/Scripts/BYOH_QF_BYOHHouseWolfAttack_01000C39.psc:57:25:unused-property
 Source/Scripts/BYOH_QF_BYOHHouseWolfAttack_01000C39.psc:67:24:unused-property
 Source/Scripts/BYOH_QF_BYOHHouseWolfAttack_01000C39.psc:73:1:useless-downcast
+Source/Scripts/BYOH_QF_BYOHHouseWolfAttack_01000C39.psc:81:1:alias-cast-without-getreference
 Source/Scripts/BYOH_QF_BYOHHouseWolfAttack_01000C39.psc:81:1:unchecked-cast
+Source/Scripts/BYOH_QF_BYOHHouseWolfAttack_01000C39.psc:82:1:alias-cast-without-getreference
 Source/Scripts/BYOH_QF_BYOHHouseWolfAttack_01000C39.psc:82:1:unchecked-cast
+Source/Scripts/BYOH_QF_BYOHHouseWolfAttack_01000C39.psc:83:1:alias-cast-without-getreference
 Source/Scripts/BYOH_QF_BYOHHouseWolfAttack_01000C39.psc:83:1:unchecked-cast
 Source/Scripts/BYOH_QF_BYOHHouseWolfAttack_01000C39.psc:92:1:none-form-usage
 Source/Scripts/BYOH_QF_BYOHHouseWolfAttack_01000C39.psc:92:1:none-form-usage
@@ -7926,6 +7942,7 @@ Source/Scripts/C00VilkasScript.psc:8:1:identifier-casing
 Source/Scripts/C00VilkasScript.psc:8:121:line-length
 Source/Scripts/C00VilkasScript.psc:9:26:forbidden-functions
 Source/Scripts/C00VilkasScript.psc:14:1:function-override
+Source/Scripts/C00VilkasScript.psc:17:1:alias-cast-without-getreference
 Source/Scripts/C00VilkasScript.psc:17:1:unchecked-cast
 Source/Scripts/C00VilkasScript.psc:21:1:function-override
 Source/Scripts/C00VilkasScript.psc:21:1:identifier-casing
@@ -7941,6 +7958,7 @@ Source/Scripts/C00VilkasScript.psc:37:1:final-newline
 Source/Scripts/C00VilkasTrainingScript.psc:1:61:line-endings
 Source/Scripts/C00VilkasTrainingScript.psc:5:18:unused-property
 Source/Scripts/C00VilkasTrainingScript.psc:16:1:none-form-usage
+Source/Scripts/C00VilkasTrainingScript.psc:17:1:alias-cast-without-getreference
 Source/Scripts/C00VilkasTrainingScript.psc:17:1:unchecked-cast
 Source/Scripts/C00VilkasTrainingScript.psc:18:1:none-form-usage
 Source/Scripts/C00VilkasTrainingScript.psc:19:1:none-form-usage
@@ -23245,12 +23263,14 @@ Source/Scripts/DA02Script.psc:256:1:trailing-whitespace
 Source/Scripts/DA02Script.psc:257:1:none-form-usage
 Source/Scripts/DA02Script.psc:258:10:forbidden-functions
 Source/Scripts/DA02Script.psc:260:1:indentation
+Source/Scripts/DA02Script.psc:261:1:alias-cast-without-getreference
 Source/Scripts/DA02Script.psc:261:1:unchecked-cast
 Source/Scripts/DA02Script.psc:262:1:trailing-whitespace
 Source/Scripts/DA02Script.psc:265:1:identifier-casing
 Source/Scripts/DA02Script.psc:266:1:indentation
 Source/Scripts/DA02Script.psc:268:1:none-form-usage
 Source/Scripts/DA02Script.psc:271:20:forbidden-functions
+Source/Scripts/DA02Script.psc:275:1:alias-cast-without-getreference
 Source/Scripts/DA02Script.psc:275:1:unchecked-cast
 Source/Scripts/DA02Script.psc:276:1:trailing-whitespace
 Source/Scripts/DA02Script.psc:279:1:identifier-casing
@@ -23460,8 +23480,10 @@ Source/Scripts/DA04ArmillaryScript.psc:25:1:identifier-casing
 Source/Scripts/DA04ArmillaryScript.psc:26:1:function-length
 Source/Scripts/DA04ArmillaryScript.psc:27:1:identifier-casing
 Source/Scripts/DA04ArmillaryScript.psc:34:1:indentation
+Source/Scripts/DA04ArmillaryScript.psc:35:1:alias-cast-without-getreference
 Source/Scripts/DA04ArmillaryScript.psc:35:1:unchecked-cast
 Source/Scripts/DA04ArmillaryScript.psc:37:1:indentation
+Source/Scripts/DA04ArmillaryScript.psc:38:1:alias-cast-without-getreference
 Source/Scripts/DA04ArmillaryScript.psc:38:1:unchecked-cast
 Source/Scripts/DA04ArmillaryScript.psc:49:1:identifier-casing
 Source/Scripts/DA04ArmillaryScript.psc:55:1:identifier-casing
@@ -23574,6 +23596,7 @@ Source/Scripts/DA04HubScript.psc:49:1:identifier-casing
 Source/Scripts/DA04HubScript.psc:54:1:identifier-casing
 Source/Scripts/DA04HubScript.psc:65:1:indentation
 Source/Scripts/DA04HubScript.psc:66:1:indentation
+Source/Scripts/DA04HubScript.psc:67:1:alias-cast-without-getreference
 Source/Scripts/DA04HubScript.psc:67:1:unchecked-cast
 Source/Scripts/DA04HubScript.psc:69:1:none-form-usage
 Source/Scripts/DA04HubScript.psc:70:1:none-form-usage
@@ -23914,6 +23937,7 @@ Source/Scripts/DA05QuestingBeastScript.psc:7:1:none-form-usage
 Source/Scripts/DA05QuestingBeastScript.psc:8:1:identifier-casing
 Source/Scripts/DA05QuestingBeastScript.psc:8:1:none-form-usage
 Source/Scripts/DA05QuestingBeastScript.psc:9:10:forbidden-functions
+Source/Scripts/DA05QuestingBeastScript.psc:14:1:alias-cast-without-getreference
 Source/Scripts/DA05QuestingBeastScript.psc:14:1:unchecked-cast
 Source/Scripts/DA05QuestingBeastScript.psc:15:1:none-form-usage
 Source/Scripts/DA05SindingScript.psc:1:52:trailing-whitespace
@@ -24885,6 +24909,7 @@ Source/Scripts/DA10GhostTrap.psc:138:1:identifier-casing
 Source/Scripts/DA10GhostTrap.psc:140:1:trailing-whitespace
 Source/Scripts/DA10GhostTrap.psc:142:1:trailing-whitespace
 Source/Scripts/DA10GhostTrap.psc:168:1:trailing-whitespace
+Source/Scripts/DA10GhostTrap.psc:171:1:alias-cast-without-getreference
 Source/Scripts/DA10GhostTrap.psc:171:1:identifier-casing
 Source/Scripts/DA10GhostTrap.psc:171:1:useless-downcast
 Source/Scripts/DA10GhostTrap.psc:172:1:unchecked-cast
@@ -25127,46 +25152,86 @@ Source/Scripts/DA10HauntingControllerScript.psc:417:1:indentation
 Source/Scripts/DA10HauntingControllerScript.psc:418:1:indentation
 Source/Scripts/DA10HauntingControllerScript.psc:422:1:function-length
 Source/Scripts/DA10HauntingControllerScript.psc:422:1:identifier-casing
+Source/Scripts/DA10HauntingControllerScript.psc:423:1:alias-cast-without-getreference
 Source/Scripts/DA10HauntingControllerScript.psc:423:1:unchecked-cast
+Source/Scripts/DA10HauntingControllerScript.psc:424:1:alias-cast-without-getreference
 Source/Scripts/DA10HauntingControllerScript.psc:424:1:unchecked-cast
+Source/Scripts/DA10HauntingControllerScript.psc:425:1:alias-cast-without-getreference
 Source/Scripts/DA10HauntingControllerScript.psc:425:1:unchecked-cast
+Source/Scripts/DA10HauntingControllerScript.psc:426:1:alias-cast-without-getreference
 Source/Scripts/DA10HauntingControllerScript.psc:426:1:unchecked-cast
+Source/Scripts/DA10HauntingControllerScript.psc:427:1:alias-cast-without-getreference
 Source/Scripts/DA10HauntingControllerScript.psc:427:1:unchecked-cast
+Source/Scripts/DA10HauntingControllerScript.psc:428:1:alias-cast-without-getreference
 Source/Scripts/DA10HauntingControllerScript.psc:428:1:unchecked-cast
+Source/Scripts/DA10HauntingControllerScript.psc:429:1:alias-cast-without-getreference
 Source/Scripts/DA10HauntingControllerScript.psc:429:1:unchecked-cast
+Source/Scripts/DA10HauntingControllerScript.psc:430:1:alias-cast-without-getreference
 Source/Scripts/DA10HauntingControllerScript.psc:430:1:unchecked-cast
+Source/Scripts/DA10HauntingControllerScript.psc:431:1:alias-cast-without-getreference
 Source/Scripts/DA10HauntingControllerScript.psc:431:1:unchecked-cast
+Source/Scripts/DA10HauntingControllerScript.psc:432:1:alias-cast-without-getreference
 Source/Scripts/DA10HauntingControllerScript.psc:432:1:unchecked-cast
+Source/Scripts/DA10HauntingControllerScript.psc:433:1:alias-cast-without-getreference
 Source/Scripts/DA10HauntingControllerScript.psc:433:1:unchecked-cast
+Source/Scripts/DA10HauntingControllerScript.psc:434:1:alias-cast-without-getreference
 Source/Scripts/DA10HauntingControllerScript.psc:434:1:unchecked-cast
+Source/Scripts/DA10HauntingControllerScript.psc:435:1:alias-cast-without-getreference
 Source/Scripts/DA10HauntingControllerScript.psc:435:1:unchecked-cast
+Source/Scripts/DA10HauntingControllerScript.psc:436:1:alias-cast-without-getreference
 Source/Scripts/DA10HauntingControllerScript.psc:436:1:unchecked-cast
+Source/Scripts/DA10HauntingControllerScript.psc:437:1:alias-cast-without-getreference
 Source/Scripts/DA10HauntingControllerScript.psc:437:1:unchecked-cast
+Source/Scripts/DA10HauntingControllerScript.psc:438:1:alias-cast-without-getreference
 Source/Scripts/DA10HauntingControllerScript.psc:438:1:unchecked-cast
+Source/Scripts/DA10HauntingControllerScript.psc:439:1:alias-cast-without-getreference
 Source/Scripts/DA10HauntingControllerScript.psc:439:1:unchecked-cast
+Source/Scripts/DA10HauntingControllerScript.psc:440:1:alias-cast-without-getreference
 Source/Scripts/DA10HauntingControllerScript.psc:440:1:unchecked-cast
+Source/Scripts/DA10HauntingControllerScript.psc:441:1:alias-cast-without-getreference
 Source/Scripts/DA10HauntingControllerScript.psc:441:1:unchecked-cast
+Source/Scripts/DA10HauntingControllerScript.psc:442:1:alias-cast-without-getreference
 Source/Scripts/DA10HauntingControllerScript.psc:442:1:unchecked-cast
+Source/Scripts/DA10HauntingControllerScript.psc:443:1:alias-cast-without-getreference
 Source/Scripts/DA10HauntingControllerScript.psc:443:1:unchecked-cast
+Source/Scripts/DA10HauntingControllerScript.psc:444:1:alias-cast-without-getreference
 Source/Scripts/DA10HauntingControllerScript.psc:444:1:unchecked-cast
+Source/Scripts/DA10HauntingControllerScript.psc:445:1:alias-cast-without-getreference
 Source/Scripts/DA10HauntingControllerScript.psc:445:1:unchecked-cast
+Source/Scripts/DA10HauntingControllerScript.psc:446:1:alias-cast-without-getreference
 Source/Scripts/DA10HauntingControllerScript.psc:446:1:unchecked-cast
+Source/Scripts/DA10HauntingControllerScript.psc:447:1:alias-cast-without-getreference
 Source/Scripts/DA10HauntingControllerScript.psc:447:1:unchecked-cast
+Source/Scripts/DA10HauntingControllerScript.psc:448:1:alias-cast-without-getreference
 Source/Scripts/DA10HauntingControllerScript.psc:448:1:unchecked-cast
+Source/Scripts/DA10HauntingControllerScript.psc:449:1:alias-cast-without-getreference
 Source/Scripts/DA10HauntingControllerScript.psc:449:1:unchecked-cast
+Source/Scripts/DA10HauntingControllerScript.psc:450:1:alias-cast-without-getreference
 Source/Scripts/DA10HauntingControllerScript.psc:450:1:unchecked-cast
+Source/Scripts/DA10HauntingControllerScript.psc:451:1:alias-cast-without-getreference
 Source/Scripts/DA10HauntingControllerScript.psc:451:1:unchecked-cast
+Source/Scripts/DA10HauntingControllerScript.psc:452:1:alias-cast-without-getreference
 Source/Scripts/DA10HauntingControllerScript.psc:452:1:unchecked-cast
 Source/Scripts/DA10HauntingControllerScript.psc:453:1:trailing-whitespace
+Source/Scripts/DA10HauntingControllerScript.psc:454:1:alias-cast-without-getreference
 Source/Scripts/DA10HauntingControllerScript.psc:454:1:unchecked-cast
+Source/Scripts/DA10HauntingControllerScript.psc:455:1:alias-cast-without-getreference
 Source/Scripts/DA10HauntingControllerScript.psc:455:1:unchecked-cast
+Source/Scripts/DA10HauntingControllerScript.psc:456:1:alias-cast-without-getreference
 Source/Scripts/DA10HauntingControllerScript.psc:456:1:unchecked-cast
+Source/Scripts/DA10HauntingControllerScript.psc:457:1:alias-cast-without-getreference
 Source/Scripts/DA10HauntingControllerScript.psc:457:1:unchecked-cast
+Source/Scripts/DA10HauntingControllerScript.psc:458:1:alias-cast-without-getreference
 Source/Scripts/DA10HauntingControllerScript.psc:458:1:unchecked-cast
+Source/Scripts/DA10HauntingControllerScript.psc:459:1:alias-cast-without-getreference
 Source/Scripts/DA10HauntingControllerScript.psc:459:1:unchecked-cast
+Source/Scripts/DA10HauntingControllerScript.psc:460:1:alias-cast-without-getreference
 Source/Scripts/DA10HauntingControllerScript.psc:460:1:unchecked-cast
+Source/Scripts/DA10HauntingControllerScript.psc:461:1:alias-cast-without-getreference
 Source/Scripts/DA10HauntingControllerScript.psc:461:1:unchecked-cast
+Source/Scripts/DA10HauntingControllerScript.psc:462:1:alias-cast-without-getreference
 Source/Scripts/DA10HauntingControllerScript.psc:462:1:unchecked-cast
+Source/Scripts/DA10HauntingControllerScript.psc:463:1:alias-cast-without-getreference
 Source/Scripts/DA10HauntingControllerScript.psc:463:1:unchecked-cast
 Source/Scripts/DA10HauntingControllerScript.psc:470:1:identifier-casing
 Source/Scripts/DA10HauntingControllerScript.psc:470:1:unnecessary-function
@@ -32183,6 +32248,7 @@ Source/Scripts/DLC1LD_AetheriumPedestalRef.psc:1:12:type-casing
 Source/Scripts/DLC1LD_AetheriumPedestalRef.psc:1:63:line-endings
 Source/Scripts/DLC1LD_AetheriumPedestalRef.psc:6:1:function-override
 Source/Scripts/DLC1LD_AetheriumPedestalRef.psc:7:1:indentation
+Source/Scripts/DLC1LD_AetheriumPedestalRef.psc:8:1:alias-cast-without-getreference
 Source/Scripts/DLC1LD_AetheriumPedestalRef.psc:8:1:unchecked-cast
 Source/Scripts/DLC1LD_AetheriumPedestalRef.psc:9:9:final-newline
 Source/Scripts/DLC1LD_BthalftDustDropScript.psc:1:12:type-casing
@@ -38240,6 +38306,7 @@ Source/Scripts/DLC1VQ08BatsEffectScript.psc:34:1:function-override
 Source/Scripts/DLC1VQ08BatsEffectScript.psc:34:1:identifier-casing
 Source/Scripts/DLC1VQ08BatsEffectScript.psc:34:1:identifier-casing
 Source/Scripts/DLC1VQ08BatsEffectScript.psc:35:1:indentation
+Source/Scripts/DLC1VQ08BatsEffectScript.psc:37:1:alias-cast-without-getreference
 Source/Scripts/DLC1VQ08BatsEffectScript.psc:38:1:trailing-whitespace
 Source/Scripts/DLC1VQ08BatsEffectScript.psc:51:46:comma-spacing
 Source/Scripts/DLC1VQ08BatsEffectScript.psc:51:64:comma-spacing
@@ -38265,6 +38332,7 @@ Source/Scripts/DLC1VQ08BatsEffectScript.psc:80:1:function-override
 Source/Scripts/DLC1VQ08BatsEffectScript.psc:80:1:identifier-casing
 Source/Scripts/DLC1VQ08BatsEffectScript.psc:80:1:identifier-casing
 Source/Scripts/DLC1VQ08BatsEffectScript.psc:81:1:indentation
+Source/Scripts/DLC1VQ08BatsEffectScript.psc:83:1:alias-cast-without-getreference
 Source/Scripts/DLC1VQ08BatsEffectScript.psc:83:1:unchecked-cast
 Source/Scripts/DLC1VQ08BatsEffectScript.psc:84:1:trailing-whitespace
 Source/Scripts/DLC1VQ08BatsEffectScript.psc:86:21:boolean-simplification
@@ -38295,6 +38363,7 @@ Source/Scripts/DLC1VQ08BatsSwapEffectScript.psc:36:1:function-override
 Source/Scripts/DLC1VQ08BatsSwapEffectScript.psc:36:1:identifier-casing
 Source/Scripts/DLC1VQ08BatsSwapEffectScript.psc:36:1:identifier-casing
 Source/Scripts/DLC1VQ08BatsSwapEffectScript.psc:37:1:indentation
+Source/Scripts/DLC1VQ08BatsSwapEffectScript.psc:40:1:alias-cast-without-getreference
 Source/Scripts/DLC1VQ08BatsSwapEffectScript.psc:41:1:trailing-whitespace
 Source/Scripts/DLC1VQ08BatsSwapEffectScript.psc:58:1:unchecked-cast
 Source/Scripts/DLC1VQ08BatsSwapEffectScript.psc:58:53:comma-spacing
@@ -38335,6 +38404,7 @@ Source/Scripts/DLC1VQ08BatsSwapEffectScript.psc:98:1:function-override
 Source/Scripts/DLC1VQ08BatsSwapEffectScript.psc:98:1:identifier-casing
 Source/Scripts/DLC1VQ08BatsSwapEffectScript.psc:98:1:identifier-casing
 Source/Scripts/DLC1VQ08BatsSwapEffectScript.psc:99:1:indentation
+Source/Scripts/DLC1VQ08BatsSwapEffectScript.psc:105:1:alias-cast-without-getreference
 Source/Scripts/DLC1VQ08BatsSwapEffectScript.psc:105:1:unchecked-cast
 Source/Scripts/DLC1VQ08BatsSwapEffectScript.psc:108:1:trailing-whitespace
 Source/Scripts/DLC1VQ08BatsSwapEffectScript.psc:110:21:boolean-simplification
@@ -40394,9 +40464,11 @@ Source/Scripts/DLC1_NPCMentalModelScript.psc:513:1:indentation
 Source/Scripts/DLC1_NPCMentalModelScript.psc:516:1:indentation
 Source/Scripts/DLC1_NPCMentalModelScript.psc:518:1:none-form-usage
 Source/Scripts/DLC1_NPCMentalModelScript.psc:519:1:none-form-usage
+Source/Scripts/DLC1_NPCMentalModelScript.psc:520:1:alias-cast-without-getreference
 Source/Scripts/DLC1_NPCMentalModelScript.psc:520:1:unchecked-cast
 Source/Scripts/DLC1_NPCMentalModelScript.psc:520:33:forbidden-functions
 Source/Scripts/DLC1_NPCMentalModelScript.psc:524:1:unnecessary-function
+Source/Scripts/DLC1_NPCMentalModelScript.psc:529:1:alias-cast-without-getreference
 Source/Scripts/DLC1_NPCMentalModelScript.psc:529:1:unchecked-cast
 Source/Scripts/DLC1_NPCMentalModelScript.psc:530:1:none-form-usage
 Source/Scripts/DLC1_NPCMentalModelScript.psc:531:1:none-form-usage
@@ -40574,6 +40646,7 @@ Source/Scripts/DLC1_PF_DLC1dunRedwaterDenOpe_01016363.psc:1:77:line-endings
 Source/Scripts/DLC1_PF_DLC1dunRedwaterDenOpe_01016363.psc:3:12:type-casing
 Source/Scripts/DLC1_PRKF_DLC1LD_AetherialCro_0100D00A.psc:1:77:line-endings
 Source/Scripts/DLC1_PRKF_DLC1LD_AetherialCro_0100D00A.psc:3:12:type-casing
+Source/Scripts/DLC1_PRKF_DLC1LD_AetherialCro_0100D00A.psc:9:1:alias-cast-without-getreference
 Source/Scripts/DLC1_PRKF_DLC1LD_AetherialCro_0100D00A.psc:9:1:unchecked-cast
 Source/Scripts/DLC1_PRKF_DLC1LD_AetherialCro_0100D00A.psc:16:45:trailing-whitespace
 Source/Scripts/DLC1_PRKF_DLC1PlayerWerewolfS_01008A6E.psc:1:77:line-endings
@@ -41474,6 +41547,7 @@ Source/Scripts/DLC1_QF_DLC1LD_01005817.psc:178:1:unchecked-cast
 Source/Scripts/DLC1_QF_DLC1LD_01005817.psc:205:5:exclamation-spacing
 Source/Scripts/DLC1_QF_DLC1LD_01005817.psc:206:1:indentation
 Source/Scripts/DLC1_QF_DLC1LD_01005817.psc:225:1:none-form-usage
+Source/Scripts/DLC1_QF_DLC1LD_01005817.psc:234:1:alias-cast-without-getreference
 Source/Scripts/DLC1_QF_DLC1LD_01005817.psc:234:1:unchecked-cast
 Source/Scripts/DLC1_QF_DLC1LD_01005817.psc:244:1:indentation
 Source/Scripts/DLC1_QF_DLC1LD_01005817.psc:245:1:indentation
@@ -41851,6 +41925,7 @@ Source/Scripts/DLC1_QF_DLC1LD_Bthalft_0100CFFF.psc:159:1:none-form-usage
 Source/Scripts/DLC1_QF_DLC1LD_Bthalft_0100CFFF.psc:160:1:indentation
 Source/Scripts/DLC1_QF_DLC1LD_Bthalft_0100CFFF.psc:160:1:none-form-usage
 Source/Scripts/DLC1_QF_DLC1LD_Bthalft_0100CFFF.psc:164:1:none-form-usage
+Source/Scripts/DLC1_QF_DLC1LD_Bthalft_0100CFFF.psc:179:1:alias-cast-without-getreference
 Source/Scripts/DLC1_QF_DLC1LD_Bthalft_0100CFFF.psc:179:1:unchecked-cast
 Source/Scripts/DLC1_QF_DLC1LD_Bthalft_0100CFFF.psc:180:1:none-form-usage
 Source/Scripts/DLC1_QF_DLC1LD_Bthalft_0100CFFF.psc:180:50:forbidden-functions
@@ -44128,6 +44203,7 @@ Source/Scripts/DLC1_QF_DLC1VQ08_01007C25.psc:263:1:none-form-usage
 Source/Scripts/DLC1_QF_DLC1VQ08_01007C25.psc:263:1:unchecked-cast
 Source/Scripts/DLC1_QF_DLC1VQ08_01007C25.psc:264:1:none-form-usage
 Source/Scripts/DLC1_QF_DLC1VQ08_01007C25.psc:264:1:unchecked-cast
+Source/Scripts/DLC1_QF_DLC1VQ08_01007C25.psc:265:1:alias-cast-without-getreference
 Source/Scripts/DLC1_QF_DLC1VQ08_01007C25.psc:265:1:unchecked-cast
 Source/Scripts/DLC1_QF_DLC1VQ08_01007C25.psc:266:1:identifier-casing
 Source/Scripts/DLC1_QF_DLC1VQ08_01007C25.psc:268:1:indentation
@@ -48871,11 +48947,13 @@ Source/Scripts/DLC1dunHarkonBatTeleport.psc:107:1:none-form-usage
 Source/Scripts/DLC1dunHarkonBatTeleport.psc:108:1:none-form-usage
 Source/Scripts/DLC1dunHarkonBatTeleport.psc:110:1:none-form-usage
 Source/Scripts/DLC1dunHarkonBatTeleport.psc:111:1:none-form-usage
+Source/Scripts/DLC1dunHarkonBatTeleport.psc:116:1:alias-cast-without-getreference
 Source/Scripts/DLC1dunHarkonBatTeleport.psc:116:1:unchecked-cast
 Source/Scripts/DLC1dunHarkonBatTeleport.psc:116:1:useless-downcast
 Source/Scripts/DLC1dunHarkonBatTeleport.psc:117:1:indentation
 Source/Scripts/DLC1dunHarkonBatTeleport.psc:119:1:none-form-usage
 Source/Scripts/DLC1dunHarkonBatTeleport.psc:120:1:none-form-usage
+Source/Scripts/DLC1dunHarkonBatTeleport.psc:125:1:alias-cast-without-getreference
 Source/Scripts/DLC1dunHarkonBatTeleport.psc:125:1:unchecked-cast
 Source/Scripts/DLC1dunHarkonBatTeleport.psc:125:1:useless-downcast
 Source/Scripts/DLC1dunHarkonBatTeleport.psc:125:95:trailing-whitespace
@@ -48905,6 +48983,7 @@ Source/Scripts/DLC1dunHarkonBatTeleport.psc:160:1:trailing-whitespace
 Source/Scripts/DLC1dunHarkonBatTeleport.psc:162:61:trailing-whitespace
 Source/Scripts/DLC1dunHarkonBatTeleport.psc:171:1:unchecked-cast
 Source/Scripts/DLC1dunHarkonBatTeleport.psc:173:1:none-form-usage
+Source/Scripts/DLC1dunHarkonBatTeleport.psc:174:1:alias-cast-without-getreference
 Source/Scripts/DLC1dunHarkonBatTeleport.psc:174:1:unchecked-cast
 Source/Scripts/DLC1dunHarkonBatTeleport.psc:174:1:useless-downcast
 Source/Scripts/DLC1dunHarkonBatTeleport.psc:175:12:final-newline
@@ -49247,12 +49326,14 @@ Source/Scripts/DLC1dunHarkonBossBattle.psc:513:1:identifier-casing
 Source/Scripts/DLC1dunHarkonBossBattle.psc:514:1:indentation
 Source/Scripts/DLC1dunHarkonBossBattle.psc:515:1:indentation
 Source/Scripts/DLC1dunHarkonBossBattle.psc:516:1:none-form-usage
+Source/Scripts/DLC1dunHarkonBossBattle.psc:521:1:alias-cast-without-getreference
 Source/Scripts/DLC1dunHarkonBossBattle.psc:521:1:unchecked-cast
 Source/Scripts/DLC1dunHarkonBossBattle.psc:521:1:useless-downcast
 Source/Scripts/DLC1dunHarkonBossBattle.psc:524:1:identifier-casing
 Source/Scripts/DLC1dunHarkonBossBattle.psc:525:1:indentation
 Source/Scripts/DLC1dunHarkonBossBattle.psc:526:1:indentation
 Source/Scripts/DLC1dunHarkonBossBattle.psc:527:1:none-form-usage
+Source/Scripts/DLC1dunHarkonBossBattle.psc:531:1:alias-cast-without-getreference
 Source/Scripts/DLC1dunHarkonBossBattle.psc:531:1:unchecked-cast
 Source/Scripts/DLC1dunHarkonBossBattle.psc:531:1:useless-downcast
 Source/Scripts/DLC1dunHarkonBossBattle.psc:534:1:cyclomatic-complexity
@@ -49523,10 +49604,12 @@ Source/Scripts/DLC1dunHarkonShadowShield.psc:23:1:identifier-casing
 Source/Scripts/DLC1dunHarkonShadowShield.psc:23:121:line-length
 Source/Scripts/DLC1dunHarkonShadowShield.psc:24:1:indentation
 Source/Scripts/DLC1dunHarkonShadowShield.psc:24:121:line-length
+Source/Scripts/DLC1dunHarkonShadowShield.psc:25:1:alias-cast-without-getreference
 Source/Scripts/DLC1dunHarkonShadowShield.psc:25:1:identifier-casing
 Source/Scripts/DLC1dunHarkonShadowShield.psc:26:1:unchecked-cast
 Source/Scripts/DLC1dunHarkonShadowShield.psc:26:1:unchecked-cast
 Source/Scripts/DLC1dunHarkonShadowShield.psc:27:1:unchecked-cast
+Source/Scripts/DLC1dunHarkonShadowShield.psc:37:1:alias-cast-without-getreference
 Source/Scripts/DLC1dunHarkonShadowShield.psc:37:1:identifier-casing
 Source/Scripts/DLC1dunHarkonShadowShield.psc:38:1:identifier-casing
 Source/Scripts/DLC1dunHarkonShadowShield.psc:39:1:unchecked-cast
@@ -49565,6 +49648,7 @@ Source/Scripts/DLC1dunHarkonShieldEffectScript.psc:34:1:function-override
 Source/Scripts/DLC1dunHarkonShieldEffectScript.psc:35:1:indentation
 Source/Scripts/DLC1dunHarkonShieldEffectScript.psc:38:1:none-form-usage
 Source/Scripts/DLC1dunHarkonShieldEffectScript.psc:39:1:none-form-usage
+Source/Scripts/DLC1dunHarkonShieldEffectScript.psc:40:1:alias-cast-without-getreference
 Source/Scripts/DLC1dunHarkonShieldEffectScript.psc:40:1:unchecked-cast
 Source/Scripts/DLC1dunHarkonShieldEffectScript.psc:41:1:indentation
 Source/Scripts/DLC1dunHarkonShieldEffectScript.psc:42:1:none-form-usage
@@ -49581,13 +49665,17 @@ Source/Scripts/DLC1dunHarkonShrineSlipTrigger.psc:1:68:line-endings
 Source/Scripts/DLC1dunHarkonShrineSlipTrigger.psc:5:1:argument-naming
 Source/Scripts/DLC1dunHarkonShrineSlipTrigger.psc:5:1:function-override
 Source/Scripts/DLC1dunHarkonShrineSlipTrigger.psc:5:1:identifier-casing
+Source/Scripts/DLC1dunHarkonShrineSlipTrigger.psc:6:1:alias-cast-without-getreference
 Source/Scripts/DLC1dunHarkonShrineSlipTrigger.psc:6:1:none-form-usage
 Source/Scripts/DLC1dunHarkonShrineSlipTrigger.psc:6:1:unchecked-cast
+Source/Scripts/DLC1dunHarkonShrineSlipTrigger.psc:8:1:alias-cast-without-getreference
+Source/Scripts/DLC1dunHarkonShrineSlipTrigger.psc:8:1:alias-cast-without-getreference
 Source/Scripts/DLC1dunHarkonShrineSlipTrigger.psc:8:1:unchecked-cast
 Source/Scripts/DLC1dunHarkonShrineSlipTrigger.psc:8:1:unchecked-cast
 Source/Scripts/DLC1dunHarkonShrineSlipTrigger.psc:10:9:final-newline
 Source/Scripts/DLC1dunHarkonStartDeferredKill.psc:1:66:line-endings
 Source/Scripts/DLC1dunHarkonStartDeferredKill.psc:5:1:function-override
+Source/Scripts/DLC1dunHarkonStartDeferredKill.psc:6:1:alias-cast-without-getreference
 Source/Scripts/DLC1dunHarkonStartDeferredKill.psc:6:1:unchecked-cast
 Source/Scripts/DLC1dunHarkonStartDeferredKill.psc:7:9:final-newline
 Source/Scripts/DLC1dunHarkonSummonScript.psc:1:63:trailing-whitespace
@@ -49597,6 +49685,7 @@ Source/Scripts/DLC1dunHarkonSummonScript.psc:6:1:function-override
 Source/Scripts/DLC1dunHarkonSummonScript.psc:6:1:identifier-casing
 Source/Scripts/DLC1dunHarkonSummonScript.psc:6:1:identifier-casing
 Source/Scripts/DLC1dunHarkonSummonScript.psc:7:1:indentation
+Source/Scripts/DLC1dunHarkonSummonScript.psc:8:1:alias-cast-without-getreference
 Source/Scripts/DLC1dunHarkonSummonScript.psc:8:1:unchecked-cast
 Source/Scripts/DLC1dunLevelCheck.psc:1:53:line-endings
 Source/Scripts/DLC1dunLevelCheck.psc:7:1:function-override
@@ -54774,6 +54863,7 @@ Source/Scripts/DLC2MQ06DragonDeathTracker.psc:1:61:line-endings
 Source/Scripts/DLC2MQ06DragonDeathTracker.psc:7:1:identifier-casing
 Source/Scripts/DLC2MQ06DragonDeathTracker.psc:8:1:identifier-casing
 Source/Scripts/DLC2MQ06DragonDeathTracker.psc:8:1:identifier-casing
+Source/Scripts/DLC2MQ06DragonDeathTracker.psc:10:1:alias-cast-without-getreference
 Source/Scripts/DLC2MQ06DragonDeathTracker.psc:11:1:unchecked-cast
 Source/Scripts/DLC2MQ06DragonDeathTracker.psc:12:1:identifier-casing
 Source/Scripts/DLC2MQ06DragonDeathTracker.psc:18:1:identifier-casing
@@ -54794,6 +54884,7 @@ Source/Scripts/DLC2MQ06FakeDragonKillEffectScript.psc:5:1:function-override
 Source/Scripts/DLC2MQ06FakeDragonKillEffectScript.psc:5:1:identifier-casing
 Source/Scripts/DLC2MQ06FakeDragonKillEffectScript.psc:5:1:identifier-casing
 Source/Scripts/DLC2MQ06FakeDragonKillEffectScript.psc:6:1:indentation
+Source/Scripts/DLC2MQ06FakeDragonKillEffectScript.psc:7:1:alias-cast-without-getreference
 Source/Scripts/DLC2MQ06FakeDragonKillEffectScript.psc:7:1:unchecked-cast
 Source/Scripts/DLC2MQ06FakeDragonKillEffectScript.psc:8:9:final-newline
 Source/Scripts/DLC2MQ06FightFallingTriggerScript.psc:1:69:trailing-whitespace
@@ -54804,6 +54895,7 @@ Source/Scripts/DLC2MQ06FightFallingTriggerScript.psc:9:1:argument-naming
 Source/Scripts/DLC2MQ06FightFallingTriggerScript.psc:9:1:function-override
 Source/Scripts/DLC2MQ06FightFallingTriggerScript.psc:9:1:identifier-casing
 Source/Scripts/DLC2MQ06FightFallingTriggerScript.psc:9:1:identifier-casing
+Source/Scripts/DLC2MQ06FightFallingTriggerScript.psc:10:1:alias-cast-without-getreference
 Source/Scripts/DLC2MQ06FightFallingTriggerScript.psc:11:1:none-form-usage
 Source/Scripts/DLC2MQ06FightFallingTriggerScript.psc:11:24:forbidden-functions
 Source/Scripts/DLC2MQ06FightFallingTriggerScript.psc:11:39:exclamation-spacing
@@ -54858,6 +54950,7 @@ Source/Scripts/DLC2MQ06MiraakBossBattle.psc:91:1:indentation
 Source/Scripts/DLC2MQ06MiraakBossBattle.psc:91:1:none-form-usage
 Source/Scripts/DLC2MQ06MiraakBossBattle.psc:92:1:indentation
 Source/Scripts/DLC2MQ06MiraakBossBattle.psc:93:1:indentation
+Source/Scripts/DLC2MQ06MiraakBossBattle.psc:94:1:alias-cast-without-getreference
 Source/Scripts/DLC2MQ06MiraakBossBattle.psc:94:1:indentation
 Source/Scripts/DLC2MQ06MiraakBossBattle.psc:94:1:unchecked-cast
 Source/Scripts/DLC2MQ06MiraakBossBattle.psc:94:1:useless-downcast
@@ -59249,6 +59342,7 @@ Source/Scripts/DLC2WB01TorkildScript.psc:10:1:none-form-usage
 Source/Scripts/DLC2WB01TorkildScript.psc:14:1:function-length
 Source/Scripts/DLC2WB01TorkildScript.psc:15:1:identifier-casing
 Source/Scripts/DLC2WB01TorkildScript.psc:20:1:unchecked-cast
+Source/Scripts/DLC2WB01TorkildScript.psc:22:1:alias-cast-without-getreference
 Source/Scripts/DLC2WB01TorkildScript.psc:22:1:identifier-casing
 Source/Scripts/DLC2WB01TorkildScript.psc:23:1:unchecked-cast
 Source/Scripts/DLC2WB01TorkildScript.psc:24:1:indentation
@@ -59258,6 +59352,7 @@ Source/Scripts/DLC2WB01TorkildScript.psc:36:1:function-override
 Source/Scripts/DLC2WB01TorkildScript.psc:40:1:identifier-casing
 Source/Scripts/DLC2WB01TorkildScript.psc:41:1:function-length
 Source/Scripts/DLC2WB01TorkildScript.psc:47:1:identifier-casing
+Source/Scripts/DLC2WB01TorkildScript.psc:56:1:alias-cast-without-getreference
 Source/Scripts/DLC2WB01TorkildScript.psc:56:1:identifier-casing
 Source/Scripts/DLC2WB01TorkildScript.psc:60:28:forbidden-functions
 Source/Scripts/DLC2WB01TorkildScript.psc:62:1:unchecked-cast
@@ -59720,6 +59815,7 @@ Source/Scripts/DLC2_PF_DLC2MQ05StornToBookMa_0202728D.psc:1:77:line-endings
 Source/Scripts/DLC2_PF_DLC2MQ05StornToBookMa_0202728D.psc:3:12:type-casing
 Source/Scripts/DLC2_PF_DLC2MQ06MiraakFakeSho_02034814.psc:1:77:line-endings
 Source/Scripts/DLC2_PF_DLC2MQ06MiraakFakeSho_02034814.psc:3:12:type-casing
+Source/Scripts/DLC2_PF_DLC2MQ06MiraakFakeSho_02034814.psc:9:1:alias-cast-without-getreference
 Source/Scripts/DLC2_PF_DLC2MQ06MiraakFakeSho_02034814.psc:9:1:unchecked-cast
 Source/Scripts/DLC2_PF_DLC2MQ06MiraakFakeSho_02034814.psc:16:37:trailing-whitespace
 Source/Scripts/DLC2_PF_DLC2MQ06MiraakHoldAtF_020382FB.psc:1:77:line-endings
@@ -60816,7 +60912,9 @@ Source/Scripts/DLC2_QF_DLC2MQ07_020179D7.psc:244:1:none-form-usage
 Source/Scripts/DLC2_QF_DLC2MQ07_020179D7.psc:244:46:forbidden-functions
 Source/Scripts/DLC2_QF_DLC2MQ07_020179D7.psc:245:1:none-form-usage
 Source/Scripts/DLC2_QF_DLC2MQ07_020179D7.psc:259:1:useless-downcast
+Source/Scripts/DLC2_QF_DLC2MQ07_020179D7.psc:264:1:alias-cast-without-getreference
 Source/Scripts/DLC2_QF_DLC2MQ07_020179D7.psc:264:1:unchecked-cast
+Source/Scripts/DLC2_QF_DLC2MQ07_020179D7.psc:265:1:alias-cast-without-getreference
 Source/Scripts/DLC2_QF_DLC2MQ07_020179D7.psc:265:1:unchecked-cast
 Source/Scripts/DLC2_QF_DLC2MQ07_020179D7.psc:272:1:none-form-usage
 Source/Scripts/DLC2_QF_DLC2MQ07_020179D7.psc:273:1:none-form-usage
@@ -62518,6 +62616,7 @@ Source/Scripts/DLC2_QF_DLC2_MQ04_02016E02.psc:287:1:none-form-usage
 Source/Scripts/DLC2_QF_DLC2_MQ04_02016E02.psc:287:1:none-form-usage
 Source/Scripts/DLC2_QF_DLC2_MQ04_02016E02.psc:292:1:none-form-usage
 Source/Scripts/DLC2_QF_DLC2_MQ04_02016E02.psc:293:1:none-form-usage
+Source/Scripts/DLC2_QF_DLC2_MQ04_02016E02.psc:296:1:alias-cast-without-getreference
 Source/Scripts/DLC2_QF_DLC2_MQ04_02016E02.psc:296:1:unchecked-cast
 Source/Scripts/DLC2_QF_DLC2_MQ04_02016E02.psc:298:47:trailing-whitespace
 Source/Scripts/DLC2_QF_DLC2_MQ04_02016E02.psc:299:1:none-form-usage
@@ -63250,8 +63349,10 @@ Source/Scripts/DLC2_QF_DLC2dunKolbjornQST_0201810B.psc:119:1:none-form-usage
 Source/Scripts/DLC2_QF_DLC2dunKolbjornQST_0201810B.psc:120:1:none-form-usage
 Source/Scripts/DLC2_QF_DLC2dunKolbjornQST_0201810B.psc:155:5:exclamation-spacing
 Source/Scripts/DLC2_QF_DLC2dunKolbjornQST_0201810B.psc:156:1:indentation
+Source/Scripts/DLC2_QF_DLC2dunKolbjornQST_0201810B.psc:167:1:alias-cast-without-getreference
 Source/Scripts/DLC2_QF_DLC2dunKolbjornQST_0201810B.psc:167:1:unchecked-cast
 Source/Scripts/DLC2_QF_DLC2dunKolbjornQST_0201810B.psc:180:1:none-form-usage
+Source/Scripts/DLC2_QF_DLC2dunKolbjornQST_0201810B.psc:208:1:alias-cast-without-getreference
 Source/Scripts/DLC2_QF_DLC2dunKolbjornQST_0201810B.psc:208:1:unchecked-cast
 Source/Scripts/DLC2_QF_DLC2dunKolbjornQST_0201810B.psc:240:5:exclamation-spacing
 Source/Scripts/DLC2_QF_DLC2dunKolbjornQST_0201810B.psc:241:1:indentation
@@ -63346,6 +63447,7 @@ Source/Scripts/DLC2_QF_DLC2dunKolbjornQST_0201810B.psc:547:1:none-form-usage
 Source/Scripts/DLC2_QF_DLC2dunKolbjornQST_0201810B.psc:548:1:indentation
 Source/Scripts/DLC2_QF_DLC2dunKolbjornQST_0201810B.psc:548:1:none-form-usage
 Source/Scripts/DLC2_QF_DLC2dunKolbjornQST_0201810B.psc:552:1:none-form-usage
+Source/Scripts/DLC2_QF_DLC2dunKolbjornQST_0201810B.psc:597:1:alias-cast-without-getreference
 Source/Scripts/DLC2_QF_DLC2dunKolbjornQST_0201810B.psc:597:1:unchecked-cast
 Source/Scripts/DLC2_QF_DLC2dunKolbjornQST_0201810B.psc:637:1:none-form-usage
 Source/Scripts/DLC2_QF_DLC2dunKolbjornQST_0201810B.psc:638:1:none-form-usage
@@ -63410,6 +63512,7 @@ Source/Scripts/DLC2_QF_DLC2dunKolbjornQST_0201810B.psc:893:21:forbidden-function
 Source/Scripts/DLC2_QF_DLC2dunKolbjornQST_0201810B.psc:894:1:none-form-usage
 Source/Scripts/DLC2_QF_DLC2dunKolbjornQST_0201810B.psc:895:1:indentation
 Source/Scripts/DLC2_QF_DLC2dunKolbjornQST_0201810B.psc:895:1:none-form-usage
+Source/Scripts/DLC2_QF_DLC2dunKolbjornQST_0201810B.psc:916:1:alias-cast-without-getreference
 Source/Scripts/DLC2_QF_DLC2dunKolbjornQST_0201810B.psc:916:1:unchecked-cast
 Source/Scripts/DLC2_QF_DLC2dunKolbjornQST_0201810B.psc:933:5:exclamation-spacing
 Source/Scripts/DLC2_QF_DLC2dunKolbjornQST_0201810B.psc:934:1:indentation
@@ -63445,6 +63548,7 @@ Source/Scripts/DLC2_QF_DLC2dunKolbjornQST_0201810B.psc:1127:1:none-form-usage
 Source/Scripts/DLC2_QF_DLC2dunKolbjornQST_0201810B.psc:1155:1:none-form-usage
 Source/Scripts/DLC2_QF_DLC2dunKolbjornQST_0201810B.psc:1167:1:none-form-usage
 Source/Scripts/DLC2_QF_DLC2dunKolbjornQST_0201810B.psc:1168:32:forbidden-functions
+Source/Scripts/DLC2_QF_DLC2dunKolbjornQST_0201810B.psc:1244:1:alias-cast-without-getreference
 Source/Scripts/DLC2_QF_DLC2dunKolbjornQST_0201810B.psc:1244:1:unchecked-cast
 Source/Scripts/DLC2_QF_DLC2dunKolbjornQST_0201810B.psc:1284:1:function-override
 Source/Scripts/DLC2_QF_DLC2dunKolbjornQST_0201810B.psc:1293:7:trailing-whitespace
@@ -63927,6 +64031,7 @@ Source/Scripts/DLC2_SF_DLC2MQ06MiraakDeathSc_02029A5E.psc:8:1:none-form-usage
 Source/Scripts/DLC2_SF_DLC2MQ06MiraakDeathSc_02029A5E.psc:55:53:trailing-whitespace
 Source/Scripts/DLC2_SF_DLC2MQ06MiraakKillDra_0202A908.psc:1:77:line-endings
 Source/Scripts/DLC2_SF_DLC2MQ06MiraakKillDra_0202A908.psc:3:12:type-casing
+Source/Scripts/DLC2_SF_DLC2MQ06MiraakKillDra_0202A908.psc:9:1:alias-cast-without-getreference
 Source/Scripts/DLC2_SF_DLC2MQ06MiraakKillDra_0202A908.psc:9:1:unchecked-cast
 Source/Scripts/DLC2_SF_DLC2MQ06MiraakKillDra_0202A908.psc:16:37:trailing-whitespace
 Source/Scripts/DLC2_SF_DLC2MQ06MiraakSprintS_020382FA.psc:1:77:line-endings
@@ -63935,6 +64040,7 @@ Source/Scripts/DLC2_SF_DLC2MQ06MiraakSprintS_020382FA.psc:9:1:unused-local-varia
 Source/Scripts/DLC2_SF_DLC2MQ06MiraakSprintS_020382FA.psc:10:1:unused-local-variable
 Source/Scripts/DLC2_SF_DLC2MQ06MiraakSprintS_020382FA.psc:11:1:none-form-usage
 Source/Scripts/DLC2_SF_DLC2MQ06MiraakSprintS_020382FA.psc:12:1:none-form-usage
+Source/Scripts/DLC2_SF_DLC2MQ06MiraakSprintS_020382FA.psc:14:1:alias-cast-without-getreference
 Source/Scripts/DLC2_SF_DLC2MQ06MiraakSprintS_020382FA.psc:14:1:unchecked-cast
 Source/Scripts/DLC2_SF_DLC2MQ06MiraakSprintS_020382FA.psc:21:37:trailing-whitespace
 Source/Scripts/DLC2_SF_DLC2MQ06MiraakSprintS_020382FA.psc:23:45:trailing-whitespace
@@ -67848,6 +67954,7 @@ Source/Scripts/DLC2dunKarstaagBattleTriggerScript.psc:38:1:trailing-whitespace
 Source/Scripts/DLC2dunKarstaagBattleTriggerScript.psc:40:1:none-form-usage
 Source/Scripts/DLC2dunKarstaagBattleTriggerScript.psc:41:1:trailing-whitespace
 Source/Scripts/DLC2dunKarstaagBattleTriggerScript.psc:44:1:trailing-whitespace
+Source/Scripts/DLC2dunKarstaagBattleTriggerScript.psc:46:1:alias-cast-without-getreference
 Source/Scripts/DLC2dunKarstaagBattleTriggerScript.psc:46:1:unchecked-cast
 Source/Scripts/DLC2dunKarstaagBattleTriggerScript.psc:50:1:trailing-whitespace
 Source/Scripts/DLC2dunKarstaagBattleTriggerScript.psc:51:1:identifier-casing
@@ -67862,6 +67969,7 @@ Source/Scripts/DLC2dunKarstaagBattleTriggerScript.psc:68:1:trailing-whitespace
 Source/Scripts/DLC2dunKarstaagBattleTriggerScript.psc:70:1:none-form-usage
 Source/Scripts/DLC2dunKarstaagBattleTriggerScript.psc:71:1:trailing-whitespace
 Source/Scripts/DLC2dunKarstaagBattleTriggerScript.psc:74:1:trailing-whitespace
+Source/Scripts/DLC2dunKarstaagBattleTriggerScript.psc:76:1:alias-cast-without-getreference
 Source/Scripts/DLC2dunKarstaagBattleTriggerScript.psc:76:1:unchecked-cast
 Source/Scripts/DLC2dunKarstaagBattleTriggerScript.psc:81:1:identifier-casing
 Source/Scripts/DLC2dunKarstaagBattleTriggerScript.psc:84:1:trailing-whitespace
@@ -67987,6 +68095,7 @@ Source/Scripts/DLC2dunKarstaagIceWraithParticles.psc:62:1:indentation
 Source/Scripts/DLC2dunKarstaagIceWraithParticles.psc:63:1:final-newline
 Source/Scripts/DLC2dunKarstaagIceWraithScript.psc:1:66:line-endings
 Source/Scripts/DLC2dunKarstaagIceWraithScript.psc:6:1:function-override
+Source/Scripts/DLC2dunKarstaagIceWraithScript.psc:7:1:alias-cast-without-getreference
 Source/Scripts/DLC2dunKarstaagIceWraithScript.psc:7:1:unchecked-cast
 Source/Scripts/DLC2dunKarstaagIceWraithScript.psc:8:9:final-newline
 Source/Scripts/DLC2dunKarstaagIceWraithSummonedScript.psc:1:64:line-endings
@@ -81179,6 +81288,7 @@ Source/Scripts/MGRDestructionBook01ActivatorScript.psc:1:72:line-endings
 Source/Scripts/MGRDestructionBook01ActivatorScript.psc:3:1:argument-naming
 Source/Scripts/MGRDestructionBook01ActivatorScript.psc:3:1:function-length
 Source/Scripts/MGRDestructionBook01ActivatorScript.psc:3:1:function-override
+Source/Scripts/MGRDestructionBook01ActivatorScript.psc:5:1:alias-cast-without-getreference
 Source/Scripts/MGRDestructionBook01ActivatorScript.psc:5:1:indentation
 Source/Scripts/MGRDestructionBook01ActivatorScript.psc:7:23:forbidden-functions
 Source/Scripts/MGRDestructionBook01ActivatorScript.psc:9:1:unchecked-cast
@@ -81195,6 +81305,7 @@ Source/Scripts/MGRDestructionBook02ActivatorScript.psc:1:72:line-endings
 Source/Scripts/MGRDestructionBook02ActivatorScript.psc:4:1:argument-naming
 Source/Scripts/MGRDestructionBook02ActivatorScript.psc:4:1:function-length
 Source/Scripts/MGRDestructionBook02ActivatorScript.psc:4:1:function-override
+Source/Scripts/MGRDestructionBook02ActivatorScript.psc:6:1:alias-cast-without-getreference
 Source/Scripts/MGRDestructionBook02ActivatorScript.psc:6:1:indentation
 Source/Scripts/MGRDestructionBook02ActivatorScript.psc:8:23:forbidden-functions
 Source/Scripts/MGRDestructionBook02ActivatorScript.psc:10:1:unchecked-cast
@@ -81211,6 +81322,7 @@ Source/Scripts/MGRDestructionBook03ActivatorScript.psc:1:72:line-endings
 Source/Scripts/MGRDestructionBook03ActivatorScript.psc:5:1:argument-naming
 Source/Scripts/MGRDestructionBook03ActivatorScript.psc:5:1:function-length
 Source/Scripts/MGRDestructionBook03ActivatorScript.psc:5:1:function-override
+Source/Scripts/MGRDestructionBook03ActivatorScript.psc:7:1:alias-cast-without-getreference
 Source/Scripts/MGRDestructionBook03ActivatorScript.psc:7:1:indentation
 Source/Scripts/MGRDestructionBook03ActivatorScript.psc:9:23:forbidden-functions
 Source/Scripts/MGRDestructionBook03ActivatorScript.psc:11:1:unchecked-cast
@@ -84433,6 +84545,7 @@ Source/Scripts/MQKillDragonScript.psc:211:1:indentation
 Source/Scripts/MQKillDragonScript.psc:212:1:none-form-usage
 Source/Scripts/MQKillDragonScript.psc:214:1:trailing-whitespace
 Source/Scripts/MQKillDragonScript.psc:215:14:forbidden-functions
+Source/Scripts/MQKillDragonScript.psc:216:1:alias-cast-without-getreference
 Source/Scripts/MQKillDragonScript.psc:217:1:unchecked-cast
 Source/Scripts/MQKillDragonScript.psc:220:1:none-form-usage
 Source/Scripts/MQKillDragonScript.psc:229:1:none-form-usage
@@ -84485,6 +84598,7 @@ Source/Scripts/MQKillDragonScript.psc:362:1:none-form-usage
 Source/Scripts/MQKillDragonScript.psc:362:44:trailing-whitespace
 Source/Scripts/MQKillDragonScript.psc:363:1:none-form-usage
 Source/Scripts/MQKillDragonScript.psc:363:49:trailing-whitespace
+Source/Scripts/MQKillDragonScript.psc:365:1:alias-cast-without-getreference
 Source/Scripts/MQKillDragonScript.psc:366:1:unchecked-cast
 Source/Scripts/MQKillDragonScript.psc:367:1:none-form-usage
 Source/Scripts/MQKillDragonScript.psc:369:1:trailing-whitespace
@@ -84593,6 +84707,7 @@ Source/Scripts/MQResurrectLoadTracker.psc:5:1:empty-event-handler
 Source/Scripts/MQResurrectLoadTracker.psc:5:1:function-override
 Source/Scripts/MQResurrectLoadTracker.psc:6:1:indentation
 Source/Scripts/MQResurrectLoadTracker.psc:9:1:function-override
+Source/Scripts/MQResurrectLoadTracker.psc:11:1:alias-cast-without-getreference
 Source/Scripts/MQResurrectLoadTracker.psc:11:1:unchecked-cast
 Source/Scripts/MQResurrectLoadTracker.psc:13:9:final-newline
 Source/Scripts/MQShoutTrigger.psc:1:50:trailing-whitespace
@@ -86146,6 +86261,7 @@ Source/Scripts/MS11InvestigateKillTriggerScript.psc:5:1:function-override
 Source/Scripts/MS11InvestigateKillTriggerScript.psc:5:1:identifier-casing
 Source/Scripts/MS11InvestigateKillTriggerScript.psc:6:1:indentation
 Source/Scripts/MS11InvestigateKillTriggerScript.psc:8:1:none-form-usage
+Source/Scripts/MS11InvestigateKillTriggerScript.psc:9:1:alias-cast-without-getreference
 Source/Scripts/MS11InvestigateKillTriggerScript.psc:9:1:unchecked-cast
 Source/Scripts/MS11InvestigateKillTriggerScript.psc:14:1:final-newline
 Source/Scripts/MS11InvestigateTriggerScript.psc:1:63:trailing-whitespace
@@ -86350,6 +86466,7 @@ Source/Scripts/MS12PostQuestScript.psc:47:1:identifier-casing
 Source/Scripts/MS12PostQuestScript.psc:48:1:indentation
 Source/Scripts/MS12PostQuestScript.psc:49:11:forbidden-functions
 Source/Scripts/MS12PostQuestScript.psc:50:1:none-form-usage
+Source/Scripts/MS12PostQuestScript.psc:52:1:alias-cast-without-getreference
 Source/Scripts/MS12PostQuestScript.psc:52:1:unchecked-cast
 Source/Scripts/MS12PostQuestScript.psc:54:1:final-newline
 Source/Scripts/MS12QuestScript.psc:1:53:line-endings
@@ -86384,6 +86501,7 @@ Source/Scripts/MS12WhitePhialEffectScript.psc:9:1:identifier-casing
 Source/Scripts/MS12WhitePhialEffectScript.psc:9:1:identifier-casing
 Source/Scripts/MS12WhitePhialEffectScript.psc:10:1:indentation
 Source/Scripts/MS12WhitePhialEffectScript.psc:10:11:forbidden-functions
+Source/Scripts/MS12WhitePhialEffectScript.psc:12:1:alias-cast-without-getreference
 Source/Scripts/MS12WhitePhialEffectScript.psc:12:1:indentation
 Source/Scripts/MS12WhitePhialEffectScript.psc:12:1:unchecked-cast
 Source/Scripts/MS12WhitePhialScript.psc:1:55:trailing-whitespace
@@ -94456,7 +94574,9 @@ Source/Scripts/QF_CWCampaign_0001C4A1.psc:374:1:useless-downcast
 Source/Scripts/QF_CWCampaign_0001C4A1.psc:389:121:line-length
 Source/Scripts/QF_CWCampaign_0001C4A1.psc:390:121:line-length
 Source/Scripts/QF_CWCampaign_0001C4A1.psc:391:121:line-length
+Source/Scripts/QF_CWCampaign_0001C4A1.psc:392:1:alias-cast-without-getreference
 Source/Scripts/QF_CWCampaign_0001C4A1.psc:392:1:unchecked-cast
+Source/Scripts/QF_CWCampaign_0001C4A1.psc:393:1:alias-cast-without-getreference
 Source/Scripts/QF_CWCampaign_0001C4A1.psc:393:1:unchecked-cast
 Source/Scripts/QF_CWCitizensFlee_0006434A.psc:1:77:line-endings
 Source/Scripts/QF_CWCitizensFlee_0006434A.psc:3:12:type-casing
@@ -94924,7 +95044,9 @@ Source/Scripts/QF_CWFortSiegeFort_00083042.psc:1197:121:line-length
 Source/Scripts/QF_CWFortSiegeFort_00083042.psc:1201:1:none-form-usage
 Source/Scripts/QF_CWFortSiegeFort_00083042.psc:1202:1:none-form-usage
 Source/Scripts/QF_CWFortSiegeFort_00083042.psc:1205:1:none-form-usage
+Source/Scripts/QF_CWFortSiegeFort_00083042.psc:1213:1:alias-cast-without-getreference
 Source/Scripts/QF_CWFortSiegeFort_00083042.psc:1213:1:unchecked-cast
+Source/Scripts/QF_CWFortSiegeFort_00083042.psc:1214:1:alias-cast-without-getreference
 Source/Scripts/QF_CWFortSiegeFort_00083042.psc:1214:1:unchecked-cast
 Source/Scripts/QF_CWFortSiegeFort_00083042.psc:1224:1:useless-downcast
 Source/Scripts/QF_CWFortSiegeFort_00083042.psc:1230:121:line-length
@@ -94937,7 +95059,9 @@ Source/Scripts/QF_CWFortSiegeFort_00083042.psc:1240:1:none-form-usage
 Source/Scripts/QF_CWFortSiegeFort_00083042.psc:1248:1:useless-downcast
 Source/Scripts/QF_CWFortSiegeFort_00083042.psc:1257:1:none-form-usage
 Source/Scripts/QF_CWFortSiegeFort_00083042.psc:1258:1:none-form-usage
+Source/Scripts/QF_CWFortSiegeFort_00083042.psc:1265:1:alias-cast-without-getreference
 Source/Scripts/QF_CWFortSiegeFort_00083042.psc:1265:1:unchecked-cast
+Source/Scripts/QF_CWFortSiegeFort_00083042.psc:1266:1:alias-cast-without-getreference
 Source/Scripts/QF_CWFortSiegeFort_00083042.psc:1266:1:unchecked-cast
 Source/Scripts/QF_CWFortSiegeFort_00083042.psc:1269:6:forbidden-functions
 Source/Scripts/QF_CWFortSiegeFort_00083042.psc:1299:1:unchecked-cast
@@ -95036,7 +95160,9 @@ Source/Scripts/QF_CWFortSiegeFort_00083042.psc:1525:1:none-form-usage
 Source/Scripts/QF_CWFortSiegeFort_00083042.psc:1528:1:none-form-usage
 Source/Scripts/QF_CWFortSiegeFort_00083042.psc:1532:1:none-form-usage
 Source/Scripts/QF_CWFortSiegeFort_00083042.psc:1533:1:none-form-usage
+Source/Scripts/QF_CWFortSiegeFort_00083042.psc:1537:1:alias-cast-without-getreference
 Source/Scripts/QF_CWFortSiegeFort_00083042.psc:1537:1:unchecked-cast
+Source/Scripts/QF_CWFortSiegeFort_00083042.psc:1538:1:alias-cast-without-getreference
 Source/Scripts/QF_CWFortSiegeFort_00083042.psc:1538:1:unchecked-cast
 Source/Scripts/QF_CWFortSiegeFort_00083042.psc:1545:1:unchecked-cast
 Source/Scripts/QF_CWFortSiegeFort_00083042.psc:1545:1:unchecked-cast
@@ -95228,7 +95354,9 @@ Source/Scripts/QF_CWFortSiege_00087C21.psc:1087:25:unused-property
 Source/Scripts/QF_CWFortSiege_00087C21.psc:1098:1:useless-downcast
 Source/Scripts/QF_CWFortSiege_00087C21.psc:1107:1:none-form-usage
 Source/Scripts/QF_CWFortSiege_00087C21.psc:1108:1:none-form-usage
+Source/Scripts/QF_CWFortSiege_00087C21.psc:1115:1:alias-cast-without-getreference
 Source/Scripts/QF_CWFortSiege_00087C21.psc:1115:1:unchecked-cast
+Source/Scripts/QF_CWFortSiege_00087C21.psc:1116:1:alias-cast-without-getreference
 Source/Scripts/QF_CWFortSiege_00087C21.psc:1116:1:unchecked-cast
 Source/Scripts/QF_CWFortSiege_00087C21.psc:1119:6:forbidden-functions
 Source/Scripts/QF_CWFortSiege_00087C21.psc:1149:1:unchecked-cast
@@ -95280,7 +95408,9 @@ Source/Scripts/QF_CWFortSiege_00087C21.psc:1283:1:none-form-usage
 Source/Scripts/QF_CWFortSiege_00087C21.psc:1286:1:none-form-usage
 Source/Scripts/QF_CWFortSiege_00087C21.psc:1290:1:none-form-usage
 Source/Scripts/QF_CWFortSiege_00087C21.psc:1291:1:none-form-usage
+Source/Scripts/QF_CWFortSiege_00087C21.psc:1295:1:alias-cast-without-getreference
 Source/Scripts/QF_CWFortSiege_00087C21.psc:1295:1:unchecked-cast
+Source/Scripts/QF_CWFortSiege_00087C21.psc:1296:1:alias-cast-without-getreference
 Source/Scripts/QF_CWFortSiege_00087C21.psc:1296:1:unchecked-cast
 Source/Scripts/QF_CWFortSiege_00087C21.psc:1304:1:unchecked-cast
 Source/Scripts/QF_CWFortSiege_00087C21.psc:1304:1:unchecked-cast
@@ -95356,7 +95486,9 @@ Source/Scripts/QF_CWFortSiege_00087C21.psc:1465:121:line-length
 Source/Scripts/QF_CWFortSiege_00087C21.psc:1469:1:none-form-usage
 Source/Scripts/QF_CWFortSiege_00087C21.psc:1470:1:none-form-usage
 Source/Scripts/QF_CWFortSiege_00087C21.psc:1473:1:none-form-usage
+Source/Scripts/QF_CWFortSiege_00087C21.psc:1481:1:alias-cast-without-getreference
 Source/Scripts/QF_CWFortSiege_00087C21.psc:1481:1:unchecked-cast
+Source/Scripts/QF_CWFortSiege_00087C21.psc:1482:1:alias-cast-without-getreference
 Source/Scripts/QF_CWFortSiege_00087C21.psc:1482:1:unchecked-cast
 Source/Scripts/QF_CWFortSiege_00087C21.psc:1492:1:useless-downcast
 Source/Scripts/QF_CWFortSiege_00087C21.psc:1496:1:unchecked-cast
@@ -95920,6 +96052,7 @@ Source/Scripts/QF_CWMission07_000504F0.psc:167:25:unused-property
 Source/Scripts/QF_CWMission07_000504F0.psc:172:25:unused-property
 Source/Scripts/QF_CWMission07_000504F0.psc:202:25:unused-property
 Source/Scripts/QF_CWMission07_000504F0.psc:213:1:useless-downcast
+Source/Scripts/QF_CWMission07_000504F0.psc:220:1:alias-cast-without-getreference
 Source/Scripts/QF_CWMission07_000504F0.psc:220:1:unchecked-cast
 Source/Scripts/QF_CWMission07_000504F0.psc:222:1:none-form-usage
 Source/Scripts/QF_CWMission07_000504F0.psc:222:1:none-form-usage
@@ -95977,6 +96110,7 @@ Source/Scripts/QF_CWMission07_000504F0.psc:431:1:none-form-usage
 Source/Scripts/QF_CWMission07_000504F0.psc:432:1:none-form-usage
 Source/Scripts/QF_CWMission07_000504F0.psc:433:1:none-form-usage
 Source/Scripts/QF_CWMission07_000504F0.psc:450:1:none-form-usage
+Source/Scripts/QF_CWMission07_000504F0.psc:454:1:alias-cast-without-getreference
 Source/Scripts/QF_CWMission07_000504F0.psc:454:1:unchecked-cast
 Source/Scripts/QF_CWMission07_000504F0.psc:462:1:useless-downcast
 Source/Scripts/QF_CWMission07_000504F0.psc:474:1:none-form-usage
@@ -98142,6 +98276,7 @@ Source/Scripts/QF_CWSiege_000954E1.psc:2733:1:none-form-usage
 Source/Scripts/QF_CWSiege_000954E1.psc:2735:1:indentation
 Source/Scripts/QF_CWSiege_000954E1.psc:2735:92:trailing-whitespace
 Source/Scripts/QF_CWSiege_000954E1.psc:2736:1:indentation
+Source/Scripts/QF_CWSiege_000954E1.psc:2737:1:alias-cast-without-getreference
 Source/Scripts/QF_CWSiege_000954E1.psc:2737:1:indentation
 Source/Scripts/QF_CWSiege_000954E1.psc:2737:1:unchecked-cast
 Source/Scripts/QF_CWSiege_000954E1.psc:2740:1:indentation
@@ -98428,9 +98563,11 @@ Source/Scripts/QF_CWSiege_000954E1.psc:2983:1:none-form-usage
 Source/Scripts/QF_CWSiege_000954E1.psc:2984:1:trailing-whitespace
 Source/Scripts/QF_CWSiege_000954E1.psc:2985:1:trailing-whitespace
 Source/Scripts/QF_CWSiege_000954E1.psc:2986:1:indentation
+Source/Scripts/QF_CWSiege_000954E1.psc:2987:1:alias-cast-without-getreference
 Source/Scripts/QF_CWSiege_000954E1.psc:2987:1:indentation
 Source/Scripts/QF_CWSiege_000954E1.psc:2987:1:unchecked-cast
 Source/Scripts/QF_CWSiege_000954E1.psc:2988:1:indentation
+Source/Scripts/QF_CWSiege_000954E1.psc:2989:1:alias-cast-without-getreference
 Source/Scripts/QF_CWSiege_000954E1.psc:2989:1:indentation
 Source/Scripts/QF_CWSiege_000954E1.psc:2989:1:unchecked-cast
 Source/Scripts/QF_CWSiege_000954E1.psc:2990:1:indentation
@@ -98702,7 +98839,9 @@ Source/Scripts/QF_CWSiege_000954E1.psc:3344:1:none-form-usage
 Source/Scripts/QF_CWSiege_000954E1.psc:3345:1:none-form-usage
 Source/Scripts/QF_CWSiege_000954E1.psc:3346:1:none-form-usage
 Source/Scripts/QF_CWSiege_000954E1.psc:3346:1:place-at-me
+Source/Scripts/QF_CWSiege_000954E1.psc:3354:1:alias-cast-without-getreference
 Source/Scripts/QF_CWSiege_000954E1.psc:3354:1:unchecked-cast
+Source/Scripts/QF_CWSiege_000954E1.psc:3359:1:alias-cast-without-getreference
 Source/Scripts/QF_CWSiege_000954E1.psc:3359:1:unchecked-cast
 Source/Scripts/QF_CWSiege_000954E1.psc:3364:1:unnecessary-function
 Source/Scripts/QF_CWSiege_000954E1.psc:3367:1:none-form-usage
@@ -98712,7 +98851,9 @@ Source/Scripts/QF_CWSiege_000954E1.psc:3368:1:none-form-usage
 Source/Scripts/QF_CWSiege_000954E1.psc:3369:1:none-form-usage
 Source/Scripts/QF_CWSiege_000954E1.psc:3370:1:none-form-usage
 Source/Scripts/QF_CWSiege_000954E1.psc:3370:1:place-at-me
+Source/Scripts/QF_CWSiege_000954E1.psc:3379:1:alias-cast-without-getreference
 Source/Scripts/QF_CWSiege_000954E1.psc:3379:1:unchecked-cast
+Source/Scripts/QF_CWSiege_000954E1.psc:3384:1:alias-cast-without-getreference
 Source/Scripts/QF_CWSiege_000954E1.psc:3384:1:unchecked-cast
 Source/Scripts/QF_CWSiege_000954E1.psc:3385:1:none-form-usage
 Source/Scripts/QF_CWSiege_000954E1.psc:3385:1:none-form-usage
@@ -99071,7 +99212,9 @@ Source/Scripts/QF_CWSiege_000954E1.psc:3906:121:line-length
 Source/Scripts/QF_CWSiege_000954E1.psc:3907:1:none-form-usage
 Source/Scripts/QF_CWSiege_000954E1.psc:3908:1:none-form-usage
 Source/Scripts/QF_CWSiege_000954E1.psc:3908:1:place-at-me
+Source/Scripts/QF_CWSiege_000954E1.psc:3918:1:alias-cast-without-getreference
 Source/Scripts/QF_CWSiege_000954E1.psc:3918:1:unchecked-cast
+Source/Scripts/QF_CWSiege_000954E1.psc:3923:1:alias-cast-without-getreference
 Source/Scripts/QF_CWSiege_000954E1.psc:3923:1:unchecked-cast
 Source/Scripts/QF_CWSiege_000954E1.psc:3928:1:unnecessary-function
 Source/Scripts/QF_CWSiege_000954E1.psc:3931:1:none-form-usage
@@ -100086,6 +100229,7 @@ Source/Scripts/QF_DA02_0004D8D6.psc:661:26:forbidden-functions
 Source/Scripts/QF_DA02_0004D8D6.psc:669:1:useless-downcast
 Source/Scripts/QF_DA02_0004D8D6.psc:686:1:useless-downcast
 Source/Scripts/QF_DA02_0004D8D6.psc:703:1:useless-downcast
+Source/Scripts/QF_DA02_0004D8D6.psc:710:1:alias-cast-without-getreference
 Source/Scripts/QF_DA02_0004D8D6.psc:710:1:unchecked-cast
 Source/Scripts/QF_DA02_0004D8D6.psc:718:1:useless-downcast
 Source/Scripts/QF_DA02_0004D8D6.psc:726:1:none-form-usage
@@ -100093,9 +100237,11 @@ Source/Scripts/QF_DA02_0004D8D6.psc:728:1:none-form-usage
 Source/Scripts/QF_DA02_0004D8D6.psc:728:56:forbidden-functions
 Source/Scripts/QF_DA02_0004D8D6.psc:729:1:none-form-usage
 Source/Scripts/QF_DA02_0004D8D6.psc:729:1:none-form-usage
+Source/Scripts/QF_DA02_0004D8D6.psc:731:1:alias-cast-without-getreference
 Source/Scripts/QF_DA02_0004D8D6.psc:731:1:unchecked-cast
 Source/Scripts/QF_DA02_0004D8D6.psc:739:1:useless-downcast
 Source/Scripts/QF_DA02_0004D8D6.psc:746:1:none-form-usage
+Source/Scripts/QF_DA02_0004D8D6.psc:747:1:alias-cast-without-getreference
 Source/Scripts/QF_DA02_0004D8D6.psc:747:1:unchecked-cast
 Source/Scripts/QF_DA02_0004D8D6.psc:752:1:semicolon
 Source/Scripts/QF_DA02_0004D8D6.psc:763:1:useless-downcast
@@ -100304,6 +100450,7 @@ Source/Scripts/QF_DA05_0002A49A.psc:208:1:none-form-usage
 Source/Scripts/QF_DA05_0002A49A.psc:210:1:none-form-usage
 Source/Scripts/QF_DA05_0002A49A.psc:211:1:none-form-usage
 Source/Scripts/QF_DA05_0002A49A.psc:212:1:none-form-usage
+Source/Scripts/QF_DA05_0002A49A.psc:213:1:alias-cast-without-getreference
 Source/Scripts/QF_DA05_0002A49A.psc:213:1:unchecked-cast
 Source/Scripts/QF_DA05_0002A49A.psc:214:1:none-form-usage
 Source/Scripts/QF_DA05_0002A49A.psc:215:1:none-form-usage
@@ -100717,11 +100864,16 @@ Source/Scripts/QF_DA08_0004A37B.psc:47:25:unused-property
 Source/Scripts/QF_DA08_0004A37B.psc:52:25:unused-property
 Source/Scripts/QF_DA08_0004A37B.psc:57:25:unused-property
 Source/Scripts/QF_DA08_0004A37B.psc:77:25:unused-property
+Source/Scripts/QF_DA08_0004A37B.psc:87:1:alias-cast-without-getreference
 Source/Scripts/QF_DA08_0004A37B.psc:87:1:unchecked-cast
+Source/Scripts/QF_DA08_0004A37B.psc:88:1:alias-cast-without-getreference
 Source/Scripts/QF_DA08_0004A37B.psc:88:1:unchecked-cast
 Source/Scripts/QF_DA08_0004A37B.psc:98:1:trailing-whitespace
+Source/Scripts/QF_DA08_0004A37B.psc:99:1:alias-cast-without-getreference
 Source/Scripts/QF_DA08_0004A37B.psc:99:1:unchecked-cast
+Source/Scripts/QF_DA08_0004A37B.psc:100:1:alias-cast-without-getreference
 Source/Scripts/QF_DA08_0004A37B.psc:100:1:unchecked-cast
+Source/Scripts/QF_DA08_0004A37B.psc:108:1:alias-cast-without-getreference
 Source/Scripts/QF_DA08_0004A37B.psc:108:1:unchecked-cast
 Source/Scripts/QF_DA08_0004A37B.psc:119:1:none-form-usage
 Source/Scripts/QF_DA08_0004A37B.psc:120:1:none-form-usage
@@ -101298,6 +101450,7 @@ Source/Scripts/QF_DA13_0008998D.psc:101:1:indentation
 Source/Scripts/QF_DA13_0008998D.psc:101:1:none-form-usage
 Source/Scripts/QF_DA13_0008998D.psc:150:1:none-form-usage
 Source/Scripts/QF_DA13_0008998D.psc:178:1:useless-downcast
+Source/Scripts/QF_DA13_0008998D.psc:188:1:alias-cast-without-getreference
 Source/Scripts/QF_DA13_0008998D.psc:188:1:identifier-casing
 Source/Scripts/QF_DA13_0008998D.psc:189:1:unchecked-cast
 Source/Scripts/QF_DA13_0008998D.psc:198:1:none-form-usage
@@ -111638,9 +111791,13 @@ Source/Scripts/QF_MQ104B_0002610C.psc:329:1:none-form-usage
 Source/Scripts/QF_MQ104B_0002610C.psc:351:1:none-form-usage
 Source/Scripts/QF_MQ104B_0002610C.psc:352:1:none-form-usage
 Source/Scripts/QF_MQ104B_0002610C.psc:353:1:none-form-usage
+Source/Scripts/QF_MQ104B_0002610C.psc:355:1:alias-cast-without-getreference
 Source/Scripts/QF_MQ104B_0002610C.psc:355:1:unchecked-cast
+Source/Scripts/QF_MQ104B_0002610C.psc:356:1:alias-cast-without-getreference
 Source/Scripts/QF_MQ104B_0002610C.psc:356:1:unchecked-cast
+Source/Scripts/QF_MQ104B_0002610C.psc:357:1:alias-cast-without-getreference
 Source/Scripts/QF_MQ104B_0002610C.psc:357:1:unchecked-cast
+Source/Scripts/QF_MQ104B_0002610C.psc:358:1:alias-cast-without-getreference
 Source/Scripts/QF_MQ104B_0002610C.psc:358:1:unchecked-cast
 Source/Scripts/QF_MQ104B_0002610C.psc:363:1:none-form-usage
 Source/Scripts/QF_MQ104B_0002610C.psc:365:1:none-form-usage
@@ -111650,11 +111807,17 @@ Source/Scripts/QF_MQ104B_0002610C.psc:377:1:none-form-usage
 Source/Scripts/QF_MQ104B_0002610C.psc:378:1:none-form-usage
 Source/Scripts/QF_MQ104B_0002610C.psc:379:1:none-form-usage
 Source/Scripts/QF_MQ104B_0002610C.psc:382:1:none-form-usage
+Source/Scripts/QF_MQ104B_0002610C.psc:386:1:alias-cast-without-getreference
 Source/Scripts/QF_MQ104B_0002610C.psc:386:1:unchecked-cast
+Source/Scripts/QF_MQ104B_0002610C.psc:387:1:alias-cast-without-getreference
 Source/Scripts/QF_MQ104B_0002610C.psc:387:1:unchecked-cast
+Source/Scripts/QF_MQ104B_0002610C.psc:389:1:alias-cast-without-getreference
 Source/Scripts/QF_MQ104B_0002610C.psc:389:1:unchecked-cast
+Source/Scripts/QF_MQ104B_0002610C.psc:390:1:alias-cast-without-getreference
 Source/Scripts/QF_MQ104B_0002610C.psc:390:1:unchecked-cast
+Source/Scripts/QF_MQ104B_0002610C.psc:391:1:alias-cast-without-getreference
 Source/Scripts/QF_MQ104B_0002610C.psc:391:1:unchecked-cast
+Source/Scripts/QF_MQ104B_0002610C.psc:392:1:alias-cast-without-getreference
 Source/Scripts/QF_MQ104B_0002610C.psc:392:1:unchecked-cast
 Source/Scripts/QF_MQ104B_0002610C.psc:409:1:none-form-usage
 Source/Scripts/QF_MQ104B_0002610C.psc:420:1:none-form-usage
@@ -112505,6 +112668,7 @@ Source/Scripts/QF_MQ202_00036191.psc:276:1:none-form-usage
 Source/Scripts/QF_MQ202_00036191.psc:278:1:none-form-usage
 Source/Scripts/QF_MQ202_00036191.psc:280:1:none-form-usage
 Source/Scripts/QF_MQ202_00036191.psc:281:1:none-form-usage
+Source/Scripts/QF_MQ202_00036191.psc:283:1:alias-cast-without-getreference
 Source/Scripts/QF_MQ202_00036191.psc:283:1:unchecked-cast
 Source/Scripts/QF_MQ202_00036191.psc:297:1:none-form-usage
 Source/Scripts/QF_MQ202_00036191.psc:298:1:none-form-usage
@@ -113606,6 +113770,7 @@ Source/Scripts/QF_MQ305_00046EF2.psc:82:25:unused-property
 Source/Scripts/QF_MQ305_00046EF2.psc:88:18:trailing-whitespace
 Source/Scripts/QF_MQ305_00046EF2.psc:98:1:none-form-usage
 Source/Scripts/QF_MQ305_00046EF2.psc:99:1:none-form-usage
+Source/Scripts/QF_MQ305_00046EF2.psc:101:1:alias-cast-without-getreference
 Source/Scripts/QF_MQ305_00046EF2.psc:102:1:unchecked-cast
 Source/Scripts/QF_MQ305_00046EF2.psc:132:1:none-form-usage
 Source/Scripts/QF_MQ305_00046EF2.psc:133:1:none-form-usage
@@ -113852,6 +114017,7 @@ Source/Scripts/QF_MQResurrectDragon_000B3991.psc:204:1:none-form-usage
 Source/Scripts/QF_MQResurrectDragon_000B3991.psc:204:1:unchecked-cast
 Source/Scripts/QF_MQResurrectDragon_000B3991.psc:204:29:forbidden-functions
 Source/Scripts/QF_MQResurrectDragon_000B3991.psc:213:1:none-form-usage
+Source/Scripts/QF_MQResurrectDragon_000B3991.psc:214:1:alias-cast-without-getreference
 Source/Scripts/QF_MQResurrectDragon_000B3991.psc:214:1:unchecked-cast
 Source/Scripts/QF_MQResurrectDragon_000B3991.psc:224:1:none-form-usage
 Source/Scripts/QF_MQResurrectDragon_000B3991.psc:225:1:none-form-usage
@@ -113859,6 +114025,7 @@ Source/Scripts/QF_MQResurrectDragon_000B3991.psc:234:1:none-form-usage
 Source/Scripts/QF_MQResurrectDragon_000B3991.psc:235:1:none-form-usage
 Source/Scripts/QF_MQResurrectDragon_000B3991.psc:244:1:none-form-usage
 Source/Scripts/QF_MQResurrectDragon_000B3991.psc:245:1:none-form-usage
+Source/Scripts/QF_MQResurrectDragon_000B3991.psc:254:1:alias-cast-without-getreference
 Source/Scripts/QF_MQResurrectDragon_000B3991.psc:254:1:unchecked-cast
 Source/Scripts/QF_MQResurrectDragon_000B3991.psc:257:1:none-form-usage
 Source/Scripts/QF_MQResurrectDragon_000B3991.psc:258:1:none-form-usage
@@ -113889,6 +114056,7 @@ Source/Scripts/QF_MQResurrectDragon_000B3991.psc:281:1:none-form-usage
 Source/Scripts/QF_MQResurrectDragon_000B3991.psc:298:1:none-form-usage
 Source/Scripts/QF_MQResurrectDragon_000B3991.psc:298:1:unchecked-cast
 Source/Scripts/QF_MQResurrectDragon_000B3991.psc:298:29:forbidden-functions
+Source/Scripts/QF_MQResurrectDragon_000B3991.psc:308:1:alias-cast-without-getreference
 Source/Scripts/QF_MQResurrectDragon_000B3991.psc:308:1:unchecked-cast
 Source/Scripts/QF_MQResurrectDragon_000B3991.psc:311:1:none-form-usage
 Source/Scripts/QF_MQResurrectDragon_000B3991.psc:312:1:none-form-usage
@@ -115124,6 +115292,7 @@ Source/Scripts/QF_MS05_dunDeadMensRespiteQST_00016C8D.psc:402:1:none-form-usage
 Source/Scripts/QF_MS05_dunDeadMensRespiteQST_00016C8D.psc:402:1:unchecked-cast
 Source/Scripts/QF_MS05_dunDeadMensRespiteQST_00016C8D.psc:403:1:none-form-usage
 Source/Scripts/QF_MS05_dunDeadMensRespiteQST_00016C8D.psc:404:1:none-form-usage
+Source/Scripts/QF_MS05_dunDeadMensRespiteQST_00016C8D.psc:413:1:alias-cast-without-getreference
 Source/Scripts/QF_MS05_dunDeadMensRespiteQST_00016C8D.psc:413:1:unchecked-cast
 Source/Scripts/QF_MS05_dunDeadMensRespiteQST_00016C8D.psc:414:1:none-form-usage
 Source/Scripts/QF_MS05_dunDeadMensRespiteQST_00016C8D.psc:414:1:none-form-usage
@@ -120372,6 +120541,7 @@ Source/Scripts/QF_WE32_000B80F3.psc:37:24:unused-property
 Source/Scripts/QF_WE32_000B80F3.psc:42:24:unused-property
 Source/Scripts/QF_WE32_000B80F3.psc:57:24:unused-property
 Source/Scripts/QF_WE32_000B80F3.psc:63:1:useless-downcast
+Source/Scripts/QF_WE32_000B80F3.psc:68:1:alias-cast-without-getreference
 Source/Scripts/QF_WE32_000B80F3.psc:68:1:unchecked-cast
 Source/Scripts/QF_WE32_000B80F3.psc:71:1:none-form-usage
 Source/Scripts/QF_WE32_000B80F3.psc:71:1:unchecked-cast
@@ -122151,11 +122321,15 @@ Source/Scripts/QF_WICraftItem03_0009BB27.psc:22:121:line-length
 Source/Scripts/QF_WICrowd_0006F8F2.psc:1:77:line-endings
 Source/Scripts/QF_WICrowd_0006F8F2.psc:3:12:type-casing
 Source/Scripts/QF_WICrowd_0006F8F2.psc:87:25:unused-property
+Source/Scripts/QF_WICrowd_0006F8F2.psc:123:1:alias-cast-without-getreference
 Source/Scripts/QF_WICrowd_0006F8F2.psc:123:1:unchecked-cast
 Source/Scripts/QF_WICrowd_0006F8F2.psc:124:1:none-form-usage
+Source/Scripts/QF_WICrowd_0006F8F2.psc:132:1:alias-cast-without-getreference
 Source/Scripts/QF_WICrowd_0006F8F2.psc:132:1:unchecked-cast
 Source/Scripts/QF_WICrowd_0006F8F2.psc:132:121:line-length
+Source/Scripts/QF_WICrowd_0006F8F2.psc:133:1:alias-cast-without-getreference
 Source/Scripts/QF_WICrowd_0006F8F2.psc:133:1:unchecked-cast
+Source/Scripts/QF_WICrowd_0006F8F2.psc:134:1:alias-cast-without-getreference
 Source/Scripts/QF_WICrowd_0006F8F2.psc:134:1:unchecked-cast
 Source/Scripts/QF_WIDeadBody01_0003833C.psc:1:77:line-endings
 Source/Scripts/QF_WIDeadBody01_0003833C.psc:3:12:type-casing
@@ -122464,6 +122638,7 @@ Source/Scripts/QF_ccBGSSSE001_Crab_MQ1_050009D4.psc:12:25:unused-property
 Source/Scripts/QF_ccBGSSSE001_Crab_MQ1_050009D4.psc:27:25:unused-property
 Source/Scripts/QF_ccBGSSSE001_Crab_MQ1_050009D4.psc:32:25:unused-property
 Source/Scripts/QF_ccBGSSSE001_Crab_MQ1_050009D4.psc:38:1:none-form-usage
+Source/Scripts/QF_ccBGSSSE001_Crab_MQ1_050009D4.psc:50:1:alias-cast-without-getreference
 Source/Scripts/QF_ccBGSSSE001_Crab_MQ1_050009D4.psc:50:1:unchecked-cast
 Source/Scripts/QF_ccBGSSSE001_Crab_MQ1_050009D4.psc:71:1:none-form-usage
 Source/Scripts/QF_ccBGSSSE001_Crab_MQ1_050009D4.psc:78:21:unused-property
@@ -122846,6 +123021,7 @@ Source/Scripts/QF_ccBGSSSE001_Fish_MQ1_050009DE.psc:49:1:none-form-usage
 Source/Scripts/QF_ccBGSSSE001_Fish_MQ1_050009DE.psc:51:1:none-form-usage
 Source/Scripts/QF_ccBGSSSE001_Fish_MQ1_050009DE.psc:61:9:forbidden-functions
 Source/Scripts/QF_ccBGSSSE001_Fish_MQ1_050009DE.psc:64:1:none-form-usage
+Source/Scripts/QF_ccBGSSSE001_Fish_MQ1_050009DE.psc:66:1:alias-cast-without-getreference
 Source/Scripts/QF_ccBGSSSE001_Fish_MQ1_050009DE.psc:66:1:unchecked-cast
 Source/Scripts/QF_ccBGSSSE001_Fish_MQ1_050009DE.psc:73:1:identifier-casing
 Source/Scripts/QF_ccBGSSSE001_Fish_MQ1_050009DE.psc:73:29:trailing-whitespace
@@ -122857,6 +123033,7 @@ Source/Scripts/QF_ccBGSSSE001_Fish_MQ2_050009EB.psc:1:77:line-endings
 Source/Scripts/QF_ccBGSSSE001_Fish_MQ2_050009EB.psc:3:12:type-casing
 Source/Scripts/QF_ccBGSSSE001_Fish_MQ2_050009EB.psc:22:25:unused-property
 Source/Scripts/QF_ccBGSSSE001_Fish_MQ2_050009EB.psc:39:9:forbidden-functions
+Source/Scripts/QF_ccBGSSSE001_Fish_MQ2_050009EB.psc:43:1:alias-cast-without-getreference
 Source/Scripts/QF_ccBGSSSE001_Fish_MQ2_050009EB.psc:43:1:unchecked-cast
 Source/Scripts/QF_ccBGSSSE001_Fish_MQ2_050009EB.psc:52:1:none-form-usage
 Source/Scripts/QF_ccBGSSSE001_Fish_MQ2_050009EB.psc:53:1:none-form-usage
@@ -122867,6 +123044,7 @@ Source/Scripts/QF_ccBGSSSE001_Fish_MQ2_050009EB.psc:67:1:none-form-usage
 Source/Scripts/QF_ccBGSSSE001_Fish_MQ2_050009EB.psc:68:1:none-form-usage
 Source/Scripts/QF_ccBGSSSE001_Fish_MQ2_050009EB.psc:69:1:none-form-usage
 Source/Scripts/QF_ccBGSSSE001_Fish_MQ2_050009EB.psc:80:1:none-form-usage
+Source/Scripts/QF_ccBGSSSE001_Fish_MQ2_050009EB.psc:98:1:alias-cast-without-getreference
 Source/Scripts/QF_ccBGSSSE001_Fish_MQ2_050009EB.psc:98:1:unchecked-cast
 Source/Scripts/QF_ccBGSSSE001_Fish_MQ2_050009EB.psc:101:1:none-form-usage
 Source/Scripts/QF_ccBGSSSE001_Fish_MQ2_050009EB.psc:102:1:identifier-casing
@@ -122898,6 +123076,7 @@ Source/Scripts/QF_ccBGSSSE001_Fish_MQ3_050009E8.psc:56:1:indentation
 Source/Scripts/QF_ccBGSSSE001_Fish_MQ3_050009E8.psc:66:1:indentation
 Source/Scripts/QF_ccBGSSSE001_Fish_MQ3_050009E8.psc:67:1:indentation
 Source/Scripts/QF_ccBGSSSE001_Fish_MQ3_050009E8.psc:77:9:forbidden-functions
+Source/Scripts/QF_ccBGSSSE001_Fish_MQ3_050009E8.psc:81:1:alias-cast-without-getreference
 Source/Scripts/QF_ccBGSSSE001_Fish_MQ3_050009E8.psc:81:1:unchecked-cast
 Source/Scripts/QF_ccBGSSSE001_Fish_MQ3_050009E8.psc:89:4:exclamation-spacing
 Source/Scripts/QF_ccBGSSSE001_Fish_MQ3_050009E8.psc:90:1:indentation
@@ -122926,6 +123105,7 @@ Source/Scripts/QF_ccBGSSSE001_Fish_MQ4_050009DD.psc:38:1:none-form-usage
 Source/Scripts/QF_ccBGSSSE001_Fish_MQ4_050009DD.psc:41:1:none-form-usage
 Source/Scripts/QF_ccBGSSSE001_Fish_MQ4_050009DD.psc:51:1:none-form-usage
 Source/Scripts/QF_ccBGSSSE001_Fish_MQ4_050009DD.psc:61:9:forbidden-functions
+Source/Scripts/QF_ccBGSSSE001_Fish_MQ4_050009DD.psc:65:1:alias-cast-without-getreference
 Source/Scripts/QF_ccBGSSSE001_Fish_MQ4_050009DD.psc:65:1:unchecked-cast
 Source/Scripts/QF_ccBGSSSE001_Fish_MQ4_050009DD.psc:72:1:identifier-casing
 Source/Scripts/QF_ccBGSSSE001_Fish_MQ4_050009DD.psc:72:29:trailing-whitespace
@@ -122944,6 +123124,7 @@ Source/Scripts/QF_ccBGSSSE001_Fish_MQ5_050009DC.psc:46:1:identifier-casing
 Source/Scripts/QF_ccBGSSSE001_Fish_MQ5_050009DC.psc:47:1:none-form-usage
 Source/Scripts/QF_ccBGSSSE001_Fish_MQ5_050009DC.psc:50:1:none-form-usage
 Source/Scripts/QF_ccBGSSSE001_Fish_MQ5_050009DC.psc:60:9:forbidden-functions
+Source/Scripts/QF_ccBGSSSE001_Fish_MQ5_050009DC.psc:64:1:alias-cast-without-getreference
 Source/Scripts/QF_ccBGSSSE001_Fish_MQ5_050009DC.psc:64:1:unchecked-cast
 Source/Scripts/QF_ccBGSSSE001_Fish_MQ5_050009DC.psc:79:1:identifier-casing
 Source/Scripts/QF_ccBGSSSE001_Fish_MQ5_050009DC.psc:79:29:trailing-whitespace
@@ -123077,10 +123258,12 @@ Source/Scripts/QF_ccBGSSSE001_Misc_Falkreat_050009EC.psc:37:25:unused-property
 Source/Scripts/QF_ccBGSSSE001_Misc_Falkreat_050009EC.psc:43:6:forbidden-functions
 Source/Scripts/QF_ccBGSSSE001_Misc_Falkreat_050009EC.psc:46:1:none-form-usage
 Source/Scripts/QF_ccBGSSSE001_Misc_Falkreat_050009EC.psc:49:1:none-form-usage
+Source/Scripts/QF_ccBGSSSE001_Misc_Falkreat_050009EC.psc:51:1:alias-cast-without-getreference
 Source/Scripts/QF_ccBGSSSE001_Misc_Falkreat_050009EC.psc:51:1:unchecked-cast
 Source/Scripts/QF_ccBGSSSE001_Misc_Falkreat_050009EC.psc:59:6:forbidden-functions
 Source/Scripts/QF_ccBGSSSE001_Misc_Falkreat_050009EC.psc:62:1:none-form-usage
 Source/Scripts/QF_ccBGSSSE001_Misc_Falkreat_050009EC.psc:65:1:none-form-usage
+Source/Scripts/QF_ccBGSSSE001_Misc_Falkreat_050009EC.psc:67:1:alias-cast-without-getreference
 Source/Scripts/QF_ccBGSSSE001_Misc_Falkreat_050009EC.psc:67:1:unchecked-cast
 Source/Scripts/QF_ccBGSSSE001_Misc_Falkreat_050009EC.psc:78:1:none-form-usage
 Source/Scripts/QF_ccBGSSSE001_Misc_Falkreat_050009EC.psc:87:1:none-form-usage
@@ -123099,6 +123282,7 @@ Source/Scripts/QF_ccBGSSSE001_Misc_Falkreat_050009EC.psc:138:32:exclamation-spac
 Source/Scripts/QF_ccBGSSSE001_Misc_Falkreat_050009EC.psc:139:1:indentation
 Source/Scripts/QF_ccBGSSSE001_Misc_Falkreat_050009EC.psc:153:1:identifier-casing
 Source/Scripts/QF_ccBGSSSE001_Misc_Falkreat_050009EC.psc:153:1:none-form-usage
+Source/Scripts/QF_ccBGSSSE001_Misc_Falkreat_050009EC.psc:162:1:alias-cast-without-getreference
 Source/Scripts/QF_ccBGSSSE001_Misc_Falkreat_050009EC.psc:162:1:unchecked-cast
 Source/Scripts/QF_ccBGSSSE001_Misc_Falkreat_050009EC.psc:164:1:identifier-casing
 Source/Scripts/QF_ccBGSSSE001_Misc_Falkreat_050009EC.psc:164:1:none-form-usage
@@ -123109,6 +123293,7 @@ Source/Scripts/QF_ccBGSSSE001_Misc_Falkreat_050009EC.psc:180:1:none-form-usage
 Source/Scripts/QF_ccBGSSSE001_Misc_Falkreat_050009EC.psc:183:9:forbidden-functions
 Source/Scripts/QF_ccBGSSSE001_Misc_Falkreat_050009EC.psc:185:9:forbidden-functions
 Source/Scripts/QF_ccBGSSSE001_Misc_Falkreat_050009EC.psc:187:1:none-form-usage
+Source/Scripts/QF_ccBGSSSE001_Misc_Falkreat_050009EC.psc:190:1:alias-cast-without-getreference
 Source/Scripts/QF_ccBGSSSE001_Misc_Falkreat_050009EC.psc:190:1:unchecked-cast
 Source/Scripts/QF_ccBGSSSE001_Misc_Falkreat_050009EC.psc:198:1:identifier-casing
 Source/Scripts/QF_ccBGSSSE001_Misc_Falkreat_050009EC.psc:198:21:forbidden-functions
@@ -123254,6 +123439,7 @@ Source/Scripts/QF_ccBGSSSE001_Misc_Solitude_050009E3.psc:87:1:none-form-usage
 Source/Scripts/QF_ccBGSSSE001_Misc_Solitude_050009E3.psc:91:1:identifier-casing
 Source/Scripts/QF_ccBGSSSE001_Misc_Solitude_050009E3.psc:91:1:none-form-usage
 Source/Scripts/QF_ccBGSSSE001_Misc_Solitude_050009E3.psc:102:1:none-form-usage
+Source/Scripts/QF_ccBGSSSE001_Misc_Solitude_050009E3.psc:103:1:alias-cast-without-getreference
 Source/Scripts/QF_ccBGSSSE001_Misc_Solitude_050009E3.psc:103:1:unchecked-cast
 Source/Scripts/QF_ccBGSSSE001_Misc_Solitude_050009E3.psc:111:1:useless-downcast
 Source/Scripts/QF_ccBGSSSE001_Misc_Solitude_050009E3.psc:116:1:none-form-usage
@@ -123284,6 +123470,7 @@ Source/Scripts/QF_ccBGSSSE001_Misc_Whiterun_050009D7.psc:46:1:indentation
 Source/Scripts/QF_ccBGSSSE001_Misc_Whiterun_050009D7.psc:46:1:none-form-usage
 Source/Scripts/QF_ccBGSSSE001_Misc_Whiterun_050009D7.psc:47:1:indentation
 Source/Scripts/QF_ccBGSSSE001_Misc_Whiterun_050009D7.psc:50:1:indentation
+Source/Scripts/QF_ccBGSSSE001_Misc_Whiterun_050009D7.psc:62:1:alias-cast-without-getreference
 Source/Scripts/QF_ccBGSSSE001_Misc_Whiterun_050009D7.psc:62:1:unchecked-cast
 Source/Scripts/QF_ccBGSSSE001_Misc_Whiterun_050009D7.psc:71:1:none-form-usage
 Source/Scripts/QF_ccBGSSSE001_Misc_Whiterun_050009D7.psc:81:1:none-form-usage
@@ -123304,6 +123491,7 @@ Source/Scripts/QF_ccBGSSSE001_Misc_Whiterun_050009D7.psc:158:38:unused-property
 Source/Scripts/QF_ccBGSSSE001_Misc_Whiterun_050009D7.psc:158:54:trailing-whitespace
 Source/Scripts/QF_ccBGSSSE001_Misc_Whiterun_05000E5D.psc:1:77:line-endings
 Source/Scripts/QF_ccBGSSSE001_Misc_Whiterun_05000E5D.psc:3:12:type-casing
+Source/Scripts/QF_ccBGSSSE001_Misc_Whiterun_05000E5D.psc:28:1:alias-cast-without-getreference
 Source/Scripts/QF_ccBGSSSE001_Misc_Whiterun_05000E5D.psc:28:1:unchecked-cast
 Source/Scripts/QF_ccBGSSSE001_Misc_Whiterun_05000E5D.psc:36:1:none-form-usage
 Source/Scripts/QF_ccBGSSSE001_Misc_Whiterun_05000E5D.psc:39:1:none-form-usage
@@ -123329,6 +123517,7 @@ Source/Scripts/QF_ccBGSSSE001_Misc_Windhelm_050009D5.psc:53:9:forbidden-function
 Source/Scripts/QF_ccBGSSSE001_Misc_Windhelm_050009D5.psc:54:1:identifier-casing
 Source/Scripts/QF_ccBGSSSE001_Misc_Windhelm_050009D5.psc:54:1:none-form-usage
 Source/Scripts/QF_ccBGSSSE001_Misc_Windhelm_050009D5.psc:56:27:forbidden-functions
+Source/Scripts/QF_ccBGSSSE001_Misc_Windhelm_050009D5.psc:65:1:alias-cast-without-getreference
 Source/Scripts/QF_ccBGSSSE001_Misc_Windhelm_050009D5.psc:65:1:unchecked-cast
 Source/Scripts/QF_ccBGSSSE001_Misc_Windhelm_050009D5.psc:67:1:none-form-usage
 Source/Scripts/QF_ccBGSSSE001_Misc_Windhelm_050009D5.psc:86:1:none-form-usage
@@ -123738,6 +123927,7 @@ Source/Scripts/QF_ccBGSSSE025_QuestB_02000913.psc:150:43:trailing-whitespace
 Source/Scripts/QF_ccBGSSSE025_QuestB_02000913.psc:152:33:trailing-whitespace
 Source/Scripts/QF_ccBGSSSE025_RareCuriosInt_050010C1.psc:1:77:line-endings
 Source/Scripts/QF_ccBGSSSE025_RareCuriosInt_050010C1.psc:3:12:type-casing
+Source/Scripts/QF_ccBGSSSE025_RareCuriosInt_050010C1.psc:13:1:alias-cast-without-getreference
 Source/Scripts/QF_ccBGSSSE025_RareCuriosInt_050010C1.psc:13:1:unchecked-cast
 Source/Scripts/QF_ccBGSSSE025_StaadaCourierFrag.psc:1:77:line-endings
 Source/Scripts/QF_ccBGSSSE025_StaadaCourierFrag.psc:3:12:type-casing
@@ -124246,6 +124436,7 @@ Source/Scripts/QF_dunBloatedMansGrottoQST_000955CF.psc:1:77:line-endings
 Source/Scripts/QF_dunBloatedMansGrottoQST_000955CF.psc:3:12:type-casing
 Source/Scripts/QF_dunBloatedMansGrottoQST_000955CF.psc:109:1:none-form-usage
 Source/Scripts/QF_dunBloatedMansGrottoQST_000955CF.psc:110:1:none-form-usage
+Source/Scripts/QF_dunBloatedMansGrottoQST_000955CF.psc:121:1:alias-cast-without-getreference
 Source/Scripts/QF_dunBloatedMansGrottoQST_000955CF.psc:121:1:unchecked-cast
 Source/Scripts/QF_dunBloatedMansGrottoQST_000955CF.psc:122:1:none-form-usage
 Source/Scripts/QF_dunBloatedMansGrottoQST_000955CF.psc:123:1:none-form-usage
@@ -124271,6 +124462,7 @@ Source/Scripts/QF_dunBloatedMansGrottoQST_000955CF.psc:176:121:line-length
 Source/Scripts/QF_dunBloatedMansGrottoQST_000955CF.psc:179:1:none-form-usage
 Source/Scripts/QF_dunBloatedMansGrottoQST_000955CF.psc:180:1:none-form-usage
 Source/Scripts/QF_dunBloatedMansGrottoQST_000955CF.psc:183:1:none-form-usage
+Source/Scripts/QF_dunBloatedMansGrottoQST_000955CF.psc:184:1:alias-cast-without-getreference
 Source/Scripts/QF_dunBloatedMansGrottoQST_000955CF.psc:184:1:unchecked-cast
 Source/Scripts/QF_dunBloatedMansGrottoQST_000955CF.psc:185:1:none-form-usage
 Source/Scripts/QF_dunBloatedMansGrottoQST_000955CF.psc:186:1:none-form-usage
@@ -124981,6 +125173,7 @@ Source/Scripts/QF_dunGauldursonQST_000E4D31.psc:336:47:exclamation-spacing
 Source/Scripts/QF_dunGauldursonQST_000E4D31.psc:337:1:indentation
 Source/Scripts/QF_dunGauldursonQST_000E4D31.psc:346:1:none-form-usage
 Source/Scripts/QF_dunGauldursonQST_000E4D31.psc:347:1:none-form-usage
+Source/Scripts/QF_dunGauldursonQST_000E4D31.psc:348:1:alias-cast-without-getreference
 Source/Scripts/QF_dunGauldursonQST_000E4D31.psc:348:1:unchecked-cast
 Source/Scripts/QF_dunGauldursonQST_000E4D31.psc:357:1:none-form-usage
 Source/Scripts/QF_dunGauldursonQST_000E4D31.psc:365:9:forbidden-functions
@@ -124997,9 +125190,13 @@ Source/Scripts/QF_dunGauldursonQST_000E4D31.psc:404:6:forbidden-functions
 Source/Scripts/QF_dunGauldursonQST_000E4D31.psc:405:6:forbidden-functions
 Source/Scripts/QF_dunGauldursonQST_000E4D31.psc:406:6:forbidden-functions
 Source/Scripts/QF_dunGauldursonQST_000E4D31.psc:407:6:forbidden-functions
+Source/Scripts/QF_dunGauldursonQST_000E4D31.psc:409:1:alias-cast-without-getreference
 Source/Scripts/QF_dunGauldursonQST_000E4D31.psc:409:1:unchecked-cast
+Source/Scripts/QF_dunGauldursonQST_000E4D31.psc:410:1:alias-cast-without-getreference
 Source/Scripts/QF_dunGauldursonQST_000E4D31.psc:410:1:unchecked-cast
+Source/Scripts/QF_dunGauldursonQST_000E4D31.psc:411:1:alias-cast-without-getreference
 Source/Scripts/QF_dunGauldursonQST_000E4D31.psc:411:1:unchecked-cast
+Source/Scripts/QF_dunGauldursonQST_000E4D31.psc:412:1:alias-cast-without-getreference
 Source/Scripts/QF_dunGauldursonQST_000E4D31.psc:412:1:unchecked-cast
 Source/Scripts/QF_dunGauldursonQST_000E4D31.psc:421:1:none-form-usage
 Source/Scripts/QF_dunGauldursonQST_000E4D31.psc:436:1:indentation
@@ -125056,6 +125253,7 @@ Source/Scripts/QF_dunGauldursonQST_000E4D31.psc:537:1:indentation
 Source/Scripts/QF_dunGauldursonQST_000E4D31.psc:538:1:indentation
 Source/Scripts/QF_dunGauldursonQST_000E4D31.psc:547:1:none-form-usage
 Source/Scripts/QF_dunGauldursonQST_000E4D31.psc:548:1:none-form-usage
+Source/Scripts/QF_dunGauldursonQST_000E4D31.psc:549:1:alias-cast-without-getreference
 Source/Scripts/QF_dunGauldursonQST_000E4D31.psc:549:1:unchecked-cast
 Source/Scripts/QF_dunGauldursonQST_000E4D31.psc:559:1:indentation
 Source/Scripts/QF_dunGauldursonQST_000E4D31.psc:572:1:none-form-usage
@@ -125078,6 +125276,7 @@ Source/Scripts/QF_dunGauldursonQST_000E4D31.psc:626:1:indentation
 Source/Scripts/QF_dunGauldursonQST_000E4D31.psc:627:1:indentation
 Source/Scripts/QF_dunGauldursonQST_000E4D31.psc:636:1:none-form-usage
 Source/Scripts/QF_dunGauldursonQST_000E4D31.psc:637:1:none-form-usage
+Source/Scripts/QF_dunGauldursonQST_000E4D31.psc:638:1:alias-cast-without-getreference
 Source/Scripts/QF_dunGauldursonQST_000E4D31.psc:638:1:unchecked-cast
 Source/Scripts/QF_dunGauldursonQST_000E4D31.psc:646:9:forbidden-functions
 Source/Scripts/QF_dunGauldursonQST_000E4D31.psc:656:1:none-form-usage
@@ -125112,7 +125311,9 @@ Source/Scripts/QF_dunHalldirsCairnQST_0003AD4A.psc:22:25:unused-property
 Source/Scripts/QF_dunHalldirsCairnQST_0003AD4A.psc:32:25:unused-property
 Source/Scripts/QF_dunHalldirsCairnQST_0003AD4A.psc:37:25:unused-property
 Source/Scripts/QF_dunHalldirsCairnQST_0003AD4A.psc:42:25:unused-property
+Source/Scripts/QF_dunHalldirsCairnQST_0003AD4A.psc:74:1:alias-cast-without-getreference
 Source/Scripts/QF_dunHalldirsCairnQST_0003AD4A.psc:74:1:unchecked-cast
+Source/Scripts/QF_dunHalldirsCairnQST_0003AD4A.psc:82:1:alias-cast-without-getreference
 Source/Scripts/QF_dunHalldirsCairnQST_0003AD4A.psc:82:1:unchecked-cast
 Source/Scripts/QF_dunHalldirsCairnQST_0003AD4A.psc:91:6:forbidden-functions
 Source/Scripts/QF_dunHalldirsCairnQST_0003AD4A.psc:92:1:none-form-usage
@@ -125852,10 +126053,13 @@ Source/Scripts/QF_dunMossMotherQST_000376EE.psc:17:25:unused-property
 Source/Scripts/QF_dunMossMotherQST_000376EE.psc:22:25:unused-property
 Source/Scripts/QF_dunMossMotherQST_000376EE.psc:27:25:unused-property
 Source/Scripts/QF_dunMossMotherQST_000376EE.psc:37:25:unused-property
+Source/Scripts/QF_dunMossMotherQST_000376EE.psc:48:1:alias-cast-without-getreference
 Source/Scripts/QF_dunMossMotherQST_000376EE.psc:48:1:unchecked-cast
 Source/Scripts/QF_dunMossMotherQST_000376EE.psc:57:1:none-form-usage
 Source/Scripts/QF_dunMossMotherQST_000376EE.psc:58:1:none-form-usage
+Source/Scripts/QF_dunMossMotherQST_000376EE.psc:95:1:alias-cast-without-getreference
 Source/Scripts/QF_dunMossMotherQST_000376EE.psc:95:1:unchecked-cast
+Source/Scripts/QF_dunMossMotherQST_000376EE.psc:106:1:alias-cast-without-getreference
 Source/Scripts/QF_dunMossMotherQST_000376EE.psc:106:1:unchecked-cast
 Source/Scripts/QF_dunMossMotherQST_000376EE.psc:107:1:none-form-usage
 Source/Scripts/QF_dunMossMotherQST_000376EE.psc:108:1:none-form-usage
@@ -126184,6 +126388,7 @@ Source/Scripts/QF_dunStonehillBarrowQST_000CF915.psc:223:5:exclamation-spacing
 Source/Scripts/QF_dunStonehillBarrowQST_000CF915.psc:223:11:forbidden-functions
 Source/Scripts/QF_dunStonehillBarrowQST_000CF915.psc:224:1:indentation
 Source/Scripts/QF_dunStonehillBarrowQST_000CF915.psc:224:1:none-form-usage
+Source/Scripts/QF_dunStonehillBarrowQST_000CF915.psc:233:1:alias-cast-without-getreference
 Source/Scripts/QF_dunStonehillBarrowQST_000CF915.psc:233:1:unchecked-cast
 Source/Scripts/QF_dunStonehillBarrowQST_000CF915.psc:242:1:none-form-usage
 Source/Scripts/QF_dunStonehillBarrowQST_000CF915.psc:251:1:none-form-usage
@@ -135540,6 +135745,7 @@ Source/Scripts/Survival_NeedCold.psc:474:1:function-length
 Source/Scripts/Survival_NeedCold.psc:476:1:identifier-casing
 Source/Scripts/Survival_NeedCold.psc:480:1:none-form-usage
 Source/Scripts/Survival_NeedCold.psc:480:44:slow-functions
+Source/Scripts/Survival_NeedCold.psc:484:1:alias-cast-without-getreference
 Source/Scripts/Survival_NeedCold.psc:484:1:unchecked-cast
 Source/Scripts/Survival_NeedCold.psc:503:1:identifier-casing
 Source/Scripts/Survival_NeedCold.psc:503:1:none-form-usage
@@ -157548,9 +157754,11 @@ Source/Scripts/TIF__0202C41C.psc:9:1:unchecked-cast
 Source/Scripts/TIF__0202C41D.psc:1:77:line-endings
 Source/Scripts/TIF__0202C41D.psc:9:1:unchecked-cast
 Source/Scripts/TIF__0203401F.psc:1:77:line-endings
+Source/Scripts/TIF__0203401F.psc:9:1:alias-cast-without-getreference
 Source/Scripts/TIF__0203401F.psc:9:1:unchecked-cast
 Source/Scripts/TIF__0203401F.psc:16:38:trailing-whitespace
 Source/Scripts/TIF__02034021.psc:1:77:line-endings
+Source/Scripts/TIF__02034021.psc:9:1:alias-cast-without-getreference
 Source/Scripts/TIF__02034021.psc:9:1:unchecked-cast
 Source/Scripts/TIF__02034021.psc:16:38:trailing-whitespace
 Source/Scripts/TIF__020365FE.psc:1:77:line-endings
@@ -166225,6 +166433,7 @@ Source/Scripts/ccBGSSSE001_MiscQuestScript.psc:17:1:identifier-casing
 Source/Scripts/ccBGSSSE001_MiscQuestScript.psc:17:1:none-form-usage
 Source/Scripts/ccBGSSSE001_MiscQuestScript.psc:18:1:none-form-usage
 Source/Scripts/ccBGSSSE001_MiscQuestScript.psc:19:1:trailing-whitespace
+Source/Scripts/ccBGSSSE001_MiscQuestScript.psc:20:1:alias-cast-without-getreference
 Source/Scripts/ccBGSSSE001_MiscQuestScript.psc:20:1:unchecked-cast
 Source/Scripts/ccBGSSSE001_MiscQuestScript.psc:21:1:identifier-casing
 Source/Scripts/ccBGSSSE001_MiscQuestScript.psc:23:1:none-form-usage
@@ -170448,6 +170657,7 @@ Source/Scripts/defaultQuestRespawnScript.psc:71:115:exclamation-spacing
 Source/Scripts/defaultQuestRespawnScript.psc:71:121:line-length
 Source/Scripts/defaultQuestRespawnScript.psc:74:1:indentation
 Source/Scripts/defaultQuestRespawnScript.psc:76:1:indentation
+Source/Scripts/defaultQuestRespawnScript.psc:77:1:alias-cast-without-getreference
 Source/Scripts/defaultQuestRespawnScript.psc:77:1:unchecked-cast
 Source/Scripts/defaultQuestRespawnScript.psc:79:3:empty-body
 Source/Scripts/defaultQuestRespawnScript.psc:80:1:indentation
@@ -174160,6 +174370,7 @@ Source/Scripts/dunDeadMensRespiteResealDoorOnLoad.psc:1:70:line-endings
 Source/Scripts/dunDeadMensRespiteResealDoorOnLoad.psc:4:1:identifier-casing
 Source/Scripts/dunDeadMensRespiteResealDoorOnLoad.psc:7:1:function-override
 Source/Scripts/dunDeadMensRespiteResealDoorOnLoad.psc:8:10:forbidden-functions
+Source/Scripts/dunDeadMensRespiteResealDoorOnLoad.psc:9:1:alias-cast-without-getreference
 Source/Scripts/dunDeadMensRespiteResealDoorOnLoad.psc:9:1:unchecked-cast
 Source/Scripts/dunDeadMensRespiteResealDoorOnLoad.psc:13:1:function-override
 Source/Scripts/dunDeadMensRespiteResealDoorOnLoad.psc:14:1:none-form-usage
@@ -175732,8 +175943,11 @@ Source/Scripts/dunHalldirBossBattle2.psc:68:121:line-length
 Source/Scripts/dunHalldirBossBattle2.psc:69:103:exclamation-spacing
 Source/Scripts/dunHalldirBossBattle2.psc:75:1:place-at-me
 Source/Scripts/dunHalldirBossBattle2.psc:76:1:trailing-whitespace
+Source/Scripts/dunHalldirBossBattle2.psc:77:1:alias-cast-without-getreference
 Source/Scripts/dunHalldirBossBattle2.psc:77:1:unchecked-cast
+Source/Scripts/dunHalldirBossBattle2.psc:78:1:alias-cast-without-getreference
 Source/Scripts/dunHalldirBossBattle2.psc:78:1:unchecked-cast
+Source/Scripts/dunHalldirBossBattle2.psc:79:1:alias-cast-without-getreference
 Source/Scripts/dunHalldirBossBattle2.psc:79:1:unchecked-cast
 Source/Scripts/dunHalldirBossBattle2.psc:80:1:trailing-whitespace
 Source/Scripts/dunHalldirBossBattle2.psc:81:1:none-form-usage
@@ -175792,8 +176006,11 @@ Source/Scripts/dunHalldirBossBattle2.psc:97:1:none-form-usage
 Source/Scripts/dunHalldirBossBattle2.psc:97:45:comma-spacing
 Source/Scripts/dunHalldirBossBattle2.psc:100:11:forbidden-functions
 Source/Scripts/dunHalldirBossBattle2.psc:101:1:trailing-whitespace
+Source/Scripts/dunHalldirBossBattle2.psc:102:1:alias-cast-without-getreference
 Source/Scripts/dunHalldirBossBattle2.psc:102:1:unchecked-cast
+Source/Scripts/dunHalldirBossBattle2.psc:103:1:alias-cast-without-getreference
 Source/Scripts/dunHalldirBossBattle2.psc:103:1:unchecked-cast
+Source/Scripts/dunHalldirBossBattle2.psc:104:1:alias-cast-without-getreference
 Source/Scripts/dunHalldirBossBattle2.psc:104:1:unchecked-cast
 Source/Scripts/dunHalldirBossBattle2.psc:110:1:trailing-whitespace
 Source/Scripts/dunHalldirBossBattle2.psc:112:10:forbidden-functions
@@ -176079,6 +176296,7 @@ Source/Scripts/dunHaltedStreamCampGhostDebris.psc:103:1:identifier-casing
 Source/Scripts/dunHaltedStreamCampGhostDebris.psc:105:1:trailing-whitespace
 Source/Scripts/dunHaltedStreamCampGhostDebris.psc:107:1:trailing-whitespace
 Source/Scripts/dunHaltedStreamCampGhostDebris.psc:133:1:trailing-whitespace
+Source/Scripts/dunHaltedStreamCampGhostDebris.psc:136:1:alias-cast-without-getreference
 Source/Scripts/dunHaltedStreamCampGhostDebris.psc:136:1:identifier-casing
 Source/Scripts/dunHaltedStreamCampGhostDebris.psc:136:1:useless-downcast
 Source/Scripts/dunHaltedStreamCampGhostDebris.psc:137:1:unchecked-cast
@@ -180219,14 +180437,18 @@ Source/Scripts/dunReachwaterRockEnableDelegate.psc:5:1:identifier-casing
 Source/Scripts/dunReachwaterRockEnableDelegate.psc:7:1:function-override
 Source/Scripts/dunReachwaterRockEnableDelegate.psc:8:1:none-form-usage
 Source/Scripts/dunReachwaterRockEnableDelegate.psc:9:11:forbidden-functions
+Source/Scripts/dunReachwaterRockEnableDelegate.psc:10:1:alias-cast-without-getreference
 Source/Scripts/dunReachwaterRockEnableDelegate.psc:10:1:unchecked-cast
 Source/Scripts/dunReachwaterRockEnableDelegate.psc:14:1:argument-naming
 Source/Scripts/dunReachwaterRockEnableDelegate.psc:14:1:function-override
 Source/Scripts/dunReachwaterRockEnableDelegate.psc:14:1:identifier-casing
 Source/Scripts/dunReachwaterRockEnableDelegate.psc:15:6:exclamation-spacing
+Source/Scripts/dunReachwaterRockEnableDelegate.psc:16:1:alias-cast-without-getreference
 Source/Scripts/dunReachwaterRockEnableDelegate.psc:16:1:unchecked-cast
 Source/Scripts/dunReachwaterRockEnableDelegate.psc:18:22:forbidden-functions
+Source/Scripts/dunReachwaterRockEnableDelegate.psc:19:1:alias-cast-without-getreference
 Source/Scripts/dunReachwaterRockEnableDelegate.psc:19:1:unchecked-cast
+Source/Scripts/dunReachwaterRockEnableDelegate.psc:21:1:alias-cast-without-getreference
 Source/Scripts/dunReachwaterRockEnableDelegate.psc:21:1:unchecked-cast
 Source/Scripts/dunReachwaterRockEnableDelegate.psc:23:9:final-newline
 Source/Scripts/dunReachwaterRockGhostScript.psc:1:12:type-casing

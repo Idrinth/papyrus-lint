@@ -359,9 +359,11 @@ Scripts/Source/BEScript.psc:968:12:forbidden-functions
 Scripts/Source/BEScript.psc:985:1:unchecked-cast
 Scripts/Source/BEScript.psc:991:15:forbidden-functions
 Scripts/Source/BEScript.psc:991:121:line-length
+Scripts/Source/BEScript.psc:995:1:alias-cast-without-getreference
 Scripts/Source/BEScript.psc:995:1:unchecked-cast
 Scripts/Source/BEScript.psc:997:14:forbidden-functions
 Scripts/Source/BEScript.psc:999:1:numeric-comparison
+Scripts/Source/BEScript.psc:1000:1:alias-cast-without-getreference
 Scripts/Source/BEScript.psc:1000:1:unchecked-cast
 Scripts/Source/BEScript.psc:1003:14:forbidden-functions
 Scripts/Source/BEScript.psc:1019:1:cyclomatic-complexity
@@ -1002,6 +1004,7 @@ Scripts/Source/CityCYRedTape01PlayerScript.psc:29:11:forbidden-functions
 Scripts/Source/CityCYRedTape01PlayerScript.psc:33:121:line-length
 Scripts/Source/CityCYRedTape01PlayerScript.psc:34:11:forbidden-functions
 Scripts/Source/CityCYRedTape01QuestScript.psc:20:11:forbidden-functions
+Scripts/Source/CityCYRedTape01QuestScript.psc:21:1:alias-cast-without-getreference
 Scripts/Source/CityCYRedTape01QuestScript.psc:22:1:unchecked-cast
 Scripts/Source/CityCYRedTape01QuestScript.psc:25:121:line-length
 Scripts/Source/CityCYRedTape01QuestScript.psc:26:121:line-length
@@ -1082,16 +1085,24 @@ Scripts/Source/City_GG_Mark_QuestScript.psc:11:1:none-form-usage
 Scripts/Source/City_NA_JunctionBox04Script.psc:10:1:none-form-usage
 Scripts/Source/City_NA_JunctionBox04Script.psc:13:1:none-form-usage
 Scripts/Source/City_NA_Well01_Lever01Script.psc:31:1:none-form-usage
+Scripts/Source/City_NA_Well01_Lever01Script.psc:33:1:alias-cast-without-getreference
 Scripts/Source/City_NA_Well01_Lever01Script.psc:33:1:unchecked-cast
+Scripts/Source/City_NA_Well01_Lever01Script.psc:34:1:alias-cast-without-getreference
 Scripts/Source/City_NA_Well01_Lever01Script.psc:34:1:unchecked-cast
 Scripts/Source/City_NA_Well01_Lever01Script.psc:36:1:none-form-usage
+Scripts/Source/City_NA_Well01_Lever01Script.psc:38:1:alias-cast-without-getreference
 Scripts/Source/City_NA_Well01_Lever01Script.psc:38:1:unchecked-cast
+Scripts/Source/City_NA_Well01_Lever01Script.psc:39:1:alias-cast-without-getreference
 Scripts/Source/City_NA_Well01_Lever01Script.psc:39:1:unchecked-cast
 Scripts/Source/City_NA_Well01_Lever01Script.psc:41:1:none-form-usage
+Scripts/Source/City_NA_Well01_Lever01Script.psc:43:1:alias-cast-without-getreference
 Scripts/Source/City_NA_Well01_Lever01Script.psc:43:1:unchecked-cast
+Scripts/Source/City_NA_Well01_Lever01Script.psc:44:1:alias-cast-without-getreference
 Scripts/Source/City_NA_Well01_Lever01Script.psc:44:1:unchecked-cast
 Scripts/Source/City_NA_Well01_Lever01Script.psc:46:1:none-form-usage
+Scripts/Source/City_NA_Well01_Lever01Script.psc:48:1:alias-cast-without-getreference
 Scripts/Source/City_NA_Well01_Lever01Script.psc:48:1:unchecked-cast
+Scripts/Source/City_NA_Well01_Lever01Script.psc:49:1:alias-cast-without-getreference
 Scripts/Source/City_NA_Well01_Lever01Script.psc:49:1:unchecked-cast
 Scripts/Source/City_NA_Well01_Lever01Script.psc:53:1:none-form-usage
 Scripts/Source/City_NA_Well01_Lever01Script.psc:53:1:none-form-usage
@@ -1839,6 +1850,7 @@ Scripts/Source/DLC03/Fragments/Quests/QF_SFBGS003_SFTA00_FD00492D.psc:126:1:none
 Scripts/Source/DLC03/Fragments/Quests/QF_SFBGS003_SFTA00_FD00492D.psc:135:1:none-form-usage
 Scripts/Source/DLC03/Fragments/Quests/QF_SFBGS003_SFTA00_FD00492D.psc:136:1:none-form-usage
 Scripts/Source/DLC03/Fragments/Quests/QF_SFBGS003_SFTA00_FD00492D.psc:163:1:none-form-usage
+Scripts/Source/DLC03/Fragments/Quests/QF_SFBGS003_SFTA00_FD00492D.psc:167:1:alias-cast-without-getreference
 Scripts/Source/DLC03/Fragments/Quests/QF_SFBGS003_SFTA00_FD00492D.psc:167:1:unchecked-cast
 Scripts/Source/DLC03/Fragments/Quests/QF_SFBGS003_SFTA00_FD00492D.psc:169:1:none-form-usage
 Scripts/Source/DLC03/Fragments/Quests/QF_SFBGS003_SFTA00_FD00492D.psc:182:1:none-form-usage
@@ -1861,6 +1873,7 @@ Scripts/Source/DLC03/Fragments/Quests/QF_SFBGS003_SFTA00_FD00492D.psc:272:1:none
 Scripts/Source/DLC03/Fragments/Quests/QF_SFBGS003_SFTA00_FD00492D.psc:273:1:none-form-usage
 Scripts/Source/DLC03/Fragments/Quests/QF_SFBGS003_SFTA00_FD00492D.psc:282:1:none-form-usage
 Scripts/Source/DLC03/Fragments/Quests/QF_SFBGS003_SFTA00_FD00492D.psc:302:1:none-form-usage
+Scripts/Source/DLC03/Fragments/Quests/QF_SFBGS003_SFTA00_FD00492D.psc:311:1:alias-cast-without-getreference
 Scripts/Source/DLC03/Fragments/Quests/QF_SFBGS003_SFTA00_FD00492D.psc:311:1:unchecked-cast
 Scripts/Source/DLC03/Fragments/Quests/QF_SFBGS003_SFTA00_FD00492D.psc:323:1:none-form-usage
 Scripts/Source/DLC03/Fragments/Quests/QF_SFBGS003_SFTA00_FD00492D.psc:334:1:none-form-usage
@@ -3939,6 +3952,7 @@ Scripts/Source/FFCydoniaR02QuestScript.psc:66:1:none-form-usage
 Scripts/Source/FFCydoniaR02QuestScript.psc:67:1:none-form-usage
 Scripts/Source/FFCydoniaR02QuestScript.psc:70:121:line-length
 Scripts/Source/FFCydoniaR02QuestScript.psc:73:1:none-form-usage
+Scripts/Source/FFCydoniaR02QuestScript.psc:76:1:alias-cast-without-getreference
 Scripts/Source/FFCydoniaR02QuestScript.psc:76:1:unchecked-cast
 Scripts/Source/FFCydoniaR03QuestScript.psc:11:1:none-form-usage
 Scripts/Source/FFCydoniaR03QuestScript.psc:12:27:forbidden-functions
@@ -4668,6 +4682,7 @@ Scripts/Source/Fragments/Quests/QF_BE_KT07_000F1989.psc:25:1:none-form-usage
 Scripts/Source/Fragments/Quests/QF_BE_KT07_000F1989.psc:25:1:unchecked-cast
 Scripts/Source/Fragments/Quests/QF_BE_MQ102_002A3901.psc:7:1:none-form-usage
 Scripts/Source/Fragments/Quests/QF_BE_MQ102_002A3901.psc:10:1:none-form-usage
+Scripts/Source/Fragments/Quests/QF_BE_Objective_00098B4E.psc:24:1:alias-cast-without-getreference
 Scripts/Source/Fragments/Quests/QF_BE_Objective_00098B4E.psc:25:1:unchecked-cast
 Scripts/Source/Fragments/Quests/QF_BE_Objective_00098B4E.psc:25:1:unchecked-cast
 Scripts/Source/Fragments/Quests/QF_BE_Objective_00098B4E.psc:63:1:none-form-usage
@@ -8248,6 +8263,7 @@ Scripts/Source/Fragments/Quests/QF_COM_Quest_SarahMorgan_Q01_002C7C11.psc:485:1:
 Scripts/Source/Fragments/Quests/QF_COM_Quest_SarahMorgan_Q01_002C7C11.psc:485:1:none-form-usage
 Scripts/Source/Fragments/Quests/QF_COM_Quest_SarahMorgan_Q01_002C7C11.psc:486:1:none-form-usage
 Scripts/Source/Fragments/Quests/QF_COM_Quest_SarahMorgan_Q01_002C7C11.psc:497:1:none-form-usage
+Scripts/Source/Fragments/Quests/QF_COM_Quest_SarahMorgan_Q01_002C7C11.psc:519:1:alias-cast-without-getreference
 Scripts/Source/Fragments/Quests/QF_COM_Quest_SarahMorgan_Q01_002C7C11.psc:519:1:unchecked-cast
 Scripts/Source/Fragments/Quests/QF_COM_Quest_SarahMorgan_Q01_002C7C11.psc:527:1:none-form-usage
 Scripts/Source/Fragments/Quests/QF_COM_Quest_SarahMorgan_Q01_002C7C11.psc:539:1:none-form-usage
@@ -9224,6 +9240,7 @@ Scripts/Source/Fragments/Quests/QF_City_GG_Connections_0018E0F9.psc:25:1:none-fo
 Scripts/Source/Fragments/Quests/QF_City_GG_Connections_0018E0F9.psc:26:1:none-form-usage
 Scripts/Source/Fragments/Quests/QF_City_GG_Connections_0018E0F9.psc:28:1:none-form-usage
 Scripts/Source/Fragments/Quests/QF_City_GG_Connections_0018E0F9.psc:29:1:none-form-usage
+Scripts/Source/Fragments/Quests/QF_City_GG_Connections_0018E0F9.psc:60:1:alias-cast-without-getreference
 Scripts/Source/Fragments/Quests/QF_City_GG_Connections_0018E0F9.psc:60:1:unchecked-cast
 Scripts/Source/Fragments/Quests/QF_City_GG_Connections_0018E0F9.psc:68:1:none-form-usage
 Scripts/Source/Fragments/Quests/QF_City_GG_Connections_0018E0F9.psc:73:1:none-form-usage
@@ -9232,6 +9249,7 @@ Scripts/Source/Fragments/Quests/QF_City_GG_Connections_0018E0F9.psc:90:1:none-fo
 Scripts/Source/Fragments/Quests/QF_City_GG_Connections_0018E0F9.psc:99:1:none-form-usage
 Scripts/Source/Fragments/Quests/QF_City_GG_Connections_0018E0F9.psc:99:6:forbidden-functions
 Scripts/Source/Fragments/Quests/QF_City_GG_Connections_0018E0F9.psc:107:1:none-form-usage
+Scripts/Source/Fragments/Quests/QF_City_GG_Connections_0018E0F9.psc:116:1:alias-cast-without-getreference
 Scripts/Source/Fragments/Quests/QF_City_GG_Connections_0018E0F9.psc:116:1:unchecked-cast
 Scripts/Source/Fragments/Quests/QF_City_GG_Connections_0018E0F9.psc:118:1:none-form-usage
 Scripts/Source/Fragments/Quests/QF_City_GG_Marines_00188D25.psc:7:6:forbidden-functions
@@ -14758,6 +14776,7 @@ Scripts/Source/Fragments/Quests/QF_MQ101_00003448.psc:1383:1:none-form-usage
 Scripts/Source/Fragments/Quests/QF_MQ101_00003448.psc:1384:1:none-form-usage
 Scripts/Source/Fragments/Quests/QF_MQ101_00003448.psc:1396:1:none-form-usage
 Scripts/Source/Fragments/Quests/QF_MQ101_00003448.psc:1399:1:none-form-usage
+Scripts/Source/Fragments/Quests/QF_MQ101_00003448.psc:1402:1:alias-cast-without-getreference
 Scripts/Source/Fragments/Quests/QF_MQ101_00003448.psc:1402:1:unchecked-cast
 Scripts/Source/Fragments/Quests/QF_MQ101_00003448.psc:1426:24:forbidden-functions
 Scripts/Source/Fragments/Quests/QF_MQ101_00003448.psc:1446:1:none-form-usage
@@ -14799,6 +14818,7 @@ Scripts/Source/Fragments/Quests/QF_MQ101_00003448.psc:1804:1:none-form-usage
 Scripts/Source/Fragments/Quests/QF_MQ101_00003448.psc:1806:1:none-form-usage
 Scripts/Source/Fragments/Quests/QF_MQ101_00003448.psc:1808:1:none-form-usage
 Scripts/Source/Fragments/Quests/QF_MQ101_00003448.psc:1842:1:none-form-usage
+Scripts/Source/Fragments/Quests/QF_MQ101_00003448.psc:1859:1:alias-cast-without-getreference
 Scripts/Source/Fragments/Quests/QF_MQ101_00003448.psc:1859:1:unchecked-cast
 Scripts/Source/Fragments/Quests/QF_MQ101_00003448.psc:1871:1:none-form-usage
 Scripts/Source/Fragments/Quests/QF_MQ101_00003448.psc:1879:1:none-form-usage
@@ -17431,6 +17451,7 @@ Scripts/Source/Fragments/Quests/QF_MQ204_NA_StateChangeHandl_0000E415.psc:49:1:n
 Scripts/Source/Fragments/Quests/QF_MQ204_NA_StateChangeHandl_0000E415.psc:51:1:none-form-usage
 Scripts/Source/Fragments/Quests/QF_MQ204_NA_StateChangeHandl_0000E415.psc:53:1:none-form-usage
 Scripts/Source/Fragments/Quests/QF_MQ204_NA_StateChangeHandl_0000E415.psc:65:1:none-form-usage
+Scripts/Source/Fragments/Quests/QF_MQ204_NA_StateChangeHandl_0000E415.psc:66:1:alias-cast-without-getreference
 Scripts/Source/Fragments/Quests/QF_MQ204_NA_StateChangeHandl_0000E415.psc:66:1:unchecked-cast
 Scripts/Source/Fragments/Quests/QF_MQ204_NA_StateChangeHandl_0000E415.psc:69:1:none-form-usage
 Scripts/Source/Fragments/Quests/QF_MQ204_NA_StateChangeHandl_0000E415.psc:70:1:none-form-usage
@@ -26218,6 +26239,7 @@ Scripts/Source/Fragments/Quests/QF_UC03_0029D04C.psc:153:1:none-form-usage
 Scripts/Source/Fragments/Quests/QF_UC03_0029D04C.psc:154:1:none-form-usage
 Scripts/Source/Fragments/Quests/QF_UC03_0029D04C.psc:155:1:none-form-usage
 Scripts/Source/Fragments/Quests/QF_UC03_0029D04C.psc:158:1:none-form-usage
+Scripts/Source/Fragments/Quests/QF_UC03_0029D04C.psc:159:1:alias-cast-without-getreference
 Scripts/Source/Fragments/Quests/QF_UC03_0029D04C.psc:159:1:unchecked-cast
 Scripts/Source/Fragments/Quests/QF_UC03_0029D04C.psc:169:1:none-form-usage
 Scripts/Source/Fragments/Quests/QF_UC03_0029D04C.psc:177:1:none-form-usage
@@ -26568,7 +26590,9 @@ Scripts/Source/Fragments/Quests/QF_UC04_002AAE8D.psc:1139:1:none-form-usage
 Scripts/Source/Fragments/Quests/QF_UC04_002AAE8D.psc:1139:1:none-form-usage
 Scripts/Source/Fragments/Quests/QF_UC04_002AAE8D.psc:1140:1:none-form-usage
 Scripts/Source/Fragments/Quests/QF_UC04_002AAE8D.psc:1140:1:none-form-usage
+Scripts/Source/Fragments/Quests/QF_UC04_002AAE8D.psc:1143:1:alias-cast-without-getreference
 Scripts/Source/Fragments/Quests/QF_UC04_002AAE8D.psc:1143:1:unchecked-cast
+Scripts/Source/Fragments/Quests/QF_UC04_002AAE8D.psc:1144:1:alias-cast-without-getreference
 Scripts/Source/Fragments/Quests/QF_UC04_002AAE8D.psc:1144:1:unchecked-cast
 Scripts/Source/Fragments/Quests/QF_UC04_002AAE8D.psc:1145:1:none-form-usage
 Scripts/Source/Fragments/Quests/QF_UC04_002AAE8D.psc:1146:1:none-form-usage
@@ -26717,6 +26741,7 @@ Scripts/Source/Fragments/Quests/QF_UC04_002AAE8D.psc:1888:1:none-form-usage
 Scripts/Source/Fragments/Quests/QF_UC04_002AAE8D.psc:1891:1:none-form-usage
 Scripts/Source/Fragments/Quests/QF_UC04_002AAE8D.psc:1894:1:none-form-usage
 Scripts/Source/Fragments/Quests/QF_UC04_002AAE8D.psc:1897:1:none-form-usage
+Scripts/Source/Fragments/Quests/QF_UC04_002AAE8D.psc:1900:1:alias-cast-without-getreference
 Scripts/Source/Fragments/Quests/QF_UC04_002AAE8D.psc:1900:1:unchecked-cast
 Scripts/Source/Fragments/Quests/QF_UC04_002AAE8D.psc:1903:1:none-form-usage
 Scripts/Source/Fragments/Quests/QF_UC04_002AAE8D.psc:1904:1:unchecked-cast
@@ -27561,6 +27586,7 @@ Scripts/Source/Fragments/Quests/QF_UC08_QueenBattle_0003E832.psc:33:1:unchecked-
 Scripts/Source/Fragments/Quests/QF_UC08_QueenBattle_0003E832.psc:36:1:none-form-usage
 Scripts/Source/Fragments/Quests/QF_UC08_QueenBattle_0003E832.psc:46:1:none-form-usage
 Scripts/Source/Fragments/Quests/QF_UC08_QueenBattle_0003E832.psc:56:1:none-form-usage
+Scripts/Source/Fragments/Quests/QF_UC08_QueenBattle_0003E832.psc:65:1:alias-cast-without-getreference
 Scripts/Source/Fragments/Quests/QF_UC08_QueenBattle_0003E832.psc:65:1:unchecked-cast
 Scripts/Source/Fragments/Quests/QF_UC08_QueenBattle_0003E832.psc:77:1:none-form-usage
 Scripts/Source/Fragments/Quests/QF_UC08_QueenBattle_0003E832.psc:81:1:none-form-usage
@@ -29856,8 +29882,10 @@ Scripts/Source/GenericBrawlScript.psc:3:1:nesting-depth
 Scripts/Source/GenericBrawlScript.psc:4:1:none-form-usage
 Scripts/Source/GenericBrawlScript.psc:5:1:none-form-usage
 Scripts/Source/GenericBrawlScript.psc:7:8:forbidden-functions
+Scripts/Source/GenericBrawlScript.psc:11:1:alias-cast-without-getreference
 Scripts/Source/GenericBrawlScript.psc:11:1:unchecked-cast
 Scripts/Source/GenericBrawlScript.psc:12:2:strict-boolean
+Scripts/Source/GenericBrawlScript.psc:14:1:alias-cast-without-getreference
 Scripts/Source/GenericBrawlScript.psc:14:1:unchecked-cast
 Scripts/Source/GenericBrawlScript.psc:19:8:forbidden-functions
 Scripts/Source/GenericBrawlScript.psc:22:32:forbidden-functions
@@ -30554,6 +30582,7 @@ Scripts/Source/LC088_VigilanceQuestScript.psc:406:121:line-length
 Scripts/Source/LC088_VigilanceQuestScript.psc:408:1:unregistered-remote-event
 Scripts/Source/LC088_VigilanceQuestScript.psc:411:1:unchecked-cast
 Scripts/Source/LC088_VigilanceQuestScript.psc:430:9:forbidden-functions
+Scripts/Source/LC088_VigilanceQuestScript.psc:431:1:alias-cast-without-getreference
 Scripts/Source/LC088_VigilanceQuestScript.psc:431:1:unchecked-cast
 Scripts/Source/LC088_VigilanceQuestScript.psc:433:9:forbidden-functions
 Scripts/Source/LC088_VigilanceQuestScript.psc:493:1:unchecked-cast
@@ -30579,8 +30608,10 @@ Scripts/Source/LC088_VigilanceQuestScript.psc:577:121:line-length
 Scripts/Source/LC088_VigilanceQuestScript.psc:633:37:forbidden-functions
 Scripts/Source/LC088_VigilanceQuestScript.psc:685:1:unchecked-cast
 Scripts/Source/LC088_VigilanceQuestScript.psc:689:1:setvalue-in-loop
+Scripts/Source/LC088_VigilanceQuestScript.psc:697:1:alias-cast-without-getreference
 Scripts/Source/LC088_VigilanceQuestScript.psc:697:1:unchecked-cast
 Scripts/Source/LC088_VigilanceQuestScript.psc:712:1:unchecked-cast
+Scripts/Source/LC088_VigilanceQuestScript.psc:713:1:alias-cast-without-getreference
 Scripts/Source/LC088_VigilanceQuestScript.psc:713:1:unchecked-cast
 Scripts/Source/LC088_VigilanceQuestScript.psc:734:1:unchecked-cast
 Scripts/Source/LC088_VigilanceQuestScript.psc:740:1:unchecked-cast
@@ -32522,6 +32553,7 @@ Scripts/Source/MS06_PlayerScript.psc:34:121:line-length
 Scripts/Source/MS06_PlayerScript.psc:42:1:unchecked-cast
 Scripts/Source/MS06_PlayerScript.psc:44:1:unchecked-cast
 Scripts/Source/MS06_QuestScript.psc:72:1:none-form-usage
+Scripts/Source/MS06_QuestScript.psc:78:1:alias-cast-without-getreference
 Scripts/Source/MS06_QuestScript.psc:79:1:unchecked-cast
 Scripts/Source/MS06_QuestScript.psc:83:121:line-length
 Scripts/Source/MS06_QuestScript.psc:84:121:line-length
@@ -34341,9 +34373,12 @@ Scripts/Source/RAD06Script.psc:47:1:none-form-usage
 Scripts/Source/RAD06Script.psc:48:1:none-form-usage
 Scripts/Source/RAD06Script.psc:52:1:none-form-usage
 Scripts/Source/RAD06Script.psc:53:1:none-form-usage
+Scripts/Source/RAD06Script.psc:56:1:alias-cast-without-getreference
 Scripts/Source/RAD06Script.psc:56:1:unchecked-cast
+Scripts/Source/RAD06Script.psc:57:1:alias-cast-without-getreference
 Scripts/Source/RAD06Script.psc:57:1:none-form-usage
 Scripts/Source/RAD06Script.psc:57:1:unchecked-cast
+Scripts/Source/RAD06Script.psc:58:1:alias-cast-without-getreference
 Scripts/Source/RAD06Script.psc:58:1:unchecked-cast
 Scripts/Source/RAD06Script.psc:66:1:explicit-return
 Scripts/Source/RAD06Script.psc:70:1:none-form-usage
@@ -43001,6 +43036,7 @@ Scripts/Source/UC01_ShipSim_PilotSeatAliasScript.psc:20:121:line-length
 Scripts/Source/UC01_ShipSim_PlayerAliasScript.psc:10:121:line-length
 Scripts/Source/UC01_ShipSim_PlayerAliasScript.psc:11:121:line-length
 Scripts/Source/UC01_ShipSim_TargetDeathScript.psc:4:1:unchecked-cast
+Scripts/Source/UC01_ShipSimulationQuestScript.psc:250:1:alias-cast-without-getreference
 Scripts/Source/UC01_ShipSimulationQuestScript.psc:250:1:unchecked-cast
 Scripts/Source/UC01_ShipSimulationQuestScript.psc:268:121:line-length
 Scripts/Source/UC01_ShipSimulationQuestScript.psc:274:45:slow-functions
@@ -43284,6 +43320,7 @@ Scripts/Source/UC05_QuestScript.psc:53:121:line-length
 Scripts/Source/UC05_QuestScript.psc:71:121:line-length
 Scripts/Source/UC05_QuestScript.psc:78:121:line-length
 Scripts/Source/UC05_QuestScript.psc:83:121:line-length
+Scripts/Source/UC05_QuestScript.psc:122:1:alias-cast-without-getreference
 Scripts/Source/UC05_QuestScript.psc:122:1:unchecked-cast
 Scripts/Source/UC05_QuestScript.psc:197:1:variable-used-before-assignment
 Scripts/Source/UC05_QuestScript.psc:207:1:variable-used-before-assignment
@@ -43441,6 +43478,7 @@ Scripts/Source/UC08_AB_HostileThrallCollScript.psc:80:1:none-form-usage
 Scripts/Source/UC08_AB_HostileThrallCollScript.psc:85:1:nesting-depth
 Scripts/Source/UC08_AB_HostileThrallCollScript.psc:87:1:none-form-usage
 Scripts/Source/UC08_AB_HostileThrallCollScript.psc:87:28:slow-functions
+Scripts/Source/UC08_AB_HostileThrallCollScript.psc:88:1:alias-cast-without-getreference
 Scripts/Source/UC08_AB_HostileThrallCollScript.psc:94:1:none-form-usage
 Scripts/Source/UC08_AB_HostileThrallCollScript.psc:94:51:slow-functions
 Scripts/Source/UC08_AB_HostileThrallCollScript.psc:97:1:none-form-usage
@@ -43569,6 +43607,7 @@ Scripts/Source/UCParentFactionQuestScript.psc:77:33:forbidden-functions
 Scripts/Source/UCParentFactionQuestScript.psc:78:1:none-form-usage
 Scripts/Source/UCParentFactionQuestScript.psc:78:121:line-length
 Scripts/Source/UCParentFactionQuestScript.psc:79:1:none-form-usage
+Scripts/Source/UCParentFactionQuestScript.psc:90:1:alias-cast-without-getreference
 Scripts/Source/UCParentFactionQuestScript.psc:90:1:unchecked-cast
 Scripts/Source/UCParentFactionQuestScript.psc:98:1:none-form-usage
 Scripts/Source/UCParentFactionQuestScript.psc:102:121:line-length
@@ -43609,6 +43648,7 @@ Scripts/Source/UCR04QuestScript.psc:49:121:line-length
 Scripts/Source/UCR04QuestScript.psc:102:68:slow-functions
 Scripts/Source/UCR04QuestScript.psc:102:108:slow-functions
 Scripts/Source/UCR04QuestScript.psc:102:121:line-length
+Scripts/Source/UCR04QuestScript.psc:121:1:alias-cast-without-getreference
 Scripts/Source/UCR04QuestScript.psc:121:1:unchecked-cast
 Scripts/Source/UCR04QuestScript.psc:121:91:slow-functions
 Scripts/Source/UCR04QuestScript.psc:152:121:line-length
@@ -43787,7 +43827,9 @@ Scripts/Source/defaultAliasRespawnScriptB.psc:15:1:unchecked-cast
 Scripts/Source/defaultAliasRespawnScriptB.psc:17:2:empty-body
 Scripts/Source/defaultAliasRespawnScriptB.psc:26:8:forbidden-functions
 Scripts/Source/defaultAliasRespawnScriptB.psc:32:1:unchecked-cast
+Scripts/Source/defaultQuestRespawnScript.psc:88:1:alias-cast-without-getreference
 Scripts/Source/defaultQuestRespawnScript.psc:98:121:line-length
+Scripts/Source/defaultQuestRespawnScript.psc:105:1:alias-cast-without-getreference
 Scripts/Source/defaultQuestRespawnScript.psc:107:121:line-length
 Scripts/Source/defaultQuestRespawnScript.psc:110:121:line-length
 Scripts/Source/defaultQuestRespawnScript.psc:113:121:line-length
@@ -43799,9 +43841,11 @@ Scripts/Source/defaultQuestRespawnScript.psc:151:1:unchecked-cast
 Scripts/Source/defaultQuestRespawnScript.psc:151:121:line-length
 Scripts/Source/defaultQuestRespawnScriptA.psc:9:8:forbidden-functions
 Scripts/Source/defaultQuestRespawnScriptA.psc:11:121:line-length
+Scripts/Source/defaultQuestRespawnScriptA.psc:17:1:alias-cast-without-getreference
 Scripts/Source/defaultQuestRespawnScriptA.psc:17:1:unchecked-cast
 Scripts/Source/defaultQuestRespawnScriptA.psc:20:121:line-length
 Scripts/Source/defaultQuestRespawnScriptB.psc:11:121:line-length
+Scripts/Source/defaultQuestRespawnScriptB.psc:17:1:alias-cast-without-getreference
 Scripts/Source/defaultQuestRespawnScriptB.psc:17:1:unchecked-cast
 Scripts/Source/defaultQuestRespawnScriptB.psc:20:121:line-length
 Scripts/Source/defaultSpawnOnActivateSCRIPT.psc:21:27:forbidden-functions

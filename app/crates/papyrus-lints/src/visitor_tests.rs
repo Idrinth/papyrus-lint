@@ -16,6 +16,7 @@ fn assert_tokens(visitor: LintVisitor) {
 #[test]
 #[allow(clippy::too_many_lines)]
 fn ast_rules_return_an_ast_visitor() {
+    assert_ast(crate::alias_cast_without_getreference::visitor());
     assert_ast(crate::argument_naming::visitor());
     assert_ast(crate::argument_override_types::visitor());
     assert_ast(crate::argument_types::visitor());
