@@ -15,6 +15,7 @@
 
 use crate::visitor::{LintVisitor, Store, TokenLint, VisitCtx};
 use crate::Diagnostic;
+use papyrus_parser::comment_annotations::parse_line_annotations;
 use papyrus_parser::token::{Keyword, Token, TokenKind};
 use std::collections::HashMap;
 
@@ -25,7 +26,6 @@ pub const RULE: &str = "property-never-read";
 struct Usage {
     written: bool,
     read: bool,
-    external: bool,
 }
 
 struct Decl {
@@ -55,15 +55,6 @@ impl TokenLint for Collect {
         tokens: &[Token],
         _ctx: &mut VisitCtx<'_>,
     ) {
-        if let TokenKind::CommentAnnotation(name) = &token.kind {
-            if name.eq_ignore_ascii_case("external") {
-                if let Some(decl) = self.decls.iter().rev().find(|decl| decl.line == token.line) {
-                    self.usage.entry(decl.lower.clone()).or_default().external = true;
-                }
-            }
-            return;
-        }
-
         if matches!(token.kind, TokenKind::Keyword(Keyword::Property))
             && preceded_by_type_name(tokens, index)
         {
@@ -106,12 +97,12 @@ impl TokenLint for Collect {
         }
     }
 
-    fn finish(&mut self, _ctx: &mut VisitCtx<'_>) {
+    fn finish(&mut self, ctx: &mut VisitCtx<'_>) {
         for decl in &self.decls {
             let Some(usage) = self.usage.get(&decl.lower) else {
                 continue;
             };
-            if usage.external || !usage.written || usage.read {
+            if !usage.written || usage.read || line_has_external(ctx.source, decl.line) {
                 continue;
             }
             self.store.emit(
@@ -139,6 +130,17 @@ pub fn check(
     external: &mut impl crate::external_signatures::ExternalSignatures,
 ) -> Vec<Diagnostic> {
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
+}
+
+fn line_has_external(source: &str, line: usize) -> bool {
+    source
+        .lines()
+        .nth(line.saturating_sub(1))
+        .is_some_and(|text| {
+            parse_line_annotations(text)
+                .iter()
+                .any(|annotation| annotation.name.eq_ignore_ascii_case("external"))
+        })
 }
 
 fn is_assignment(kind: &TokenKind) -> bool {
