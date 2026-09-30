@@ -31,7 +31,7 @@ def render_schema(settings: dict, rules: list[dict]) -> dict:
     lint_by_key = {s["key"]: s for s in settings["settings"]}
     properties["game"] = _setting_schema(lint_by_key["game"])
 
-    for ps in settings["project_settings"]:
+    for ps in settings["project"]:
         properties[ps["key"]] = _setting_schema(ps)
 
     for setting in settings["settings"]:
