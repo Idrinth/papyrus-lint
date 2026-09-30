@@ -2,7 +2,7 @@
   "id": "property-never-assigned",
   "name": "Property never assigned",
   "category": "Bugprone",
-  "visitor": "tokens",
+  "visitor": "ast",
   "tags": [
     "correctness"
   ],
