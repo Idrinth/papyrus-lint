@@ -110,6 +110,7 @@ fn token_rules_return_a_token_visitor() {
     assert_tokens(crate::unused_nodiscard::visitor());
     assert_tokens(crate::unused_property::visitor());
     assert_tokens(crate::property_never_read::visitor());
+    assert_tokens(crate::property_never_assigned::visitor());
 }
 
 #[test]

@@ -1,0 +1,15 @@
+{
+  "id": "property-never-assigned",
+  "name": "Property never assigned",
+  "category": "Bugprone",
+  "visitor": "tokens",
+  "tags": [
+    "correctness"
+  ],
+  "severity": "warning",
+  "importance": "medium",
+  "enabled_by_default": false,
+  "fixable": false,
+  "description": "Flags a non-Auto property whose backing field and property name are never written outside the Get/Set block, so readers stay on the implicit default. Disabled by default because Creation Kit–filled properties are common; suppress a single property with ; @external.",
+  "definition": "Flags, as a `[warning]`, a full (non-`Auto` / non-`AutoReadOnly`) `Property` whose backing value is never written. A write is an assignment to the property name or to a field the accessors return or assign, outside the property block itself — including a script-level variable initializer. The setter's own `_count = value` plumbing does not count. Computed properties that return something other than a local field (for example `items.Length`) are left alone. `Auto` and `AutoReadOnly` properties are out of scope. Disabled by default, since properties filled by the Creation Kit or another script are common; opt in with `rules.property_never_assigned`, or mark a declaration `; @external` to keep it quiet."
+}

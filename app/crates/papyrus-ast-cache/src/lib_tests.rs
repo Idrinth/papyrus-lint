@@ -7,6 +7,7 @@ use std::io::Read;
 use tempfile::tempdir;
 
 const SKYRIM: papyrus_lint_globals::Game = papyrus_lint_globals::Game::Skyrim;
+const LEGACY: papyrus_lint_globals::Game = papyrus_lint_globals::Game::Legacy;
 const FALLOUT4: papyrus_lint_globals::Game = papyrus_lint_globals::Game::Fallout4;
 const STARFIELD: papyrus_lint_globals::Game = papyrus_lint_globals::Game::Starfield;
 
@@ -199,7 +200,7 @@ fn public_accessors_return_bundled_ast_and_tokens_without_a_source_file() {
 
 #[test]
 fn public_name_accessors_are_case_insensitive_for_every_game() {
-    for game in [SKYRIM, FALLOUT4, STARFIELD] {
+    for game in [SKYRIM, LEGACY, FALLOUT4, STARFIELD] {
         assert!(contains_script_name(game, "aCtOr"));
         assert_eq!(
             ast_for_script_name(game, "aCtOr").map(|ast| ast.name),

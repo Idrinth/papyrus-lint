@@ -92,6 +92,59 @@ fn does_not_flag_unrelated_actor_cast() {
     assert!(diagnostics.is_empty());
 }
 
+#[test]
+fn disable_directives_suppress_only_the_selected_diagnostics() {
+    let source = "ScriptName Example\n\nFunction Bad(ReferenceAlias first, ReferenceAlias second)\n    Actor a = first as Actor ; @disable alias-cast-without-getreference\n    Actor b = second as Actor\nEndFunction\n";
+    let diagnostics = crate::lint(source, &crate::config::Config::default());
+
+    assert!(diagnostics
+        .iter()
+        .all(|diagnostic| diagnostic.rule != RULE || diagnostic.line != 4));
+    assert!(diagnostics
+        .iter()
+        .any(|diagnostic| diagnostic.rule == RULE && diagnostic.line == 5));
+
+    let file_disabled = crate::lint(
+        "; @disable-file alias-cast-without-getreference\nScriptName Example\n\nFunction Bad(ReferenceAlias akAlias)\n    Actor a = akAlias as Actor\nEndFunction\n",
+        &crate::config::Config::default(),
+    );
+    assert!(file_disabled
+        .iter()
+        .all(|diagnostic| diagnostic.rule != RULE));
+}
+
+#[test]
+fn config_off_switch_suppresses_diagnostics() {
+    let source = "ScriptName Example\n\nFunction Bad(ReferenceAlias akAlias)\n    Actor a = akAlias as Actor\nEndFunction\n";
+    let mut config = crate::config::Config::default();
+    config.rules.alias_cast_without_getreference = false;
+
+    let diagnostics = crate::lint(source, &config);
+
+    assert!(diagnostics
+        .iter()
+        .all(|diagnostic| diagnostic.rule != RULE));
+}
+
+#[test]
+fn ignores_primitive_array_and_unknown_cast_values() {
+    let diagnostics = check(
+        "ScriptName Example\n\nFunction Fine(ReferenceAlias akAlias, ReferenceAlias[] aliases)\n    Bool present = akAlias as Bool\n    Actor fromArray = aliases as Actor\n    Actor unknown = missingValue as Actor\nEndFunction\n",
+    );
+
+    assert!(diagnostics.is_empty());
+}
+
+#[test]
+fn local_types_do_not_leak_between_functions() {
+    let diagnostics = check(
+        "ScriptName Example\n\nFunction First()\n    ReferenceAlias selected\n    Actor a = selected as Actor\nEndFunction\n\nFunction Second()\n    Actor selected\n    Actor a = selected as Actor\nEndFunction\n",
+    );
+
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!(diagnostics[0].line, 5);
+}
+
 struct FakeExtendsReferenceAlias;
 
 impl ExternalSignatures for FakeExtendsReferenceAlias {
