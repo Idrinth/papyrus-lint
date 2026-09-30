@@ -49,7 +49,6 @@ pub const NO_SOURCE_CHECK_IDS: &[&str] = &[
     "stale-compiled-output",
     "script-filename-mismatch",
 ];
-const EXTERNAL_REPAIR_IDS: &[&str] = &["unused-import", "argument-naming", "missing-override"];
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct ValidationError(String);
@@ -65,14 +64,15 @@ pub fn load(context: &BuildContext) -> Vec<RuleMetadata> {
 }
 
 #[derive(Debug, Deserialize)]
-struct RuleOrderFile {
-    repair: Vec<String>,
+pub struct RuleOrderFile {
+    pub repair: Vec<String>,
+    /// Fixable rules repaired outside `apply_repairs`.
+    #[serde(default)]
+    pub external_repair: Vec<String>,
 }
 
-pub fn load_repair_order(context: &BuildContext) -> Vec<String> {
-    context
-        .load_yaml::<RuleOrderFile>("shared/rule-order.yaml", "repair order")
-        .repair
+pub fn load_rule_order(context: &BuildContext) -> RuleOrderFile {
+    context.load_yaml::<RuleOrderFile>("shared/rule-order.yaml", "repair order")
 }
 
 pub fn config_key(id: &str) -> String {
@@ -90,7 +90,11 @@ fn mapped_name(id: &str, overrides: &[(&str, &str)]) -> String {
         .map_or_else(|| id.replace('-', "_"), |(_, name)| (*name).to_string())
 }
 
-pub fn validate(rules: &[RuleMetadata], repair_order: &[String]) -> Result<(), ValidationError> {
+pub fn validate(
+    rules: &[RuleMetadata],
+    repair_order: &[String],
+    external_repair: &[String],
+) -> Result<(), ValidationError> {
     let mut seen = HashSet::new();
     for rule in rules {
         if !seen.insert(rule.id.as_str()) {
@@ -132,26 +136,26 @@ pub fn validate(rules: &[RuleMetadata], repair_order: &[String]) -> Result<(), V
             }
         }
         let no_source = NO_SOURCE_CHECK_IDS.contains(&rule.id.as_str());
-        let external_repair = EXTERNAL_REPAIR_IDS.contains(&rule.id.as_str());
+        let external = external_repair.iter().any(|id| id == rule.id.as_str());
         if no_source && repair_order.iter().any(|id| id == rule.id.as_str()) {
             return fail(format!(
                 "shared/rule-order.yaml: {} is a project/post-pass rule and must not be listed under `repair`",
                 rule.id
             ));
         }
-        if external_repair && repair_order.iter().any(|id| id == rule.id.as_str()) {
+        if external && repair_order.iter().any(|id| id == rule.id.as_str()) {
             return fail(format!(
                 "shared/rule-order.yaml: {} is repaired outside apply_repairs and must not be listed under `repair`",
                 rule.id
             ));
         }
         if rule.fixable
-            && !external_repair
+            && !external
             && !no_source
             && !repair_order.iter().any(|id| id == rule.id.as_str())
         {
             return fail(format!(
-                "shared/rule-order.yaml: {} is fixable and must be listed under `repair` (or belong to EXTERNAL_REPAIR_IDS)",
+                "shared/rule-order.yaml: {} is fixable and must be listed under `repair` (or `external_repair`)",
                 rule.id
             ));
         }
@@ -172,6 +176,24 @@ pub fn validate(rules: &[RuleMetadata], repair_order: &[String]) -> Result<(), V
         if !rule.fixable {
             return fail(format!(
                 "shared/rule-order.yaml lists `{id}` under `repair` but that rule is not fixable"
+            ));
+        }
+    }
+    let mut seen_external = HashSet::new();
+    for id in external_repair {
+        if !seen_external.insert(id.as_str()) {
+            return fail(format!(
+                "shared/rule-order.yaml lists `{id}` more than once under `external_repair`"
+            ));
+        }
+        let Some(rule) = by_id.get(id.as_str()) else {
+            return fail(format!(
+                "shared/rule-order.yaml lists `{id}` under `external_repair` but shared/rules.json has no matching id"
+            ));
+        };
+        if !rule.fixable {
+            return fail(format!(
+                "shared/rule-order.yaml lists `{id}` under `external_repair` but that rule is not fixable"
             ));
         }
     }
