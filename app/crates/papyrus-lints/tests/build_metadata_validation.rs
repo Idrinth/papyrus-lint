@@ -143,7 +143,7 @@ fn rejects_repair_orders_on_special_case_rules() {
     let mut project_rule = rule("stale-compiled-output");
     project_rule.fixable = true;
     assert!(
-        validate(&[project_rule], &["stale-compiled-output".to_string()], &[]
+        validate(&[project_rule], &["stale-compiled-output".to_string()], &[])
             .unwrap_err()
             .to_string()
             .contains("project/post-pass rule")
