@@ -854,6 +854,7 @@ jobs:
       - release
       - sublime-plugin
       - vscode-plugin
+      - release-notes
     runs-on: ubuntu-latest
     permissions:
       contents: read
