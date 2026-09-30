@@ -17,8 +17,10 @@ class AssembleLintSettingsTests(unittest.TestCase):
         directory.joinpath(f"{key}.json").write_text(json.dumps(payload), encoding="utf-8")
 
     def write_meta(self, directory: Path, **fields: object) -> Path:
-        path = directory / "lint-settings.meta.json"
-        path.write_text(json.dumps(fields), encoding="utf-8")
+        import yaml
+
+        path = directory / "lint-settings.yaml"
+        path.write_text(yaml.safe_dump(fields, sort_keys=False), encoding="utf-8")
         return path
 
     def test_assembles_in_meta_order_not_filename_order(self) -> None:
@@ -34,16 +36,16 @@ class AssembleLintSettingsTests(unittest.TestCase):
             self.write_setting(lint, "alpha")
             meta = self.write_meta(
                 root,
-                rules_yaml_comment="Each rule accepts true or false",
-                project_settings=["first", "second"],
+                rules_comment="Each rule accepts true or false",
+                project=["first", "second"],
                 settings=["zeta", "alpha"],
             )
 
             document = assemble_lint_settings(project, lint, meta)
 
-            self.assertEqual(["first", "second"], [item["key"] for item in document["project_settings"]])
+            self.assertEqual(["first", "second"], [item["key"] for item in document["project"]])
             self.assertEqual(["zeta", "alpha"], [item["key"] for item in document["settings"]])
-            self.assertEqual("Each rule accepts true or false", document["rules_yaml_comment"])
+            self.assertEqual("Each rule accepts true or false", document["rules_comment"])
 
     def test_rejects_a_key_that_does_not_match_its_file_name(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -58,8 +60,8 @@ class AssembleLintSettingsTests(unittest.TestCase):
             self.write_setting(lint, "game")
             meta = self.write_meta(
                 root,
-                rules_yaml_comment="rules",
-                project_settings=["compiler_path"],
+                rules_comment="rules",
+                project=["compiler_path"],
                 settings=["game"],
             )
 
@@ -78,8 +80,8 @@ class AssembleLintSettingsTests(unittest.TestCase):
             self.write_setting(lint, "game")
             meta = self.write_meta(
                 root,
-                rules_yaml_comment="rules",
-                project_settings=["compiler_path"],
+                rules_comment="rules",
+                project=["compiler_path"],
                 settings=["game"],
             )
 
@@ -97,8 +99,8 @@ class AssembleLintSettingsTests(unittest.TestCase):
             self.write_setting(lint, "game")
             meta = self.write_meta(
                 root,
-                rules_yaml_comment="rules",
-                project_settings=["compiler_path", "missing"],
+                rules_comment="rules",
+                project=["compiler_path", "missing"],
                 settings=["game"],
             )
 
@@ -115,8 +117,8 @@ class AssembleLintSettingsTests(unittest.TestCase):
             self.write_setting(lint, "game")
             meta = self.write_meta(
                 root,
-                rules_yaml_comment="rules",
-                project_settings=["compiler_path"],
+                rules_comment="rules",
+                project=["compiler_path"],
                 settings=["game"],
             )
 
@@ -134,12 +136,12 @@ class AssembleLintSettingsTests(unittest.TestCase):
             self.write_setting(lint, "game")
             meta = self.write_meta(
                 root,
-                rules_yaml_comment="rules",
-                project_settings=["game"],
+                rules_comment="rules",
+                project=["game"],
                 settings=["game"],
             )
 
-            with self.assertRaisesRegex(ValueError, "both project_settings and settings"):
+            with self.assertRaisesRegex(ValueError, "both project and settings"):
                 assemble_lint_settings(project, lint, meta)
 
     def test_rejects_a_missing_meta_file(self) -> None:
@@ -147,34 +149,36 @@ class AssembleLintSettingsTests(unittest.TestCase):
             root = Path(directory)
 
             with self.assertRaisesRegex(ValueError, "does not exist"):
-                assemble_lint_settings(root / "project", root / "lint", root / "missing.json")
+                assemble_lint_settings(root / "project", root / "lint", root / "missing.yaml")
 
     def test_rejects_invalid_meta_documents(self) -> None:
         invalid_documents = (
-            ([], "must contain a JSON object"),
-            ({"rules_yaml_comment": None}, "`rules_yaml_comment` must be a string"),
+            ([], "must contain a mapping"),
+            ({"rules_comment": None}, "`rules_comment` must be a string"),
             (
-                {"rules_yaml_comment": "rules", "project_settings": [], "settings": ["game"]},
-                "`project_settings` must be a non-empty list",
+                {"rules_comment": "rules", "project": [], "settings": ["game"]},
+                "`project` must be a non-empty list",
             ),
             (
-                {"rules_yaml_comment": "rules", "project_settings": [1], "settings": ["game"]},
-                "`project_settings` entries must be non-empty strings",
+                {"rules_comment": "rules", "project": [1], "settings": ["game"]},
+                "`project` entries must be non-empty strings",
             ),
             (
                 {
-                    "rules_yaml_comment": "rules",
-                    "project_settings": ["path", "path"],
+                    "rules_comment": "rules",
+                    "project": ["path", "path"],
                     "settings": ["game"],
                 },
-                "`project_settings` lists a key more than once",
+                "`project` lists a key more than once",
             ),
         )
         for document, message in invalid_documents:
             with self.subTest(document=document), tempfile.TemporaryDirectory() as directory:
                 root = Path(directory)
-                meta = root / "meta.json"
-                meta.write_text(json.dumps(document), encoding="utf-8")
+                import yaml
+
+                meta = root / "meta.yaml"
+                meta.write_text(yaml.safe_dump(document, sort_keys=False), encoding="utf-8")
 
                 with self.assertRaisesRegex(ValueError, message):
                     assemble_lint_settings(root / "project", root / "lint", meta)
@@ -187,8 +191,8 @@ class AssembleLintSettingsTests(unittest.TestCase):
             self.write_setting(project, "compiler_path")
             meta = self.write_meta(
                 root,
-                rules_yaml_comment="rules",
-                project_settings=["compiler_path"],
+                rules_comment="rules",
+                project=["compiler_path"],
                 settings=["game"],
             )
 
@@ -206,8 +210,8 @@ class AssembleLintSettingsTests(unittest.TestCase):
             self.write_setting(lint, "game")
             meta = self.write_meta(
                 root,
-                rules_yaml_comment="rules",
-                project_settings=["compiler_path"],
+                rules_comment="rules",
+                project=["compiler_path"],
                 settings=["game"],
             )
 
@@ -219,14 +223,14 @@ class RenderLintSettingsYamlTests(unittest.TestCase):
     def test_renders_the_checked_in_quoting_style(self) -> None:
         rendered = render_lint_settings_yaml(
             {
-                "project_settings": [
+                "project": [
                     {
                         "key": "compiler_path",
                         "yaml": {"default": "null", "comment": "Path, or null\nto auto-detect"},
                         "schema": {"type": ["string", "null"], "default": None},
                     }
                 ],
-                "rules_yaml_comment": "Each rule accepts true or false",
+                "rules_comment": "Each rule accepts true or false",
                 "settings": [
                     {
                         "key": "semicolon",
@@ -243,7 +247,7 @@ class RenderLintSettingsYamlTests(unittest.TestCase):
         self.assertEqual(
             "\n".join(
                 [
-                    "project_settings:",
+                    "project:",
                     "  - key: compiler_path",
                     "    yaml:",
                     "      default: 'null'",
@@ -253,7 +257,7 @@ class RenderLintSettingsYamlTests(unittest.TestCase):
                     "        - string",
                     "        - 'null'",
                     "      default: null",
-                    "rules_yaml_comment: Each rule accepts true or false",
+                    "rules_comment: Each rule accepts true or false",
                     "settings:",
                     "  - key: semicolon",
                     "    rust:",
@@ -278,7 +282,7 @@ class RenderLintSettingsYamlTests(unittest.TestCase):
         document = assemble_lint_settings(
             configuration / "project-settings",
             configuration / "lint-settings",
-            configuration / "lint-settings.meta.json",
+            configuration / "lint-settings.yaml",
         )
 
         loaded = yaml.safe_load(render_lint_settings_yaml(document))
@@ -288,8 +292,8 @@ class RenderLintSettingsYamlTests(unittest.TestCase):
     def test_renders_empty_collections_numbers_and_quoted_keys(self) -> None:
         rendered = render_lint_settings_yaml(
             {
-                "project_settings": [{}],
-                "rules_yaml_comment": "rules",
+                "project": [{}],
+                "rules_comment": "rules",
                 "settings": [
                     {
                         "key": "example",
@@ -314,8 +318,8 @@ class RenderLintSettingsYamlTests(unittest.TestCase):
 
         values = ["", " padded ", "yes", "~", "12", "[]", "-", "#comment", "a: b", "a#b"]
         document = {
-            "project_settings": [{"key": "project"}],
-            "rules_yaml_comment": "rules",
+            "project": [{"key": "project"}],
+            "rules_comment": "rules",
             "settings": [{"key": "example", "values": values}],
         }
 
@@ -332,8 +336,8 @@ class RenderLintSettingsYamlTests(unittest.TestCase):
             with self.subTest(setting=setting), self.assertRaisesRegex(TypeError, "cannot render"):
                 render_lint_settings_yaml(
                     {
-                        "project_settings": [{"key": "project"}],
-                        "rules_yaml_comment": "rules",
+                        "project": [{"key": "project"}],
+                        "rules_comment": "rules",
                         "settings": [setting],
                     },
                     header=False,
