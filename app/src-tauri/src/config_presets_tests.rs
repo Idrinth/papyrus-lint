@@ -1,9 +1,24 @@
 use super::*;
 use std::fs;
 use std::sync::Mutex;
+use tauri::test::{
+    assert_ipc_response, get_ipc_response, mock_builder, mock_context, noop_assets, INVOKE_KEY,
+};
 use tempfile::tempdir;
 
 use crate::lint_config::{load_lint_config, save_lint_config};
+
+fn invoke_request(command: &str, body: serde_json::Value) -> tauri::webview::InvokeRequest {
+    tauri::webview::InvokeRequest {
+        cmd: command.into(),
+        callback: tauri::ipc::CallbackFn(0),
+        error: tauri::ipc::CallbackFn(1),
+        url: "tauri://localhost".parse().unwrap(),
+        body: tauri::ipc::InvokeBody::Json(body),
+        headers: Default::default(),
+        invoke_key: INVOKE_KEY.to_string(),
+    }
+}
 
 // User presets live beside the test executable, so tests which inspect or
 // mutate that shared directory must not run at the same time.
@@ -367,4 +382,113 @@ fn user_preset_commands_match_names_case_insensitively() {
 
     delete_user_preset(renamed_name.to_uppercase()).unwrap();
     assert!(get_preset_lint_config(renamed_name).is_err());
+}
+
+#[test]
+fn config_preset_commands_accept_frontend_payloads_over_ipc() {
+    let _guard = USER_PRESETS.lock().unwrap();
+    let name = format!("desktop-ipc-test-{}", std::process::id());
+    let renamed_name = format!("desktop-ipc-renamed-{}", std::process::id());
+    let _cleanup = UserPresetCleanup(vec![name.clone(), renamed_name.clone()]);
+    let config = papyrus_lints::Config {
+        indentation_width: 3,
+        ..Default::default()
+    };
+    let app = crate::configure_builder(mock_builder())
+        .build(mock_context(noop_assets()))
+        .unwrap();
+    let webview = tauri::WebviewWindowBuilder::new(&app, "preset-test", Default::default())
+        .build()
+        .unwrap();
+
+    assert_ipc_response(
+        &webview,
+        invoke_request(
+            "save_config_as_preset",
+            serde_json::json!({ "config": config, "name": name, "overwrite": false }),
+        ),
+        Ok(()),
+    );
+
+    let loaded = get_ipc_response(
+        &webview,
+        invoke_request(
+            "get_preset_lint_config",
+            serde_json::json!({ "preset": name }),
+        ),
+    )
+    .unwrap()
+    .deserialize::<papyrus_lints::Config>()
+    .unwrap();
+    assert_eq!(loaded, config);
+
+    assert_ipc_response(
+        &webview,
+        invoke_request(
+            "rename_user_preset",
+            serde_json::json!({
+                "oldName": name,
+                "newName": renamed_name,
+                "overwrite": false,
+            }),
+        ),
+        Ok(()),
+    );
+    let yaml = get_ipc_response(
+        &webview,
+        invoke_request(
+            "export_user_preset",
+            serde_json::json!({ "name": renamed_name }),
+        ),
+    )
+    .unwrap()
+    .deserialize::<String>()
+    .unwrap();
+    assert!(yaml.contains("indentation_width: 3"));
+
+    assert_ipc_response(
+        &webview,
+        invoke_request(
+            "delete_user_preset",
+            serde_json::json!({ "name": renamed_name }),
+        ),
+        Ok(()),
+    );
+}
+
+#[test]
+fn config_preset_commands_reject_malformed_frontend_payloads_over_ipc() {
+    let app = crate::configure_builder(mock_builder())
+        .build(mock_context(noop_assets()))
+        .unwrap();
+    let webview = tauri::WebviewWindowBuilder::new(&app, "preset-error-test", Default::default())
+        .build()
+        .unwrap();
+
+    let missing_name = get_ipc_response(
+        &webview,
+        invoke_request("delete_user_preset", serde_json::json!({})),
+    )
+    .expect_err("a missing preset name should be rejected");
+    assert!(
+        missing_name
+            .as_str()
+            .is_some_and(|message| message.contains("missing required key name")),
+        "{missing_name}"
+    );
+
+    let invalid_config = get_ipc_response(
+        &webview,
+        invoke_request(
+            "save_config_as_preset",
+            serde_json::json!({ "config": false, "name": "test", "overwrite": false }),
+        ),
+    )
+    .expect_err("a non-object lint config should be rejected");
+    assert!(
+        invalid_config
+            .as_str()
+            .is_some_and(|message| message.contains("invalid type")),
+        "{invalid_config}"
+    );
 }
