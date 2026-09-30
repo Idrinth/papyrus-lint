@@ -46,14 +46,12 @@ fn a_published_fixable_rule_works_through_the_filtered_public_api() {
     unused_disable_config.rules.unused_disable = true;
 
     let default_config = Config::default();
-    let cases = [
-        (
-            "identifier-casing",
-            "ScriptName Example\n\nFunction Run(Int left)\nEndFunction\n",
-            "ScriptName Example\n\nFunction Run(Int Left)\nEndFunction\n",
-            &default_config,
-        ),
-    ];
+    let cases = [(
+        "identifier-casing",
+        "ScriptName Example\n\nFunction Run(Int left)\nEndFunction\n",
+        "ScriptName Example\n\nFunction Run(Int Left)\nEndFunction\n",
+        &default_config,
+    )];
 
     for (rule, source, expected, config) in cases {
         assert_eq!(

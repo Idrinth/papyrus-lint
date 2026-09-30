@@ -32,8 +32,10 @@ struct YamlMeta {
 }
 
 pub fn compile(context: &BuildContext) {
-    let file: LintSettingsFile =
-        context.load_yaml("shared/configuration/lint-settings.generated.yaml", "lint settings");
+    let file: LintSettingsFile = context.load_yaml(
+        "shared/configuration/lint-settings.generated.yaml",
+        "lint settings",
+    );
     let relative = "shared/configuration/papyrus-lint.default.yaml";
     let source = context.load_text(relative, "default config");
     let top = default_config_top(&source);
@@ -102,7 +104,9 @@ fn render(settings: &[LintSetting]) -> String {
     out.line("/// they change). Fields absent from the YAML fall back to their default.");
     out.line("/// File I/O for that YAML lives in `papyrus-lint-config`.");
     out.line("///");
-    out.line("/// Generated from `shared/configuration/lint-settings.generated.yaml` by `build.rs`.");
+    out.line(
+        "/// Generated from `shared/configuration/lint-settings.generated.yaml` by `build.rs`.",
+    );
     out.line("/// Do not edit by hand. `rules` is the exception: that struct is");
     out.line("/// generated from `shared/rules.json`.");
     out.line("#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]");
