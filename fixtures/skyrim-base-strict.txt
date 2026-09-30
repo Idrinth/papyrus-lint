@@ -775,13 +775,22 @@ Source/Scripts/ArenaInteriorDoorScript.psc:17:18:forbidden-functions
 Source/Scripts/ArenaInteriorDoorScript.psc:19:1:indentation
 Source/Scripts/ArenaInteriorDoorScript.psc:20:1:indentation
 Source/Scripts/ArenaScript.psc:1:49:line-endings
+Source/Scripts/ArenaScript.psc:3:15:property-never-read
+Source/Scripts/ArenaScript.psc:4:15:property-never-read
+Source/Scripts/ArenaScript.psc:10:15:property-never-read
 Source/Scripts/ArenaScript.psc:11:15:unused-property
+Source/Scripts/ArenaScript.psc:13:14:property-never-read
 Source/Scripts/ArenaScript.psc:14:14:unused-property
 Source/Scripts/ArenaScript.psc:37:1:identifier-casing
 Source/Scripts/ArenaScript.psc:38:1:identifier-casing
 Source/Scripts/ArenaScript.psc:39:1:identifier-casing
 Source/Scripts/ArenaScript.psc:40:1:identifier-casing
 Source/Scripts/ArenaScript.psc:41:1:identifier-casing
+Source/Scripts/ArenaScript.psc:68:15:property-never-read
+Source/Scripts/ArenaScript.psc:71:15:property-never-read
+Source/Scripts/ArenaScript.psc:72:15:property-never-read
+Source/Scripts/ArenaScript.psc:73:15:property-never-read
+Source/Scripts/ArenaScript.psc:74:15:property-never-read
 Source/Scripts/ArenaScript.psc:79:1:indentation
 Source/Scripts/ArenaScript.psc:80:1:indentation
 Source/Scripts/ArenaScript.psc:80:47:trailing-whitespace
@@ -1270,7 +1279,9 @@ Source/Scripts/AventusSacramentTriggerScript.psc:13:44:trailing-whitespace
 Source/Scripts/BFBPuzzle01Control.psc:1:54:line-endings
 Source/Scripts/BFBPuzzle01Control.psc:8:1:unused-import
 Source/Scripts/BFBPuzzle01Control.psc:11:1:identifier-casing
+Source/Scripts/BFBPuzzle01Control.psc:11:15:property-never-read
 Source/Scripts/BFBPuzzle01Control.psc:12:1:identifier-casing
+Source/Scripts/BFBPuzzle01Control.psc:12:15:property-never-read
 Source/Scripts/BFBPuzzle01Control.psc:13:1:identifier-casing
 Source/Scripts/BFBPuzzle01Control.psc:15:1:identifier-casing
 Source/Scripts/BFBPuzzle01Control.psc:16:42:trailing-whitespace
@@ -1674,7 +1685,9 @@ Source/Scripts/BYOHHouseBuildingPlayerScript.psc:23:1:unchecked-cast
 Source/Scripts/BYOHHouseBuildingPlayerScript.psc:24:1:unchecked-cast
 Source/Scripts/BYOHHouseBuildingScript.psc:1:62:line-endings
 Source/Scripts/BYOHHouseBuildingScript.psc:4:1:identifier-casing
+Source/Scripts/BYOHHouseBuildingScript.psc:4:14:property-never-read
 Source/Scripts/BYOHHouseBuildingScript.psc:11:1:identifier-casing
+Source/Scripts/BYOHHouseBuildingScript.psc:11:14:property-never-read
 Source/Scripts/BYOHHouseBuildingScript.psc:16:1:identifier-casing
 Source/Scripts/BYOHHouseBuildingScript.psc:27:1:identifier-casing
 Source/Scripts/BYOHHouseBuildingScript.psc:28:1:identifier-casing
@@ -2432,6 +2445,7 @@ Source/Scripts/BYOHHouseFishHatcheryScript.psc:7:41:semicolon
 Source/Scripts/BYOHHouseFishHatcheryScript.psc:9:1:identifier-casing
 Source/Scripts/BYOHHouseFishHatcheryScript.psc:10:1:identifier-casing
 Source/Scripts/BYOHHouseFishHatcheryScript.psc:12:1:identifier-casing
+Source/Scripts/BYOHHouseFishHatcheryScript.psc:12:14:property-never-read
 Source/Scripts/BYOHHouseFishHatcheryScript.psc:17:1:function-override
 Source/Scripts/BYOHHouseFishHatcheryScript.psc:18:18:forbidden-functions
 Source/Scripts/BYOHHouseFishHatcheryScript.psc:22:1:argument-naming
@@ -2891,6 +2905,7 @@ Source/Scripts/BYOHPlanterContainerScript.psc:3:1:identifier-casing
 Source/Scripts/BYOHPlanterContainerScript.psc:4:1:identifier-casing
 Source/Scripts/BYOHPlanterContainerScript.psc:6:1:identifier-casing
 Source/Scripts/BYOHPlanterContainerScript.psc:7:1:identifier-casing
+Source/Scripts/BYOHPlanterContainerScript.psc:7:15:property-never-read
 Source/Scripts/BYOHPlanterContainerScript.psc:8:1:identifier-casing
 Source/Scripts/BYOHPlanterContainerScript.psc:9:1:identifier-casing
 Source/Scripts/BYOHPlanterContainerScript.psc:10:1:identifier-casing
@@ -3358,10 +3373,15 @@ Source/Scripts/BYOHRelationshipAdoptableScript.psc:1:69:line-endings
 Source/Scripts/BYOHRelationshipAdoptableScript.psc:7:121:line-length
 Source/Scripts/BYOHRelationshipAdoptableScript.psc:14:1:identifier-casing
 Source/Scripts/BYOHRelationshipAdoptableScript.psc:15:1:identifier-casing
+Source/Scripts/BYOHRelationshipAdoptableScript.psc:15:15:property-never-read
 Source/Scripts/BYOHRelationshipAdoptableScript.psc:16:1:identifier-casing
+Source/Scripts/BYOHRelationshipAdoptableScript.psc:16:15:property-never-read
 Source/Scripts/BYOHRelationshipAdoptableScript.psc:17:1:identifier-casing
+Source/Scripts/BYOHRelationshipAdoptableScript.psc:17:15:property-never-read
 Source/Scripts/BYOHRelationshipAdoptableScript.psc:20:1:identifier-casing
+Source/Scripts/BYOHRelationshipAdoptableScript.psc:20:15:property-never-read
 Source/Scripts/BYOHRelationshipAdoptableScript.psc:21:1:identifier-casing
+Source/Scripts/BYOHRelationshipAdoptableScript.psc:21:15:property-never-read
 Source/Scripts/BYOHRelationshipAdoptableScript.psc:22:1:identifier-casing
 Source/Scripts/BYOHRelationshipAdoptableScript.psc:23:1:identifier-casing
 Source/Scripts/BYOHRelationshipAdoptableScript.psc:24:1:identifier-casing
@@ -3914,9 +3934,12 @@ Source/Scripts/BYOHRelationshipAdoptionScript.psc:116:1:identifier-casing
 Source/Scripts/BYOHRelationshipAdoptionScript.psc:117:1:identifier-casing
 Source/Scripts/BYOHRelationshipAdoptionScript.psc:117:121:line-length
 Source/Scripts/BYOHRelationshipAdoptionScript.psc:118:1:identifier-casing
+Source/Scripts/BYOHRelationshipAdoptionScript.psc:118:16:property-never-read
 Source/Scripts/BYOHRelationshipAdoptionScript.psc:118:121:line-length
 Source/Scripts/BYOHRelationshipAdoptionScript.psc:121:1:identifier-casing
 Source/Scripts/BYOHRelationshipAdoptionScript.psc:122:1:identifier-casing
+Source/Scripts/BYOHRelationshipAdoptionScript.psc:123:15:property-never-read
+Source/Scripts/BYOHRelationshipAdoptionScript.psc:124:15:property-never-read
 Source/Scripts/BYOHRelationshipAdoptionScript.psc:124:121:line-length
 Source/Scripts/BYOHRelationshipAdoptionScript.psc:125:121:line-length
 Source/Scripts/BYOHRelationshipAdoptionScript.psc:126:1:identifier-casing
@@ -7406,6 +7429,7 @@ Source/Scripts/BlackreachDoorScript.psc:1:68:line-endings
 Source/Scripts/BlackreachDoorScript.psc:4:1:unused-import
 Source/Scripts/BlackreachDoorScript.psc:8:1:identifier-casing
 Source/Scripts/BlackreachDoorScript.psc:11:1:identifier-casing
+Source/Scripts/BlackreachDoorScript.psc:11:15:property-never-read
 Source/Scripts/BlackreachDoorScript.psc:14:1:identifier-casing
 Source/Scripts/BlackreachDoorScript.psc:17:1:identifier-casing
 Source/Scripts/BlackreachDoorScript.psc:20:1:identifier-casing
@@ -7448,6 +7472,7 @@ Source/Scripts/BlackreachDragonOnHitScript.psc:4:121:line-length
 Source/Scripts/BlackreachDragonOnHitScript.psc:10:9:final-newline
 Source/Scripts/BlackreachLockScript.psc:1:56:line-endings
 Source/Scripts/BlackreachLockScript.psc:12:1:identifier-casing
+Source/Scripts/BlackreachLockScript.psc:12:15:property-never-read
 Source/Scripts/BlackreachLockScript.psc:15:1:identifier-casing
 Source/Scripts/BlackreachLockScript.psc:21:1:identifier-casing
 Source/Scripts/BlackreachLockScript.psc:22:1:identifier-casing
@@ -7761,7 +7786,10 @@ Source/Scripts/C00JorrvaskrFightNjadaScript.psc:4:121:line-length
 Source/Scripts/C00JorrvaskrFightNjadaScript.psc:5:26:forbidden-functions
 Source/Scripts/C00JorrvaskrFightNjadaScript.psc:6:1:unchecked-cast
 Source/Scripts/C00JorrvaskrFightSceneScript.psc:1:66:line-endings
+Source/Scripts/C00JorrvaskrFightSceneScript.psc:3:15:property-never-read
 Source/Scripts/C00JorrvaskrFightSceneScript.psc:4:15:unused-property
+Source/Scripts/C00JorrvaskrFightSceneScript.psc:9:14:property-never-read
+Source/Scripts/C00JorrvaskrFightSceneScript.psc:10:15:property-never-read
 Source/Scripts/C00JorrvaskrFightSceneScript.psc:11:15:unused-property
 Source/Scripts/C00JorrvaskrFightSceneScript.psc:13:26:unused-property
 Source/Scripts/C00JorrvaskrFightSceneScript.psc:13:43:trailing-whitespace
@@ -7779,6 +7807,7 @@ Source/Scripts/C00JorrvaskrFightSceneScript.psc:24:37:trailing-whitespace
 Source/Scripts/C00JorrvaskrFightSceneScript.psc:25:37:trailing-whitespace
 Source/Scripts/C00JorrvaskrFightSceneScript.psc:26:36:trailing-whitespace
 Source/Scripts/C00JorrvaskrFightSceneScript.psc:27:36:trailing-whitespace
+Source/Scripts/C00JorrvaskrFightSceneScript.psc:31:15:property-never-read
 Source/Scripts/C00JorrvaskrFightSceneScript.psc:36:1:function-length
 Source/Scripts/C00JorrvaskrFightSceneScript.psc:37:1:none-form-usage
 Source/Scripts/C00JorrvaskrFightSceneScript.psc:38:1:none-form-usage
@@ -7956,6 +7985,7 @@ Source/Scripts/C00VilkasScript.psc:31:9:forbidden-functions
 Source/Scripts/C00VilkasScript.psc:33:1:none-form-usage
 Source/Scripts/C00VilkasScript.psc:37:1:final-newline
 Source/Scripts/C00VilkasTrainingScript.psc:1:61:line-endings
+Source/Scripts/C00VilkasTrainingScript.psc:4:15:property-never-read
 Source/Scripts/C00VilkasTrainingScript.psc:5:18:unused-property
 Source/Scripts/C00VilkasTrainingScript.psc:16:1:none-form-usage
 Source/Scripts/C00VilkasTrainingScript.psc:17:1:alias-cast-without-getreference
@@ -8037,6 +8067,8 @@ Source/Scripts/C01ObserverScript.psc:9:1:indentation
 Source/Scripts/C01ObserverScript.psc:11:1:final-newline
 Source/Scripts/C01QuestScript.psc:1:67:line-endings
 Source/Scripts/C01QuestScript.psc:5:15:unused-property
+Source/Scripts/C01QuestScript.psc:7:15:property-never-read
+Source/Scripts/C01QuestScript.psc:8:15:property-never-read
 Source/Scripts/C01QuestScript.psc:9:15:unused-property
 Source/Scripts/C01QuestScript.psc:10:26:unused-property
 Source/Scripts/C01QuestScript.psc:11:16:unused-property
@@ -8046,6 +8078,7 @@ Source/Scripts/C01QuestScript.psc:15:16:unused-property
 Source/Scripts/C01QuestScript.psc:16:15:unused-property
 Source/Scripts/C01QuestScript.psc:18:15:unused-property
 Source/Scripts/C01QuestScript.psc:19:15:unused-property
+Source/Scripts/C01QuestScript.psc:21:15:property-never-read
 Source/Scripts/C01QuestScript.psc:22:15:unused-property
 Source/Scripts/C01QuestScript.psc:41:1:identifier-casing
 Source/Scripts/C01QuestScript.psc:52:15:unused-property
@@ -8639,6 +8672,7 @@ Source/Scripts/C04PlayerSitScript.psc:14:1:identifier-casing
 Source/Scripts/C04PlayerSitScript.psc:15:1:none-form-usage
 Source/Scripts/C04PlayerSitScript.psc:16:1:unchecked-cast
 Source/Scripts/C04QuestScript.psc:1:67:line-endings
+Source/Scripts/C04QuestScript.psc:6:15:property-never-read
 Source/Scripts/C04QuestScript.psc:7:15:unused-property
 Source/Scripts/C04QuestScript.psc:8:15:unused-property
 Source/Scripts/C04QuestScript.psc:9:15:unused-property
@@ -10629,6 +10663,7 @@ Source/Scripts/CWCampaignFieldCOScript.psc:1:60:line-endings
 Source/Scripts/CWCampaignFieldCOScript.psc:3:121:line-length
 Source/Scripts/CWCampaignFieldCOScript.psc:5:32:trailing-whitespace
 Source/Scripts/CWCampaignFieldCOScript.psc:6:25:trailing-whitespace
+Source/Scripts/CWCampaignFieldCOScript.psc:10:15:property-never-read
 Source/Scripts/CWCampaignFieldCOScript.psc:10:121:line-length
 Source/Scripts/CWCampaignFieldCOScript.psc:12:1:identifier-casing
 Source/Scripts/CWCampaignFieldCOScript.psc:14:1:undefined-event
@@ -10717,15 +10752,20 @@ Source/Scripts/CWCampaignScript.psc:14:1:identifier-casing
 Source/Scripts/CWCampaignScript.psc:14:50:trailing-whitespace
 Source/Scripts/CWCampaignScript.psc:15:1:identifier-casing
 Source/Scripts/CWCampaignScript.psc:15:50:trailing-whitespace
+Source/Scripts/CWCampaignScript.psc:18:14:property-never-read
 Source/Scripts/CWCampaignScript.psc:18:51:trailing-whitespace
+Source/Scripts/CWCampaignScript.psc:19:14:property-never-read
 Source/Scripts/CWCampaignScript.psc:19:50:trailing-whitespace
+Source/Scripts/CWCampaignScript.psc:20:14:property-never-read
 Source/Scripts/CWCampaignScript.psc:20:50:trailing-whitespace
 Source/Scripts/CWCampaignScript.psc:39:121:line-length
 Source/Scripts/CWCampaignScript.psc:41:27:trailing-whitespace
 Source/Scripts/CWCampaignScript.psc:64:14:unused-property
 Source/Scripts/CWCampaignScript.psc:70:1:identifier-casing
+Source/Scripts/CWCampaignScript.psc:70:14:property-never-read
 Source/Scripts/CWCampaignScript.psc:70:121:line-length
 Source/Scripts/CWCampaignScript.psc:71:1:identifier-casing
+Source/Scripts/CWCampaignScript.psc:71:14:property-never-read
 Source/Scripts/CWCampaignScript.psc:71:121:line-length
 Source/Scripts/CWCampaignScript.psc:73:1:identifier-casing
 Source/Scripts/CWCampaignScript.psc:73:14:unused-property
@@ -10736,18 +10776,24 @@ Source/Scripts/CWCampaignScript.psc:77:1:indentation
 Source/Scripts/CWCampaignScript.psc:79:1:identifier-casing
 Source/Scripts/CWCampaignScript.psc:79:121:line-length
 Source/Scripts/CWCampaignScript.psc:81:1:identifier-casing
+Source/Scripts/CWCampaignScript.psc:81:14:property-never-read
 Source/Scripts/CWCampaignScript.psc:83:1:identifier-casing
 Source/Scripts/CWCampaignScript.psc:83:121:line-length
 Source/Scripts/CWCampaignScript.psc:86:1:identifier-casing
 Source/Scripts/CWCampaignScript.psc:86:121:line-length
 Source/Scripts/CWCampaignScript.psc:87:1:identifier-casing
+Source/Scripts/CWCampaignScript.psc:87:16:property-never-read
 Source/Scripts/CWCampaignScript.psc:87:121:line-length
 Source/Scripts/CWCampaignScript.psc:88:1:identifier-casing
+Source/Scripts/CWCampaignScript.psc:88:16:property-never-read
 Source/Scripts/CWCampaignScript.psc:88:121:line-length
 Source/Scripts/CWCampaignScript.psc:89:1:identifier-casing
+Source/Scripts/CWCampaignScript.psc:89:14:property-never-read
 Source/Scripts/CWCampaignScript.psc:89:121:line-length
 Source/Scripts/CWCampaignScript.psc:90:1:identifier-casing
+Source/Scripts/CWCampaignScript.psc:90:14:property-never-read
 Source/Scripts/CWCampaignScript.psc:90:121:line-length
+Source/Scripts/CWCampaignScript.psc:95:14:property-never-read
 Source/Scripts/CWCampaignScript.psc:95:121:line-length
 Source/Scripts/CWCampaignScript.psc:97:121:line-length
 Source/Scripts/CWCampaignScript.psc:98:121:line-length
@@ -10761,8 +10807,11 @@ Source/Scripts/CWCampaignScript.psc:230:121:line-length
 Source/Scripts/CWCampaignScript.psc:231:26:unused-property
 Source/Scripts/CWCampaignScript.psc:231:121:line-length
 Source/Scripts/CWCampaignScript.psc:235:121:line-length
+Source/Scripts/CWCampaignScript.psc:236:15:property-never-read
 Source/Scripts/CWCampaignScript.psc:236:121:line-length
+Source/Scripts/CWCampaignScript.psc:237:15:property-never-read
 Source/Scripts/CWCampaignScript.psc:237:121:line-length
+Source/Scripts/CWCampaignScript.psc:238:15:property-never-read
 Source/Scripts/CWCampaignScript.psc:238:121:line-length
 Source/Scripts/CWCampaignScript.psc:246:121:line-length
 Source/Scripts/CWCampaignScript.psc:246:128:trailing-whitespace
@@ -12763,6 +12812,8 @@ Source/Scripts/CWFortSiegeJarlsHouseDoorScript.psc:50:1:trailing-whitespace
 Source/Scripts/CWFortSiegeMissionScript.psc:1:60:trailing-whitespace
 Source/Scripts/CWFortSiegeMissionScript.psc:1:62:line-endings
 Source/Scripts/CWFortSiegeMissionScript.psc:4:121:line-length
+Source/Scripts/CWFortSiegeMissionScript.psc:8:14:property-never-read
+Source/Scripts/CWFortSiegeMissionScript.psc:9:14:property-never-read
 Source/Scripts/CWFortSiegeMissionScript.psc:12:1:function-override
 Source/Scripts/CWFortSiegeMissionScript.psc:12:1:identifier-casing
 Source/Scripts/CWFortSiegeMissionScript.psc:12:1:identifier-casing
@@ -13553,6 +13604,7 @@ Source/Scripts/CWMapScript.psc:270:1:trailing-whitespace
 Source/Scripts/CWMapScript.psc:272:1:trailing-whitespace
 Source/Scripts/CWMapScript.psc:274:1:trailing-whitespace
 Source/Scripts/CWMapTableSceneScript.psc:1:60:line-endings
+Source/Scripts/CWMapTableSceneScript.psc:9:14:property-never-read
 Source/Scripts/CWMapTableSceneScript.psc:10:121:line-length
 Source/Scripts/CWMapTableSceneScript.psc:13:121:line-length
 Source/Scripts/CWMapTableSceneScript.psc:15:1:identifier-casing
@@ -13640,6 +13692,7 @@ Source/Scripts/CWMission01SquadMemberScript.psc:23:1:identifier-casing
 Source/Scripts/CWMission01SquadMemberScript.psc:24:1:unchecked-cast
 Source/Scripts/CWMission02ResourceObjectScript.psc:1:66:trailing-whitespace
 Source/Scripts/CWMission02ResourceObjectScript.psc:1:68:line-endings
+Source/Scripts/CWMission02ResourceObjectScript.psc:3:28:property-never-read
 Source/Scripts/CWMission02ResourceObjectScript.psc:5:1:identifier-casing
 Source/Scripts/CWMission02ResourceObjectScript.psc:6:1:identifier-casing
 Source/Scripts/CWMission02ResourceObjectScript.psc:16:1:undefined-event
@@ -13757,6 +13810,7 @@ Source/Scripts/CWMission04PrisonerScript.psc:8:1:identifier-casing
 Source/Scripts/CWMission04PrisonerScript.psc:9:1:unchecked-cast
 Source/Scripts/CWMission04Script.psc:1:66:line-endings
 Source/Scripts/CWMission04Script.psc:30:1:identifier-casing
+Source/Scripts/CWMission04Script.psc:30:14:property-never-read
 Source/Scripts/CWMission04Script.psc:32:16:unused-property
 Source/Scripts/CWMission04Script.psc:35:1:unnecessary-function
 Source/Scripts/CWMission04Script.psc:38:57:operator-spacing
@@ -14238,6 +14292,7 @@ Source/Scripts/CWMissionPollForCampaignPhaseScript.psc:69:121:line-length
 Source/Scripts/CWMissionPollForFailDayScript.psc:1:55:line-endings
 Source/Scripts/CWMissionPollForFailDayScript.psc:4:24:trailing-whitespace
 Source/Scripts/CWMissionPollForFailDayScript.psc:5:32:trailing-whitespace
+Source/Scripts/CWMissionPollForFailDayScript.psc:10:27:property-never-read
 Source/Scripts/CWMissionPollForFailDayScript.psc:13:1:undefined-event
 Source/Scripts/CWMissionPollForFailDayScript.psc:17:1:trailing-whitespace
 Source/Scripts/CWMissionPollForFailDayScript.psc:18:1:useless-downcast
@@ -14346,7 +14401,9 @@ Source/Scripts/CWMissionScript.psc:1:41:line-endings
 Source/Scripts/CWMissionScript.psc:6:121:line-length
 Source/Scripts/CWMissionScript.psc:22:121:line-length
 Source/Scripts/CWMissionScript.psc:25:1:identifier-casing
+Source/Scripts/CWMissionScript.psc:25:14:property-never-read
 Source/Scripts/CWMissionScript.psc:26:1:identifier-casing
+Source/Scripts/CWMissionScript.psc:26:14:property-never-read
 Source/Scripts/CWMissionScript.psc:26:121:line-length
 Source/Scripts/CWMissionScript.psc:28:1:identifier-casing
 Source/Scripts/CWMissionScript.psc:28:121:line-length
@@ -14357,11 +14414,14 @@ Source/Scripts/CWMissionScript.psc:31:1:identifier-casing
 Source/Scripts/CWMissionScript.psc:31:14:unused-property
 Source/Scripts/CWMissionScript.psc:31:121:line-length
 Source/Scripts/CWMissionScript.psc:34:1:identifier-casing
+Source/Scripts/CWMissionScript.psc:34:14:property-never-read
 Source/Scripts/CWMissionScript.psc:35:1:identifier-casing
+Source/Scripts/CWMissionScript.psc:35:14:property-never-read
 Source/Scripts/CWMissionScript.psc:36:1:identifier-casing
 Source/Scripts/CWMissionScript.psc:37:1:identifier-casing
 Source/Scripts/CWMissionScript.psc:38:1:identifier-casing
 Source/Scripts/CWMissionScript.psc:39:1:identifier-casing
+Source/Scripts/CWMissionScript.psc:39:14:property-never-read
 Source/Scripts/CWMissionScript.psc:46:25:unused-property
 Source/Scripts/CWMissionScript.psc:49:25:unused-property
 Source/Scripts/CWMissionScript.psc:53:24:trailing-whitespace
@@ -15064,6 +15124,7 @@ Source/Scripts/CWReinforcementControllerScript.psc:111:19:trailing-whitespace
 Source/Scripts/CWReinforcementControllerScript.psc:112:19:trailing-whitespace
 Source/Scripts/CWReinforcementControllerScript.psc:113:19:trailing-whitespace
 Source/Scripts/CWReinforcementControllerScript.psc:116:21:trailing-whitespace
+Source/Scripts/CWReinforcementControllerScript.psc:124:27:property-never-read
 Source/Scripts/CWReinforcementControllerScript.psc:129:1:undefined-event
 Source/Scripts/CWReinforcementControllerScript.psc:133:1:trailing-whitespace
 Source/Scripts/CWReinforcementControllerScript.psc:134:1:indentation
@@ -16012,6 +16073,7 @@ Source/Scripts/CWResetGarrisonScript.psc:104:18:unused-property
 Source/Scripts/CWResetGarrisonScript.psc:104:43:trailing-whitespace
 Source/Scripts/CWResetGarrisonScript.psc:105:18:unused-property
 Source/Scripts/CWResetGarrisonScript.psc:105:39:trailing-whitespace
+Source/Scripts/CWResetGarrisonScript.psc:110:27:property-never-read
 Source/Scripts/CWResetGarrisonScript.psc:114:61:trailing-whitespace
 Source/Scripts/CWResetGarrisonScript.psc:119:1:undefined-event
 Source/Scripts/CWResetGarrisonScript.psc:120:1:trailing-whitespace
@@ -16552,6 +16614,7 @@ Source/Scripts/CWScript.psc:47:1:identifier-casing
 Source/Scripts/CWScript.psc:48:1:identifier-casing
 Source/Scripts/CWScript.psc:49:1:identifier-casing
 Source/Scripts/CWScript.psc:51:1:identifier-casing
+Source/Scripts/CWScript.psc:51:14:property-never-read
 Source/Scripts/CWScript.psc:51:121:line-length
 Source/Scripts/CWScript.psc:55:1:identifier-casing
 Source/Scripts/CWScript.psc:55:121:line-length
@@ -16578,6 +16641,7 @@ Source/Scripts/CWScript.psc:81:121:line-length
 Source/Scripts/CWScript.psc:83:1:identifier-casing
 Source/Scripts/CWScript.psc:84:121:line-length
 Source/Scripts/CWScript.psc:88:1:identifier-casing
+Source/Scripts/CWScript.psc:88:14:property-never-read
 Source/Scripts/CWScript.psc:88:121:line-length
 Source/Scripts/CWScript.psc:90:15:unused-property
 Source/Scripts/CWScript.psc:90:121:line-length
@@ -16629,7 +16693,9 @@ Source/Scripts/CWScript.psc:144:48:trailing-whitespace
 Source/Scripts/CWScript.psc:153:1:identifier-casing
 Source/Scripts/CWScript.psc:153:121:line-length
 Source/Scripts/CWScript.psc:155:1:identifier-casing
+Source/Scripts/CWScript.psc:155:14:property-never-read
 Source/Scripts/CWScript.psc:156:1:identifier-casing
+Source/Scripts/CWScript.psc:156:14:property-never-read
 Source/Scripts/CWScript.psc:172:121:line-length
 Source/Scripts/CWScript.psc:175:44:trailing-whitespace
 Source/Scripts/CWScript.psc:176:42:trailing-whitespace
@@ -16654,18 +16720,26 @@ Source/Scripts/CWScript.psc:200:1:identifier-casing
 Source/Scripts/CWScript.psc:201:1:identifier-casing
 Source/Scripts/CWScript.psc:202:1:identifier-casing
 Source/Scripts/CWScript.psc:204:1:identifier-casing
+Source/Scripts/CWScript.psc:204:14:property-never-read
 Source/Scripts/CWScript.psc:205:1:identifier-casing
+Source/Scripts/CWScript.psc:205:14:property-never-read
 Source/Scripts/CWScript.psc:207:1:identifier-casing
 Source/Scripts/CWScript.psc:208:1:identifier-casing
 Source/Scripts/CWScript.psc:211:121:line-length
+Source/Scripts/CWScript.psc:212:14:property-never-read
 Source/Scripts/CWScript.psc:212:121:line-length
 Source/Scripts/CWScript.psc:216:1:identifier-casing
 Source/Scripts/CWScript.psc:217:1:identifier-casing
 Source/Scripts/CWScript.psc:218:1:identifier-casing
 Source/Scripts/CWScript.psc:219:1:identifier-casing
 Source/Scripts/CWScript.psc:220:1:identifier-casing
+Source/Scripts/CWScript.psc:220:14:property-never-read
 Source/Scripts/CWScript.psc:221:1:identifier-casing
+Source/Scripts/CWScript.psc:221:14:property-never-read
 Source/Scripts/CWScript.psc:223:121:line-length
+Source/Scripts/CWScript.psc:225:19:property-never-read
+Source/Scripts/CWScript.psc:226:19:property-never-read
+Source/Scripts/CWScript.psc:227:19:property-never-read
 Source/Scripts/CWScript.psc:230:121:line-length
 Source/Scripts/CWScript.psc:231:121:line-length
 Source/Scripts/CWScript.psc:233:121:line-length
@@ -16677,6 +16751,7 @@ Source/Scripts/CWScript.psc:238:121:line-length
 Source/Scripts/CWScript.psc:239:121:line-length
 Source/Scripts/CWScript.psc:240:121:line-length
 Source/Scripts/CWScript.psc:243:1:identifier-casing
+Source/Scripts/CWScript.psc:243:14:property-never-read
 Source/Scripts/CWScript.psc:261:1:identifier-casing
 Source/Scripts/CWScript.psc:266:121:line-length
 Source/Scripts/CWScript.psc:269:15:unused-property
@@ -19680,6 +19755,8 @@ Source/Scripts/CWSiegeScript.psc:33:25:unused-property
 Source/Scripts/CWSiegeScript.psc:37:25:unused-property
 Source/Scripts/CWSiegeScript.psc:42:25:unused-property
 Source/Scripts/CWSiegeScript.psc:43:25:unused-property
+Source/Scripts/CWSiegeScript.psc:45:15:property-never-read
+Source/Scripts/CWSiegeScript.psc:46:15:property-never-read
 Source/Scripts/CWSiegeScript.psc:49:32:trailing-whitespace
 Source/Scripts/CWSiegeScript.psc:51:15:unused-property
 Source/Scripts/CWSiegeScript.psc:52:15:unused-property
@@ -20743,6 +20820,7 @@ Source/Scripts/CaravanScript.psc:256:1:final-newline
 Source/Scripts/CarriageDriverScript.psc:1:68:line-endings
 Source/Scripts/CarriageDriverScript.psc:4:1:identifier-casing
 Source/Scripts/CarriageDriverScript.psc:7:1:identifier-casing
+Source/Scripts/CarriageDriverScript.psc:7:15:property-never-read
 Source/Scripts/CarriageDriverScript.psc:10:1:identifier-casing
 Source/Scripts/CarriageDriverScript.psc:14:1:function-override
 Source/Scripts/CarriageDriverScript.psc:15:1:unchecked-cast
@@ -21500,6 +21578,7 @@ Source/Scripts/ClearSkiesQuestScript.psc:59:39:trailing-whitespace
 Source/Scripts/ClearSkiesQuestScript.psc:64:34:trailing-whitespace
 Source/Scripts/CompanionsBladeFragmentTracking.psc:1:57:trailing-whitespace
 Source/Scripts/CompanionsBladeFragmentTracking.psc:1:59:line-endings
+Source/Scripts/CompanionsBladeFragmentTracking.psc:16:15:property-never-read
 Source/Scripts/CompanionsBladeFragmentTracking.psc:21:1:identifier-casing
 Source/Scripts/CompanionsBladeFragmentTracking.psc:23:1:identifier-casing
 Source/Scripts/CompanionsBladeFragmentTracking.psc:25:1:function-length
@@ -21571,6 +21650,7 @@ Source/Scripts/CompanionsHousekeepingScript.psc:21:15:unused-property
 Source/Scripts/CompanionsHousekeepingScript.psc:22:15:unused-property
 Source/Scripts/CompanionsHousekeepingScript.psc:23:15:unused-property
 Source/Scripts/CompanionsHousekeepingScript.psc:24:16:unused-property
+Source/Scripts/CompanionsHousekeepingScript.psc:27:15:property-never-read
 Source/Scripts/CompanionsHousekeepingScript.psc:28:15:unused-property
 Source/Scripts/CompanionsHousekeepingScript.psc:29:15:unused-property
 Source/Scripts/CompanionsHousekeepingScript.psc:32:15:unused-property
@@ -21580,15 +21660,21 @@ Source/Scripts/CompanionsHousekeepingScript.psc:51:25:unused-property
 Source/Scripts/CompanionsHousekeepingScript.psc:66:25:unused-property
 Source/Scripts/CompanionsHousekeepingScript.psc:78:15:unused-property
 Source/Scripts/CompanionsHousekeepingScript.psc:79:14:unused-property
+Source/Scripts/CompanionsHousekeepingScript.psc:88:15:property-never-read
 Source/Scripts/CompanionsHousekeepingScript.psc:89:25:unused-property
 Source/Scripts/CompanionsHousekeepingScript.psc:90:1:indentation
 Source/Scripts/CompanionsHousekeepingScript.psc:91:1:indentation
+Source/Scripts/CompanionsHousekeepingScript.psc:91:16:property-never-read
 Source/Scripts/CompanionsHousekeepingScript.psc:91:63:trailing-whitespace
+Source/Scripts/CompanionsHousekeepingScript.psc:94:15:property-never-read
 Source/Scripts/CompanionsHousekeepingScript.psc:126:16:unused-property
 Source/Scripts/CompanionsHousekeepingScript.psc:127:22:unused-property
 Source/Scripts/CompanionsHousekeepingScript.psc:128:22:unused-property
 Source/Scripts/CompanionsHousekeepingScript.psc:129:22:unused-property
 Source/Scripts/CompanionsHousekeepingScript.psc:131:37:semicolon
+Source/Scripts/CompanionsHousekeepingScript.psc:161:15:property-never-read
+Source/Scripts/CompanionsHousekeepingScript.psc:162:15:property-never-read
+Source/Scripts/CompanionsHousekeepingScript.psc:163:15:property-never-read
 Source/Scripts/CompanionsHousekeepingScript.psc:164:15:unused-property
 Source/Scripts/CompanionsHousekeepingScript.psc:165:15:unused-property
 Source/Scripts/CompanionsHousekeepingScript.psc:169:26:unused-property
@@ -21597,11 +21683,14 @@ Source/Scripts/CompanionsHousekeepingScript.psc:183:14:unused-property
 Source/Scripts/CompanionsHousekeepingScript.psc:184:15:unused-property
 Source/Scripts/CompanionsHousekeepingScript.psc:187:15:unused-property
 Source/Scripts/CompanionsHousekeepingScript.psc:188:15:unused-property
+Source/Scripts/CompanionsHousekeepingScript.psc:210:31:property-never-read
 Source/Scripts/CompanionsHousekeepingScript.psc:213:1:indentation
 Source/Scripts/CompanionsHousekeepingScript.psc:214:1:indentation
 Source/Scripts/CompanionsHousekeepingScript.psc:215:1:indentation
 Source/Scripts/CompanionsHousekeepingScript.psc:216:1:indentation
 Source/Scripts/CompanionsHousekeepingScript.psc:217:1:indentation
+Source/Scripts/CompanionsHousekeepingScript.psc:218:15:property-never-read
+Source/Scripts/CompanionsHousekeepingScript.psc:219:15:property-never-read
 Source/Scripts/CompanionsHousekeepingScript.psc:226:24:unused-property
 Source/Scripts/CompanionsHousekeepingScript.psc:227:24:unused-property
 Source/Scripts/CompanionsHousekeepingScript.psc:228:24:unused-property
@@ -21942,6 +22031,10 @@ Source/Scripts/CompanionsHousekeepingScript.psc:1230:1:none-form-usage
 Source/Scripts/CompanionsRadiantQuest.psc:1:60:line-endings
 Source/Scripts/CompanionsRadiantQuest.psc:6:15:unused-property
 Source/Scripts/CompanionsRadiantQuest.psc:8:15:unused-property
+Source/Scripts/CompanionsRadiantQuest.psc:9:15:property-never-read
+Source/Scripts/CompanionsRadiantQuest.psc:10:15:property-never-read
+Source/Scripts/CompanionsRadiantQuest.psc:11:15:property-never-read
+Source/Scripts/CompanionsRadiantQuest.psc:12:15:property-never-read
 Source/Scripts/CompanionsRadiantQuest.psc:17:1:function-length
 Source/Scripts/CompanionsRadiantQuest.psc:27:1:identifier-casing
 Source/Scripts/CompanionsRadiantQuest.psc:27:19:forbidden-functions
@@ -22052,6 +22145,7 @@ Source/Scripts/CraftingActivateLinker.psc:10:37:trailing-whitespace
 Source/Scripts/CraftingActivateLinker.psc:13:1:identifier-casing
 Source/Scripts/CraftingActivateLinker.psc:15:1:indentation
 Source/Scripts/CraftingActivateLinker.psc:17:1:identifier-casing
+Source/Scripts/CraftingActivateLinker.psc:17:26:property-never-read
 Source/Scripts/CraftingActivateLinker.psc:27:1:function-override
 Source/Scripts/CraftingActivateLinker.psc:27:1:identifier-casing
 Source/Scripts/CraftingActivateLinker.psc:29:1:useless-downcast
@@ -22193,8 +22287,11 @@ Source/Scripts/Critter.psc:75:26:unused-property
 Source/Scripts/Critter.psc:77:1:identifier-casing
 Source/Scripts/Critter.psc:85:1:identifier-casing
 Source/Scripts/Critter.psc:87:1:identifier-casing
+Source/Scripts/Critter.psc:87:16:property-never-read
 Source/Scripts/Critter.psc:89:1:identifier-casing
+Source/Scripts/Critter.psc:89:16:property-never-read
 Source/Scripts/Critter.psc:91:1:identifier-casing
+Source/Scripts/Critter.psc:91:16:property-never-read
 Source/Scripts/Critter.psc:98:1:identifier-casing
 Source/Scripts/Critter.psc:98:15:unused-property
 Source/Scripts/Critter.psc:104:1:function-length
@@ -22652,6 +22749,8 @@ Source/Scripts/CwFunctions.psc:9:16:unused-property
 Source/Scripts/CwFunctions.psc:9:45:trailing-whitespace
 Source/Scripts/CwFunctions.psc:10:16:unused-property
 Source/Scripts/CwFunctions.psc:10:45:trailing-whitespace
+Source/Scripts/CwFunctions.psc:15:19:property-never-read
+Source/Scripts/CwFunctions.psc:16:27:property-never-read
 Source/Scripts/CwFunctions.psc:18:1:undefined-event
 Source/Scripts/CwFunctions.psc:19:1:trailing-whitespace
 Source/Scripts/CwFunctions.psc:22:1:trailing-whitespace
@@ -23155,6 +23254,7 @@ Source/Scripts/DA02Script.psc:59:1:identifier-casing
 Source/Scripts/DA02Script.psc:59:14:unused-property
 Source/Scripts/DA02Script.psc:60:1:identifier-casing
 Source/Scripts/DA02Script.psc:60:14:unused-property
+Source/Scripts/DA02Script.psc:69:14:property-never-read
 Source/Scripts/DA02Script.psc:73:29:unused-property
 Source/Scripts/DA02Script.psc:79:14:unused-property
 Source/Scripts/DA02Script.psc:88:26:unused-property
@@ -23170,6 +23270,7 @@ Source/Scripts/DA02Script.psc:108:1:identifier-casing
 Source/Scripts/DA02Script.psc:108:121:line-length
 Source/Scripts/DA02Script.psc:114:1:identifier-casing
 Source/Scripts/DA02Script.psc:114:121:line-length
+Source/Scripts/DA02Script.psc:116:14:property-never-read
 Source/Scripts/DA02Script.psc:118:16:unused-property
 Source/Scripts/DA02Script.psc:122:18:unused-property
 Source/Scripts/DA02Script.psc:126:1:function-override
@@ -23689,6 +23790,7 @@ Source/Scripts/DA04QuestScript.psc:39:46:trailing-whitespace
 Source/Scripts/DA04QuestScript.psc:40:46:trailing-whitespace
 Source/Scripts/DA04QuestScript.psc:41:46:trailing-whitespace
 Source/Scripts/DA04QuestScript.psc:42:47:trailing-whitespace
+Source/Scripts/DA04QuestScript.psc:44:15:property-never-read
 Source/Scripts/DA04QuestScript.psc:46:1:cyclomatic-complexity
 Source/Scripts/DA04QuestScript.psc:46:1:function-length
 Source/Scripts/DA04QuestScript.psc:46:1:identifier-casing
@@ -28368,6 +28470,7 @@ Source/Scripts/DBDestroyAssassinKillScript.psc:1:62:trailing-whitespace
 Source/Scripts/DBDestroyAssassinKillScript.psc:1:64:line-endings
 Source/Scripts/DBDestroyAssassinKillScript.psc:3:36:trailing-whitespace
 Source/Scripts/DBDestroyAssassinKillScript.psc:4:1:identifier-casing
+Source/Scripts/DBDestroyAssassinKillScript.psc:4:14:property-never-read
 Source/Scripts/DBDestroyAssassinKillScript.psc:4:36:trailing-whitespace
 Source/Scripts/DBDestroyAssassinKillScript.psc:6:1:argument-naming
 Source/Scripts/DBDestroyAssassinKillScript.psc:6:1:function-override
@@ -29894,6 +29997,7 @@ Source/Scripts/DLC1ArkngthamzBallista.psc:117:1:identifier-casing
 Source/Scripts/DLC1ArkngthamzBallista.psc:118:1:indentation
 Source/Scripts/DLC1ArkngthamzBallista.psc:120:1:trailing-whitespace
 Source/Scripts/DLC1ArkngthamzBallista.psc:130:1:identifier-casing
+Source/Scripts/DLC1ArkngthamzBallista.psc:130:15:property-never-read
 Source/Scripts/DLC1ArkngthamzBallista.psc:138:1:function-length
 Source/Scripts/DLC1ArkngthamzBallista.psc:140:1:identifier-casing
 Source/Scripts/DLC1ArkngthamzBallista.psc:142:1:trailing-whitespace
@@ -30193,6 +30297,7 @@ Source/Scripts/DLC1CavewormTriggerControlScript.psc:8:1:unused-import
 Source/Scripts/DLC1CavewormTriggerControlScript.psc:11:1:identifier-casing
 Source/Scripts/DLC1CavewormTriggerControlScript.psc:11:121:line-length
 Source/Scripts/DLC1CavewormTriggerControlScript.psc:12:1:identifier-casing
+Source/Scripts/DLC1CavewormTriggerControlScript.psc:12:15:property-never-read
 Source/Scripts/DLC1CavewormTriggerControlScript.psc:13:1:identifier-casing
 Source/Scripts/DLC1CavewormTriggerControlScript.psc:15:1:identifier-casing
 Source/Scripts/DLC1CavewormTriggerControlScript.psc:19:1:identifier-casing
@@ -30824,6 +30929,7 @@ Source/Scripts/DLC1DunStatueHitSCRIPT.psc:21:1:identifier-casing
 Source/Scripts/DLC1DunStatueHitSCRIPT.psc:24:1:identifier-casing
 Source/Scripts/DLC1DunStatueHitSCRIPT.psc:27:1:identifier-casing
 Source/Scripts/DLC1DunStatueHitSCRIPT.psc:30:1:identifier-casing
+Source/Scripts/DLC1DunStatueHitSCRIPT.psc:30:15:property-never-read
 Source/Scripts/DLC1DunStatueHitSCRIPT.psc:39:1:identifier-casing
 Source/Scripts/DLC1DunStatueHitSCRIPT.psc:40:1:identifier-casing
 Source/Scripts/DLC1DunStatueHitSCRIPT.psc:43:1:function-override
@@ -30926,6 +31032,7 @@ Source/Scripts/DLC1DurnehviirNoFlyingTrigSCRIPT.psc:1:68:trailing-whitespace
 Source/Scripts/DLC1DurnehviirNoFlyingTrigSCRIPT.psc:1:70:line-endings
 Source/Scripts/DLC1DurnehviirNoFlyingTrigSCRIPT.psc:7:20:unused-property
 Source/Scripts/DLC1DurnehviirNoFlyingTrigSCRIPT.psc:9:1:identifier-casing
+Source/Scripts/DLC1DurnehviirNoFlyingTrigSCRIPT.psc:9:26:property-never-read
 Source/Scripts/DLC1DurnehviirNoFlyingTrigSCRIPT.psc:11:1:argument-naming
 Source/Scripts/DLC1DurnehviirNoFlyingTrigSCRIPT.psc:11:1:function-override
 Source/Scripts/DLC1DurnehviirNoFlyingTrigSCRIPT.psc:11:1:identifier-casing
@@ -31454,6 +31561,7 @@ Source/Scripts/DLC1FalmerValleyIceDragonSCRIPT.psc:71:1:identifier-casing
 Source/Scripts/DLC1FalmerValleyIceDragonSCRIPT.psc:75:48:final-newline
 Source/Scripts/DLC1FerrymanScript.psc:1:66:line-endings
 Source/Scripts/DLC1FerrymanScript.psc:5:1:identifier-casing
+Source/Scripts/DLC1FerrymanScript.psc:5:15:property-never-read
 Source/Scripts/DLC1FerrymanScript.psc:8:1:identifier-casing
 Source/Scripts/DLC1FerrymanScript.psc:13:1:identifier-casing
 Source/Scripts/DLC1FerrymanScript.psc:13:1:undefined-event
@@ -34571,6 +34679,7 @@ Source/Scripts/DLC1RadiantScript.psc:8:18:unused-property
 Source/Scripts/DLC1RadiantScript.psc:20:15:unused-property
 Source/Scripts/DLC1RadiantScript.psc:27:32:unused-property
 Source/Scripts/DLC1RadiantScript.psc:34:43:trailing-whitespace
+Source/Scripts/DLC1RadiantScript.psc:35:15:property-never-read
 Source/Scripts/DLC1RadiantScript.psc:49:121:line-length
 Source/Scripts/DLC1RadiantScript.psc:80:18:unused-property
 Source/Scripts/DLC1RadiantScript.psc:82:20:unused-property
@@ -35772,6 +35881,7 @@ Source/Scripts/DLC1TrapCrossbow.psc:155:19:boolean-simplification
 Source/Scripts/DLC1TrapCrossbow.psc:163:1:function-override
 Source/Scripts/DLC1TrapCrossbow.psc:163:1:identifier-casing
 Source/Scripts/DLC1TrapCrossbow.psc:164:1:indentation
+Source/Scripts/DLC1TrapCrossbow.psc:176:17:property-never-read
 Source/Scripts/DLC1TrapCrossbow.psc:184:1:function-length
 Source/Scripts/DLC1TrapCrossbow.psc:186:1:identifier-casing
 Source/Scripts/DLC1TrapCrossbow.psc:188:1:trailing-whitespace
@@ -36037,6 +36147,7 @@ Source/Scripts/DLC1TrapSpotLight.psc:4:1:semicolon
 Source/Scripts/DLC1TrapSpotLight.psc:7:1:identifier-casing
 Source/Scripts/DLC1TrapSpotLight.psc:9:1:identifier-casing
 Source/Scripts/DLC1TrapSpotLight.psc:10:1:identifier-casing
+Source/Scripts/DLC1TrapSpotLight.psc:10:16:property-never-read
 Source/Scripts/DLC1TrapSpotLight.psc:11:1:identifier-casing
 Source/Scripts/DLC1TrapSpotLight.psc:13:1:indentation
 Source/Scripts/DLC1TrapSpotLight.psc:14:1:identifier-casing
@@ -36232,6 +36343,7 @@ Source/Scripts/DLC1VCMoondialScript.psc:11:1:identifier-casing
 Source/Scripts/DLC1VCMoondialScript.psc:14:1:identifier-casing
 Source/Scripts/DLC1VCMoondialScript.psc:17:1:identifier-casing
 Source/Scripts/DLC1VCMoondialScript.psc:20:1:identifier-casing
+Source/Scripts/DLC1VCMoondialScript.psc:20:15:property-never-read
 Source/Scripts/DLC1VCMoondialScript.psc:23:1:identifier-casing
 Source/Scripts/DLC1VCMoondialScript.psc:23:17:unused-property
 Source/Scripts/DLC1VCMoondialScript.psc:26:1:identifier-casing
@@ -36611,6 +36723,7 @@ Source/Scripts/DLC1VQ01PuzzleMouthScript.psc:4:1:unused-import
 Source/Scripts/DLC1VQ01PuzzleMouthScript.psc:5:1:identifier-casing
 Source/Scripts/DLC1VQ01PuzzleMouthScript.psc:7:1:identifier-casing
 Source/Scripts/DLC1VQ01PuzzleMouthScript.psc:9:1:identifier-casing
+Source/Scripts/DLC1VQ01PuzzleMouthScript.psc:9:15:property-never-read
 Source/Scripts/DLC1VQ01PuzzleMouthScript.psc:11:1:identifier-casing
 Source/Scripts/DLC1VQ01PuzzleMouthScript.psc:15:1:identifier-casing
 Source/Scripts/DLC1VQ01PuzzleMouthScript.psc:17:1:function-override
@@ -38577,6 +38690,7 @@ Source/Scripts/DLC1VQDragonScript.psc:3:1:identifier-casing
 Source/Scripts/DLC1VQDragonScript.psc:6:1:identifier-casing
 Source/Scripts/DLC1VQDragonScript.psc:6:37:trailing-whitespace
 Source/Scripts/DLC1VQDragonScript.psc:8:1:identifier-casing
+Source/Scripts/DLC1VQDragonScript.psc:8:15:property-never-read
 Source/Scripts/DLC1VQDragonScript.psc:9:103:trailing-whitespace
 Source/Scripts/DLC1VQDragonScript.psc:10:1:indentation
 Source/Scripts/DLC1VQDragonScript.psc:13:1:identifier-casing
@@ -38706,9 +38820,13 @@ Source/Scripts/DLC1VampireCastleControllerScript.psc:3:1:identifier-casing
 Source/Scripts/DLC1VampireCastleControllerScript.psc:4:1:identifier-casing
 Source/Scripts/DLC1VampireCastleControllerScript.psc:4:26:unused-property
 Source/Scripts/DLC1VampireCastleControllerScript.psc:6:61:trailing-whitespace
+Source/Scripts/DLC1VampireCastleControllerScript.psc:9:15:property-never-read
+Source/Scripts/DLC1VampireCastleControllerScript.psc:13:15:property-never-read
 Source/Scripts/DLC1VampireCastleControllerScript.psc:15:1:identifier-casing
 Source/Scripts/DLC1VampireCastleControllerScript.psc:16:26:unused-property
 Source/Scripts/DLC1VampireCastleControllerScript.psc:18:26:unused-property
+Source/Scripts/DLC1VampireCastleControllerScript.psc:23:15:property-never-read
+Source/Scripts/DLC1VampireCastleControllerScript.psc:24:15:property-never-read
 Source/Scripts/DLC1VampireCastleControllerScript.psc:25:15:unused-property
 Source/Scripts/DLC1VampireCastleControllerScript.psc:28:26:unused-property
 Source/Scripts/DLC1VampireCastleControllerScript.psc:29:26:unused-property
@@ -40299,7 +40417,9 @@ Source/Scripts/DLC1_NPCMentalModelScript.psc:10:1:identifier-casing
 Source/Scripts/DLC1_NPCMentalModelScript.psc:12:14:unused-property
 Source/Scripts/DLC1_NPCMentalModelScript.psc:18:14:unused-property
 Source/Scripts/DLC1_NPCMentalModelScript.psc:24:1:identifier-casing
+Source/Scripts/DLC1_NPCMentalModelScript.psc:25:14:property-never-read
 Source/Scripts/DLC1_NPCMentalModelScript.psc:40:1:identifier-casing
+Source/Scripts/DLC1_NPCMentalModelScript.psc:41:14:property-never-read
 Source/Scripts/DLC1_NPCMentalModelScript.psc:59:1:indentation
 Source/Scripts/DLC1_NPCMentalModelScript.psc:66:1:indentation
 Source/Scripts/DLC1_NPCMentalModelScript.psc:73:1:indentation
@@ -40312,6 +40432,7 @@ Source/Scripts/DLC1_NPCMentalModelScript.psc:96:1:identifier-casing
 Source/Scripts/DLC1_NPCMentalModelScript.psc:98:1:identifier-casing
 Source/Scripts/DLC1_NPCMentalModelScript.psc:99:16:unused-property
 Source/Scripts/DLC1_NPCMentalModelScript.psc:108:1:identifier-casing
+Source/Scripts/DLC1_NPCMentalModelScript.psc:109:16:property-never-read
 Source/Scripts/DLC1_NPCMentalModelScript.psc:128:50:trailing-whitespace
 Source/Scripts/DLC1_NPCMentalModelScript.psc:142:1:identifier-casing
 Source/Scripts/DLC1_NPCMentalModelScript.psc:143:1:identifier-casing
@@ -40418,7 +40539,12 @@ Source/Scripts/DLC1_NPCMentalModelScript.psc:367:1:indentation
 Source/Scripts/DLC1_NPCMentalModelScript.psc:376:1:identifier-casing
 Source/Scripts/DLC1_NPCMentalModelScript.psc:392:1:none-form-usage
 Source/Scripts/DLC1_NPCMentalModelScript.psc:392:1:none-form-usage
+Source/Scripts/DLC1_NPCMentalModelScript.psc:406:15:property-never-read
 Source/Scripts/DLC1_NPCMentalModelScript.psc:408:15:unused-property
+Source/Scripts/DLC1_NPCMentalModelScript.psc:410:15:property-never-read
+Source/Scripts/DLC1_NPCMentalModelScript.psc:413:15:property-never-read
+Source/Scripts/DLC1_NPCMentalModelScript.psc:414:15:property-never-read
+Source/Scripts/DLC1_NPCMentalModelScript.psc:417:15:property-never-read
 Source/Scripts/DLC1_NPCMentalModelScript.psc:423:15:unused-property
 Source/Scripts/DLC1_NPCMentalModelScript.psc:431:26:unused-property
 Source/Scripts/DLC1_NPCMentalModelScript.psc:443:1:indentation
@@ -48892,6 +49018,7 @@ Source/Scripts/DLC1_TIF__02062C80.psc:3:12:type-casing
 Source/Scripts/DLC1_TIF__02062C81.psc:1:77:line-endings
 Source/Scripts/DLC1_TIF__02062C81.psc:3:12:type-casing
 Source/Scripts/DLC1defaultDetectPresenceTriggerScript.psc:1:86:line-endings
+Source/Scripts/DLC1defaultDetectPresenceTriggerScript.psc:4:15:property-never-read
 Source/Scripts/DLC1defaultDetectPresenceTriggerScript.psc:15:1:explicit-return
 Source/Scripts/DLC1defaultDetectPresenceTriggerScript.psc:15:1:function-length
 Source/Scripts/DLC1defaultDetectPresenceTriggerScript.psc:15:1:identifier-casing
@@ -48912,6 +49039,7 @@ Source/Scripts/DLC1dunHarkonBatTeleport.psc:5:25:unused-property
 Source/Scripts/DLC1dunHarkonBatTeleport.psc:10:16:unused-property
 Source/Scripts/DLC1dunHarkonBatTeleport.psc:14:1:identifier-casing
 Source/Scripts/DLC1dunHarkonBatTeleport.psc:20:1:identifier-casing
+Source/Scripts/DLC1dunHarkonBatTeleport.psc:20:26:property-never-read
 Source/Scripts/DLC1dunHarkonBatTeleport.psc:23:1:identifier-casing
 Source/Scripts/DLC1dunHarkonBatTeleport.psc:24:1:identifier-casing
 Source/Scripts/DLC1dunHarkonBatTeleport.psc:29:1:none-form-usage
@@ -48996,6 +49124,8 @@ Source/Scripts/DLC1dunHarkonBossBattle.psc:32:1:identifier-casing
 Source/Scripts/DLC1dunHarkonBossBattle.psc:36:16:unused-property
 Source/Scripts/DLC1dunHarkonBossBattle.psc:39:16:unused-property
 Source/Scripts/DLC1dunHarkonBossBattle.psc:43:121:line-length
+Source/Scripts/DLC1dunHarkonBossBattle.psc:44:26:property-never-read
+Source/Scripts/DLC1dunHarkonBossBattle.psc:62:15:property-never-read
 Source/Scripts/DLC1dunHarkonBossBattle.psc:62:121:line-length
 Source/Scripts/DLC1dunHarkonBossBattle.psc:67:20:unused-property
 Source/Scripts/DLC1dunHarkonBossBattle.psc:68:20:unused-property
@@ -49588,6 +49718,7 @@ Source/Scripts/DLC1dunHarkonShadowShield.psc:1:63:line-endings
 Source/Scripts/DLC1dunHarkonShadowShield.psc:5:22:unused-property
 Source/Scripts/DLC1dunHarkonShadowShield.psc:6:22:unused-property
 Source/Scripts/DLC1dunHarkonShadowShield.psc:7:1:identifier-casing
+Source/Scripts/DLC1dunHarkonShadowShield.psc:7:16:property-never-read
 Source/Scripts/DLC1dunHarkonShadowShield.psc:9:1:function-override
 Source/Scripts/DLC1dunHarkonShadowShield.psc:11:16:forbidden-functions
 Source/Scripts/DLC1dunHarkonShadowShield.psc:23:1:argument-naming
@@ -52108,6 +52239,8 @@ Source/Scripts/DLC2DialogueRRQuestScript.psc:8:27:assignment-operator-spacing
 Source/Scripts/DLC2DialogueRRQuestScript.psc:9:45:trailing-whitespace
 Source/Scripts/DLC2DialogueRRQuestScript.psc:11:47:trailing-whitespace
 Source/Scripts/DLC2DialogueRRQuestScript.psc:16:26:unused-property
+Source/Scripts/DLC2DialogueRRQuestScript.psc:20:15:property-never-read
+Source/Scripts/DLC2DialogueRRQuestScript.psc:21:15:property-never-read
 Source/Scripts/DLC2DialogueRRQuestScript.psc:34:1:none-form-usage
 Source/Scripts/DLC2DialogueRRQuestScript.psc:35:10:forbidden-functions
 Source/Scripts/DLC2DialogueRRQuestScript.psc:36:1:none-form-usage
@@ -54095,6 +54228,7 @@ Source/Scripts/DLC2KagrumezMasterScript.psc:87:1:identifier-casing
 Source/Scripts/DLC2KagrumezMasterScript.psc:88:1:identifier-casing
 Source/Scripts/DLC2KagrumezMasterScript.psc:89:1:identifier-casing
 Source/Scripts/DLC2KagrumezMasterScript.psc:91:1:identifier-casing
+Source/Scripts/DLC2KagrumezMasterScript.psc:91:14:property-never-read
 Source/Scripts/DLC2KagrumezMasterScript.psc:93:1:identifier-casing
 Source/Scripts/DLC2KagrumezMasterScript.psc:95:1:indentation
 Source/Scripts/DLC2KagrumezMasterScript.psc:96:1:indentation
@@ -54481,6 +54615,7 @@ Source/Scripts/DLC2MH02BristlebackPenApproach.psc:11:1:none-form-usage
 Source/Scripts/DLC2MH02BristlebackPenApproach.psc:12:1:none-form-usage
 Source/Scripts/DLC2MH02BristlebackPenApproach.psc:16:1:final-newline
 Source/Scripts/DLC2MH02CampDetectPlayerPresence.psc:1:80:line-endings
+Source/Scripts/DLC2MH02CampDetectPlayerPresence.psc:4:15:property-never-read
 Source/Scripts/DLC2MH02CampDetectPlayerPresence.psc:6:1:argument-naming
 Source/Scripts/DLC2MH02CampDetectPlayerPresence.psc:6:1:function-override
 Source/Scripts/DLC2MH02CampDetectPlayerPresence.psc:6:1:identifier-casing
@@ -54695,6 +54830,7 @@ Source/Scripts/DLC2MQ04Script.psc:12:1:identifier-casing
 Source/Scripts/DLC2MQ04Script.psc:12:15:unused-property
 Source/Scripts/DLC2MQ04Script.psc:13:121:line-length
 Source/Scripts/DLC2MQ04Script.psc:15:1:identifier-casing
+Source/Scripts/DLC2MQ04Script.psc:15:15:property-never-read
 Source/Scripts/DLC2MQ04Script.psc:25:1:unnecessary-function
 Source/Scripts/DLC2MQ04Script.psc:30:1:unnecessary-function
 Source/Scripts/DLC2MQ04Script.psc:31:1:none-form-usage
@@ -54911,6 +55047,7 @@ Source/Scripts/DLC2MQ06MiraakBossBattle.psc:35:1:identifier-casing
 Source/Scripts/DLC2MQ06MiraakBossBattle.psc:37:1:identifier-casing
 Source/Scripts/DLC2MQ06MiraakBossBattle.psc:38:14:unused-property
 Source/Scripts/DLC2MQ06MiraakBossBattle.psc:47:1:identifier-casing
+Source/Scripts/DLC2MQ06MiraakBossBattle.psc:47:14:property-never-read
 Source/Scripts/DLC2MQ06MiraakBossBattle.psc:49:1:indentation
 Source/Scripts/DLC2MQ06MiraakBossBattle.psc:50:1:indentation
 Source/Scripts/DLC2MQ06MiraakBossBattle.psc:51:1:indentation
@@ -68549,6 +68686,7 @@ Source/Scripts/DLC2dunKolbjornPressureTileScript.psc:55:8:forbidden-functions
 Source/Scripts/DLC2dunKolbjornPressureTileScript.psc:57:12:final-newline
 Source/Scripts/DLC2dunKolbjornPuzzlePillarScript.psc:1:69:line-endings
 Source/Scripts/DLC2dunKolbjornPuzzlePillarScript.psc:3:1:identifier-casing
+Source/Scripts/DLC2dunKolbjornPuzzlePillarScript.psc:3:14:property-never-read
 Source/Scripts/DLC2dunKolbjornPuzzlePillarScript.psc:5:1:identifier-casing
 Source/Scripts/DLC2dunKolbjornPuzzlePillarScript.psc:14:1:identifier-casing
 Source/Scripts/DLC2dunKolbjornPuzzlePillarScript.psc:23:1:identifier-casing
@@ -70175,6 +70313,7 @@ Source/Scripts/DarkwaterDerkeethusLocationCheckScript.psc:10:1:none-form-usage
 Source/Scripts/DarkwaterDerkeethusLocationCheckScript.psc:12:1:unchecked-cast
 Source/Scripts/DarkwaterDerkeethusRescueScript.psc:1:69:line-endings
 Source/Scripts/DarkwaterDerkeethusRescueScript.psc:7:15:unused-property
+Source/Scripts/DarkwaterDerkeethusRescueScript.psc:8:15:property-never-read
 Source/Scripts/DarkwaterDerkeethusRescueScript.psc:12:1:none-form-usage
 Source/Scripts/DarkwaterDerkeethusRescueScript.psc:13:1:none-form-usage
 Source/Scripts/DarkwaterDerkeethusRescueScript.psc:13:1:none-form-usage
@@ -70868,6 +71007,7 @@ Source/Scripts/DialogueFollowerScript.psc:6:1:identifier-casing
 Source/Scripts/DialogueFollowerScript.psc:7:1:identifier-casing
 Source/Scripts/DialogueFollowerScript.psc:8:1:identifier-casing
 Source/Scripts/DialogueFollowerScript.psc:19:1:identifier-casing
+Source/Scripts/DialogueFollowerScript.psc:19:14:property-never-read
 Source/Scripts/DialogueFollowerScript.psc:29:1:unchecked-cast
 Source/Scripts/DialogueFollowerScript.psc:30:1:unchecked-cast
 Source/Scripts/DialogueFollowerScript.psc:30:1:unchecked-cast
@@ -71063,6 +71203,7 @@ Source/Scripts/DialogueShorsStoneQuestScript.psc:4:14:unused-property
 Source/Scripts/DialogueShorsStoneQuestScript.psc:5:1:identifier-casing
 Source/Scripts/DialogueShorsStoneQuestScript.psc:5:14:unused-property
 Source/Scripts/DialogueShorsStoneQuestScript.psc:6:1:identifier-casing
+Source/Scripts/DialogueShorsStoneQuestScript.psc:6:14:property-never-read
 Source/Scripts/DialogueShorsStoneQuestScript.psc:7:1:identifier-casing
 Source/Scripts/DialogueShorsStoneQuestScript.psc:7:14:unused-property
 Source/Scripts/DialogueShorsStoneQuestScript.psc:8:1:identifier-casing
@@ -74875,6 +75016,24 @@ Source/Scripts/FavorFollowerControlScript.psc:3:16:unused-property
 Source/Scripts/FavorFollowerControlScript.psc:5:16:unused-property
 Source/Scripts/FavorFollowerControlScript.psc:5:30:trailing-whitespace
 Source/Scripts/FavorJarlsMakeFriendsScript.psc:1:65:line-endings
+Source/Scripts/FavorJarlsMakeFriendsScript.psc:29:14:property-never-read
+Source/Scripts/FavorJarlsMakeFriendsScript.psc:30:14:property-never-read
+Source/Scripts/FavorJarlsMakeFriendsScript.psc:31:14:property-never-read
+Source/Scripts/FavorJarlsMakeFriendsScript.psc:32:14:property-never-read
+Source/Scripts/FavorJarlsMakeFriendsScript.psc:33:14:property-never-read
+Source/Scripts/FavorJarlsMakeFriendsScript.psc:34:14:property-never-read
+Source/Scripts/FavorJarlsMakeFriendsScript.psc:35:14:property-never-read
+Source/Scripts/FavorJarlsMakeFriendsScript.psc:36:14:property-never-read
+Source/Scripts/FavorJarlsMakeFriendsScript.psc:37:14:property-never-read
+Source/Scripts/FavorJarlsMakeFriendsScript.psc:38:14:property-never-read
+Source/Scripts/FavorJarlsMakeFriendsScript.psc:39:14:property-never-read
+Source/Scripts/FavorJarlsMakeFriendsScript.psc:40:14:property-never-read
+Source/Scripts/FavorJarlsMakeFriendsScript.psc:41:14:property-never-read
+Source/Scripts/FavorJarlsMakeFriendsScript.psc:42:14:property-never-read
+Source/Scripts/FavorJarlsMakeFriendsScript.psc:43:14:property-never-read
+Source/Scripts/FavorJarlsMakeFriendsScript.psc:44:14:property-never-read
+Source/Scripts/FavorJarlsMakeFriendsScript.psc:45:14:property-never-read
+Source/Scripts/FavorJarlsMakeFriendsScript.psc:46:14:property-never-read
 Source/Scripts/FavorJarlsMakeFriendsScript.psc:49:18:unused-property
 Source/Scripts/FavorJarlsMakeFriendsScript.psc:51:1:cyclomatic-complexity
 Source/Scripts/FavorJarlsMakeFriendsScript.psc:51:1:function-length
@@ -77289,6 +77448,7 @@ Source/Scripts/HallofStoriesDiskScript.psc:134:1:final-newline
 Source/Scripts/HallofStoriesKeyholeScript.psc:1:62:line-endings
 Source/Scripts/HallofStoriesKeyholeScript.psc:8:1:unused-import
 Source/Scripts/HallofStoriesKeyholeScript.psc:11:1:identifier-casing
+Source/Scripts/HallofStoriesKeyholeScript.psc:11:15:property-never-read
 Source/Scripts/HallofStoriesKeyholeScript.psc:12:1:identifier-casing
 Source/Scripts/HallofStoriesKeyholeScript.psc:12:15:unused-property
 Source/Scripts/HallofStoriesKeyholeScript.psc:13:1:identifier-casing
@@ -78708,6 +78868,7 @@ Source/Scripts/MG02QuestScript.psc:15:19:unused-property
 Source/Scripts/MG02QuestScript.psc:17:25:unused-property
 Source/Scripts/MG02QuestScript.psc:18:1:trailing-whitespace
 Source/Scripts/MG02QuestScript.psc:24:14:unused-property
+Source/Scripts/MG02QuestScript.psc:25:14:property-never-read
 Source/Scripts/MG02QuestScript.psc:26:14:unused-property
 Source/Scripts/MG02QuestScript.psc:28:1:unnecessary-function
 Source/Scripts/MG02QuestScript.psc:36:1:function-override
@@ -79385,6 +79546,7 @@ Source/Scripts/MG05WinterholdUpdateTriggerScript.psc:33:47:trailing-whitespace
 Source/Scripts/MG05WinterholdUpdateTriggerScript.psc:35:56:trailing-whitespace
 Source/Scripts/MG06ArmillaryScript.psc:1:68:line-endings
 Source/Scripts/MG06ArmillaryScript.psc:3:26:trailing-whitespace
+Source/Scripts/MG06ArmillaryScript.psc:6:14:property-never-read
 Source/Scripts/MG06ArmillaryScript.psc:12:1:unnecessary-function
 Source/Scripts/MG06ArmillaryScript.psc:15:1:trailing-whitespace
 Source/Scripts/MG06ArmillaryScript.psc:17:1:indentation
@@ -79680,6 +79842,7 @@ Source/Scripts/MG06DoorSceneTriggerRef.psc:37:39:final-newline
 Source/Scripts/MG06GavrosSceneTriggerScript.psc:1:77:line-endings
 Source/Scripts/MG06GavrosSceneTriggerScript.psc:3:1:identifier-casing
 Source/Scripts/MG06GavrosSceneTriggerScript.psc:3:26:trailing-whitespace
+Source/Scripts/MG06GavrosSceneTriggerScript.psc:5:14:property-never-read
 Source/Scripts/MG06GavrosSceneTriggerScript.psc:10:1:argument-naming
 Source/Scripts/MG06GavrosSceneTriggerScript.psc:10:1:function-length
 Source/Scripts/MG06GavrosSceneTriggerScript.psc:10:1:function-override
@@ -82576,14 +82739,17 @@ Source/Scripts/MQ105QuestScript.psc:23:1:identifier-casing
 Source/Scripts/MQ105QuestScript.psc:24:1:identifier-casing
 Source/Scripts/MQ105QuestScript.psc:25:1:identifier-casing
 Source/Scripts/MQ105QuestScript.psc:27:1:identifier-casing
+Source/Scripts/MQ105QuestScript.psc:27:15:property-never-read
 Source/Scripts/MQ105QuestScript.psc:28:1:indentation
 Source/Scripts/MQ105QuestScript.psc:30:1:indentation
 Source/Scripts/MQ105QuestScript.psc:37:1:identifier-casing
+Source/Scripts/MQ105QuestScript.psc:37:15:property-never-read
 Source/Scripts/MQ105QuestScript.psc:37:31:trailing-whitespace
 Source/Scripts/MQ105QuestScript.psc:38:1:indentation
 Source/Scripts/MQ105QuestScript.psc:40:1:indentation
 Source/Scripts/MQ105QuestScript.psc:40:30:trailing-whitespace
 Source/Scripts/MQ105QuestScript.psc:47:1:identifier-casing
+Source/Scripts/MQ105QuestScript.psc:47:15:property-never-read
 Source/Scripts/MQ105QuestScript.psc:48:1:indentation
 Source/Scripts/MQ105QuestScript.psc:50:1:indentation
 Source/Scripts/MQ105QuestScript.psc:58:1:identifier-casing
@@ -84572,6 +84738,7 @@ Source/Scripts/MQKillDragonScript.psc:298:45:trailing-whitespace
 Source/Scripts/MQKillDragonScript.psc:301:20:unused-property
 Source/Scripts/MQKillDragonScript.psc:303:38:trailing-whitespace
 Source/Scripts/MQKillDragonScript.psc:306:1:identifier-casing
+Source/Scripts/MQKillDragonScript.psc:306:15:property-never-read
 Source/Scripts/MQKillDragonScript.psc:309:27:trailing-whitespace
 Source/Scripts/MQKillDragonScript.psc:317:49:trailing-whitespace
 Source/Scripts/MQKillDragonScript.psc:323:1:trailing-whitespace
@@ -85051,6 +85218,7 @@ Source/Scripts/MS01OnUnloadScript.psc:7:9:final-newline
 Source/Scripts/MS01QuestScript.psc:1:53:line-endings
 Source/Scripts/MS01QuestScript.psc:4:14:unused-property
 Source/Scripts/MS01QuestScript.psc:7:14:unused-property
+Source/Scripts/MS01QuestScript.psc:16:14:property-never-read
 Source/Scripts/MS01QuestScript.psc:19:14:unused-property
 Source/Scripts/MS01QuestScript.psc:22:14:unused-property
 Source/Scripts/MS01QuestScript.psc:28:18:unused-property
@@ -86079,6 +86247,7 @@ Source/Scripts/MS10QuestScript.psc:7:15:unused-property
 Source/Scripts/MS10QuestScript.psc:8:15:unused-property
 Source/Scripts/MS10QuestScript.psc:9:15:unused-property
 Source/Scripts/MS10QuestScript.psc:10:15:unused-property
+Source/Scripts/MS10QuestScript.psc:11:15:property-never-read
 Source/Scripts/MS10QuestScript.psc:12:14:unused-property
 Source/Scripts/MS10QuestScript.psc:12:31:trailing-whitespace
 Source/Scripts/MS10QuestScript.psc:13:21:unused-property
@@ -86320,6 +86489,7 @@ Source/Scripts/MS11QuestScript.psc:19:15:unused-property
 Source/Scripts/MS11QuestScript.psc:20:15:unused-property
 Source/Scripts/MS11QuestScript.psc:22:15:unused-property
 Source/Scripts/MS11QuestScript.psc:23:15:unused-property
+Source/Scripts/MS11QuestScript.psc:25:15:property-never-read
 Source/Scripts/MS11QuestScript.psc:39:18:unused-property
 Source/Scripts/MS11QuestScript.psc:48:26:unused-property
 Source/Scripts/MS11QuestScript.psc:51:15:unused-property
@@ -87238,6 +87408,7 @@ Source/Scripts/MagicTrap.psc:2:1:semicolon
 Source/Scripts/MagicTrap.psc:3:1:semicolon
 Source/Scripts/MagicTrap.psc:8:1:identifier-casing
 Source/Scripts/MagicTrap.psc:10:1:identifier-casing
+Source/Scripts/MagicTrap.psc:10:16:property-never-read
 Source/Scripts/MagicTrap.psc:11:1:identifier-casing
 Source/Scripts/MagicTrap.psc:12:1:identifier-casing
 Source/Scripts/MagicTrap.psc:13:1:identifier-casing
@@ -87265,6 +87436,7 @@ Source/Scripts/MagicTrap.psc:40:1:identifier-casing
 Source/Scripts/MagicTrap.psc:41:1:identifier-casing
 Source/Scripts/MagicTrap.psc:42:1:identifier-casing
 Source/Scripts/MagicTrap.psc:43:1:identifier-casing
+Source/Scripts/MagicTrap.psc:43:14:property-never-read
 Source/Scripts/MagicTrap.psc:44:1:identifier-casing
 Source/Scripts/MagicTrap.psc:45:1:identifier-casing
 Source/Scripts/MagicTrap.psc:46:1:identifier-casing
@@ -88127,6 +88299,7 @@ Source/Scripts/MovingTrap.psc:4:43:trailing-whitespace
 Source/Scripts/MovingTrap.psc:9:1:unused-import
 Source/Scripts/MovingTrap.psc:10:1:unused-import
 Source/Scripts/MovingTrap.psc:14:1:identifier-casing
+Source/Scripts/MovingTrap.psc:14:15:property-never-read
 Source/Scripts/MovingTrap.psc:15:1:identifier-casing
 Source/Scripts/MovingTrap.psc:30:1:cyclomatic-complexity
 Source/Scripts/MovingTrap.psc:30:1:function-length
@@ -91045,6 +91218,7 @@ Source/Scripts/PetFramework_PetQuest.psc:6:1:identifier-casing
 Source/Scripts/PetFramework_PetQuest.psc:7:1:identifier-casing
 Source/Scripts/PetFramework_PetQuest.psc:8:18:unused-property
 Source/Scripts/PetFramework_PetQuest.psc:9:1:identifier-casing
+Source/Scripts/PetFramework_PetQuest.psc:13:15:property-never-read
 Source/Scripts/PetFramework_PetQuest.psc:13:121:line-length
 Source/Scripts/PetFramework_PetQuest.psc:15:1:unnecessary-function
 Source/Scripts/PetFramework_PetQuest.psc:16:1:indentation
@@ -91776,6 +91950,7 @@ Source/Scripts/PlayerVampireQuestScript.psc:29:33:trailing-whitespace
 Source/Scripts/PlayerVampireQuestScript.psc:30:40:trailing-whitespace
 Source/Scripts/PlayerVampireQuestScript.psc:31:32:trailing-whitespace
 Source/Scripts/PlayerVampireQuestScript.psc:32:39:trailing-whitespace
+Source/Scripts/PlayerVampireQuestScript.psc:33:15:property-never-read
 Source/Scripts/PlayerVampireQuestScript.psc:36:40:trailing-whitespace
 Source/Scripts/PlayerVampireQuestScript.psc:46:63:trailing-whitespace
 Source/Scripts/PlayerVampireQuestScript.psc:49:1:cyclomatic-complexity
@@ -92588,6 +92763,7 @@ Source/Scripts/PressureReleasePlate.psc:14:15:unused-property
 Source/Scripts/PressureReleasePlate.psc:15:15:unused-property
 Source/Scripts/PressureReleasePlate.psc:16:1:identifier-casing
 Source/Scripts/PressureReleasePlate.psc:20:1:identifier-casing
+Source/Scripts/PressureReleasePlate.psc:20:15:property-never-read
 Source/Scripts/PressureReleasePlate.psc:29:1:indentation
 Source/Scripts/PressureReleasePlate.psc:30:1:indentation
 Source/Scripts/PressureReleasePlate.psc:30:32:trailing-whitespace
@@ -125672,6 +125848,7 @@ Source/Scripts/QF_dunLostValleyRedoubtQST_000B0F5B.psc:103:44:trailing-whitespac
 Source/Scripts/QF_dunLostValleyRedoubtQST_000B0F5B.psc:105:43:trailing-whitespace
 Source/Scripts/QF_dunLostValleyRedoubtQST_000B0F5B.psc:107:1:identifier-casing
 Source/Scripts/QF_dunLostValleyRedoubtQST_000B0F5B.psc:107:42:trailing-whitespace
+Source/Scripts/QF_dunLostValleyRedoubtQST_000B0F5B.psc:109:15:property-never-read
 Source/Scripts/QF_dunLostValleyRedoubtQST_000B0F5B.psc:111:1:identifier-casing
 Source/Scripts/QF_dunLostValleyRedoubtQST_000B0F5B.psc:111:1:unnecessary-function
 Source/Scripts/QF_dunMS06_0001F142.psc:1:77:line-endings
@@ -129122,6 +129299,7 @@ Source/Scripts/RelationshipMarriageSpouseHouseScript.psc:6:44:trailing-whitespac
 Source/Scripts/RelationshipMarriageSpouseHouseScript.psc:7:44:trailing-whitespace
 Source/Scripts/RelationshipMarriageSpouseHouseScript.psc:8:42:trailing-whitespace
 Source/Scripts/RelationshipMarriageSpouseHouseScript.psc:9:44:trailing-whitespace
+Source/Scripts/RelationshipMarriageSpouseHouseScript.psc:42:14:property-never-read
 Source/Scripts/RelationshipMarriageSpouseHouseScript.psc:45:1:unnecessary-function
 Source/Scripts/RelationshipMarriageSpouseHouseScript.psc:46:1:indentation
 Source/Scripts/RelationshipMarriageSpouseHouseScript.psc:50:1:cyclomatic-complexity
@@ -129427,6 +129605,7 @@ Source/Scripts/ResourceObjectScript.psc:9:121:line-length
 Source/Scripts/ResourceObjectScript.psc:10:121:line-length
 Source/Scripts/ResourceObjectScript.psc:14:121:line-length
 Source/Scripts/ResourceObjectScript.psc:47:38:trailing-whitespace
+Source/Scripts/ResourceObjectScript.psc:51:14:property-never-read
 Source/Scripts/ResourceObjectScript.psc:51:121:line-length
 Source/Scripts/ResourceObjectScript.psc:57:1:identifier-casing
 Source/Scripts/ResourceObjectScript.psc:58:1:identifier-casing
@@ -129557,6 +129736,7 @@ Source/Scripts/RiftenCasketDoorScript.psc:1:60:line-endings
 Source/Scripts/RiftenCasketDoorScript.psc:6:1:identifier-casing
 Source/Scripts/RiftenCasketDoorScript.psc:9:1:identifier-casing
 Source/Scripts/RiftenCasketDoorScript.psc:12:1:identifier-casing
+Source/Scripts/RiftenCasketDoorScript.psc:12:15:property-never-read
 Source/Scripts/RiftenCasketDoorScript.psc:15:1:identifier-casing
 Source/Scripts/RiftenCasketDoorScript.psc:18:1:identifier-casing
 Source/Scripts/RiftenCasketDoorScript.psc:21:1:identifier-casing
@@ -133830,6 +134010,7 @@ Source/Scripts/SnowVeilKeyholeScript.psc:1:57:trailing-whitespace
 Source/Scripts/SnowVeilKeyholeScript.psc:1:59:line-endings
 Source/Scripts/SnowVeilKeyholeScript.psc:8:1:unused-import
 Source/Scripts/SnowVeilKeyholeScript.psc:11:1:identifier-casing
+Source/Scripts/SnowVeilKeyholeScript.psc:11:15:property-never-read
 Source/Scripts/SnowVeilKeyholeScript.psc:12:1:identifier-casing
 Source/Scripts/SnowVeilKeyholeScript.psc:12:15:unused-property
 Source/Scripts/SnowVeilKeyholeScript.psc:13:1:identifier-casing
@@ -134648,6 +134829,7 @@ Source/Scripts/Survival_ConditionsScript.psc:12:1:identifier-casing
 Source/Scripts/Survival_ConditionsScript.psc:14:2:strict-boolean
 Source/Scripts/Survival_ConditionsScript.psc:15:1:none-form-usage
 Source/Scripts/Survival_ConditionsScript.psc:20:1:identifier-casing
+Source/Scripts/Survival_ConditionsScript.psc:20:14:property-never-read
 Source/Scripts/Survival_ConditionsScript.psc:21:1:unnecessary-function
 Source/Scripts/Survival_ConditionsScript.psc:25:1:unnecessary-function
 Source/Scripts/Survival_ConditionsScript.psc:27:12:final-newline
@@ -135164,6 +135346,7 @@ Source/Scripts/Survival_NeedBase.psc:29:1:identifier-casing
 Source/Scripts/Survival_NeedBase.psc:29:25:unused-property
 Source/Scripts/Survival_NeedBase.psc:33:22:unused-property
 Source/Scripts/Survival_NeedBase.psc:39:1:identifier-casing
+Source/Scripts/Survival_NeedBase.psc:39:15:property-never-read
 Source/Scripts/Survival_NeedBase.psc:41:1:identifier-casing
 Source/Scripts/Survival_NeedBase.psc:42:1:identifier-casing
 Source/Scripts/Survival_NeedBase.psc:43:1:identifier-casing
@@ -135197,8 +135380,10 @@ Source/Scripts/Survival_NeedBase.psc:80:1:identifier-casing
 Source/Scripts/Survival_NeedBase.psc:81:1:identifier-casing
 Source/Scripts/Survival_NeedBase.psc:82:1:identifier-casing
 Source/Scripts/Survival_NeedBase.psc:83:1:identifier-casing
+Source/Scripts/Survival_NeedBase.psc:83:15:property-never-read
 Source/Scripts/Survival_NeedBase.psc:84:1:identifier-casing
 Source/Scripts/Survival_NeedBase.psc:85:1:identifier-casing
+Source/Scripts/Survival_NeedBase.psc:85:14:property-never-read
 Source/Scripts/Survival_NeedBase.psc:86:1:identifier-casing
 Source/Scripts/Survival_NeedBase.psc:88:1:identifier-casing
 Source/Scripts/Survival_NeedBase.psc:91:1:indentation
@@ -136755,6 +136940,7 @@ Source/Scripts/T01QuestScript.psc:1:52:line-endings
 Source/Scripts/T01QuestScript.psc:3:15:unused-property
 Source/Scripts/T01QuestScript.psc:4:15:unused-property
 Source/Scripts/T01QuestScript.psc:5:15:unused-property
+Source/Scripts/T01QuestScript.psc:6:15:property-never-read
 Source/Scripts/T01QuestScript.psc:7:15:unused-property
 Source/Scripts/T01QuestScript.psc:8:15:unused-property
 Source/Scripts/T01QuestScript.psc:21:15:unused-property
@@ -137461,6 +137647,7 @@ Source/Scripts/TG02QuestScript.psc:8:14:unused-property
 Source/Scripts/TG02QuestScript.psc:9:1:identifier-casing
 Source/Scripts/TG02QuestScript.psc:9:14:unused-property
 Source/Scripts/TG02QuestScript.psc:10:1:identifier-casing
+Source/Scripts/TG02QuestScript.psc:10:14:property-never-read
 Source/Scripts/TG02QuestScript.psc:11:1:identifier-casing
 Source/Scripts/TG02QuestScript.psc:11:14:unused-property
 Source/Scripts/TG02QuestScript.psc:12:1:identifier-casing
@@ -138403,6 +138590,7 @@ Source/Scripts/TG07MercerHouseTriggerScript.psc:9:1:none-form-usage
 Source/Scripts/TG07MercerHouseTriggerScript.psc:13:9:final-newline
 Source/Scripts/TG07MercersPlansScript.psc:1:70:line-endings
 Source/Scripts/TG07MercersPlansScript.psc:3:1:identifier-casing
+Source/Scripts/TG07MercersPlansScript.psc:3:14:property-never-read
 Source/Scripts/TG07MercersPlansScript.psc:4:1:identifier-casing
 Source/Scripts/TG07MercersPlansScript.psc:6:1:argument-naming
 Source/Scripts/TG07MercersPlansScript.psc:6:1:function-override
@@ -141313,6 +141501,7 @@ Source/Scripts/TGRShellScript.psc:14:1:identifier-casing
 Source/Scripts/TGRShellScript.psc:15:1:identifier-casing
 Source/Scripts/TGRShellScript.psc:16:1:identifier-casing
 Source/Scripts/TGRShellScript.psc:17:1:identifier-casing
+Source/Scripts/TGRShellScript.psc:17:14:property-never-read
 Source/Scripts/TGRShellScript.psc:18:1:identifier-casing
 Source/Scripts/TGRShellScript.psc:19:1:identifier-casing
 Source/Scripts/TGRShellScript.psc:20:1:identifier-casing
@@ -158208,11 +158397,14 @@ Source/Scripts/TrapBase.psc:15:1:trailing-whitespace
 Source/Scripts/TrapBase.psc:20:1:identifier-casing
 Source/Scripts/TrapBase.psc:21:1:identifier-casing
 Source/Scripts/TrapBase.psc:22:1:identifier-casing
+Source/Scripts/TrapBase.psc:22:15:property-never-read
 Source/Scripts/TrapBase.psc:23:1:identifier-casing
+Source/Scripts/TrapBase.psc:23:26:property-never-read
 Source/Scripts/TrapBase.psc:25:1:identifier-casing
 Source/Scripts/TrapBase.psc:25:15:unused-property
 Source/Scripts/TrapBase.psc:26:16:unused-property
 Source/Scripts/TrapBase.psc:30:1:identifier-casing
+Source/Scripts/TrapBase.psc:30:15:property-never-read
 Source/Scripts/TrapBase.psc:32:14:unused-property
 Source/Scripts/TrapBase.psc:34:1:indentation
 Source/Scripts/TrapBase.psc:35:1:indentation
@@ -158220,6 +158412,7 @@ Source/Scripts/TrapBase.psc:36:1:indentation
 Source/Scripts/TrapBase.psc:37:1:indentation
 Source/Scripts/TrapBase.psc:38:1:trailing-whitespace
 Source/Scripts/TrapBase.psc:39:1:identifier-casing
+Source/Scripts/TrapBase.psc:39:14:property-never-read
 Source/Scripts/TrapBase.psc:41:1:identifier-casing
 Source/Scripts/TrapBase.psc:43:1:identifier-casing
 Source/Scripts/TrapBase.psc:43:1:unnecessary-function
@@ -158432,6 +158625,7 @@ Source/Scripts/TrapDweBallista.psc:115:1:identifier-casing
 Source/Scripts/TrapDweBallista.psc:116:1:indentation
 Source/Scripts/TrapDweBallista.psc:118:1:trailing-whitespace
 Source/Scripts/TrapDweBallista.psc:128:1:identifier-casing
+Source/Scripts/TrapDweBallista.psc:128:15:property-never-read
 Source/Scripts/TrapDweBallista.psc:136:1:function-length
 Source/Scripts/TrapDweBallista.psc:138:1:identifier-casing
 Source/Scripts/TrapDweBallista.psc:140:1:trailing-whitespace
@@ -159190,6 +159384,7 @@ Source/Scripts/TrapFlamethrower.psc:3:1:semicolon
 Source/Scripts/TrapFlamethrower.psc:4:1:semicolon
 Source/Scripts/TrapFlamethrower.psc:7:1:identifier-casing
 Source/Scripts/TrapFlamethrower.psc:9:1:identifier-casing
+Source/Scripts/TrapFlamethrower.psc:9:16:property-never-read
 Source/Scripts/TrapFlamethrower.psc:10:1:identifier-casing
 Source/Scripts/TrapFlamethrower.psc:11:1:identifier-casing
 Source/Scripts/TrapFlamethrower.psc:13:1:indentation
@@ -159629,6 +159824,7 @@ Source/Scripts/TrapNorPlatform.psc:50:1:identifier-casing
 Source/Scripts/TrapNorPlatform.psc:52:1:identifier-casing
 Source/Scripts/TrapNorPlatform.psc:54:1:identifier-casing
 Source/Scripts/TrapNorPlatform.psc:56:1:identifier-casing
+Source/Scripts/TrapNorPlatform.psc:56:17:property-never-read
 Source/Scripts/TrapNorPlatform.psc:59:1:identifier-casing
 Source/Scripts/TrapNorPlatform.psc:62:1:identifier-casing
 Source/Scripts/TrapNorPlatform.psc:67:1:indentation
@@ -160071,6 +160267,7 @@ Source/Scripts/TrapSwingingWall.psc:25:1:identifier-casing
 Source/Scripts/TrapSwingingWall.psc:27:1:identifier-casing
 Source/Scripts/TrapSwingingWall.psc:29:1:identifier-casing
 Source/Scripts/TrapSwingingWall.psc:31:1:identifier-casing
+Source/Scripts/TrapSwingingWall.psc:33:17:property-never-read
 Source/Scripts/TrapSwingingWall.psc:34:17:unused-property
 Source/Scripts/TrapSwingingWall.psc:52:1:identifier-casing
 Source/Scripts/TrapSwingingWall.psc:54:1:identifier-casing
@@ -160152,6 +160349,7 @@ Source/Scripts/TrapTriggerBase.psc:21:1:indentation
 Source/Scripts/TrapTriggerBase.psc:22:1:indentation
 Source/Scripts/TrapTriggerBase.psc:23:16:unused-property
 Source/Scripts/TrapTriggerBase.psc:24:1:identifier-casing
+Source/Scripts/TrapTriggerBase.psc:24:26:property-never-read
 Source/Scripts/TrapTriggerBase.psc:25:1:identifier-casing
 Source/Scripts/TrapTriggerBase.psc:25:14:unused-property
 Source/Scripts/TrapTriggerBase.psc:27:1:identifier-casing
@@ -160412,6 +160610,7 @@ Source/Scripts/TrapTriggerTimeInterval.psc:14:1:indentation
 Source/Scripts/TrapTriggerTimeInterval.psc:16:1:trailing-whitespace
 Source/Scripts/TrapTriggerTimeInterval.psc:17:1:identifier-casing
 Source/Scripts/TrapTriggerTimeInterval.psc:18:1:identifier-casing
+Source/Scripts/TrapTriggerTimeInterval.psc:18:15:property-never-read
 Source/Scripts/TrapTriggerTimeInterval.psc:19:1:identifier-casing
 Source/Scripts/TrapTriggerTimeInterval.psc:21:1:multiple-auto-states
 Source/Scripts/TrapTriggerTimeInterval.psc:23:1:identifier-casing
@@ -161632,6 +161831,7 @@ Source/Scripts/WIAddItem07PlayerScript.psc:15:1:unchecked-cast
 Source/Scripts/WIAddItem07PlayerScript.psc:18:1:final-newline
 Source/Scripts/WIAddItem07Script.psc:1:74:line-endings
 Source/Scripts/WIAddItem07Script.psc:3:24:unused-property
+Source/Scripts/WIAddItem07Script.psc:15:14:property-never-read
 Source/Scripts/WIAddItem07Script.psc:17:1:identifier-casing
 Source/Scripts/WIAddItem07Script.psc:19:1:function-length
 Source/Scripts/WIAddItem07Script.psc:19:1:function-override
@@ -161682,7 +161882,9 @@ Source/Scripts/WIAdditem03Script.psc:7:1:identifier-casing
 Source/Scripts/WIAdditem03Script.psc:10:1:identifier-casing
 Source/Scripts/WIAdditem03Script.psc:10:37:trailing-whitespace
 Source/Scripts/WIAdditem03Script.psc:13:1:identifier-casing
+Source/Scripts/WIAdditem03Script.psc:13:19:property-never-read
 Source/Scripts/WIAdditem03Script.psc:14:1:identifier-casing
+Source/Scripts/WIAdditem03Script.psc:14:19:property-never-read
 Source/Scripts/WIAdditem03Script.psc:16:121:line-length
 Source/Scripts/WIAdditem03Script.psc:18:1:identifier-casing
 Source/Scripts/WIAdditem03Script.psc:18:1:unused-state
@@ -162392,6 +162594,7 @@ Source/Scripts/WIFunctionsScript.psc:492:1:trailing-whitespace
 Source/Scripts/WIFunctionsScript.psc:496:1:final-newline
 Source/Scripts/WIGamesHideAndSeekScript.psc:1:70:line-endings
 Source/Scripts/WIGamesScript.psc:1:39:line-endings
+Source/Scripts/WIGamesScript.psc:11:14:property-never-read
 Source/Scripts/WIGamesScript.psc:15:121:line-length
 Source/Scripts/WIGamesScript.psc:16:35:assignment-operator-spacing
 Source/Scripts/WIGamesScript.psc:18:1:identifier-casing
@@ -162478,6 +162681,16 @@ Source/Scripts/WIGamesScript.psc:133:1:trailing-whitespace
 Source/Scripts/WIGamesTagScript.psc:1:62:line-endings
 Source/Scripts/WIGamesTagScript.psc:4:1:final-newline
 Source/Scripts/WIGrabNearbyNPCsScript.psc:1:61:line-endings
+Source/Scripts/WIGrabNearbyNPCsScript.psc:11:25:property-never-read
+Source/Scripts/WIGrabNearbyNPCsScript.psc:12:25:property-never-read
+Source/Scripts/WIGrabNearbyNPCsScript.psc:13:25:property-never-read
+Source/Scripts/WIGrabNearbyNPCsScript.psc:14:25:property-never-read
+Source/Scripts/WIGrabNearbyNPCsScript.psc:15:25:property-never-read
+Source/Scripts/WIGrabNearbyNPCsScript.psc:16:25:property-never-read
+Source/Scripts/WIGrabNearbyNPCsScript.psc:17:25:property-never-read
+Source/Scripts/WIGrabNearbyNPCsScript.psc:18:25:property-never-read
+Source/Scripts/WIGrabNearbyNPCsScript.psc:19:25:property-never-read
+Source/Scripts/WIGrabNearbyNPCsScript.psc:20:25:property-never-read
 Source/Scripts/WIGrabNearbyNPCsScript.psc:26:1:cyclomatic-complexity
 Source/Scripts/WIGrabNearbyNPCsScript.psc:26:1:function-length
 Source/Scripts/WIGrabNearbyNPCsScript.psc:27:1:indentation
@@ -162550,6 +162763,7 @@ Source/Scripts/WIKill03Script.psc:10:1:identifier-casing
 Source/Scripts/WIKill03Script.psc:13:1:identifier-casing
 Source/Scripts/WIKill03Script.psc:16:1:identifier-casing
 Source/Scripts/WIKill03Script.psc:19:1:identifier-casing
+Source/Scripts/WIKill03Script.psc:19:14:property-never-read
 Source/Scripts/WIKill03Script.psc:22:1:identifier-casing
 Source/Scripts/WIKill03Script.psc:22:14:unused-property
 Source/Scripts/WIKill03Script.psc:25:1:identifier-casing
@@ -162597,6 +162811,7 @@ Source/Scripts/WIKill04LetterScript.psc:10:1:indentation
 Source/Scripts/WIKill04LetterScript.psc:11:1:trailing-whitespace
 Source/Scripts/WIKill04LetterScript.psc:11:2:final-newline
 Source/Scripts/WIKill04Script.psc:1:71:line-endings
+Source/Scripts/WIKill04Script.psc:13:14:property-never-read
 Source/Scripts/WIKill04Script.psc:16:14:unused-property
 Source/Scripts/WIKill04Script.psc:19:33:trailing-whitespace
 Source/Scripts/WIKill04Script.psc:22:21:unused-property
@@ -162703,6 +162918,7 @@ Source/Scripts/WIRemoveItem05Script.psc:4:1:identifier-casing
 Source/Scripts/WIRemoveItem05Script.psc:4:25:unused-property
 Source/Scripts/WIRemoveItem05Script.psc:4:48:trailing-whitespace
 Source/Scripts/WISabotage.psc:1:67:line-endings
+Source/Scripts/WISabotage.psc:4:14:property-never-read
 Source/Scripts/WISabotage.psc:8:1:trailing-whitespace
 Source/Scripts/WISabotage.psc:10:1:indentation
 Source/Scripts/WISabotage.psc:10:121:line-length
@@ -163135,6 +163351,7 @@ Source/Scripts/WeaponRackTriggerSCRIPT.psc:3:1:unused-import
 Source/Scripts/WeaponRackTriggerSCRIPT.psc:4:1:unused-import
 Source/Scripts/WeaponRackTriggerSCRIPT.psc:5:1:unused-import
 Source/Scripts/WeaponRackTriggerSCRIPT.psc:13:26:unused-property
+Source/Scripts/WeaponRackTriggerSCRIPT.psc:16:15:property-never-read
 Source/Scripts/WeaponRackTriggerSCRIPT.psc:18:1:identifier-casing
 Source/Scripts/WeaponRackTriggerSCRIPT.psc:18:14:unused-property
 Source/Scripts/WeaponRackTriggerSCRIPT.psc:25:1:function-override
@@ -168462,6 +168679,7 @@ Source/Scripts/default2StateActivator.psc:1:70:line-endings
 Source/Scripts/default2StateActivator.psc:7:1:identifier-casing
 Source/Scripts/default2StateActivator.psc:10:1:identifier-casing
 Source/Scripts/default2StateActivator.psc:13:1:identifier-casing
+Source/Scripts/default2StateActivator.psc:13:15:property-never-read
 Source/Scripts/default2StateActivator.psc:16:1:identifier-casing
 Source/Scripts/default2StateActivator.psc:19:1:identifier-casing
 Source/Scripts/default2StateActivator.psc:22:1:identifier-casing
@@ -168472,6 +168690,7 @@ Source/Scripts/default2StateActivator.psc:34:1:identifier-casing
 Source/Scripts/default2StateActivator.psc:35:121:line-length
 Source/Scripts/default2StateActivator.psc:35:127:trailing-whitespace
 Source/Scripts/default2StateActivator.psc:38:1:identifier-casing
+Source/Scripts/default2StateActivator.psc:38:14:property-never-read
 Source/Scripts/default2StateActivator.psc:46:1:function-override
 Source/Scripts/default2StateActivator.psc:50:1:function-override
 Source/Scripts/default2StateActivator.psc:54:121:line-length
@@ -170187,7 +170406,9 @@ Source/Scripts/defaultPillarPuzzleLever.psc:1:60:line-endings
 Source/Scripts/defaultPillarPuzzleLever.psc:8:1:unused-import
 Source/Scripts/defaultPillarPuzzleLever.psc:9:1:unused-import
 Source/Scripts/defaultPillarPuzzleLever.psc:11:1:identifier-casing
+Source/Scripts/defaultPillarPuzzleLever.psc:11:15:property-never-read
 Source/Scripts/defaultPillarPuzzleLever.psc:12:1:identifier-casing
+Source/Scripts/defaultPillarPuzzleLever.psc:12:15:property-never-read
 Source/Scripts/defaultPillarPuzzleLever.psc:13:1:identifier-casing
 Source/Scripts/defaultPillarPuzzleLever.psc:15:1:identifier-casing
 Source/Scripts/defaultPillarPuzzleLever.psc:16:42:trailing-whitespace
@@ -170231,7 +170452,9 @@ Source/Scripts/defaultPillarPuzzleLeverNoFurn.psc:1:66:line-endings
 Source/Scripts/defaultPillarPuzzleLeverNoFurn.psc:8:1:unused-import
 Source/Scripts/defaultPillarPuzzleLeverNoFurn.psc:9:1:unused-import
 Source/Scripts/defaultPillarPuzzleLeverNoFurn.psc:11:1:identifier-casing
+Source/Scripts/defaultPillarPuzzleLeverNoFurn.psc:11:15:property-never-read
 Source/Scripts/defaultPillarPuzzleLeverNoFurn.psc:12:1:identifier-casing
+Source/Scripts/defaultPillarPuzzleLeverNoFurn.psc:12:15:property-never-read
 Source/Scripts/defaultPillarPuzzleLeverNoFurn.psc:13:1:identifier-casing
 Source/Scripts/defaultPillarPuzzleLeverNoFurn.psc:15:1:identifier-casing
 Source/Scripts/defaultPillarPuzzleLeverNoFurn.psc:16:42:trailing-whitespace
@@ -170278,7 +170501,9 @@ Source/Scripts/defaultPillarPuzzlePullBarNoFurn.psc:1:68:line-endings
 Source/Scripts/defaultPillarPuzzlePullBarNoFurn.psc:8:1:unused-import
 Source/Scripts/defaultPillarPuzzlePullBarNoFurn.psc:9:1:unused-import
 Source/Scripts/defaultPillarPuzzlePullBarNoFurn.psc:11:1:identifier-casing
+Source/Scripts/defaultPillarPuzzlePullBarNoFurn.psc:11:15:property-never-read
 Source/Scripts/defaultPillarPuzzlePullBarNoFurn.psc:12:1:identifier-casing
+Source/Scripts/defaultPillarPuzzlePullBarNoFurn.psc:12:15:property-never-read
 Source/Scripts/defaultPillarPuzzlePullBarNoFurn.psc:13:1:identifier-casing
 Source/Scripts/defaultPillarPuzzlePullBarNoFurn.psc:15:1:identifier-casing
 Source/Scripts/defaultPillarPuzzlePullBarNoFurn.psc:16:42:trailing-whitespace
@@ -172420,6 +172645,7 @@ Source/Scripts/dragonActorSCRIPT.psc:1:43:line-endings
 Source/Scripts/dragonActorSCRIPT.psc:7:1:identifier-casing
 Source/Scripts/dragonActorSCRIPT.psc:9:1:identifier-casing
 Source/Scripts/dragonActorSCRIPT.psc:13:1:identifier-casing
+Source/Scripts/dragonActorSCRIPT.psc:15:16:property-never-read
 Source/Scripts/dragonActorSCRIPT.psc:19:1:identifier-casing
 Source/Scripts/dragonActorSCRIPT.psc:19:20:unused-property
 Source/Scripts/dragonActorSCRIPT.psc:22:16:unused-property
@@ -174113,6 +174339,7 @@ Source/Scripts/dunCGdefault2StateActivator.psc:1:75:line-endings
 Source/Scripts/dunCGdefault2StateActivator.psc:7:1:identifier-casing
 Source/Scripts/dunCGdefault2StateActivator.psc:10:1:identifier-casing
 Source/Scripts/dunCGdefault2StateActivator.psc:13:1:identifier-casing
+Source/Scripts/dunCGdefault2StateActivator.psc:13:15:property-never-read
 Source/Scripts/dunCGdefault2StateActivator.psc:16:1:identifier-casing
 Source/Scripts/dunCGdefault2StateActivator.psc:19:1:identifier-casing
 Source/Scripts/dunCGdefault2StateActivator.psc:22:1:identifier-casing
@@ -174123,6 +174350,7 @@ Source/Scripts/dunCGdefault2StateActivator.psc:34:1:identifier-casing
 Source/Scripts/dunCGdefault2StateActivator.psc:35:121:line-length
 Source/Scripts/dunCGdefault2StateActivator.psc:35:127:trailing-whitespace
 Source/Scripts/dunCGdefault2StateActivator.psc:38:1:identifier-casing
+Source/Scripts/dunCGdefault2StateActivator.psc:38:14:property-never-read
 Source/Scripts/dunCGdefault2StateActivator.psc:42:1:identifier-casing
 Source/Scripts/dunCGdefault2StateActivator.psc:49:1:function-override
 Source/Scripts/dunCGdefault2StateActivator.psc:53:1:function-override
@@ -179957,6 +180185,7 @@ Source/Scripts/dunPotemasMS06BossFightDummy.psc:25:1:identifier-casing
 Source/Scripts/dunPotemasMS06BossFightDummy.psc:26:1:identifier-casing
 Source/Scripts/dunPotemasMS06BossFightDummy.psc:26:26:unused-property
 Source/Scripts/dunPotemasMS06BossFightDummy.psc:27:1:identifier-casing
+Source/Scripts/dunPotemasMS06BossFightDummy.psc:27:26:property-never-read
 Source/Scripts/dunPotemasMS06BossFightDummy.psc:28:1:identifier-casing
 Source/Scripts/dunPotemasMS06BossFightDummy.psc:28:26:unused-property
 Source/Scripts/dunPotemasMS06BossFightDummy.psc:30:1:identifier-casing
@@ -181428,6 +181657,7 @@ Source/Scripts/dunSkuldafnPuzzleControlSCRIPT.psc:1:68:line-endings
 Source/Scripts/dunSkuldafnPuzzleControlSCRIPT.psc:3:1:unused-import
 Source/Scripts/dunSkuldafnPuzzleControlSCRIPT.psc:6:1:identifier-casing
 Source/Scripts/dunSkuldafnPuzzleControlSCRIPT.psc:7:1:identifier-casing
+Source/Scripts/dunSkuldafnPuzzleControlSCRIPT.psc:7:15:property-never-read
 Source/Scripts/dunSkuldafnPuzzleControlSCRIPT.psc:8:1:identifier-casing
 Source/Scripts/dunSkuldafnPuzzleControlSCRIPT.psc:9:1:identifier-casing
 Source/Scripts/dunSkuldafnPuzzleControlSCRIPT.psc:11:1:identifier-casing
@@ -181543,6 +181773,7 @@ Source/Scripts/dunSkuldafnPuzzlePillarTwoStage.psc:21:14:unused-property
 Source/Scripts/dunSkuldafnPuzzlePillarTwoStage.psc:22:1:identifier-casing
 Source/Scripts/dunSkuldafnPuzzlePillarTwoStage.psc:22:14:unused-property
 Source/Scripts/dunSkuldafnPuzzlePillarTwoStage.psc:31:1:identifier-casing
+Source/Scripts/dunSkuldafnPuzzlePillarTwoStage.psc:31:14:property-never-read
 Source/Scripts/dunSkuldafnPuzzlePillarTwoStage.psc:31:24:assignment-operator-spacing
 Source/Scripts/dunSkuldafnPuzzlePillarTwoStage.psc:31:24:assignment-operator-spacing
 Source/Scripts/dunSkuldafnPuzzlePillarTwoStage.psc:33:1:function-length
@@ -182029,6 +182260,7 @@ Source/Scripts/dunUstenPuzGateSCRIPT.psc:1:57:line-endings
 Source/Scripts/dunUstenPuzGateSCRIPT.psc:3:1:unused-import
 Source/Scripts/dunUstenPuzGateSCRIPT.psc:6:1:identifier-casing
 Source/Scripts/dunUstenPuzGateSCRIPT.psc:8:1:identifier-casing
+Source/Scripts/dunUstenPuzGateSCRIPT.psc:8:15:property-never-read
 Source/Scripts/dunUstenPuzGateSCRIPT.psc:11:1:identifier-casing
 Source/Scripts/dunUstenPuzGateSCRIPT.psc:11:32:forbidden-functions
 Source/Scripts/dunUstenPuzGateSCRIPT.psc:19:1:identifier-casing
@@ -182381,8 +182613,11 @@ Source/Scripts/dunVolskyggePuzzleButtonControl.psc:1:67:line-endings
 Source/Scripts/dunVolskyggePuzzleButtonControl.psc:7:1:unused-import
 Source/Scripts/dunVolskyggePuzzleButtonControl.psc:8:1:unused-import
 Source/Scripts/dunVolskyggePuzzleButtonControl.psc:10:1:identifier-casing
+Source/Scripts/dunVolskyggePuzzleButtonControl.psc:10:15:property-never-read
 Source/Scripts/dunVolskyggePuzzleButtonControl.psc:11:1:identifier-casing
+Source/Scripts/dunVolskyggePuzzleButtonControl.psc:11:14:property-never-read
 Source/Scripts/dunVolskyggePuzzleButtonControl.psc:12:1:identifier-casing
+Source/Scripts/dunVolskyggePuzzleButtonControl.psc:12:14:property-never-read
 Source/Scripts/dunVolskyggePuzzleButtonControl.psc:13:1:identifier-casing
 Source/Scripts/dunVolskyggePuzzleButtonControl.psc:13:14:unused-property
 Source/Scripts/dunVolskyggePuzzleButtonControl.psc:15:1:identifier-casing
@@ -182519,6 +182754,7 @@ Source/Scripts/dunVolskyggeQstScript.psc:11:15:unused-property
 Source/Scripts/dunVolunrrudSwitchPiggyBackSCRIPT.psc:1:12:type-casing
 Source/Scripts/dunVolunrrudSwitchPiggyBackSCRIPT.psc:1:69:line-endings
 Source/Scripts/dunVolunrrudSwitchPiggyBackSCRIPT.psc:3:1:identifier-casing
+Source/Scripts/dunVolunrrudSwitchPiggyBackSCRIPT.psc:3:15:property-never-read
 Source/Scripts/dunVolunrrudSwitchPiggyBackSCRIPT.psc:5:1:argument-naming
 Source/Scripts/dunVolunrrudSwitchPiggyBackSCRIPT.psc:5:1:function-override
 Source/Scripts/dunVolunrrudSwitchPiggyBackSCRIPT.psc:5:1:identifier-casing

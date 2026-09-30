@@ -9968,6 +9968,7 @@ Scripts/Source/DNLocalAlarmScript.psc:11:1:indentation
 Scripts/Source/DNLocalAlarmScript.psc:15:1:indentation
 Scripts/Source/DNLocalAlarmScript.psc:16:1:indentation
 Scripts/Source/DNLocalAlarmScript.psc:17:1:indentation
+Scripts/Source/DNLocalAlarmScript.psc:22:14:property-never-read
 Scripts/Source/DNLocalAlarmScript.psc:25:1:identifier-casing
 Scripts/Source/DNLocalAlarmScript.psc:26:1:identifier-casing
 Scripts/Source/DNLocalAlarmScript.psc:27:1:identifier-casing
@@ -18046,6 +18047,7 @@ Scripts/Source/DialogueShipServicesScript.psc:72:8:forbidden-functions
 Scripts/Source/DialogueShipServicesScript.psc:72:73:slow-functions
 Scripts/Source/DialogueShipServicesScript.psc:77:1:final-newline
 Scripts/Source/DialogueUCHyperloopQuestScript.psc:1:68:line-endings
+Scripts/Source/DialogueUCHyperloopQuestScript.psc:3:14:property-never-read
 Scripts/Source/DialogueUCHyperloopQuestScript.psc:5:14:unused-property
 Scripts/Source/DialogueUCHyperloopQuestScript.psc:7:1:identifier-casing
 Scripts/Source/DialogueUCHyperloopQuestScript.psc:10:1:unnecessary-function
@@ -18765,6 +18767,7 @@ Scripts/Source/ENV_AfflictionScript.psc:61:1:indentation
 Scripts/Source/ENV_AfflictionScript.psc:62:1:indentation
 Scripts/Source/ENV_AfflictionScript.psc:63:1:trailing-whitespace
 Scripts/Source/ENV_AfflictionScript.psc:64:1:indentation
+Scripts/Source/ENV_AfflictionScript.psc:64:19:property-never-read
 Scripts/Source/ENV_AfflictionScript.psc:65:1:indentation
 Scripts/Source/ENV_AfflictionScript.psc:68:1:identifier-casing
 Scripts/Source/ENV_AfflictionScript.psc:68:26:assignment-operator-spacing
@@ -90155,6 +90158,7 @@ Scripts/Source/LC165QuestScript.psc:291:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:292:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:293:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:297:1:identifier-casing
+Scripts/Source/LC165QuestScript.psc:297:15:property-never-read
 Scripts/Source/LC165QuestScript.psc:298:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:299:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:300:1:identifier-casing
@@ -90250,6 +90254,7 @@ Scripts/Source/LC165QuestScript.psc:429:121:line-length
 Scripts/Source/LC165QuestScript.psc:430:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:431:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:432:1:identifier-casing
+Scripts/Source/LC165QuestScript.psc:434:15:property-never-read
 Scripts/Source/LC165QuestScript.psc:439:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:440:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:441:1:identifier-casing
@@ -96995,6 +97000,7 @@ Scripts/Source/MQ305PlayerShipAliasScript.psc:22:9:final-newline
 Scripts/Source/MQ305Script.psc:1:49:line-endings
 Scripts/Source/MQ305Script.psc:6:1:identifier-casing
 Scripts/Source/MQ305Script.psc:15:1:identifier-casing
+Scripts/Source/MQ305Script.psc:15:14:property-never-read
 Scripts/Source/MQ305Script.psc:16:1:identifier-casing
 Scripts/Source/MQ305Script.psc:16:39:assignment-operator-spacing
 Scripts/Source/MQ305Script.psc:16:39:assignment-operator-spacing
@@ -100779,9 +100785,11 @@ Scripts/Source/MissionCargoParentScript.psc:9:1:indentation
 Scripts/Source/MissionCargoParentScript.psc:10:1:indentation
 Scripts/Source/MissionCargoParentScript.psc:12:1:identifier-casing
 Scripts/Source/MissionCargoParentScript.psc:12:1:indentation
+Scripts/Source/MissionCargoParentScript.psc:12:19:property-never-read
 Scripts/Source/MissionCargoParentScript.psc:13:1:indentation
 Scripts/Source/MissionCargoParentScript.psc:15:1:identifier-casing
 Scripts/Source/MissionCargoParentScript.psc:15:1:indentation
+Scripts/Source/MissionCargoParentScript.psc:15:19:property-never-read
 Scripts/Source/MissionCargoParentScript.psc:16:1:indentation
 Scripts/Source/MissionCargoParentScript.psc:18:1:indentation
 Scripts/Source/MissionCargoParentScript.psc:18:22:unused-property
@@ -105063,6 +105071,7 @@ Scripts/Source/OE_AustinF_CECSuperfan_Script.psc:41:11:forbidden-functions
 Scripts/Source/OE_AustinF_CECSuperfan_Script.psc:42:9:final-newline
 Scripts/Source/OE_AustinF_PvG_Script.psc:1:12:type-casing
 Scripts/Source/OE_AustinF_PvG_Script.psc:1:47:line-endings
+Scripts/Source/OE_AustinF_PvG_Script.psc:4:19:property-never-read
 Scripts/Source/OE_AustinF_PvG_Script.psc:5:1:identifier-casing
 Scripts/Source/OE_AustinF_PvG_Script.psc:7:1:function-override
 Scripts/Source/OE_AustinF_PvG_Script.psc:8:1:indentation
@@ -112680,8 +112689,10 @@ Scripts/Source/RETriggerScript.psc:37:121:line-length
 Scripts/Source/RETriggerScript.psc:46:1:identifier-casing
 Scripts/Source/RETriggerScript.psc:46:121:line-length
 Scripts/Source/RETriggerScript.psc:48:1:identifier-casing
+Scripts/Source/RETriggerScript.psc:48:15:property-never-read
 Scripts/Source/RETriggerScript.psc:48:121:line-length
 Scripts/Source/RETriggerScript.psc:49:1:indentation
+Scripts/Source/RETriggerScript.psc:51:15:property-never-read
 Scripts/Source/RETriggerScript.psc:53:20:trailing-whitespace
 Scripts/Source/RETriggerScript.psc:54:1:identifier-casing
 Scripts/Source/RETriggerScript.psc:54:1:indentation
@@ -117796,6 +117807,7 @@ Scripts/Source/Ri08_QuestScript.psc:116:12:final-newline
 Scripts/Source/RobotPodScript.psc:1:40:trailing-whitespace
 Scripts/Source/RobotPodScript.psc:1:41:line-endings
 Scripts/Source/RobotPodScript.psc:3:1:identifier-casing
+Scripts/Source/RobotPodScript.psc:3:15:property-never-read
 Scripts/Source/RobotPodScript.psc:6:1:identifier-casing
 Scripts/Source/RobotPodScript.psc:11:8:forbidden-functions
 Scripts/Source/RobotPodScript.psc:13:1:identifier-casing
@@ -119966,6 +119978,7 @@ Scripts/Source/SE_DB05Script.psc:3:1:identifier-casing
 Scripts/Source/SE_DB05Script.psc:5:1:identifier-casing
 Scripts/Source/SE_DB05Script.psc:7:1:identifier-casing
 Scripts/Source/SE_DB05Script.psc:9:1:identifier-casing
+Scripts/Source/SE_DB05Script.psc:9:16:property-never-read
 Scripts/Source/SE_DB05Script.psc:12:1:identifier-casing
 Scripts/Source/SE_DB05Script.psc:16:1:function-override
 Scripts/Source/SE_DB05Script.psc:17:1:indentation
@@ -125655,6 +125668,7 @@ Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:62:74:trailing-whitespace
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:63:1:indentation
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:63:63:trailing-whitespace
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:64:1:indentation
+Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:64:28:property-never-read
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:64:53:trailing-whitespace
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:65:1:indentation
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:65:103:trailing-whitespace
@@ -132795,6 +132809,8 @@ Scripts/Source/SFBGS00D/SFFLDR021_PowerIndicator.psc:9:1:indentation
 Scripts/Source/SFBGS00D/SFFLDR021_PowerIndicator.psc:10:1:indentation
 Scripts/Source/SFBGS00D/SFFLDR021_PowerIndicator.psc:11:9:final-newline
 Scripts/Source/SFBGS00D/SFFLDR021_SiloManagerScript.psc:1:72:line-endings
+Scripts/Source/SFBGS00D/SFFLDR021_SiloManagerScript.psc:5:15:property-never-read
+Scripts/Source/SFBGS00D/SFFLDR021_SiloManagerScript.psc:7:15:property-never-read
 Scripts/Source/SFBGS00D/SFFLDR021_SiloManagerScript.psc:27:1:identifier-casing
 Scripts/Source/SFBGS00D/SFFLDR021_SiloManagerScript.psc:33:1:indentation
 Scripts/Source/SFBGS00D/SFFLDR021_SiloManagerScript.psc:35:1:indentation
@@ -138960,6 +138976,7 @@ Scripts/Source/SQ_OutpostAttackScript.psc:3:55:trailing-whitespace
 Scripts/Source/SQ_OutpostAttackScript.psc:5:59:trailing-whitespace
 Scripts/Source/SQ_OutpostAttackScript.psc:8:58:trailing-whitespace
 Scripts/Source/SQ_OutpostAttackScript.psc:11:53:trailing-whitespace
+Scripts/Source/SQ_OutpostAttackScript.psc:22:15:property-never-read
 Scripts/Source/SQ_OutpostAttackScript.psc:25:2:trailing-whitespace
 Scripts/Source/SQ_OutpostAttackScript.psc:26:1:indentation
 Scripts/Source/SQ_OutpostAttackScript.psc:26:121:line-length
@@ -144524,8 +144541,10 @@ Scripts/Source/ShipLiftActivator.psc:39:1:indentation
 Scripts/Source/ShipLiftActivator.psc:44:1:indentation
 Scripts/Source/ShipLiftActivator.psc:45:1:indentation
 Scripts/Source/ShipLiftActivator.psc:49:1:identifier-casing
+Scripts/Source/ShipLiftActivator.psc:49:15:property-never-read
 Scripts/Source/ShipLiftActivator.psc:52:1:identifier-casing
 Scripts/Source/ShipLiftActivator.psc:55:1:identifier-casing
+Scripts/Source/ShipLiftActivator.psc:55:14:property-never-read
 Scripts/Source/ShipLiftActivator.psc:57:1:indentation
 Scripts/Source/ShipLiftActivator.psc:58:1:indentation
 Scripts/Source/ShipLiftActivator.psc:60:1:identifier-casing
@@ -146531,6 +146550,7 @@ Scripts/Source/StarbornPuzzleScript.psc:11:1:identifier-casing
 Scripts/Source/StarbornPuzzleScript.psc:12:26:unused-property
 Scripts/Source/StarbornPuzzleScript.psc:14:1:identifier-casing
 Scripts/Source/StarbornPuzzleScript.psc:16:1:identifier-casing
+Scripts/Source/StarbornPuzzleScript.psc:16:14:property-never-read
 Scripts/Source/StarbornPuzzleScript.psc:19:1:identifier-casing
 Scripts/Source/StarbornPuzzleScript.psc:19:1:indentation
 Scripts/Source/StarbornPuzzleScript.psc:20:1:indentation
@@ -149267,6 +149287,7 @@ Scripts/Source/TestJeffBExplosivoScript.psc:60:1:identifier-casing
 Scripts/Source/TestJeffBExplosivoScript.psc:73:12:final-newline
 Scripts/Source/TestJeffBLookScript.psc:1:57:line-endings
 Scripts/Source/TestJeffBLookScript.psc:3:1:identifier-casing
+Scripts/Source/TestJeffBLookScript.psc:3:15:property-never-read
 Scripts/Source/TestJeffBLookScript.psc:4:1:identifier-casing
 Scripts/Source/TestJeffBLookScript.psc:5:1:identifier-casing
 Scripts/Source/TestJeffBLookScript.psc:7:1:identifier-casing
@@ -149292,6 +149313,7 @@ Scripts/Source/TestJeffBLookScript.psc:41:35:forbidden-functions
 Scripts/Source/TestJeffBLookScript.psc:42:9:final-newline
 Scripts/Source/TestJeffBMournScript.psc:1:58:line-endings
 Scripts/Source/TestJeffBMournScript.psc:3:1:identifier-casing
+Scripts/Source/TestJeffBMournScript.psc:3:15:property-never-read
 Scripts/Source/TestJeffBMournScript.psc:4:1:identifier-casing
 Scripts/Source/TestJeffBMournScript.psc:6:1:identifier-casing
 Scripts/Source/TestJeffBMournScript.psc:8:1:identifier-casing
@@ -152823,6 +152845,7 @@ Scripts/Source/TrapBase.psc:5:1:indentation
 Scripts/Source/TrapBase.psc:6:1:indentation
 Scripts/Source/TrapBase.psc:8:1:identifier-casing
 Scripts/Source/TrapBase.psc:8:1:indentation
+Scripts/Source/TrapBase.psc:8:19:property-never-read
 Scripts/Source/TrapBase.psc:9:1:identifier-casing
 Scripts/Source/TrapBase.psc:9:1:indentation
 Scripts/Source/TrapBase.psc:9:121:line-length
@@ -154411,14 +154434,17 @@ Scripts/Source/UC01_ShipSimulationQuestScript.psc:197:1:indentation
 Scripts/Source/UC01_ShipSimulationQuestScript.psc:198:1:indentation
 Scripts/Source/UC01_ShipSimulationQuestScript.psc:202:1:identifier-casing
 Scripts/Source/UC01_ShipSimulationQuestScript.psc:202:1:indentation
+Scripts/Source/UC01_ShipSimulationQuestScript.psc:202:19:property-never-read
 Scripts/Source/UC01_ShipSimulationQuestScript.psc:203:1:indentation
 Scripts/Source/UC01_ShipSimulationQuestScript.psc:205:1:identifier-casing
 Scripts/Source/UC01_ShipSimulationQuestScript.psc:205:1:indentation
 Scripts/Source/UC01_ShipSimulationQuestScript.psc:206:1:indentation
 Scripts/Source/UC01_ShipSimulationQuestScript.psc:208:1:identifier-casing
 Scripts/Source/UC01_ShipSimulationQuestScript.psc:208:1:indentation
+Scripts/Source/UC01_ShipSimulationQuestScript.psc:208:19:property-never-read
 Scripts/Source/UC01_ShipSimulationQuestScript.psc:209:1:indentation
 Scripts/Source/UC01_ShipSimulationQuestScript.psc:211:1:indentation
+Scripts/Source/UC01_ShipSimulationQuestScript.psc:211:18:property-never-read
 Scripts/Source/UC01_ShipSimulationQuestScript.psc:212:1:indentation
 Scripts/Source/UC01_ShipSimulationQuestScript.psc:216:1:identifier-casing
 Scripts/Source/UC01_ShipSimulationQuestScript.psc:217:1:identifier-casing
@@ -156768,6 +156794,7 @@ Scripts/Source/UC05_QuestScript.psc:49:1:indentation
 Scripts/Source/UC05_QuestScript.psc:49:30:unused-property
 Scripts/Source/UC05_QuestScript.psc:50:1:indentation
 Scripts/Source/UC05_QuestScript.psc:52:1:indentation
+Scripts/Source/UC05_QuestScript.psc:52:18:property-never-read
 Scripts/Source/UC05_QuestScript.psc:53:1:indentation
 Scripts/Source/UC05_QuestScript.psc:53:121:line-length
 Scripts/Source/UC05_QuestScript.psc:57:1:indentation
