@@ -239,11 +239,22 @@ impl Parser {
 
         let flags = self.parse_property_flags()?;
 
+        let mut accessors = Vec::new();
         if !flags.is_auto && !flags.is_auto_read_only {
-            // Full property: skip the Function/EndFunction get/set block(s);
-            // parsing their bodies is out of scope for the basic AST.
-            while !self.at_keyword(Keyword::EndProperty) && !self.is_eof() {
-                self.advance();
+            loop {
+                self.skip_newlines();
+                if self.at_keyword(Keyword::EndProperty) || self.is_eof() {
+                    break;
+                }
+                if self.at_keyword(Keyword::Function) {
+                    accessors.push(self.parse_function(None, false)?);
+                    continue;
+                }
+                let return_type = self.parse_type_name()?;
+                if !self.at_keyword(Keyword::Function) {
+                    return Err(self.error("expected Function or EndProperty"));
+                }
+                accessors.push(self.parse_function(Some(return_type), false)?);
             }
             self.expect_keyword(Keyword::EndProperty)?;
             self.expect_terminator()?;
@@ -259,6 +270,7 @@ impl Parser {
             is_conditional: flags.is_conditional,
             access_level: flags.access_level,
             requires_guard: flags.requires_guard,
+            accessors,
             line,
         })
     }

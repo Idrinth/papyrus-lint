@@ -86,6 +86,11 @@ fn ast_rules_return_an_ast_visitor() {
     assert_ast(crate::unresolved_script::visitor());
     assert_ast(crate::unused_import::visitor());
     assert_ast(crate::unused_local_variable::visitor());
+    assert_ast(crate::unused_property::visitor());
+    assert_ast(crate::unused_getter::visitor());
+    assert_ast(crate::property_never_read::visitor());
+    assert_ast(crate::property_never_assigned::visitor());
+    assert_ast(crate::missing_update_handler::visitor());
     assert_ast(crate::useless_downcast::visitor());
     assert_ast(crate::variable_used_before_assignment::visitor());
 }
@@ -101,16 +106,11 @@ fn token_rules_return_a_token_visitor() {
     assert_tokens(crate::formid_hex_notation::visitor());
     assert_tokens(crate::get_form_from_file_skyrim_esm::visitor());
     assert_tokens(crate::indentation::visitor());
-    assert_tokens(crate::missing_update_handler::visitor());
     assert_tokens(crate::operator_spacing::visitor());
     assert_tokens(crate::slow_functions::visitor());
     assert_tokens(crate::type_casing::visitor());
     assert_tokens(crate::actor_value::visitor());
-    assert_tokens(crate::unused_getter::visitor());
     assert_tokens(crate::unused_nodiscard::visitor());
-    assert_tokens(crate::unused_property::visitor());
-    assert_tokens(crate::property_never_read::visitor());
-    assert_tokens(crate::property_never_assigned::visitor());
 }
 
 #[test]

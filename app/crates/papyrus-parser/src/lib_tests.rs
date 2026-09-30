@@ -328,6 +328,9 @@ EndProperty
     let prop = &script.properties[0];
     assert!(!prop.is_auto);
     assert!(!prop.is_auto_read_only);
+    assert_eq!(prop.accessors.len(), 2);
+    assert!(prop.accessors[0].name.eq_ignore_ascii_case("Get"));
+    assert!(prop.accessors[1].name.eq_ignore_ascii_case("Set"));
 }
 
 /// The "long" read-only property form: a full `Property`/`EndProperty`

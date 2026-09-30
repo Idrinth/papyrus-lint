@@ -82,6 +82,10 @@ pub struct PropertyDecl {
     /// Starfield guard that must be held while accessing this property.
     #[serde(default)]
     pub requires_guard: Option<String>,
+    /// Get/Set functions of a full (non-`Auto`) property. Empty for
+    /// `Auto` / `AutoReadOnly` properties.
+    #[serde(default)]
+    pub accessors: Vec<FunctionDecl>,
     pub line: usize,
 }
 

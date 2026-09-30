@@ -124,6 +124,9 @@ pub fn walk_property<V: Visitor + ?Sized>(visitor: &mut V, property: &PropertyDe
     if let Some(value) = &property.value {
         visitor.visit_expr(value);
     }
+    for accessor in &property.accessors {
+        visitor.visit_function(accessor);
+    }
 }
 
 pub fn walk_variable<V: Visitor + ?Sized>(visitor: &mut V, variable: &VariableDecl) {

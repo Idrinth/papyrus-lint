@@ -86,6 +86,16 @@ fn does_not_flag_unrelated_declarations() {
 }
 
 #[test]
+fn does_not_treat_member_on_another_object_as_a_use() {
+    let diagnostics = check(
+        "ScriptName Example\n\nInt Property Count Auto\n\nFunction Tick(ObjectReference other)\n  other.Count = 1\n  Debug.Trace(other.Count)\nEndFunction\n",
+    );
+
+    assert_eq!(diagnostics.len(), 1);
+    assert!(diagnostics[0].message.contains("Count"));
+}
+
+#[test]
 fn does_not_crash_on_unparseable_source() {
     let diagnostics = check("ScriptName Example\n\nInt Property MyValue = \"unterminated\n");
     assert!(diagnostics.is_empty());
