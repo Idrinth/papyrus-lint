@@ -1,0 +1,14 @@
+{
+  "id": "alias-cast-without-getreference",
+  "name": "Alias cast without GetReference",
+  "category": "Bugprone",
+  "visitor": "ast",
+  "tags": [
+    "correctness"
+  ],
+  "severity": "warning",
+  "importance": "high",
+  "fixable": false,
+  "description": "Flags casting a Quest Alias / ReferenceAlias / LocationAlias directly to Actor, ObjectReference, Location, or another non-Alias type. Aliases are not the filled form; use GetReference(), GetActorReference(), or GetLocation(). Casting an Alias to another *Alias type is allowed.",
+  "definition": "Flags, as a `[warning]`, an explicit `as` cast whose value's known type is a Quest alias (`Alias`, `ReferenceAlias`, `LocationAlias`, `RefCollectionAlias`, or a type that extends one of those) and whose target is not itself an alias type (the target name is not `Alias` / `ReferenceAlias` / `LocationAlias` / `RefCollectionAlias` and does not end with `Alias`). That pattern treats the alias object as if it were the filled reference (`(MyAlias as Actor).Kill()`), which is always `None` at runtime; the filled form is reached with `GetReference()`, `GetActorReference()`, or `GetLocation()` depending on the alias kind. A cast of an alias to another alias type (`Alias as ReferenceAlias`, `ReferenceAlias as MyQuestAlias`) is left quiet. Only a cast whose value type can be determined locally is checked; a member access or call result is left unflagged rather than guessed at. Primitive and array casts are ignored."
+}
