@@ -102,3 +102,6 @@ pub(crate) fn run_doctor(raw: DoctorArgs, stdout: &mut impl Write) -> u8 {
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod config_override_tests;
