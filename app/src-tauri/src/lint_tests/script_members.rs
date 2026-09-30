@@ -102,6 +102,40 @@ fn resolve_completion_query_blanks_block_and_brace_comments() {
 }
 
 #[test]
+fn resolve_completion_query_ignores_keyword_shaped_declarations() {
+    for source in [
+        "ScriptName Example\nFunction target\ntarget.",
+        "ScriptName Example\nActor Function\nFunction.",
+        "ScriptName Example\nFunction Run(Actor Event)\nEvent.\nEndFunction",
+        "ScriptName Example\nFunction Run(Function target)\ntarget.\nEndFunction",
+    ] {
+        let cursor = source.find('.').unwrap() + 1;
+        assert!(
+            resolve_completion_query(source.to_string(), cursor).is_none(),
+            "resolved a Papyrus keyword as a declaration in {source:?}"
+        );
+    }
+}
+
+#[test]
+fn parse_project_script_reuses_the_cached_ast_and_tokens() {
+    let dir = tempdir().unwrap();
+    let path = dir.path().join("Cached.psc");
+    std::fs::write(&path, "ScriptName Cached\n\nFunction Run()\nEndFunction\n").unwrap();
+
+    let first = parse_project_script(papyrus_lints::Game::default(), &path);
+    assert!(first.ast.is_some());
+    assert!(first.tokens.is_some());
+    assert!(first.error.is_none());
+
+    let second = parse_project_script(papyrus_lints::Game::default(), &path);
+    assert_eq!(second.source, first.source);
+    assert_eq!(second.ast.unwrap().name, "Cached");
+    assert!(second.tokens.is_some());
+    assert!(second.error.is_none());
+}
+
+#[test]
 fn list_script_members_reports_functions_and_properties_including_inherited_ones() {
     let dir = tempdir().unwrap();
     let source_dir = dir.path().join("scripts/source");
