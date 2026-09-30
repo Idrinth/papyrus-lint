@@ -1,0 +1,18 @@
+{
+  "id": "unknown-remote-event",
+  "name": "Unknown remote event name",
+  "category": "Bugprone",
+  "visitor": "ast",
+  "tags": [
+    "correctness"
+  ],
+  "severity": "warning",
+  "importance": "high",
+  "fixable": false,
+  "games": [
+    "fallout4",
+    "starfield"
+  ],
+  "description": "Flags a RegisterForRemoteEvent or UnregisterForRemoteEvent call whose event-name string is not an event on the source object's type (including ancestors). Fallout 4 / Starfield only.",
+  "definition": "Flags, as a `[warning]`, a `RegisterForRemoteEvent` or `UnregisterForRemoteEvent` call whose event-name argument is a string literal that the source object's script, and every script it `Extends`, does not declare as an `Event`. A typo such as `\"OnLood\"` compiles and then never fires. The source is the first positional argument, or a named `akEventSource` / `akSelf` argument; the event name is the second positional argument, or a named `asEventName` / `eventName` argument. The source type is taken from a local, parameter, property, `Self`, `Parent`, or cast that this script can see. A non-literal event name, an unresolvable source type, or an ancestry that cannot be fully resolved is left unflagged rather than guessed at. Matching is case-insensitive and includes events inherited from parent scripts (`Actor` accepts `OnLoad` because `ObjectReference` declares it). Does not require a matching `Event Type.OnFoo` handler in this script. Related: `unregistered-remote-event` flags the opposite miss (a handler that nothing registers). Scoped to Fallout 4 and Starfield; Skyrim classic has no remote events."
+}
