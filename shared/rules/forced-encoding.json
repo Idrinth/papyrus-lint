@@ -8,7 +8,7 @@
   ],
   "severity": "warning",
   "importance": "low",
-  "kept_in_standard": true,
+  "kept_in_standard": false,
   "fixable": true,
   "description": "Requires a file to be representable in the configured encoding.",
   "definition": "Requires, as a `[warning]`, every file to be valid in `encoding_enforced` (`utf8`, `windows-1252`, or `iso-8859-1`). Finding is file-level. Automatically fixable: the fix replaces characters that cannot be encoded with `?`."
