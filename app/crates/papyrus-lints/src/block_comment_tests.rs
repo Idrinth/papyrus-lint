@@ -43,3 +43,24 @@ fn a_block_comment_closes_on_its_first_slash_semicolon_even_inside_quotes() {
 
     assert_eq!(protected, vec![false, true]);
 }
+
+#[test]
+fn escaped_quotes_keep_comment_delimiters_inside_the_string() {
+    let source = "Debug.Trace(\"escaped \\\" quote ;/ still text\")\nValue = 1\n";
+
+    assert_eq!(protected_lines(source), vec![false, false, false]);
+}
+
+#[test]
+fn scanner_can_close_and_reopen_a_block_comment_on_one_line() {
+    let source = ";/ first /; Value = 1 ;/ second\nstill second /; Value = 2\n";
+
+    assert_eq!(protected_lines(source), vec![false, true, true]);
+}
+
+#[test]
+fn line_comment_prevents_a_later_block_comment_opener() {
+    let source = "Value = 1 ; ordinary comment ;/ not a block\nValue = 2\n";
+
+    assert_eq!(protected_lines(source), vec![false, false, false]);
+}
