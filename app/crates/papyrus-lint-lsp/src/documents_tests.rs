@@ -215,3 +215,23 @@ fn file_uris_decode_paths_and_reject_invalid_forms() {
             .trailing_whitespace
     );
 }
+
+#[test]
+fn windows_file_uris_drop_the_slash_before_the_drive_letter() {
+    let expected = std::path::PathBuf::from("C:/Mods/scripts/source/LspProbe.psc");
+    for uri in [
+        "file:///C:/Mods/scripts/source/LspProbe.psc",
+        "file:///c:/Mods/scripts/source/LspProbe.psc",
+        "file:///c%3A/Mods/scripts/source/LspProbe.psc",
+        "file://localhost/C:/Mods/scripts/source/LspProbe.psc",
+        "file://C:/Mods/scripts/source/LspProbe.psc",
+    ] {
+        let path = file_uri_to_path(uri).unwrap_or_else(|| panic!("{uri}"));
+        assert_eq!(path, expected, "{uri}");
+        assert!(
+            !path.to_string_lossy().starts_with('/'),
+            "leading slash survived in {uri}: {}",
+            path.display()
+        );
+    }
+}
