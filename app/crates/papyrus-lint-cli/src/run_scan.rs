@@ -145,7 +145,7 @@ fn load_scan_settings(
         add_script_parent_roots(script_paths, project_root, &mut additional_script_roots);
     }
 
-    let (compile_check, compiler_path) = load_compile_settings(project_root)?;
+    let (compile_check, compiler_path) = load_compile_settings(project_root, config_path)?;
 
     // Analysis-only fallback directories: read from whichever config file
     // is actually in effect, the same as `strict_achlist_scope`. They are
@@ -219,17 +219,28 @@ fn load_lookup_script_roots(
         .map_err(config_error)
 }
 
-fn load_compile_settings(project_root: &Path) -> Result<(bool, String), String> {
-    // Read from the project root's own config the same way `doctor` reports
-    // on them (see `run_doctor`), regardless of `--config` — `compile_check`
-    // and `compiler_path` aren't part of the lint settings a `--config`
-    // override replaces. `compiler_path` is only resolved when `compile_check`
-    // is actually enabled, since it's otherwise unused.
-    let compile_check = config::load_compile_check(project_root).map_err(config_error)?;
+fn load_compile_settings(
+    project_root: &Path,
+    config_path: Option<&Path>,
+) -> Result<(bool, String), String> {
+    // Read from whichever config file is actually in effect — the project
+    // root's own, or the file named by `--config` — the same way
+    // `strict_achlist_scope` and `lookup_script_roots` do. `compiler_path`
+    // is only resolved when `compile_check` is actually enabled, since
+    // it's otherwise unused. Auto-detection still uses `project_root`.
+    let compile_check = config_path
+        .map_or_else(
+            || config::load_compile_check(project_root),
+            config::load_compile_check_from_path,
+        )
+        .map_err(config_error)?;
     let compiler_path = if compile_check {
-        config::resolve_compiler_path(project_root)
-            .map_err(config_error)?
-            .unwrap_or_default()
+        match config_path {
+            Some(path) => config::resolve_compiler_path_from_path(path, project_root),
+            None => config::resolve_compiler_path(project_root),
+        }
+        .map_err(config_error)?
+        .unwrap_or_default()
     } else {
         String::new()
     };
