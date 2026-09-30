@@ -51,6 +51,7 @@ fn ast_rules_return_an_ast_visitor() {
     assert_ast(crate::magic_numbers::visitor());
     assert_ast(crate::member_chain_none_usage::visitor());
     assert_ast(crate::missing_doc_comment::visitor());
+    assert_ast(crate::missing_override::visitor());
     assert_ast(crate::multiple_auto_states::visitor());
     assert_ast(crate::named_arguments::visitor());
     assert_ast(crate::native_function_usage::visitor());
