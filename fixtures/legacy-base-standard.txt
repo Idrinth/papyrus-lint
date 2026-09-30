@@ -21277,6 +21277,7 @@ Scripts/Source/Dawnguard/DLC1SoulCairnWispWallCHILDScript.psc:11:35:trailing-whi
 Scripts/Source/Dawnguard/DLC1SoulCairnWispWallCHILDScript.psc:19:13:forbidden-functions
 Scripts/Source/Dawnguard/DLC1SoulCairnWispWallCHILDScript.psc:22:1:unchecked-cast
 Scripts/Source/Dawnguard/DLC1SoulCairnWispWallCHILDScript.psc:22:1:unresolved-script
+Scripts/Source/Dawnguard/DLC1SoulCairnWispWallCHILDScript.psc:22:38:unused-getter
 Scripts/Source/Dawnguard/DLC1SoulCairnWispWallCHILDScript.psc:31:1:indentation
 Scripts/Source/Dawnguard/DLC1SoulCairnWispWallCHILDScript.psc:37:1:unchecked-cast
 Scripts/Source/Dawnguard/DLC1SoulCairnWispWallCHILDScript.psc:37:1:unresolved-script
@@ -21606,6 +21607,7 @@ Scripts/Source/Dawnguard/DLC1VCEmberToggleScript.psc:4:70:semicolon
 Scripts/Source/Dawnguard/DLC1VCEmberToggleScript.psc:5:1:semicolon
 Scripts/Source/Dawnguard/DLC1VCEmberToggleScript.psc:7:1:semicolon
 Scripts/Source/Dawnguard/DLC1VCEmberToggleScript.psc:8:69:semicolon
+Scripts/Source/Dawnguard/DLC1VCEmberToggleScript.psc:22:4:strict-boolean
 Scripts/Source/Dawnguard/DLC1VCEmberToggleScript.psc:26:7:forbidden-functions
 Scripts/Source/Dawnguard/DLC1VCEmberToggleScript.psc:27:5:forbidden-functions
 Scripts/Source/Dawnguard/DLC1VCEmberToggleScript.psc:29:1:indentation
@@ -23776,13 +23778,17 @@ Scripts/Source/Dawnguard/DLC1WordWallTriggerScript.psc:357:1:none-form-usage
 Scripts/Source/Dawnguard/DLC1WordWallTriggerScript.psc:358:7:trailing-whitespace
 Scripts/Source/Dawnguard/DLC1_2StateActivatorWithGlobal.psc:26:121:line-length
 Scripts/Source/Dawnguard/DLC1_2StateActivatorWithGlobal.psc:26:127:trailing-whitespace
+Scripts/Source/Dawnguard/DLC1_2StateActivatorWithGlobal.psc:42:1:cyclomatic-complexity
+Scripts/Source/Dawnguard/DLC1_2StateActivatorWithGlobal.psc:45:1:none-form-usage
 Scripts/Source/Dawnguard/DLC1_2StateActivatorWithGlobal.psc:47:34:exclamation-spacing
 Scripts/Source/Dawnguard/DLC1_2StateActivatorWithGlobal.psc:52:1:trailing-whitespace
 Scripts/Source/Dawnguard/DLC1_2StateActivatorWithGlobal.psc:60:1:trailing-whitespace
 Scripts/Source/Dawnguard/DLC1_2StateActivatorWithGlobal.psc:61:1:indentation
+Scripts/Source/Dawnguard/DLC1_2StateActivatorWithGlobal.psc:62:1:none-form-usage
 Scripts/Source/Dawnguard/DLC1_2StateActivatorWithGlobal.psc:62:10:exclamation-spacing
 Scripts/Source/Dawnguard/DLC1_2StateActivatorWithGlobal.psc:64:34:exclamation-spacing
 Scripts/Source/Dawnguard/DLC1_2StateActivatorWithGlobal.psc:69:1:trailing-whitespace
+Scripts/Source/Dawnguard/DLC1_2StateActivatorWithGlobal.psc:86:1:none-form-usage
 Scripts/Source/Dawnguard/DLC1_2StateActivatorWithGlobal.psc:87:1:indentation
 Scripts/Source/Dawnguard/DLC1_2StateActivatorWithGlobal.psc:87:62:trailing-whitespace
 Scripts/Source/Dawnguard/DLC1_2StateActivatorWithGlobal.psc:88:1:indentation
@@ -44608,6 +44614,7 @@ Scripts/Source/Dragonborn/DLC2dunBook3SeekerScript.psc:1:50:trailing-whitespace
 Scripts/Source/Dragonborn/DLC2dunBook3SeekerScript.psc:5:35:trailing-whitespace
 Scripts/Source/Dragonborn/DLC2dunBook3SeekerScript.psc:20:15:forbidden-functions
 Scripts/Source/Dragonborn/DLC2dunBook3SeekerScript.psc:23:1:unchecked-cast
+Scripts/Source/Dragonborn/DLC2dunBook3SeekerScript.psc:23:48:unused-getter
 Scripts/Source/Dragonborn/DLC2dunBook3SeekerScript.psc:29:1:unchecked-cast
 Scripts/Source/Dragonborn/DLC2dunBookLevel4Bend.psc:11:1:indentation
 Scripts/Source/Dragonborn/DLC2dunBookLevel4Bend.psc:12:1:indentation
@@ -49463,6 +49470,7 @@ Scripts/Source/FavorDialogueScript.psc:122:1:unchecked-cast
 Scripts/Source/FavorDialogueScript.psc:124:1:none-form-usage
 Scripts/Source/FavorDialogueScript.psc:125:1:none-form-usage
 Scripts/Source/FavorDialogueScript.psc:125:1:unchecked-cast
+Scripts/Source/FavorDialogueScript.psc:125:50:unused-getter
 Scripts/Source/FavorDialogueScript.psc:132:1:none-form-usage
 Scripts/Source/FavorDialogueScript.psc:150:39:trailing-whitespace
 Scripts/Source/FavorFollowerControlQuestScript.psc:10:44:trailing-whitespace
@@ -103645,6 +103653,7 @@ Scripts/Source/dunBluePalaceWabbajackSCRIPT.psc:260:1:trailing-whitespace
 Scripts/Source/dunBluePalaceWabbajackSCRIPT.psc:272:1:place-at-me
 Scripts/Source/dunBluePalaceWabbajackSCRIPT.psc:273:1:trailing-whitespace
 Scripts/Source/dunBluePalaceWabbajackSCRIPT.psc:276:1:unchecked-cast
+Scripts/Source/dunBluePalaceWabbajackSCRIPT.psc:276:47:unused-getter
 Scripts/Source/dunBluePalaceWabbajackSCRIPT.psc:277:1:trailing-whitespace
 Scripts/Source/dunBluePalaceWabbajackSCRIPT.psc:279:1:trailing-whitespace
 Scripts/Source/dunBluePalaceWabbajackSCRIPT.psc:280:1:place-at-me
