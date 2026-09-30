@@ -327,3 +327,41 @@ fn nested_while_return_is_treated_as_a_possible_guard() {
 
     assert!(check(source).is_empty());
 }
+
+#[test]
+fn flags_self_call_inside_always_true_while() {
+    let source = "ScriptName Example\n\nFunction DoA()\n    Debug.Notification(\"This is function A!\")\n    While ! False\n        Utility.Wait(0.05011)\n        DoA()\n        Utility.Wait(0.05012)\n        If False\n            Return\n        EndIf\n    EndWhile\nEndFunction\n";
+
+    let diagnostics = check(source);
+
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!(diagnostics[0].line, 7);
+    assert_eq!(diagnostics[0].rule, RULE);
+}
+
+#[test]
+fn flags_self_call_inside_while_true() {
+    let source = "ScriptName Example\n\nFunction Foo()\n    While True\n        Foo()\n    EndWhile\nEndFunction\n";
+
+    let diagnostics = check(source);
+
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!(diagnostics[0].line, 5);
+}
+
+#[test]
+fn does_not_flag_always_true_while_when_a_reachable_if_returns() {
+    let source = "ScriptName Example\n\nFunction Foo(Int x)\n    While True\n        If x <= 0\n            Return\n        EndIf\n        Foo(x - 1)\n    EndWhile\nEndFunction\n";
+
+    assert!(check(source).is_empty());
+}
+
+#[test]
+fn does_not_treat_always_false_if_return_as_a_guard() {
+    let source = "ScriptName Example\n\nFunction Foo()\n    If False\n        Return\n    EndIf\n    Foo()\nEndFunction\n";
+
+    let diagnostics = check(source);
+
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!(diagnostics[0].line, 7);
+}

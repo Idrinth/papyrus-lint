@@ -5,19 +5,25 @@
 //!
 //! This is deliberately conservative: it never follows a call chain through
 //! another function (that's out of scope entirely), and a self-call nested
-//! directly inside an `If`'s or `While`'s own body is always left alone,
-//! since being inside a branch or loop body already makes that call
-//! conditional regardless of whether the branch/loop ever exits early.
+//! directly inside an `If`'s or a non-constant `While`'s own body is always
+//! left alone, since being inside a branch or loop body already makes that
+//! call conditional regardless of whether the branch/loop ever exits early.
 //!
-//! At the function's top level, an unconditional `While` still disqualifies
-//! the whole function from this lint (reasoning about loop guards is out of
-//! scope), but a top-level `If` only counts as a guard — and so only
-//! disqualifies the function — when it actually contains a `Return`
-//! statement somewhere in one of its branches (searched recursively through
-//! any nested `If`/`While`, since a guard's early exit can be buried behind
-//! further branching). An `If` with no `Return` anywhere inside it does
-//! nothing to actually stop the recursive call that follows it, so it no
-//! longer disqualifies the function — e.g.
+//! At the function's top level, an unconditional `While` whose condition
+//! does not fold to a compile-time-constant true still disqualifies the
+//! whole function from this lint (reasoning about loop guards is out of
+//! scope). A `While` whose condition *does* fold to true is not a guard —
+//! it is an infinite loop — so its body is examined the same way as the
+//! enclosing function body, and a self-call on that path is flagged. A
+//! top-level `If` only counts as a guard — and so only disqualifies the
+//! function — when it actually contains a `Return` statement on a
+//! reachable branch (searched recursively through any nested `If`/`While`,
+//! since a guard's early exit can be buried behind further branching). An
+//! `If` whose condition folds to false never runs its body, so a `Return`
+//! sitting only in that dead branch does not count. An `If` with no
+//! reachable `Return` anywhere inside it does nothing to actually stop the
+//! recursive call that follows it, so it no longer disqualifies the
+//! function — e.g.
 //!
 //! ```papyrus
 //! Function RecurseSelf()
@@ -31,9 +37,9 @@
 //! is still flagged, since the `If` above the recursive call never actually
 //! returns anywhere within it. This still doesn't attempt to evaluate
 //! whether a real guard's condition actually covers every case — only that
-//! at least one `Return` exists for it to possibly take, which is enough to
-//! treat it as a plausible guard and stay silent, the same way this lint
-//! always has.
+//! at least one reachable `Return` exists for it to possibly take, which is
+//! enough to treat it as a plausible guard and stay silent, the same way
+//! this lint always has.
 //!
 //! A self-call reached only through the right-hand side of a short-circuit
 //! `&&`/`\|\|` is not considered unconditional either, since that side may
@@ -65,6 +71,7 @@
 
 use papyrus_parser::ast::{BinaryOp, Expr, FunctionDecl, IfBranch, Literal, Script, Stmt};
 
+use crate::const_eval::{eval_const, truthy};
 use crate::visitor::{AstLint, LintVisitor, Store, VisitCtx};
 use crate::Diagnostic;
 
@@ -133,37 +140,71 @@ fn check_function(
     }
     let name_lower = function.name.to_lowercase();
     let current_state_lower = function.state.as_deref().unwrap_or("").to_lowercase();
-    let mut guarded_by_goto_state = false;
-    for stmt in &function.body {
-        if !guarded_by_goto_state {
+    scan_linear_body(
+        &function.body,
+        &name_lower,
+        &current_state_lower,
+        states,
+        &mut false,
+        diagnostics,
+    );
+}
+
+/// Walks a linear sequence of statements looking for unguarded self-calls.
+/// An always-true `While` is unrolled once into that same walk, because its
+/// body is reached on every invocation and never stops of its own accord.
+fn scan_linear_body(
+    body: &[Stmt],
+    name_lower: &str,
+    current_state_lower: &str,
+    states: &[(String, Vec<String>)],
+    guarded_by_goto_state: &mut bool,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
+    for stmt in body {
+        if !*guarded_by_goto_state {
             for expr in stmt_exprs(stmt) {
-                find_self_calls(expr, &name_lower, diagnostics);
+                find_self_calls(expr, name_lower, diagnostics);
             }
-            if let Stmt::If {
-                branches,
-                else_body,
-                else_line,
-                ..
-            } = stmt
-            {
-                if all_branches_recurse(branches, else_body, *else_line, &name_lower) {
-                    for branch in branches {
-                        for expr in branch.body.iter().flat_map(stmt_exprs) {
-                            find_self_calls(expr, &name_lower, diagnostics);
+            match stmt {
+                Stmt::If {
+                    branches,
+                    else_body,
+                    else_line,
+                    ..
+                } => {
+                    if all_branches_recurse(branches, else_body, *else_line, name_lower) {
+                        for branch in branches {
+                            for expr in branch.body.iter().flat_map(stmt_exprs) {
+                                find_self_calls(expr, name_lower, diagnostics);
+                            }
+                        }
+                        for expr in else_body.iter().flat_map(stmt_exprs) {
+                            find_self_calls(expr, name_lower, diagnostics);
                         }
                     }
-                    for expr in else_body.iter().flat_map(stmt_exprs) {
-                        find_self_calls(expr, &name_lower, diagnostics);
-                    }
                 }
+                Stmt::While {
+                    condition, body, ..
+                } if folded_truth(condition) == Some(true) => {
+                    scan_linear_body(
+                        body,
+                        name_lower,
+                        current_state_lower,
+                        states,
+                        guarded_by_goto_state,
+                        diagnostics,
+                    );
+                }
+                _ => {}
             }
         }
         if let Stmt::Expr { value, .. } = stmt {
             if let Some(target_state) = goto_state_target(value) {
-                if !target_state.eq_ignore_ascii_case(&current_state_lower)
-                    && state_has_handler(states, target_state, &name_lower)
+                if !target_state.eq_ignore_ascii_case(current_state_lower)
+                    && state_has_handler(states, target_state, name_lower)
                 {
-                    guarded_by_goto_state = true;
+                    *guarded_by_goto_state = true;
                 }
             }
         }
@@ -209,15 +250,29 @@ fn state_has_handler(
     })
 }
 
-/// Whether `body` contains a top-level `While` (always disqualifying), or a
-/// top-level `If` that actually contains a `Return` somewhere within it
+/// Fold `expr` to a compile-time boolean when every operand is a constant.
+fn folded_truth(expr: &Expr) -> Option<bool> {
+    eval_const(expr).as_ref().map(truthy)
+}
+
+/// Whether `body` contains a top-level `While` whose condition does not
+/// fold to a constant true (always disqualifying), or a top-level `If`
+/// that actually contains a reachable `Return` somewhere within it
 /// (see [`contains_return`]) and so is a plausible guard, either of which
 /// disqualifies the whole function from this lint. A top-level `If` with no
-/// `Return` anywhere inside it does nothing to stop whatever follows it, so
-/// it no longer disqualifies the function on its own.
+/// reachable `Return` anywhere inside it does nothing to stop whatever
+/// follows it, so it no longer disqualifies the function on its own. A
+/// `While True` / `While ! False` is not a guard: its body is examined
+/// instead of silencing the function.
 fn has_disqualifying_branch(body: &[Stmt]) -> bool {
     body.iter().any(|stmt| match stmt {
-        Stmt::While { .. } => true,
+        Stmt::While {
+            condition, body, ..
+        } => match folded_truth(condition) {
+            Some(true) => has_disqualifying_branch(body),
+            Some(false) => false,
+            None => true,
+        },
         Stmt::LockGuard {
             kind, body, else_body, ..
         } => match kind {
@@ -230,17 +285,34 @@ fn has_disqualifying_branch(body: &[Stmt]) -> bool {
             branches,
             else_body,
             ..
-        } => {
-            branches.iter().any(|branch| contains_return(&branch.body))
-                || contains_return(else_body)
-        }
+        } => if_has_reachable_return(branches, else_body),
         Stmt::VarDecl(_) | Stmt::Assign { .. } | Stmt::Expr { .. } | Stmt::Return { .. } => false,
     })
 }
 
-/// Whether `body` contains a `Return` statement anywhere, recursing into any
-/// nested `If`/`While` bodies so a guard's early exit is still recognized
-/// even when it's buried behind further branching.
+/// Whether any reachable branch of this `If` contains a `Return`.
+/// Always-false conditions skip their body; an always-true condition
+/// makes later branches (and the `Else`) unreachable.
+fn if_has_reachable_return(branches: &[IfBranch], else_body: &[Stmt]) -> bool {
+    for branch in branches {
+        match folded_truth(&branch.condition) {
+            Some(false) => continue,
+            Some(true) => return contains_return(&branch.body),
+            None => {
+                if contains_return(&branch.body) {
+                    return true;
+                }
+            }
+        }
+    }
+    contains_return(else_body)
+}
+
+/// Whether `body` contains a `Return` statement anywhere on a reachable
+/// path, recursing into any nested `If`/`While` bodies so a guard's early
+/// exit is still recognized even when it's buried behind further branching.
+/// Returns inside an always-false `If` (or an always-false `While`) are
+/// ignored, because they can never actually fire.
 fn contains_return(body: &[Stmt]) -> bool {
     body.iter().any(|stmt| match stmt {
         Stmt::Return { .. } => true,
@@ -248,11 +320,13 @@ fn contains_return(body: &[Stmt]) -> bool {
             branches,
             else_body,
             ..
-        } => {
-            branches.iter().any(|branch| contains_return(&branch.body))
-                || contains_return(else_body)
-        }
-        Stmt::While { body, .. } => contains_return(body),
+        } => if_has_reachable_return(branches, else_body),
+        Stmt::While {
+            condition, body, ..
+        } => match folded_truth(condition) {
+            Some(false) => false,
+            _ => contains_return(body),
+        },
         Stmt::LockGuard { body, else_body, .. } => {
             contains_return(body) || contains_return(else_body)
         }
@@ -263,10 +337,11 @@ fn contains_return(body: &[Stmt]) -> bool {
 /// The expression(s) a top-level statement evaluates, in the order they
 /// evaluate, for [`find_self_calls`] to search. A top-level `If`/`While`
 /// that survives [`has_disqualifying_branch`] (i.e. one that isn't a
-/// plausible guard, or a loop) still yields no expressions here: any
-/// self-call nested directly inside its own body is already conditional by
-/// virtue of being there, so it's deliberately left unexamined rather than
-/// flagged.
+/// plausible guard, or a non-constant loop) still yields no expressions
+/// here: any self-call nested directly inside its own body is already
+/// conditional by virtue of being there, so it's deliberately left
+/// unexamined rather than flagged. Always-true `While` bodies are walked
+/// separately by [`scan_linear_body`].
 fn stmt_exprs(stmt: &Stmt) -> Vec<&Expr> {
     match stmt {
         Stmt::VarDecl(decl) => decl.value.iter().collect(),
