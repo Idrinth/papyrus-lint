@@ -266,3 +266,7 @@ fn push_field(name: &str, params: &HashSet<String>, fields: &mut Vec<String>) {
         fields.push(lower);
     }
 }
+
+#[cfg(test)]
+#[path = "property_usage_tests.rs"]
+mod tests;
