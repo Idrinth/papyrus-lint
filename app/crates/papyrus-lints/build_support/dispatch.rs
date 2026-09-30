@@ -172,13 +172,14 @@ fn rules_dispatch(context: &BuildContext, rules: &[RuleMetadata], repair_order: 
     out.line("pub fn apply_repairs(source: &str, config: &Config, applies: impl Fn(&str) -> bool) -> String {");
     out.line("    let rules = &config.rules;");
     out.line("    let mut source = source.to_string();");
-    let by_id: HashMap<_, _> =
-        rules.iter().map(|rule| (rule.id.as_str(), rule)).collect();
+    let by_id: HashMap<_, _> = rules.iter().map(|rule| (rule.id.as_str(), rule)).collect();
     let repairs: Vec<_> = repair_order
         .iter()
         .map(|id| {
             *by_id.get(id.as_str()).unwrap_or_else(|| {
-                panic!("shared/rule-order.yaml lists `{id}` but shared/rules.json has no matching id")
+                panic!(
+                    "shared/rule-order.yaml lists `{id}` but shared/rules.json has no matching id"
+                )
             })
         })
         .collect();
