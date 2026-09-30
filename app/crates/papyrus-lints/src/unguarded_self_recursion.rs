@@ -140,7 +140,7 @@ fn check_function(
     }
     let name_lower = function.name.to_lowercase();
     let current_state_lower = function.state.as_deref().unwrap_or("").to_lowercase();
-    scan_linear_body(
+    let _ = scan_linear_body(
         &function.body,
         &name_lower,
         &current_state_lower,
@@ -160,8 +160,12 @@ fn scan_linear_body(
     states: &[(String, Vec<String>)],
     guarded_by_goto_state: &mut bool,
     diagnostics: &mut Vec<Diagnostic>,
-) {
+) -> bool {
     for stmt in body {
+        let is_constant_true_loop = matches!(
+            stmt,
+            Stmt::While { condition, .. } if folded_truth(condition) == Some(true)
+        );
         if !*guarded_by_goto_state {
             for expr in stmt_exprs(stmt) {
                 find_self_calls(expr, name_lower, diagnostics);
@@ -172,22 +176,20 @@ fn scan_linear_body(
                     else_body,
                     else_line,
                     ..
-                } => {
-                    if all_branches_recurse(branches, else_body, *else_line, name_lower) {
-                        for branch in branches {
-                            for expr in branch.body.iter().flat_map(stmt_exprs) {
-                                find_self_calls(expr, name_lower, diagnostics);
-                            }
-                        }
-                        for expr in else_body.iter().flat_map(stmt_exprs) {
+                } if all_branches_recurse(branches, else_body, *else_line, name_lower) => {
+                    for branch in branches {
+                        for expr in branch.body.iter().flat_map(stmt_exprs) {
                             find_self_calls(expr, name_lower, diagnostics);
                         }
+                    }
+                    for expr in else_body.iter().flat_map(stmt_exprs) {
+                        find_self_calls(expr, name_lower, diagnostics);
                     }
                 }
                 Stmt::While {
                     condition, body, ..
                 } if folded_truth(condition) == Some(true) => {
-                    scan_linear_body(
+                    let _ = scan_linear_body(
                         body,
                         name_lower,
                         current_state_lower,
@@ -208,7 +210,11 @@ fn scan_linear_body(
                 }
             }
         }
+        if matches!(stmt, Stmt::Return { .. }) || is_constant_true_loop {
+            return false;
+        }
     }
+    true
 }
 
 /// Whether `expr` is a call to `GoToState("SomeState")` (a bare call, or

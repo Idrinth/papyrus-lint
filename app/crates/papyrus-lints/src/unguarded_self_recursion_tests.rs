@@ -350,6 +350,13 @@ fn flags_self_call_inside_while_true() {
 }
 
 #[test]
+fn does_not_flag_self_call_after_always_true_while_that_returns() {
+    let source = "ScriptName Example\n\nFunction Foo()\n    While True\n        Return\n    EndWhile\n    Foo()\nEndFunction\n";
+
+    assert!(check(source).is_empty());
+}
+
+#[test]
 fn does_not_flag_always_true_while_when_a_reachable_if_returns() {
     let source = "ScriptName Example\n\nFunction Foo(Int x)\n    While True\n        If x <= 0\n            Return\n        EndIf\n        Foo(x - 1)\n    EndWhile\nEndFunction\n";
 
