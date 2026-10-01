@@ -59,9 +59,29 @@ fn flags_chain_rooted_at_script_property() {
 }
 
 #[test]
+fn flags_chain_rooted_at_script_variable() {
+    let diagnostics = check(
+        "ScriptName Example\n\nObjectReference Target\n\nFunction Test()\n    Target.GetLinkedRef().Disable()\nEndFunction\n",
+    );
+
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!(diagnostics[0].line, 6);
+}
+
+#[test]
 fn flags_chain_rooted_at_self() {
     let diagnostics = check(
         "ScriptName Example extends ObjectReference\n\nFunction Test()\n    Self.GetLinkedRef().Disable()\nEndFunction\n",
+    );
+
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!(diagnostics[0].line, 4);
+}
+
+#[test]
+fn flags_chain_rooted_at_parent() {
+    let diagnostics = check(
+        "ScriptName Example extends ObjectReference\n\nFunction Test()\n    Parent.GetLinkedRef().Disable()\nEndFunction\n",
     );
 
     assert_eq!(diagnostics.len(), 1);
@@ -117,7 +137,9 @@ fn flags_each_non_identifier_step_in_a_longer_chain() {
     );
 
     assert_eq!(diagnostics.len(), 2);
-    assert!(diagnostics.iter().any(|d| d.message.contains(".GetParentCell")));
+    assert!(diagnostics
+        .iter()
+        .any(|d| d.message.contains(".GetParentCell")));
     assert!(diagnostics.iter().any(|d| d.message.contains(".Reset")));
 }
 
@@ -165,4 +187,31 @@ fn config_on_switch_emits_through_lint() {
     );
 
     assert!(diagnostics.iter().any(|diagnostic| diagnostic.rule == RULE));
+}
+
+#[test]
+fn chain_root_walks_every_nested_expression_shape() {
+    use papyrus_parser::ast::{Literal, UnaryOp};
+
+    let identifier = || Expr::Identifier("Target".to_string());
+    let index = Expr::Index {
+        object: Box::new(identifier()),
+        index: Box::new(Expr::Literal(Literal::int(0))),
+    };
+    let is = Expr::Is {
+        value: Box::new(identifier()),
+        type_name: "ObjectReference".to_string(),
+    };
+    let unary = Expr::Unary {
+        op: UnaryOp::Not,
+        operand: Box::new(identifier()),
+    };
+
+    for expression in [index, is, unary] {
+        assert!(matches!(
+            chain_root(&expression),
+            Some(ChainRoot::Ident("Target"))
+        ));
+    }
+    assert!(chain_root(&Expr::Literal(Literal::None)).is_none());
 }
