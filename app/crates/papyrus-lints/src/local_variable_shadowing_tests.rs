@@ -16,6 +16,15 @@ fn check_with<E: ExternalSignatures + ?Sized>(source: &str, external: &mut E) ->
     let ast = papyrus_parser::parse(source).ok();
     super::check_with(source, ast.as_ref(), external)
 }
+
+fn check_with_starfield(source: &str) -> Vec<Diagnostic> {
+    let ast = papyrus_parser::parse_for_game(source, crate::Game::Starfield).ok();
+    super::check_with(
+        source,
+        ast.as_ref(),
+        &mut crate::external_signatures::NoExternalSignatures,
+    )
+}
 use crate::external_signatures::ParamInfo;
 
 #[test]
@@ -218,6 +227,21 @@ fn check_with_finds_declarations_in_nested_control_flow() {
             .map(|diagnostic| diagnostic.line)
             .collect::<Vec<_>>(),
         vec![8, 11, 13]
+    );
+}
+
+#[test]
+fn check_with_finds_declarations_in_starfield_lock_guard_paths() {
+    let source = "ScriptName Example\n\nInt MyValue = 0\nGuard WorkGuard\n\nFunction Test()\n    LockGuard WorkGuard\n        Int MyValue = 1\n    EndLockGuard\n    TryLockGuard WorkGuard\n        Int myvalue = 2\n    ElseTryLockGuard\n        Int MYVALUE = 3\n    EndTryLockGuard\nEndFunction\n";
+
+    let diagnostics = check_with_starfield(source);
+
+    assert_eq!(
+        diagnostics
+            .iter()
+            .map(|diagnostic| diagnostic.line)
+            .collect::<Vec<_>>(),
+        [8, 11, 13]
     );
 }
 
