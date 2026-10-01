@@ -12,6 +12,21 @@ fn check(source: &str) -> Vec<Diagnostic> {
     )
 }
 
+fn check_starfield(source: &str) -> Vec<Diagnostic> {
+    let ast = papyrus_parser::parse_for_game(source, crate::Game::Starfield).ok();
+    let tokens = papyrus_parser::tokenize(source).ok();
+    super::check(
+        source,
+        ast.as_ref(),
+        tokens.as_deref(),
+        &crate::config::Config {
+            game: crate::Game::Starfield,
+            ..Default::default()
+        },
+        &mut crate::external_signatures::NoExternalSignatures,
+    )
+}
+
 #[test]
 fn flags_statement_after_return_in_function_body() {
     let source = "ScriptName Example\n\nFunction Test()\n    Return\n    Int i = 1\nEndFunction\n";
@@ -98,6 +113,31 @@ fn flags_statement_after_return_inside_while_body() {
 
     assert_eq!(diagnostics.len(), 1);
     assert_eq!(diagnostics[0].line, 6);
+}
+
+#[test]
+fn flags_unreachable_statements_in_starfield_lock_guard_paths() {
+    let source = "ScriptName Example\n\nGuard WorkGuard\n\nFunction Test()\n    LockGuard WorkGuard\n        Return\n        Int locked = 1\n    EndLockGuard\n    TryLockGuard WorkGuard\n        Return\n        Int acquired = 1\n    ElseTryLockGuard\n        Return\n        Int rejected = 1\n    EndTryLockGuard\nEndFunction\n";
+
+    let diagnostics = check_starfield(source);
+
+    assert_eq!(
+        diagnostics
+            .iter()
+            .map(|diagnostic| diagnostic.line)
+            .collect::<Vec<_>>(),
+        [8, 12, 15]
+    );
+}
+
+#[test]
+fn reports_an_unreachable_starfield_lock_guard_statement_at_its_own_line() {
+    let source = "ScriptName Example\n\nGuard WorkGuard\n\nFunction Test()\n    Return\n    LockGuard WorkGuard\n    EndLockGuard\nEndFunction\n";
+
+    let diagnostics = check_starfield(source);
+
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!(diagnostics[0].line, 7);
 }
 
 #[test]
