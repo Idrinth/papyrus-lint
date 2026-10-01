@@ -127,3 +127,80 @@ fn written_outside_accessors_checks_initializers_and_state_bodies() {
     let backing = backing_fields(property);
     assert!(written_outside_accessors(&state_write, property, &backing));
 }
+
+#[test]
+fn collect_usage_includes_grouped_properties_and_named_arguments() {
+    let script = papyrus_parser::parse_with_mode(
+        "ScriptName Example\n\
+         Group Settings\n\
+           Int Property Grouped Auto\n\
+         EndGroup\n\
+         Function Consume(Int value)\n\
+         EndFunction\n\
+         Function Test()\n\
+           Consume(value = Grouped)\n\
+         EndFunction\n",
+        papyrus_parser::parser::GameEdition::Fallout4,
+    )
+    .expect("test script should parse");
+
+    let properties = all_properties(&script);
+    let usage = collect_usage(&script);
+
+    assert_eq!(properties.len(), 1);
+    assert_eq!(properties[0].name, "Grouped");
+    assert!(usage["grouped"].read);
+    assert!(!usage["grouped"].written);
+}
+
+#[test]
+fn collect_usage_walks_both_lock_guard_paths() {
+    let script = papyrus_parser::parse_with_mode(
+        "ScriptName Example\n\
+         Guard WorkGuard\n\
+         Int Property Locked Auto\n\
+         Int Property Fallback Auto\n\
+         Function Test()\n\
+           TryLockGuard WorkGuard\n\
+             Locked = 1\n\
+           ElseTryLockGuard\n\
+             Fallback = Locked\n\
+           EndTryLockGuard\n\
+         EndFunction\n",
+        papyrus_parser::parser::GameEdition::Starfield,
+    )
+    .expect("test script should parse");
+
+    let usage = collect_usage(&script);
+
+    assert!(usage["locked"].read);
+    assert!(usage["locked"].written);
+    assert!(usage["fallback"].written);
+}
+
+#[test]
+fn backing_fields_include_fields_from_both_lock_guard_paths() {
+    let script = papyrus_parser::parse_with_mode(
+        "ScriptName Example\n\
+         Guard WorkGuard\n\
+         Int primary\n\
+         Int fallback\n\
+         Int Property Value\n\
+           Int Function Get()\n\
+             TryLockGuard WorkGuard\n\
+               Return primary\n\
+             ElseTryLockGuard\n\
+               fallback = 1\n\
+             EndTryLockGuard\n\
+             Return fallback\n\
+           EndFunction\n\
+         EndProperty\n",
+        papyrus_parser::parser::GameEdition::Starfield,
+    )
+    .expect("test script should parse");
+
+    assert_eq!(
+        backing_fields(&script.properties[0]),
+        vec!["primary", "fallback"]
+    );
+}
