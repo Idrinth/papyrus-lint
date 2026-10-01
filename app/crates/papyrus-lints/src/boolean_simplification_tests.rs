@@ -352,3 +352,70 @@ fn repair_handles_parenthesized_and_unary_operands() {
         )
     );
 }
+
+#[test]
+fn operand_rendering_preserves_expression_precedence() {
+    assert_eq!(render_operand("ready && other", true), "! (ready && other)");
+    assert_eq!(render_operand("(ready && other)", true), "! (ready && other)");
+    assert_eq!(render_operand("! ready", true), "ready");
+    assert_eq!(render_operand("((ready))", false), "ready");
+    assert_eq!(render_operand("value as Bool", true), "! (value as Bool)");
+}
+
+#[test]
+fn lexical_span_helpers_cover_every_lexeme_shape() {
+    let source = "\"escaped \\\"text\" 0x2A 12.50 name && != + ;";
+
+    assert_eq!(&source[..lexeme_end(source, 0)], "\"escaped \\\"text\"");
+    let hex = source.find("0x2A").unwrap();
+    assert_eq!(&source[hex..lexeme_end(source, hex)], "0x2A");
+    let float = source.find("12.50").unwrap();
+    assert_eq!(&source[float..lexeme_end(source, float)], "12.50");
+    let word = source.find("name").unwrap();
+    assert_eq!(&source[word..lexeme_end(source, word)], "name");
+    let and = source.find("&&").unwrap();
+    assert_eq!(&source[and..lexeme_end(source, and)], "&&");
+    let not_equal = source.find("!=").unwrap();
+    assert_eq!(&source[not_equal..lexeme_end(source, not_equal)], "!=");
+    let plus = source.find('+').unwrap();
+    assert_eq!(&source[plus..lexeme_end(source, plus)], "+");
+    let semicolon = source.find(';').unwrap();
+    assert_eq!(&source[semicolon..lexeme_end(source, semicolon)], ";");
+    assert_eq!(lexeme_end(source, source.len()), source.len());
+
+    assert_eq!(string_end(b"\"unterminated", 0), b"\"unterminated".len());
+    assert_eq!(string_end(b"\"line\nnext", 0), 5);
+}
+
+#[test]
+fn malformed_edit_ranges_are_ignored() {
+    let reversed = Hit {
+        line: 1,
+        column: 1,
+        start: 3,
+        end: 2,
+        message: String::new(),
+        replacement: "x".to_string(),
+    };
+    let out_of_bounds = Hit {
+        line: 1,
+        column: 1,
+        start: 0,
+        end: 99,
+        message: String::new(),
+        replacement: "x".to_string(),
+    };
+
+    assert_eq!(apply_edits("ready", &[&reversed, &out_of_bounds]), "ready");
+}
+
+#[test]
+fn empty_and_unbalanced_token_ranges_are_not_literals() {
+    let tokens = papyrus_parser::tokenize("(true) false").unwrap();
+
+    assert_eq!(literal_operand(&tokens, &(0..0)), None);
+    assert!(!outer_parens_wrap(&tokens, 1, 1));
+    assert!(!outer_parens_wrap(&tokens, 0, 2));
+    assert_eq!(token_slice("(true) false", &[0], &tokens, &(1..1)), "");
+    assert_eq!(token_slice("(true) false", &[0], &tokens, &(99..100)), "");
+}
