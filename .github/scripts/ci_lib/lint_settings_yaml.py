@@ -5,8 +5,8 @@ and each lint setting in shared/configuration/lint-settings/<key>.json.
 Declaration order (the Settings tab order) and the rules-section comment
 live in shared/configuration/lint-settings.yaml.
 
-Callers use the returned dict. render_lint_settings_yaml is only the
-optional debug dump written by build_lint_settings_yaml.py.
+Callers use the returned dict. render_lint_settings_yaml dumps that dict
+as YAML; nothing in CI writes the dump to disk.
 """
 
 from __future__ import annotations
@@ -20,8 +20,7 @@ import yaml
 HEADER = """\
 # Generated from `shared/configuration/project-settings/*.json`,
 # `shared/configuration/lint-settings/*.json`, and
-# `shared/configuration/lint-settings.yaml` by
-# `.github/scripts/build_lint_settings_yaml.py`. Do not edit by hand.
+# `shared/configuration/lint-settings.yaml`. Do not edit by hand.
 """
 
 _DOUBLE_QUOTED_KEYS = frozenset({"comment", "description", "doc"})
