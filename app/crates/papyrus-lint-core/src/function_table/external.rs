@@ -228,6 +228,10 @@ impl papyrus_lints::ExternalSignatures for FunctionTable {
         FunctionTable::has_event(self, type_name, event_name)
     }
 
+    fn has_empty_state_function(&mut self, type_name: &str, function_name: &str) -> Option<bool> {
+        FunctionTable::has_empty_state_function(self, type_name, function_name)
+    }
+
     fn parent_event_needs_call(&mut self, type_name: &str, event_name: &str) -> Option<bool> {
         FunctionTable::parent_event_needs_call(self, type_name, event_name)
     }

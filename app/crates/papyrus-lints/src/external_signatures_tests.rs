@@ -22,6 +22,7 @@ fn no_external_signatures_leaves_member_metadata_unresolved() {
         None
     );
     assert_eq!(external.has_event("Child", "OnInit"), None);
+    assert_eq!(external.has_empty_state_function("Child", "DoWork"), None);
 }
 
 #[test]

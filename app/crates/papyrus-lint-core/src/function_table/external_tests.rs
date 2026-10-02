@@ -757,3 +757,35 @@ DailyUpdateData Property ViaImportParent Auto\n";
         "a struct declared on the imported script is in scope, got {diagnostics:?}"
     );
 }
+
+#[test]
+fn empty_state_function_lookup_ignores_state_only_declarations() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    write_script(
+        root.path(),
+        "Base",
+        "ScriptName Base\n\nFunction Ready()\nEndFunction\n\nState Busy\n  Function OnlyHere()\n  EndFunction\nEndState\n",
+    );
+    write_script(
+        root.path(),
+        "Child",
+        "ScriptName Child Extends Base\n\nState Active\n  Function Ready()\n  EndFunction\n  Function OnlyHere()\n  EndFunction\nEndState\n",
+    );
+
+    let table = std::sync::RwLock::new(FunctionTable::new(root.path().to_path_buf()));
+    let mut shared = super::super::SharedFunctionTable(&table);
+    let external: &mut dyn papyrus_lints::ExternalSignatures = &mut shared;
+
+    assert_eq!(
+        external.has_empty_state_function("Child", "Ready"),
+        Some(true)
+    );
+    assert_eq!(
+        external.has_empty_state_function("Child", "onlyhere"),
+        Some(false)
+    );
+    assert_eq!(
+        external.has_empty_state_function("DefinitelyMissing", "Ready"),
+        None
+    );
+}

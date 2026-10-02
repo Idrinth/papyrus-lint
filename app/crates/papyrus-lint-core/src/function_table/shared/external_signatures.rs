@@ -142,6 +142,19 @@ impl papyrus_lints::ExternalSignatures for SharedFunctionTable<'_> {
         )
     }
 
+    fn has_empty_state_function(&mut self, type_name: &str, function_name: &str) -> Option<bool> {
+        self.probe_or_load(
+            |table| table.has_empty_state_function_cached(type_name, function_name),
+            |table| {
+                papyrus_lints::ExternalSignatures::has_empty_state_function(
+                    table,
+                    type_name,
+                    function_name,
+                )
+            },
+        )
+    }
+
     fn parent_event_needs_call(&mut self, type_name: &str, event_name: &str) -> Option<bool> {
         self.probe_or_load(
             |table| table.parent_event_needs_call_cached(type_name, event_name),

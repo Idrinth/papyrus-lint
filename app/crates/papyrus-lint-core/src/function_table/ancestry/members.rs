@@ -113,6 +113,42 @@ impl FunctionTable {
         None
     }
 
+    /// Whether `type_name` or an ancestor declares `function_name` in the
+    /// empty state. A state-only declaration does not count and the walk
+    /// continues. `None` if the chain is circular or a script is missing.
+    pub fn has_empty_state_function(
+        &mut self,
+        type_name: &str,
+        function_name: &str,
+    ) -> Option<bool> {
+        let function_key = function_name.to_ascii_lowercase();
+        let mut visited = Vec::new();
+        let mut current = Some(type_name.to_ascii_lowercase());
+
+        while let Some(name) = current {
+            if visited.contains(&name) {
+                return None;
+            }
+            self.ensure_loaded(&name);
+
+            let Some(script) = self.scripts.get(&name).and_then(Option::as_ref) else {
+                return None;
+            };
+            if script
+                .functions
+                .get(&function_key)
+                .is_some_and(|signature| signature.state.is_none())
+            {
+                return Some(true);
+            }
+
+            current = parent_cache_key(script);
+            visited.push(name);
+        }
+
+        Some(false)
+    }
+
     /// Whether `type_name`'s script, or an ancestor it `Extends` (directly
     /// or transitively), declares a property named `property_name`. Both
     /// names are matched case-insensitively. Returns `false` if

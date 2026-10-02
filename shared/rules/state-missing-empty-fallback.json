@@ -1,0 +1,14 @@
+{
+  "id": "state-missing-empty-fallback",
+  "name": "State function missing empty-state fallback",
+  "category": "Reliability",
+  "visitor": "ast",
+  "tags": [
+    "correctness"
+  ],
+  "severity": "warning",
+  "importance": "medium",
+  "fixable": false,
+  "description": "Flags a function or event declared only inside a named State, with no empty-state fallback.",
+  "definition": "Flags, as a `[warning]`, a function or event declared only inside a named `State`, with no same-named declaration in the script's empty state (directly on the script, outside any `State` block). Papyrus dispatches a call to the empty-state version when the script is not in a state that declares it, so a state-only declaration throws or fails silently at runtime. A parent empty-state declaration (via `Extends`) counts when it can be resolved; an unresolved parent is left unflagged rather than guessed at. Private helpers never called from outside a state that declares them are exempt. Remote events (`Type.OnSomething`) are skipped. Related but different: `state-function-signature` (signature match when an empty-state declaration already exists)."
+}

@@ -200,6 +200,22 @@ pub trait ExternalSignatures {
         None
     }
 
+    /// Whether `type_name` or one of its ancestors declares `function_name`
+    /// in the empty state (directly on the script, not only inside a named
+    /// `State`).
+    ///
+    /// `Some(true)` means an empty-state declaration was found.
+    /// `Some(false)` means the ancestry resolved and none of those scripts
+    /// declare it in the empty state (a state-only declaration does not
+    /// count — it is not a fallback for callers outside that state).
+    /// `None` means the chain could not be resolved, so callers must not
+    /// guess. Both names are matched case-insensitively.
+    ///
+    /// The default always returns `None` ([`NoExternalSignatures`]).
+    fn has_empty_state_function(&mut self, _type_name: &str, _function_name: &str) -> Option<bool> {
+        None
+    }
+
     /// Whether `type_name`'s script declares `function_name` as a
     /// `Global` function, i.e. one callable through Papyrus's static call
     /// syntax (`ScriptName.Function(...)`) without an instance. Both names
