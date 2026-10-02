@@ -131,9 +131,7 @@ impl FunctionTable {
             }
             self.ensure_loaded(&name);
 
-            let Some(script) = self.scripts.get(&name).and_then(Option::as_ref) else {
-                return None;
-            };
+            let script = self.scripts.get(&name).and_then(Option::as_ref)?;
             if script
                 .functions
                 .get(&function_key)
