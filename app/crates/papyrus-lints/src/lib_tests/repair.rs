@@ -163,6 +163,17 @@ fn repair_filtered_matches_nothing_for_an_unknown_rule_id() {
 }
 
 #[test]
+fn repair_filtered_can_remove_an_unused_disable_directive() {
+    let source = "ScriptName Example\n; @disable mystery-rule\n";
+    let config = super::support::config_with(|config| config.rules.unused_disable = true);
+
+    assert_eq!(
+        repair_filtered(source, &config, Some(unused_disable::RULE)),
+        "ScriptName Example\n\n"
+    );
+}
+
+#[test]
 fn repair_filtered_by_tag_applies_all_matching_fixes_only() {
     let config = Config::default();
     // Comma spacing and trailing whitespace are style fixes, while
