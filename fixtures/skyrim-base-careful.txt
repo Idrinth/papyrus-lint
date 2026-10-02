@@ -3093,6 +3093,7 @@ Source/Scripts/C06TombEntranceCheatScript.psc:17:1:none-form-usage
 Source/Scripts/C06TombEntranceCheatScript.psc:19:1:none-form-usage
 Source/Scripts/C06TombEntranceCheatScript.psc:22:1:none-form-usage
 Source/Scripts/C06TombEntranceCheatScript.psc:25:1:none-form-usage
+Source/Scripts/C06YsgramorStatueScript.psc:9:1:state-missing-empty-fallback
 Source/Scripts/C06YsgramorStatueScript.psc:9:1:undefined-event
 Source/Scripts/C06YsgramorStatueScript.psc:10:1:none-form-usage
 Source/Scripts/C06YsgramorStatueScript.psc:12:1:none-form-usage
@@ -3103,6 +3104,7 @@ Source/Scripts/C06YsgramorStatueScript.psc:23:10:forbidden-functions
 Source/Scripts/C06YsgramorStatueScript.psc:24:1:none-form-usage
 Source/Scripts/C06YsgramorStatueScript.psc:24:1:none-form-usage
 Source/Scripts/C06YsgramorStatueScript.psc:25:1:none-form-usage
+Source/Scripts/C06YsgramorStatueScript.psc:34:1:state-missing-empty-fallback
 Source/Scripts/C06YsgramorStatueScript.psc:34:1:undefined-event
 Source/Scripts/C06YsgramorStatueScript.psc:35:1:none-form-usage
 Source/Scripts/C06YsgramorStatueScript.psc:36:1:none-form-usage
@@ -3110,6 +3112,7 @@ Source/Scripts/C06YsgramorStatueScript.psc:37:11:forbidden-functions
 Source/Scripts/C06YsgramorStatueScript.psc:38:1:none-form-usage
 Source/Scripts/C06YsgramorStatueScript.psc:42:12:forbidden-functions
 Source/Scripts/C06YsgramorStatueScript.psc:48:9:forbidden-functions
+Source/Scripts/C06YsgramorStatueScript.psc:55:1:state-missing-empty-fallback
 Source/Scripts/C06YsgramorStatueScript.psc:55:1:undefined-event
 Source/Scripts/C06YsgramorStatueScript.psc:56:1:none-form-usage
 Source/Scripts/CCHorseArmorChangeScript.psc:22:121:line-length
@@ -3554,6 +3557,7 @@ Source/Scripts/CWBattleCenterMarkerSCRIPT.psc:11:1:none-form-usage
 Source/Scripts/CWBattleCenterMarkerSCRIPT.psc:12:2:empty-body
 Source/Scripts/CWCampaignFieldCOScript.psc:3:121:line-length
 Source/Scripts/CWCampaignFieldCOScript.psc:10:121:line-length
+Source/Scripts/CWCampaignFieldCOScript.psc:14:1:state-missing-empty-fallback
 Source/Scripts/CWCampaignFieldCOScript.psc:14:1:undefined-event
 Source/Scripts/CWCampaignFieldCOScript.psc:19:121:line-length
 Source/Scripts/CWCampaignFieldCOScript.psc:28:113:forbidden-functions
@@ -4055,10 +4059,13 @@ Source/Scripts/CWCatapultScript.psc:98:121:line-length
 Source/Scripts/CWCatapultScript.psc:104:1:unchecked-cast
 Source/Scripts/CWCatapultScript.psc:110:121:line-length
 Source/Scripts/CWCatapultScript.psc:120:121:line-length
+Source/Scripts/CWCatapultScript.psc:136:1:state-missing-empty-fallback
 Source/Scripts/CWCatapultScript.psc:136:1:undefined-event
+Source/Scripts/CWCatapultScript.psc:149:1:state-missing-empty-fallback
 Source/Scripts/CWCatapultScript.psc:149:1:undefined-event
 Source/Scripts/CWCatapultScript.psc:164:4:empty-body
 Source/Scripts/CWCatapultScript.psc:165:121:line-length
+Source/Scripts/CWCatapultScript.psc:176:1:state-missing-empty-fallback
 Source/Scripts/CWCatapultScript.psc:176:1:undefined-event
 Source/Scripts/CWCatapultScript.psc:220:1:unchecked-cast
 Source/Scripts/CWCatapultScript.psc:233:2:empty-body
@@ -4082,6 +4089,7 @@ Source/Scripts/CWCatapultStrikeSpawnerControlScript.psc:35:121:line-length
 Source/Scripts/CWCatapultStrikeSpawnerControlScript.psc:38:121:line-length
 Source/Scripts/CWCatapultStrikeSpawnerControlScript.psc:41:121:line-length
 Source/Scripts/CWCatapultStrikeSpawnerScript.psc:33:1:place-at-me
+Source/Scripts/CWCatapultWeaponFireSCRIPT.psc:34:1:state-missing-empty-fallback
 Source/Scripts/CWCatapultWeaponFireSCRIPT.psc:34:1:undefined-event
 Source/Scripts/CWCatapultWeaponFireSCRIPT.psc:44:1:unchecked-cast
 Source/Scripts/CWCatapultWeaponFireSCRIPT.psc:46:1:none-form-usage
@@ -7473,7 +7481,9 @@ Source/Scripts/DA04BloodHarvestVictimScript.psc:20:1:unchecked-cast
 Source/Scripts/DA04BloodHarvestVictimScript.psc:22:1:unchecked-cast
 Source/Scripts/DA04BloodHarvestVictimScript.psc:57:1:argument-naming
 Source/Scripts/DA04ButtonScript.psc:29:1:undefined-event
+Source/Scripts/DA04ButtonScript.psc:35:1:state-missing-empty-fallback
 Source/Scripts/DA04ButtonScript.psc:35:1:undefined-event
+Source/Scripts/DA04ButtonScript.psc:49:1:state-missing-empty-fallback
 Source/Scripts/DA04ButtonScript.psc:49:1:undefined-event
 Source/Scripts/DA04ButtonScript.psc:57:27:forbidden-functions
 Source/Scripts/DA04ElderScrollActivatorScript.psc:6:1:argument-naming
@@ -7498,9 +7508,11 @@ Source/Scripts/DA04LexiconStand.psc:21:12:forbidden-functions
 Source/Scripts/DA04LexiconStand.psc:23:1:none-form-usage
 Source/Scripts/DA04LexiconStand.psc:23:1:none-form-usage
 Source/Scripts/DA04LexiconStand.psc:26:1:none-form-usage
+Source/Scripts/DA04LexiconStand.psc:33:1:state-missing-empty-fallback
 Source/Scripts/DA04LexiconStand.psc:33:1:undefined-event
 Source/Scripts/DA04LexiconStand.psc:34:1:unchecked-cast
 Source/Scripts/DA04LexiconStand.psc:35:1:unchecked-cast
+Source/Scripts/DA04LexiconStand.psc:40:1:state-missing-empty-fallback
 Source/Scripts/DA04LexiconStand.psc:40:1:undefined-event
 Source/Scripts/DA04LexiconStand.psc:41:1:unchecked-cast
 Source/Scripts/DA04LexiconStand.psc:42:1:unchecked-cast
@@ -7888,12 +7900,15 @@ Source/Scripts/DA09TempleExteriorTriggerScript.psc:13:1:none-form-usage
 Source/Scripts/DA10AbandonedHouseTriggerScript.psc:6:26:forbidden-functions
 Source/Scripts/DA10DeadBodyScript.psc:8:2:empty-body
 Source/Scripts/DA10DeadBodyScript.psc:11:24:forbidden-functions
+Source/Scripts/DA10GhostTrap.psc:37:1:state-missing-empty-fallback
 Source/Scripts/DA10GhostTrap.psc:37:1:undefined-event
 Source/Scripts/DA10GhostTrap.psc:38:1:none-form-usage
 Source/Scripts/DA10GhostTrap.psc:51:2:strict-boolean
+Source/Scripts/DA10GhostTrap.psc:63:1:state-missing-empty-fallback
 Source/Scripts/DA10GhostTrap.psc:63:1:undefined-event
 Source/Scripts/DA10GhostTrap.psc:65:3:strict-boolean
 Source/Scripts/DA10GhostTrap.psc:68:1:none-form-usage
+Source/Scripts/DA10GhostTrap.psc:92:1:state-missing-empty-fallback
 Source/Scripts/DA10GhostTrap.psc:92:1:undefined-event
 Source/Scripts/DA10GhostTrap.psc:99:4:strict-boolean
 Source/Scripts/DA10GhostTrap.psc:108:1:explicit-return
@@ -7909,6 +7924,7 @@ Source/Scripts/DA10GhostTrapHit.psc:27:1:none-form-usage
 Source/Scripts/DA10GhostTrapHit.psc:36:121:line-length
 Source/Scripts/DA10HauntingControllerScript.psc:114:1:cyclomatic-complexity
 Source/Scripts/DA10HauntingControllerScript.psc:114:1:nesting-depth
+Source/Scripts/DA10HauntingControllerScript.psc:114:1:state-missing-empty-fallback
 Source/Scripts/DA10HauntingControllerScript.psc:114:1:undefined-event
 Source/Scripts/DA10HauntingControllerScript.psc:119:4:empty-body
 Source/Scripts/DA10HauntingControllerScript.psc:126:1:none-form-usage
@@ -8230,6 +8246,7 @@ Source/Scripts/DA16BossKillerScript.psc:8:1:none-form-usage
 Source/Scripts/DA16BossKillerScript.psc:9:1:none-form-usage
 Source/Scripts/DA16DreamGuardianAmbush.psc:46:24:forbidden-functions
 Source/Scripts/DA16DreamGuardianAmbush.psc:56:121:line-length
+Source/Scripts/DA16DreamGuardianAmbush.psc:81:1:state-missing-empty-fallback
 Source/Scripts/DA16DreamGuardianAmbush.psc:81:1:undefined-event
 Source/Scripts/DA16DreamGuardianAmbush.psc:85:3:strict-boolean
 Source/Scripts/DA16DreamGuardianAmbush.psc:107:3:strict-boolean
@@ -8288,6 +8305,7 @@ Source/Scripts/DA16LibraryTriggerScript.psc:10:1:none-form-usage
 Source/Scripts/DA16LibraryTriggerScript.psc:11:1:none-form-usage
 Source/Scripts/DA16MagicBarrier.psc:51:9:argument-types
 Source/Scripts/DA16MagicBarrier.psc:57:9:argument-types
+Source/Scripts/DA16MagicBarrier.psc:65:1:state-missing-empty-fallback
 Source/Scripts/DA16MagicBarrier.psc:65:1:undefined-event
 Source/Scripts/DA16MagicBarrier.psc:67:6:forbidden-functions
 Source/Scripts/DA16MagicBarrier.psc:68:4:forbidden-functions
@@ -8326,6 +8344,7 @@ Source/Scripts/DA16MistFill.psc:50:1:none-form-usage
 Source/Scripts/DA16MistFill.psc:55:1:none-form-usage
 Source/Scripts/DA16MistFill.psc:57:1:none-form-usage
 Source/Scripts/DA16MistFill.psc:59:1:none-form-usage
+Source/Scripts/DA16MistFill.psc:67:1:state-missing-empty-fallback
 Source/Scripts/DA16MistFill.psc:67:1:undefined-event
 Source/Scripts/DA16MistFill.psc:75:1:none-form-usage
 Source/Scripts/DA16MistFill.psc:76:1:none-form-usage
@@ -8437,6 +8456,7 @@ Source/Scripts/DB04aSealedLetterScript.psc:11:1:unchecked-cast
 Source/Scripts/DB05FallingStatueActivate.psc:46:25:forbidden-functions
 Source/Scripts/DB05FallingStatueActivate.psc:51:121:line-length
 Source/Scripts/DB05FallingStatueActivate.psc:52:26:forbidden-functions
+Source/Scripts/DB05FallingStatueActivate.psc:60:1:state-missing-empty-fallback
 Source/Scripts/DB05FallingStatueActivate.psc:60:1:undefined-event
 Source/Scripts/DB05FallingStatueActivate.psc:64:121:line-length
 Source/Scripts/DB05FallingStatueActivate.psc:68:1:none-form-usage
@@ -8446,6 +8466,7 @@ Source/Scripts/DB05FallingStatueActivate.psc:74:36:forbidden-functions
 Source/Scripts/DB05FallingStatueActivate.psc:76:121:line-length
 Source/Scripts/DB05FallingStatueActivate.psc:77:5:strict-boolean
 Source/Scripts/DB05FallingStatueActivate.psc:82:31:forbidden-functions
+Source/Scripts/DB05FallingStatueActivate.psc:104:1:state-missing-empty-fallback
 Source/Scripts/DB05FallingStatueActivate.psc:104:1:undefined-event
 Source/Scripts/DB05FallingStatueActivate.psc:122:10:forbidden-functions
 Source/Scripts/DB05FallingStatueActivate.psc:123:2:strict-boolean
@@ -8459,6 +8480,7 @@ Source/Scripts/DB05GuestScript.psc:6:1:none-form-usage
 Source/Scripts/DB05GuestScript.psc:8:1:unchecked-cast
 Source/Scripts/DB05MoveRefOnLostLOS.psc:16:1:none-form-usage
 Source/Scripts/DB05MoveRefOnLostLOS.psc:19:1:unchecked-cast
+Source/Scripts/DB05MoveRefOnLostLOS.psc:32:1:state-missing-empty-fallback
 Source/Scripts/DB05MoveRefOnLostLOS.psc:32:1:undefined-event
 Source/Scripts/DB05MoveRefOnLostLOS.psc:34:33:forbidden-functions
 Source/Scripts/DB05VittoriaSpeechTrigScript.psc:7:1:argument-naming
@@ -9130,6 +9152,7 @@ Source/Scripts/DLC1ArkngthamzBallista.psc:59:1:none-form-usage
 Source/Scripts/DLC1ArkngthamzBallista.psc:67:1:none-form-usage
 Source/Scripts/DLC1ArkngthamzBallista.psc:73:1:none-form-usage
 Source/Scripts/DLC1ArkngthamzBallista.psc:79:1:none-form-usage
+Source/Scripts/DLC1ArkngthamzBallista.psc:103:1:state-missing-empty-fallback
 Source/Scripts/DLC1ArkngthamzDestructionSCRIPT.psc:11:2:forbidden-functions
 Source/Scripts/DLC1ArkngthamzDestructionSCRIPT.psc:12:10:forbidden-functions
 Source/Scripts/DLC1ArkngthamzDestructionSCRIPT.psc:14:6:forbidden-functions
@@ -9220,6 +9243,7 @@ Source/Scripts/DLC1BthalftSteamTrigger.psc:15:121:line-length
 Source/Scripts/DLC1CastleThrallScript.psc:4:1:undefined-event
 Source/Scripts/DLC1CavewormTriggerControlScript.psc:11:121:line-length
 Source/Scripts/DLC1CavewormTriggerControlScript.psc:21:13:forbidden-functions
+Source/Scripts/DLC1CavewormTriggerControlScript.psc:33:1:state-missing-empty-fallback
 Source/Scripts/DLC1CavewormTriggerControlScript.psc:33:1:undefined-event
 Source/Scripts/DLC1CavewormTriggerControlScript.psc:38:13:forbidden-functions
 Source/Scripts/DLC1CavewormTriggerScript.psc:29:14:forbidden-functions
@@ -9245,6 +9269,7 @@ Source/Scripts/DLC1ChatterTriggerScript.psc:34:1:none-form-usage
 Source/Scripts/DLC1ChatterTriggerScript.psc:34:25:slow-functions
 Source/Scripts/DLC1ChatterTriggerScript.psc:35:1:none-form-usage
 Source/Scripts/DLC1ChaurusCocoonScript.psc:9:121:line-length
+Source/Scripts/DLC1ChaurusCocoonScript.psc:18:1:state-missing-empty-fallback
 Source/Scripts/DLC1ChaurusCocoonScript.psc:18:1:undefined-event
 Source/Scripts/DLC1ChaurusCocoonScript.psc:21:8:forbidden-functions
 Source/Scripts/DLC1ChaurusCocoonScript.psc:26:121:line-length
@@ -9337,6 +9362,7 @@ Source/Scripts/DLC1DeerFXGlowScript.psc:56:3:empty-body
 Source/Scripts/DLC1DeerFXGlowScript.psc:58:3:empty-body
 Source/Scripts/DLC1DeerFXGlowScript.psc:79:42:forbidden-functions
 Source/Scripts/DLC1DeerFXGlowScript.psc:85:42:forbidden-functions
+Source/Scripts/DLC1DeerFXGlowScript.psc:93:1:state-missing-empty-fallback
 Source/Scripts/DLC1DeerFXGlowScript.psc:93:1:undefined-event
 Source/Scripts/DLC1DeerFXGlowScript.psc:101:121:line-length
 Source/Scripts/DLC1DefaultEnableFastTravelTrigSCRIPT.psc:5:26:forbidden-functions
@@ -9384,7 +9410,9 @@ Source/Scripts/DLC1DunStatueHitSCRIPT.psc:75:121:line-length
 Source/Scripts/DLC1DunStatueHitSCRIPT.psc:78:26:forbidden-functions
 Source/Scripts/DLC1DunStatueHitSCRIPT.psc:81:4:strict-boolean
 Source/Scripts/DLC1DunStatueHitSCRIPT.psc:84:5:strict-boolean
+Source/Scripts/DLC1DunStatueHitSCRIPT.psc:111:1:state-missing-empty-fallback
 Source/Scripts/DLC1DunStatueHitSCRIPT.psc:111:1:undefined-event
+Source/Scripts/DLC1DunStatueHitSCRIPT.psc:158:1:state-missing-empty-fallback
 Source/Scripts/DLC1DunStatueHitSCRIPT.psc:158:1:undefined-event
 Source/Scripts/DLC1DunStatueHitSCRIPT.psc:161:1:unchecked-cast
 Source/Scripts/DLC1DunStatueHitSCRIPT.psc:161:1:unchecked-cast
@@ -9632,6 +9660,7 @@ Source/Scripts/DLC1FerrymanScript.psc:14:20:forbidden-functions
 Source/Scripts/DLC1FerrymanScript.psc:19:1:undefined-event
 Source/Scripts/DLC1FerrymanScript.psc:20:20:forbidden-functions
 Source/Scripts/DLC1GargoyleAmbushScript.psc:78:121:line-length
+Source/Scripts/DLC1GargoyleAmbushScript.psc:103:1:state-missing-empty-fallback
 Source/Scripts/DLC1GargoyleAmbushScript.psc:103:1:undefined-event
 Source/Scripts/DLC1GargoyleAmbushScript.psc:106:1:place-at-me
 Source/Scripts/DLC1GargoyleAmbushScript.psc:123:6:forbidden-functions
@@ -9641,13 +9670,16 @@ Source/Scripts/DLC1GargoyleAmbushScript.psc:136:7:forbidden-functions
 Source/Scripts/DLC1GargoyleAmbushScript.psc:137:1:unchecked-cast
 Source/Scripts/DLC1GargoyleAmbushScript.psc:137:5:forbidden-functions
 Source/Scripts/DLC1GargoyleBossSCRIPT.psc:7:121:line-length
+Source/Scripts/DLC1GargoyleBossSCRIPT.psc:13:1:state-missing-empty-fallback
 Source/Scripts/DLC1GargoyleBossSCRIPT.psc:13:1:undefined-event
 Source/Scripts/DLC1GargoyleBossSCRIPT.psc:25:121:line-length
+Source/Scripts/DLC1GargoyleBossSCRIPT.psc:35:1:state-missing-empty-fallback
 Source/Scripts/DLC1GargoyleBossSCRIPT.psc:35:1:undefined-event
 Source/Scripts/DLC1GargoyleBossSCRIPT.psc:37:1:none-form-usage
 Source/Scripts/DLC1GargoyleBossSCRIPT.psc:43:1:none-form-usage
 Source/Scripts/DLC1GargoyleBossSCRIPT.psc:48:1:none-form-usage
 Source/Scripts/DLC1GargoyleBossSCRIPT.psc:53:1:none-form-usage
+Source/Scripts/DLC1GargoyleBossSCRIPT.psc:63:1:state-missing-empty-fallback
 Source/Scripts/DLC1GargoyleBossSCRIPT.psc:63:1:undefined-event
 Source/Scripts/DLC1GargoyleBossSCRIPT.psc:64:11:forbidden-functions
 Source/Scripts/DLC1GargoyleBossSCRIPT.psc:70:121:line-length
@@ -10659,6 +10691,7 @@ Source/Scripts/DLC1SabreCatFXGlowScript.psc:62:3:empty-body
 Source/Scripts/DLC1SabreCatFXGlowScript.psc:78:4:empty-body
 Source/Scripts/DLC1SabreCatFXGlowScript.psc:83:42:forbidden-functions
 Source/Scripts/DLC1SabreCatFXGlowScript.psc:89:42:forbidden-functions
+Source/Scripts/DLC1SabreCatFXGlowScript.psc:97:1:state-missing-empty-fallback
 Source/Scripts/DLC1SabreCatFXGlowScript.psc:97:1:undefined-event
 Source/Scripts/DLC1SabreCatFXGlowScript.psc:105:121:line-length
 Source/Scripts/DLC1SeranaCureQuestAliasScript.psc:6:1:unchecked-cast
@@ -10682,6 +10715,7 @@ Source/Scripts/DLC1ShellBugSounds.psc:9:1:none-form-usage
 Source/Scripts/DLC1ShellBugSounds.psc:10:1:none-form-usage
 Source/Scripts/DLC1SkeletonAmbushScript.psc:59:24:forbidden-functions
 Source/Scripts/DLC1SkeletonAmbushScript.psc:70:121:line-length
+Source/Scripts/DLC1SkeletonAmbushScript.psc:100:1:state-missing-empty-fallback
 Source/Scripts/DLC1SkeletonAmbushScript.psc:100:1:undefined-event
 Source/Scripts/DLC1SkeletonAmbushScript.psc:103:6:forbidden-functions
 Source/Scripts/DLC1SkeletonAmbushScript.psc:104:4:forbidden-functions
@@ -10752,12 +10786,15 @@ Source/Scripts/DLC1TrapCrossbow.psc:47:29:forbidden-functions
 Source/Scripts/DLC1TrapCrossbow.psc:60:3:empty-body
 Source/Scripts/DLC1TrapCrossbow.psc:63:19:unresolved-script
 Source/Scripts/DLC1TrapCrossbow.psc:71:1:none-form-usage
+Source/Scripts/DLC1TrapCrossbow.psc:94:1:state-missing-empty-fallback
 Source/Scripts/DLC1TrapCrossbow.psc:117:9:forbidden-functions
 Source/Scripts/DLC1TrapCrossbow.psc:120:9:forbidden-functions
 Source/Scripts/DLC1TrapCrossbow.psc:121:9:forbidden-functions
+Source/Scripts/DLC1TrapCrossbow.psc:129:1:state-missing-empty-fallback
 Source/Scripts/DLC1TrapCrossbow.psc:138:9:forbidden-functions
 Source/Scripts/DLC1TrapCrossbow.psc:139:9:forbidden-functions
 Source/Scripts/DLC1TrapCrossbow.psc:144:1:none-form-usage
+Source/Scripts/DLC1TrapInfectedBones.psc:61:1:state-missing-empty-fallback
 Source/Scripts/DLC1TrapInfectedBones.psc:67:3:strict-boolean
 Source/Scripts/DLC1TrapInfectedBones.psc:72:21:unresolved-script
 Source/Scripts/DLC1TrapInfectedBones.psc:74:3:strict-boolean
@@ -10771,7 +10808,11 @@ Source/Scripts/DLC1TrapInfectedBones.psc:86:1:unchecked-cast
 Source/Scripts/DLC1TrapInfectedBones.psc:86:121:line-length
 Source/Scripts/DLC1TrapInfectedBones.psc:125:1:missing-parent-call-in-override
 Source/Scripts/DLC1TrapInfectedBones.psc:139:1:nesting-depth
+Source/Scripts/DLC1TrapPoisonBloom.psc:27:1:state-missing-empty-fallback
 Source/Scripts/DLC1TrapPoisonBloom.psc:54:3:strict-boolean
+Source/Scripts/DLC1TrapPoisonBloom.psc:87:1:state-missing-empty-fallback
+Source/Scripts/DLC1TrapPoisonBloom.psc:121:1:state-missing-empty-fallback
+Source/Scripts/DLC1TrapPoisonBloom.psc:136:1:state-missing-empty-fallback
 Source/Scripts/DLC1TrapPoisonBloom.psc:179:3:strict-boolean
 Source/Scripts/DLC1TrapPoisonBloom.psc:183:11:forbidden-functions
 Source/Scripts/DLC1TrapPoisonBloom.psc:193:1:missing-parent-call-in-override
@@ -10788,6 +10829,7 @@ Source/Scripts/DLC1TrapPoisonBloom.psc:245:25:forbidden-functions
 Source/Scripts/DLC1TrapPoisonBloom.psc:262:1:unchecked-cast
 Source/Scripts/DLC1TrapPoisonBloom.psc:275:1:unchecked-cast
 Source/Scripts/DLC1TrapSpotLight.psc:89:1:none-form-usage
+Source/Scripts/DLC1TrapSpotLight.psc:119:1:state-missing-empty-fallback
 Source/Scripts/DLC1VCBoatDoorScript.psc:5:1:argument-naming
 Source/Scripts/DLC1VCBoatDoorScript.psc:10:25:forbidden-functions
 Source/Scripts/DLC1VCBoatDoorScript.psc:12:28:forbidden-functions
@@ -10836,6 +10878,7 @@ Source/Scripts/DLC1VQ01GargoyleTriggerScript.psc:7:1:none-form-usage
 Source/Scripts/DLC1VQ01GargoyleTriggerScript.psc:8:3:forbidden-functions
 Source/Scripts/DLC1VQ01GargoyleTriggerScript.psc:8:27:forbidden-functions
 Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:19:121:line-length
+Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:42:1:state-missing-empty-fallback
 Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:42:1:undefined-event
 Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:43:1:none-form-usage
 Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:54:1:none-form-usage
@@ -10850,20 +10893,25 @@ Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:76:1:none-form-usage
 Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:77:1:none-form-usage
 Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:80:3:empty-body
 Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:83:1:none-form-usage
+Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:92:1:state-missing-empty-fallback
 Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:92:1:undefined-event
 Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:93:1:none-form-usage
 Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:112:1:none-form-usage
 Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:113:1:none-form-usage
 Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:115:3:empty-body
 Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:118:1:none-form-usage
+Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:124:1:state-missing-empty-fallback
 Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:124:1:undefined-event
+Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:133:1:state-missing-empty-fallback
 Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:133:1:undefined-event
 Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:134:1:none-form-usage
 Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:153:1:none-form-usage
 Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:154:1:none-form-usage
 Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:156:3:empty-body
 Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:159:1:none-form-usage
+Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:165:1:state-missing-empty-fallback
 Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:165:1:undefined-event
+Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:173:1:state-missing-empty-fallback
 Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:173:1:undefined-event
 Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:176:1:none-form-usage
 Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:183:1:none-form-usage
@@ -11003,6 +11051,7 @@ Source/Scripts/DLC1VQ03VampireDisplayObjectiveScript.psc:32:6:empty-body
 Source/Scripts/DLC1VQ03VampireDisplayObjectiveScript.psc:38:1:none-form-usage
 Source/Scripts/DLC1VQ03VamprieCharmDexion.psc:4:121:line-length
 Source/Scripts/DLC1VQ03VamprieCharmDexion.psc:6:26:forbidden-functions
+Source/Scripts/DLC1VQ04BloodbowlFurnitureScript.psc:27:1:state-missing-empty-fallback
 Source/Scripts/DLC1VQ04BloodbowlFurnitureScript.psc:27:1:undefined-event
 Source/Scripts/DLC1VQ04BloodbowlFurnitureScript.psc:30:11:forbidden-functions
 Source/Scripts/DLC1VQ04BloodbowlFurnitureScript.psc:33:1:none-form-usage
@@ -15761,6 +15810,7 @@ Source/Scripts/DLC2Book01PuzzleActivator.psc:62:1:unchecked-cast
 Source/Scripts/DLC2Book01PuzzleActivator.psc:66:1:none-form-usage
 Source/Scripts/DLC2Book01PuzzleActivator.psc:68:1:none-form-usage
 Source/Scripts/DLC2Book01PuzzleActivator.psc:69:5:forbidden-functions
+Source/Scripts/DLC2Book01PuzzleActivator.psc:84:1:state-missing-empty-fallback
 Source/Scripts/DLC2Book01PuzzleActivator.psc:84:1:undefined-event
 Source/Scripts/DLC2Book01PuzzleBookHolder.psc:13:26:forbidden-functions
 Source/Scripts/DLC2Book01PuzzleBookHolder.psc:17:1:unchecked-cast
@@ -15773,7 +15823,9 @@ Source/Scripts/DLC2Book01PuzzleBookHolder.psc:25:24:forbidden-functions
 Source/Scripts/DLC2Book01PuzzleBookHolder.psc:25:82:forbidden-functions
 Source/Scripts/DLC2Book01PuzzleBookHolder.psc:26:18:forbidden-functions
 Source/Scripts/DLC2Book01PuzzleBookHolder.psc:27:32:forbidden-functions
+Source/Scripts/DLC2Book01PuzzleBookHolder.psc:37:1:state-missing-empty-fallback
 Source/Scripts/DLC2Book01PuzzleBookHolder.psc:37:1:undefined-event
+Source/Scripts/DLC2Book01PuzzleController.psc:34:1:state-missing-empty-fallback
 Source/Scripts/DLC2Book01PuzzleController.psc:34:1:undefined-event
 Source/Scripts/DLC2Book01PuzzleController.psc:35:1:none-form-usage
 Source/Scripts/DLC2Book01PuzzleController.psc:36:1:none-form-usage
@@ -15829,6 +15881,7 @@ Source/Scripts/DLC2Book02DungeonBossTrigger.psc:13:17:forbidden-functions
 Source/Scripts/DLC2Book02DungeonBridgeTrigger.psc:12:24:forbidden-functions
 Source/Scripts/DLC2Book02DungeonBridgeTrigger.psc:14:1:none-form-usage
 Source/Scripts/DLC2Book02DungeonBridgeTrigger.psc:15:1:none-form-usage
+Source/Scripts/DLC2Book02DungeonBridgeTrigger.psc:22:1:state-missing-empty-fallback
 Source/Scripts/DLC2Book02DungeonBridgeTrigger.psc:22:1:undefined-event
 Source/Scripts/DLC2BookDungeonControllerScript.psc:8:121:line-length
 Source/Scripts/DLC2BookDungeonControllerScript.psc:9:121:line-length
@@ -16362,6 +16415,7 @@ Source/Scripts/DLC2ExplodingSpiderEggSCRIPT.psc:43:26:forbidden-functions
 Source/Scripts/DLC2ExplodingSpiderEggSCRIPT.psc:45:13:forbidden-functions
 Source/Scripts/DLC2ExplodingSpiderEggSCRIPT.psc:57:27:forbidden-functions
 Source/Scripts/DLC2ExplodingSpiderEggSCRIPT.psc:65:121:line-length
+Source/Scripts/DLC2ExplodingSpiderEggSCRIPT.psc:76:1:state-missing-empty-fallback
 Source/Scripts/DLC2ExplodingSpiderEggSCRIPT.psc:76:1:undefined-event
 Source/Scripts/DLC2ExplodingSpiderEggSCRIPT.psc:86:3:empty-body
 Source/Scripts/DLC2ExplodingSpiderEggSCRIPT.psc:86:11:forbidden-functions
@@ -16450,6 +16504,7 @@ Source/Scripts/DLC2HMDaedraEffectScript.psc:32:1:none-form-usage
 Source/Scripts/DLC2HMDaedraEffectScript.psc:34:1:place-at-me
 Source/Scripts/DLC2HMDaedraEffectScript.psc:35:1:none-form-usage
 Source/Scripts/DLC2HMDaedraEffectScript.psc:36:1:none-form-usage
+Source/Scripts/DLC2HermaeusMoraFaceFXSCRIPT.psc:21:1:state-missing-empty-fallback
 Source/Scripts/DLC2HermaeusMoraFaceFXSCRIPT.psc:21:1:undefined-event
 Source/Scripts/DLC2HermaeusMoraFaceFXSCRIPT.psc:22:3:strict-boolean
 Source/Scripts/DLC2HermaeusMoraFaceFXSCRIPT.psc:24:11:forbidden-functions
@@ -16471,6 +16526,7 @@ Source/Scripts/DLC2HermaeusMoraFaceFXSCRIPT.psc:74:1:none-form-usage
 Source/Scripts/DLC2HermaeusMoraFaceFXSCRIPT.psc:75:1:none-form-usage
 Source/Scripts/DLC2HermaeusMoraFaceFXSCRIPT.psc:76:1:none-form-usage
 Source/Scripts/DLC2HermaeusMoraFaceFXSCRIPT.psc:77:1:none-form-usage
+Source/Scripts/DLC2HermaeusMoraFaceFXSCRIPT.psc:80:1:state-missing-empty-fallback
 Source/Scripts/DLC2HermaeusMoraFaceFXSCRIPT.psc:80:1:undefined-event
 Source/Scripts/DLC2HermaeusMoraFaceFXSCRIPT.psc:81:3:strict-boolean
 Source/Scripts/DLC2HermaeusMoraFaceFXSCRIPT.psc:82:11:forbidden-functions
@@ -16651,6 +16707,7 @@ Source/Scripts/DLC2KagrumezGemAliasScript.psc:17:1:none-form-usage
 Source/Scripts/DLC2KagrumezGemAliasScript.psc:19:1:none-form-usage
 Source/Scripts/DLC2KagrumezGemAliasScript.psc:22:1:none-form-usage
 Source/Scripts/DLC2KagrumezGemAliasScript.psc:25:1:none-form-usage
+Source/Scripts/DLC2KagrumezGemScript.psc:23:1:state-missing-empty-fallback
 Source/Scripts/DLC2KagrumezGemScript.psc:23:1:undefined-event
 Source/Scripts/DLC2KagrumezGemScript.psc:28:24:forbidden-functions
 Source/Scripts/DLC2KagrumezGemScript.psc:28:44:forbidden-functions
@@ -16668,6 +16725,7 @@ Source/Scripts/DLC2KagrumezGemScript.psc:56:5:empty-body
 Source/Scripts/DLC2KagrumezGemScript.psc:59:28:forbidden-functions
 Source/Scripts/DLC2KagrumezGemScript.psc:59:48:forbidden-functions
 Source/Scripts/DLC2KagrumezGemScript.psc:60:1:none-form-usage
+Source/Scripts/DLC2KagrumezGemScript.psc:67:1:state-missing-empty-fallback
 Source/Scripts/DLC2KagrumezGemScript.psc:67:1:undefined-event
 Source/Scripts/DLC2KagrumezGemScript.psc:70:12:forbidden-functions
 Source/Scripts/DLC2KagrumezGemScript.psc:73:1:none-form-usage
@@ -16676,6 +16734,7 @@ Source/Scripts/DLC2KagrumezLightningScript.psc:22:1:none-form-usage
 Source/Scripts/DLC2KagrumezLightningScript.psc:24:1:none-form-usage
 Source/Scripts/DLC2KagrumezLightningScript.psc:26:1:none-form-usage
 Source/Scripts/DLC2KagrumezLightningScript.psc:28:1:none-form-usage
+Source/Scripts/DLC2KagrumezLightningScript.psc:36:1:state-missing-empty-fallback
 Source/Scripts/DLC2KagrumezLightningScript.psc:36:1:undefined-event
 Source/Scripts/DLC2KagrumezMasterScript.psc:131:1:none-form-usage
 Source/Scripts/DLC2KagrumezMasterScript.psc:131:21:slow-functions
@@ -16980,11 +17039,13 @@ Source/Scripts/DLC2MQ04Script.psc:82:1:none-form-usage
 Source/Scripts/DLC2MQ04Script.psc:84:1:none-form-usage
 Source/Scripts/DLC2MQ04Script.psc:85:2:empty-body
 Source/Scripts/DLC2MQ04Script.psc:91:1:none-form-usage
+Source/Scripts/DLC2MQ05HermaeusMoraFXScript.psc:17:1:state-missing-empty-fallback
 Source/Scripts/DLC2MQ05HermaeusMoraFXScript.psc:17:1:undefined-event
 Source/Scripts/DLC2MQ05HermaeusMoraFXScript.psc:22:3:strict-boolean
 Source/Scripts/DLC2MQ05HermaeusMoraFXScript.psc:26:12:forbidden-functions
 Source/Scripts/DLC2MQ05HermaeusMoraFXScript.psc:32:13:forbidden-functions
 Source/Scripts/DLC2MQ05HermaeusMoraFXScript.psc:50:3:strict-boolean
+Source/Scripts/DLC2MQ05HermaeusMoraFXScript.psc:57:1:state-missing-empty-fallback
 Source/Scripts/DLC2MQ05HermaeusMoraFXScript.psc:57:1:undefined-event
 Source/Scripts/DLC2MQ05HermaeusMoraFXScript.psc:60:3:strict-boolean
 Source/Scripts/DLC2MQ05HermaeusMoraFXScript.psc:61:12:forbidden-functions
@@ -17027,11 +17088,15 @@ Source/Scripts/DLC2MQ06MiraakBossBattle.psc:94:1:alias-cast-without-getreference
 Source/Scripts/DLC2MQ06MiraakBossBattle.psc:94:1:unchecked-cast
 Source/Scripts/DLC2MQ06MiraakBossBattle.psc:97:1:none-form-usage
 Source/Scripts/DLC2MQ06MiraakBossBattle.psc:116:1:none-form-usage
+Source/Scripts/DLC2MQ06MiraakBossBattle.psc:128:1:state-missing-empty-fallback
 Source/Scripts/DLC2MQ06MiraakBossBattle.psc:128:1:undefined-event
+Source/Scripts/DLC2MQ06MiraakBossBattle.psc:137:1:state-missing-empty-fallback
 Source/Scripts/DLC2MQ06MiraakBossBattle.psc:137:1:undefined-event
 Source/Scripts/DLC2MQ06MiraakBossBattle.psc:140:121:line-length
+Source/Scripts/DLC2MQ06MiraakBossBattle.psc:149:1:state-missing-empty-fallback
 Source/Scripts/DLC2MQ06MiraakBossBattle.psc:149:1:undefined-event
 Source/Scripts/DLC2MQ06MiraakBossBattle.psc:152:121:line-length
+Source/Scripts/DLC2MQ06MiraakBossBattle.psc:164:1:state-missing-empty-fallback
 Source/Scripts/DLC2MQ06MiraakBossBattle.psc:164:1:undefined-event
 Source/Scripts/DLC2MQ06MiraakBossBattle.psc:167:121:line-length
 Source/Scripts/DLC2MQ06MiraakBossBattle.psc:195:1:argument-naming
@@ -17695,6 +17760,7 @@ Source/Scripts/DLC2ReferenceAliasArrayScript.psc:126:1:variable-used-before-assi
 Source/Scripts/DLC2ReferenceAliasArrayScript.psc:139:6:strict-boolean
 Source/Scripts/DLC2ReferenceAliasArrayScript.psc:154:5:empty-body
 Source/Scripts/DLC2RieklingAmbushFX.psc:58:24:forbidden-functions
+Source/Scripts/DLC2RieklingAmbushFX.psc:74:1:state-missing-empty-fallback
 Source/Scripts/DLC2RieklingAmbushFX.psc:74:1:undefined-event
 Source/Scripts/DLC2RieklingAmbushFX.psc:77:6:forbidden-functions
 Source/Scripts/DLC2RieklingAmbushFX.psc:78:4:forbidden-functions
@@ -17708,6 +17774,7 @@ Source/Scripts/DLC2RieklingAmbushFX.psc:101:1:none-form-usage
 Source/Scripts/DLC2RieklingAmbushFX.psc:102:1:none-form-usage
 Source/Scripts/DLC2RieklingAmbushFX.psc:103:1:none-form-usage
 Source/Scripts/DLC2RieklingBarrelAmbushScript.psc:78:121:line-length
+Source/Scripts/DLC2RieklingBarrelAmbushScript.psc:103:1:state-missing-empty-fallback
 Source/Scripts/DLC2RieklingBarrelAmbushScript.psc:103:1:undefined-event
 Source/Scripts/DLC2RieklingBarrelAmbushScript.psc:106:1:place-at-me
 Source/Scripts/DLC2RieklingBarrelAmbushScript.psc:123:6:forbidden-functions
@@ -17722,6 +17789,7 @@ Source/Scripts/DLC2RieklingBarrelScript.psc:38:1:place-at-me
 Source/Scripts/DLC2RieklingBarrelScript.psc:41:11:forbidden-functions
 Source/Scripts/DLC2RieklingBarrelScript.psc:42:8:forbidden-functions
 Source/Scripts/DLC2RieklingRescuePlayerScript.psc:8:121:line-length
+Source/Scripts/DLC2RieklingRescuePlayerScript.psc:12:1:state-missing-empty-fallback
 Source/Scripts/DLC2RieklingRescuePlayerScript.psc:12:1:undefined-event
 Source/Scripts/DLC2RieklingRescuePlayerScript.psc:13:121:line-length
 Source/Scripts/DLC2RieklingRescuePlayerScript.psc:16:1:unchecked-cast
@@ -17745,6 +17813,7 @@ Source/Scripts/DLC2SV01ClawPickupScript.psc:15:35:forbidden-functions
 Source/Scripts/DLC2SV01HalfClawKeyholeSCRIPT.psc:20:12:forbidden-functions
 Source/Scripts/DLC2SV01HalfClawKeyholeSCRIPT.psc:22:1:none-form-usage
 Source/Scripts/DLC2SV01HalfClawKeyholeSCRIPT.psc:25:1:none-form-usage
+Source/Scripts/DLC2SV01HalfClawKeyholeSCRIPT.psc:38:1:state-missing-empty-fallback
 Source/Scripts/DLC2SV01HalfClawKeyholeSCRIPT.psc:38:1:undefined-event
 Source/Scripts/DLC2SV01HalfClawKeyholeSCRIPT.psc:39:1:unchecked-cast
 Source/Scripts/DLC2SV01HalfClawKeyholeSCRIPT.psc:39:7:forbidden-functions
@@ -18204,8 +18273,10 @@ Source/Scripts/DLC2ToldarsTombPuzzlePlateSCRIPT.psc:34:1:unchecked-cast
 Source/Scripts/DLC2ToldarsTombPuzzlePlateSCRIPT.psc:34:4:forbidden-functions
 Source/Scripts/DLC2ToldarsTombPuzzlePlateSCRIPT.psc:38:3:empty-body
 Source/Scripts/DLC2ToldarsTombPuzzlePlateSCRIPT.psc:42:1:none-form-usage
+Source/Scripts/DLC2ToldarsTombPuzzlePlateSCRIPT.psc:49:1:state-missing-empty-fallback
 Source/Scripts/DLC2ToldarsTombPuzzlePlateSCRIPT.psc:49:1:undefined-event
 Source/Scripts/DLC2ToldarsTombPuzzlePlateSCRIPT.psc:50:3:empty-body
+Source/Scripts/DLC2ToldarsTombPuzzlePlateSCRIPT.psc:57:1:state-missing-empty-fallback
 Source/Scripts/DLC2ToldarsTombPuzzlePlateSCRIPT.psc:57:1:undefined-event
 Source/Scripts/DLC2ToldarsTombPuzzlePlateSCRIPT.psc:58:3:empty-body
 Source/Scripts/DLC2ToldarsTombPuzzlePlateSCRIPT.psc:66:2:empty-body
@@ -18219,6 +18290,7 @@ Source/Scripts/DLC2TrapApoTentacle.psc:61:1:short-wait-interval
 Source/Scripts/DLC2TrapApoTentacle.psc:95:4:strict-boolean
 Source/Scripts/DLC2TrapApoTentacle.psc:139:4:strict-boolean
 Source/Scripts/DLC2TrapApoTentacle.psc:160:4:empty-body
+Source/Scripts/DLC2TrapApoTentacle.psc:171:1:state-missing-empty-fallback
 Source/Scripts/DLC2TrapApoTentacle.psc:176:21:unresolved-script
 Source/Scripts/DLC2TrapApoTentacle.psc:197:4:strict-boolean
 Source/Scripts/DLC2TrapApoTentacle.psc:235:4:strict-boolean
@@ -18237,6 +18309,7 @@ Source/Scripts/DLC2TrapApoTentacle.psc:358:1:none-form-usage
 Source/Scripts/DLC2TribalWerebearScript.psc:17:1:none-form-usage
 Source/Scripts/DLC2TribalWerebearScript.psc:20:20:forbidden-functions
 Source/Scripts/DLC2TribalWerebearScript.psc:24:121:line-length
+Source/Scripts/DLC2TribalWerebearScript.psc:30:1:state-missing-empty-fallback
 Source/Scripts/DLC2TribalWerebearScript.psc:30:1:undefined-event
 Source/Scripts/DLC2TribalWerebearScript.psc:49:11:forbidden-functions
 Source/Scripts/DLC2VoiceBattleFuryScript.psc:7:1:none-form-usage
@@ -20389,6 +20462,7 @@ Source/Scripts/DLC2dunBook3SeekerScript.psc:29:1:unchecked-cast
 Source/Scripts/DLC2dunBookLevel4Bend.psc:23:45:forbidden-functions
 Source/Scripts/DLC2dunBookLevel4Bend.psc:24:1:unchecked-cast
 Source/Scripts/DLC2dunBookLevel4Bend.psc:31:23:forbidden-functions
+Source/Scripts/DLC2dunBookLevel4BendControl.psc:33:1:state-missing-empty-fallback
 Source/Scripts/DLC2dunBookLevel4BendControl.psc:33:1:undefined-event
 Source/Scripts/DLC2dunEnableDisableLinkRefOnActTimer.psc:21:27:forbidden-functions
 Source/Scripts/DLC2dunEnableDisableLinkRefOnActTimer.psc:22:3:strict-boolean
@@ -20405,6 +20479,7 @@ Source/Scripts/DLC2dunFahlbtharzResonatorScript.psc:42:121:line-length
 Source/Scripts/DLC2dunFahlbtharzResonatorScript.psc:44:1:none-form-usage
 Source/Scripts/DLC2dunFahlbtharzResonatorScript.psc:50:1:none-form-usage
 Source/Scripts/DLC2dunFahlbtharzResonatorScript.psc:51:1:none-form-usage
+Source/Scripts/DLC2dunFahlbtharzResonatorScript.psc:67:1:state-missing-empty-fallback
 Source/Scripts/DLC2dunFahlbtharzResonatorScript.psc:67:1:undefined-event
 Source/Scripts/DLC2dunFahlbtharzResonatorScript.psc:77:10:forbidden-functions
 Source/Scripts/DLC2dunFahlbtharzResonatorScript.psc:78:2:strict-boolean
@@ -20540,15 +20615,18 @@ Source/Scripts/DLC2dunGyldenhulFurnitureScript.psc:33:8:forbidden-functions
 Source/Scripts/DLC2dunGyldenhulFurnitureScript.psc:35:8:forbidden-functions
 Source/Scripts/DLC2dunGyldenhulFurnitureScript.psc:37:8:forbidden-functions
 Source/Scripts/DLC2dunGyldenhulFurnitureScript.psc:40:121:line-length
+Source/Scripts/DLC2dunGyldenhulFurnitureScript.psc:47:1:state-missing-empty-fallback
 Source/Scripts/DLC2dunGyldenhulFurnitureScript.psc:47:1:undefined-event
 Source/Scripts/DLC2dunGyldenhulFurnitureScript.psc:55:27:forbidden-functions
 Source/Scripts/DLC2dunGyldenhulFurnitureScript.psc:58:31:forbidden-functions
+Source/Scripts/DLC2dunGyldenhulFurnitureScript.psc:69:1:state-missing-empty-fallback
 Source/Scripts/DLC2dunGyldenhulFurnitureScript.psc:69:1:undefined-event
 Source/Scripts/DLC2dunGyldenhulFurnitureScript.psc:80:32:forbidden-functions
 Source/Scripts/DLC2dunGyldenhulFurnitureScript.psc:84:31:forbidden-functions
 Source/Scripts/DLC2dunGyldenhulFurnitureScript.psc:85:19:forbidden-functions
 Source/Scripts/DLC2dunGyldenhulFurnitureScript.psc:86:4:empty-body
 Source/Scripts/DLC2dunGyldenhulFurnitureScript.psc:88:53:forbidden-functions
+Source/Scripts/DLC2dunGyldenhulFurnitureScript.psc:97:1:state-missing-empty-fallback
 Source/Scripts/DLC2dunGyldenhulFurnitureScript.psc:97:1:undefined-event
 Source/Scripts/DLC2dunGyldenhulFurnitureScript.psc:100:9:forbidden-functions
 Source/Scripts/DLC2dunGyldenhulFurnitureScript.psc:110:34:forbidden-functions
@@ -21289,6 +21367,7 @@ Source/Scripts/DLC2dunSeekerInvisScript.psc:50:121:line-length
 Source/Scripts/DLC2dunSeekerInvisScript.psc:56:25:forbidden-functions
 Source/Scripts/DLC2dunSeekerInvisScript.psc:61:1:none-form-usage
 Source/Scripts/DLC2dunSeekerInvisScript.psc:69:1:short-wait-interval
+Source/Scripts/DLC2dunSeekerInvisScript.psc:79:1:state-missing-empty-fallback
 Source/Scripts/DLC2dunSeekerInvisScript.psc:79:1:undefined-event
 Source/Scripts/DLC2dunStandingStoneTreeFX.psc:9:1:none-form-usage
 Source/Scripts/DLC2dunStandingStoneTreeFX.psc:12:1:none-form-usage
@@ -21332,6 +21411,7 @@ Source/Scripts/DLCMoteAreaSCRIPT.psc:17:1:none-form-usage
 Source/Scripts/DLCMoteAreaSCRIPT.psc:17:35:forbidden-functions
 Source/Scripts/DLCWeatherSwapZoneSCRIPT.psc:16:27:forbidden-functions
 Source/Scripts/DLCWeatherSwapZoneSCRIPT.psc:17:1:none-form-usage
+Source/Scripts/DLc2VahlokstombTrapPlateSCRIPT.psc:6:1:state-missing-empty-fallback
 Source/Scripts/DLc2VahlokstombTrapPlateSCRIPT.psc:15:20:unresolved-script
 Source/Scripts/DLc2VahlokstombTrapPlateSCRIPT.psc:26:3:strict-boolean
 Source/Scripts/DRGGuardSwapScript.psc:11:1:none-form-usage
@@ -21392,6 +21472,7 @@ Source/Scripts/DartTrap.psc:37:121:line-length
 Source/Scripts/DartTrap.psc:44:18:unresolved-script
 Source/Scripts/DartTrap.psc:55:1:short-wait-interval
 Source/Scripts/DartTrap.psc:66:121:line-length
+Source/Scripts/DartTrap.psc:87:1:state-missing-empty-fallback
 Source/Scripts/DartTrap.psc:163:121:line-length
 Source/Scripts/DawnstarArnbjornTriggerScript.psc:3:1:argument-naming
 Source/Scripts/DawnstarArnbjornTriggerScript.psc:5:9:forbidden-functions
@@ -22080,6 +22161,7 @@ Source/Scripts/FFWCLetterScript.psc:11:1:none-form-usage
 Source/Scripts/FVDQuillScript.psc:7:28:forbidden-functions
 Source/Scripts/FVDQuillScript.psc:8:1:none-form-usage
 Source/Scripts/FVDQuillScript.psc:9:1:none-form-usage
+Source/Scripts/FXAlduinScript.psc:65:1:state-missing-empty-fallback
 Source/Scripts/FXAlduinScript.psc:65:1:undefined-event
 Source/Scripts/FXAlduinScript.psc:67:1:none-form-usage
 Source/Scripts/FXAlduinScript.psc:68:1:none-form-usage
@@ -22104,6 +22186,7 @@ Source/Scripts/FXAlduinScript.psc:83:11:forbidden-functions
 Source/Scripts/FXAlduinScript.psc:84:1:none-form-usage
 Source/Scripts/FXAlduinScript.psc:85:11:forbidden-functions
 Source/Scripts/FXAlduinScript.psc:88:11:forbidden-functions
+Source/Scripts/FXAlduinScript.psc:96:1:state-missing-empty-fallback
 Source/Scripts/FXAlduinScript.psc:96:1:undefined-event
 Source/Scripts/FXAlduinScript.psc:98:1:none-form-usage
 Source/Scripts/FXAlduinScript.psc:99:1:place-at-me
@@ -22137,6 +22220,7 @@ Source/Scripts/FXAlduinScript.psc:129:11:forbidden-functions
 Source/Scripts/FXAlduinScript.psc:131:1:none-form-usage
 Source/Scripts/FXAlduinScript.psc:132:1:none-form-usage
 Source/Scripts/FXAlduinScript.psc:133:11:forbidden-functions
+Source/Scripts/FXAlduinScript.psc:140:1:state-missing-empty-fallback
 Source/Scripts/FXAlduinScript.psc:140:1:undefined-event
 Source/Scripts/FXAlduinScript.psc:142:1:none-form-usage
 Source/Scripts/FXAlduinScript.psc:147:1:nesting-depth
@@ -22166,6 +22250,7 @@ Source/Scripts/FXBirdFleeSCRIPT.psc:19:1:none-form-usage
 Source/Scripts/FXBirdFleeSCRIPT.psc:28:47:forbidden-functions
 Source/Scripts/FXBirdFleeSCRIPT.psc:31:1:none-form-usage
 Source/Scripts/FXBirdFleeonActivateSCRIPT.psc:21:1:none-form-usage
+Source/Scripts/FXBirdFleeonActivateSCRIPT.psc:28:1:state-missing-empty-fallback
 Source/Scripts/FXBirdFleeonActivateSCRIPT.psc:28:1:undefined-event
 Source/Scripts/FXBirdFleeonActivateSCRIPT.psc:39:1:none-form-usage
 Source/Scripts/FXCameraAttachScript.psc:2:121:line-length
@@ -22199,7 +22284,9 @@ Source/Scripts/FXChaurusScript.psc:11:1:argument-naming
 Source/Scripts/FXChaurusScript.psc:11:1:argument-naming
 Source/Scripts/FXChaurusScript.psc:13:3:empty-body
 Source/Scripts/FXChaurusScript.psc:29:1:argument-naming
+Source/Scripts/FXCobwebWallSCRIPT.psc:22:1:state-missing-empty-fallback
 Source/Scripts/FXCobwebWallSCRIPT.psc:22:1:undefined-event
+Source/Scripts/FXCobwebWallSCRIPT.psc:41:1:state-missing-empty-fallback
 Source/Scripts/FXCobwebWallSCRIPT.psc:41:1:undefined-event
 Source/Scripts/FXDragonBloodDamageScript.psc:2:121:line-length
 Source/Scripts/FXDragonBloodDamageScript.psc:57:1:argument-naming
@@ -22354,11 +22441,13 @@ Source/Scripts/FXReadElderScrollSCRIPT.psc:78:1:none-form-usage
 Source/Scripts/FXReadElderScrollSCRIPT.psc:79:12:forbidden-functions
 Source/Scripts/FXReadElderScrollSCRIPT.psc:80:1:none-form-usage
 Source/Scripts/FXReadElderScrollSCRIPT.psc:80:42:forbidden-functions
+Source/Scripts/FXReadElderScrollSCRIPT.psc:87:1:state-missing-empty-fallback
 Source/Scripts/FXReadElderScrollSCRIPT.psc:87:1:undefined-event
 Source/Scripts/FXReadElderScrollSCRIPT.psc:92:12:forbidden-functions
 Source/Scripts/FXReadElderScrollSCRIPT.psc:96:12:forbidden-functions
 Source/Scripts/FXReadElderScrollSCRIPT.psc:100:12:forbidden-functions
 Source/Scripts/FXReadElderScrollSCRIPT.psc:104:12:forbidden-functions
+Source/Scripts/FXReadElderScrollSCRIPT.psc:113:1:state-missing-empty-fallback
 Source/Scripts/FXReadElderScrollSCRIPT.psc:113:1:undefined-event
 Source/Scripts/FXReadElderScrollSCRIPT.psc:117:11:forbidden-functions
 Source/Scripts/FXReadElderScrollSCRIPT.psc:118:1:none-form-usage
@@ -22418,6 +22507,7 @@ Source/Scripts/FXSkuldafnPortal.psc:107:1:none-form-usage
 Source/Scripts/FXSkuldafnPortal.psc:109:1:none-form-usage
 Source/Scripts/FXSkuldafnPortal.psc:111:1:none-form-usage
 Source/Scripts/FXSkuldafnPortal.psc:112:10:forbidden-functions
+Source/Scripts/FXSnowBlowingFogAttachScript.psc:32:1:state-missing-empty-fallback
 Source/Scripts/FXSnowBlowingFogAttachScript.psc:32:1:undefined-event
 Source/Scripts/FXSnowBlowingFogAttachScript.psc:33:1:none-form-usage
 Source/Scripts/FXSnowBlowingFogAttachScript.psc:34:1:none-form-usage
@@ -22448,10 +22538,12 @@ Source/Scripts/FXbatScaredSCRIPT.psc:27:1:none-form-usage
 Source/Scripts/FXdustDropOnActivateSCRIPT.psc:23:1:none-form-usage
 Source/Scripts/FXdustDropOnActivateSCRIPT.psc:28:1:none-form-usage
 Source/Scripts/FXdustDropOnActivateSCRIPT.psc:31:1:none-form-usage
+Source/Scripts/FXdustDropTrigSCRIPT.psc:52:1:state-missing-empty-fallback
 Source/Scripts/FXdustDropTrigSCRIPT.psc:52:1:undefined-event
 Source/Scripts/FXdustDropTrigSCRIPT.psc:57:1:none-form-usage
 Source/Scripts/FXdustDropTrigSCRIPT.psc:64:1:none-form-usage
 Source/Scripts/FXdustDropTrigSCRIPT.psc:67:1:none-form-usage
+Source/Scripts/FXdustDropTrigSCRIPT.psc:76:1:state-missing-empty-fallback
 Source/Scripts/FXdustDropTrigSCRIPT.psc:76:1:undefined-event
 Source/Scripts/FXfakeCritterScript.psc:27:2:strict-boolean
 Source/Scripts/FXfakeCritterScript.psc:28:8:forbidden-functions
@@ -22470,7 +22562,9 @@ Source/Scripts/FXfakeCritterScript.psc:66:13:forbidden-functions
 Source/Scripts/FXfakeCritterScript.psc:78:3:strict-boolean
 Source/Scripts/FXfakeCritterScript.psc:81:3:strict-boolean
 Source/Scripts/FXfakeCritterScript.psc:84:3:strict-boolean
+Source/Scripts/FXmothScaredSCRIPT.psc:29:1:state-missing-empty-fallback
 Source/Scripts/FXmothScaredSCRIPT.psc:29:1:undefined-event
+Source/Scripts/FXmothScaredSCRIPT.psc:38:1:state-missing-empty-fallback
 Source/Scripts/FXmothScaredSCRIPT.psc:38:1:undefined-event
 Source/Scripts/FXtriggerAmbFX.psc:16:4:strict-boolean
 Source/Scripts/FXtriggerAmbFX.psc:19:4:strict-boolean
@@ -22737,6 +22831,7 @@ Source/Scripts/FerrySystemScript.psc:200:1:none-form-usage
 Source/Scripts/FerrySystemScript.psc:202:1:none-form-usage
 Source/Scripts/FerrySystemScript.psc:203:1:none-form-usage
 Source/Scripts/FerrySystemScript.psc:217:1:unchecked-cast
+Source/Scripts/FestivalEndScript.psc:12:1:state-missing-empty-fallback
 Source/Scripts/FestivalEndScript.psc:12:1:undefined-event
 Source/Scripts/FestivalEndScript.psc:32:1:none-form-usage
 Source/Scripts/FinnsLuteScript.psc:4:28:forbidden-functions
@@ -22883,7 +22978,9 @@ Source/Scripts/GhostInvulnerability.psc:3:1:argument-naming
 Source/Scripts/GhostInvulnerability.psc:7:1:argument-naming
 Source/Scripts/GhostInvulnerability.psc:7:1:argument-naming
 Source/Scripts/GhostTrap.psc:24:19:unresolved-script
+Source/Scripts/GhostTrap.psc:35:1:state-missing-empty-fallback
 Source/Scripts/GhostTrap.psc:36:1:none-form-usage
+Source/Scripts/GhostTrap.psc:60:1:state-missing-empty-fallback
 Source/Scripts/GhostTrap.psc:66:1:none-form-usage
 Source/Scripts/GhostTrap.psc:88:1:local-variable-shadowing
 Source/Scripts/GhostTrap.psc:121:1:local-variable-shadowing
@@ -23449,7 +23546,9 @@ Source/Scripts/MG06ArmillaryScript.psc:181:1:unchecked-cast
 Source/Scripts/MG06ArmillaryScript.psc:186:1:unchecked-cast
 Source/Scripts/MG06ArmillaryScript.psc:206:1:unchecked-cast
 Source/Scripts/MG06ButtonScript.psc:27:1:undefined-event
+Source/Scripts/MG06ButtonScript.psc:33:1:state-missing-empty-fallback
 Source/Scripts/MG06ButtonScript.psc:33:1:undefined-event
+Source/Scripts/MG06ButtonScript.psc:47:1:state-missing-empty-fallback
 Source/Scripts/MG06ButtonScript.psc:47:1:undefined-event
 Source/Scripts/MG06ButtonScript.psc:55:27:forbidden-functions
 Source/Scripts/MG06CrystalScript.psc:6:1:argument-naming
@@ -25019,18 +25118,22 @@ Source/Scripts/MS06StageSetter.psc:90:1:argument-naming
 Source/Scripts/MS06StageSetter.psc:97:1:none-form-usage
 Source/Scripts/MS06StageSetter.psc:99:1:none-form-usage
 Source/Scripts/MS06rotatingDoorSCRIPT.psc:30:12:forbidden-functions
+Source/Scripts/MS06rotatingDoorSCRIPT.psc:49:1:state-missing-empty-fallback
 Source/Scripts/MS06rotatingDoorSCRIPT.psc:49:1:undefined-event
 Source/Scripts/MS06rotatingDoorSCRIPT.psc:50:11:forbidden-functions
 Source/Scripts/MS06rotatingDoorSCRIPT.psc:51:1:none-form-usage
 Source/Scripts/MS06rotatingDoorSCRIPT.psc:52:1:none-form-usage
 Source/Scripts/MS06rotatingDoorSCRIPT.psc:60:11:forbidden-functions
+Source/Scripts/MS06rotatingDoorSCRIPT.psc:65:1:state-missing-empty-fallback
 Source/Scripts/MS06rotatingDoorSCRIPT.psc:65:1:undefined-event
 Source/Scripts/MS06rotatingDoorSCRIPT.psc:67:1:none-form-usage
+Source/Scripts/MS06rotatingDoorSCRIPT.psc:74:1:state-missing-empty-fallback
 Source/Scripts/MS06rotatingDoorSCRIPT.psc:74:1:undefined-event
 Source/Scripts/MS06rotatingDoorSCRIPT.psc:75:11:forbidden-functions
 Source/Scripts/MS06rotatingDoorSCRIPT.psc:76:1:none-form-usage
 Source/Scripts/MS06rotatingDoorSCRIPT.psc:77:1:none-form-usage
 Source/Scripts/MS06rotatingDoorSCRIPT.psc:84:11:forbidden-functions
+Source/Scripts/MS06rotatingDoorSCRIPT.psc:88:1:state-missing-empty-fallback
 Source/Scripts/MS06rotatingDoorSCRIPT.psc:88:1:undefined-event
 Source/Scripts/MS06rotatingDoorSCRIPT.psc:89:1:none-form-usage
 Source/Scripts/MS06switchTosserSCRIPT.psc:26:1:none-form-usage
@@ -25440,6 +25543,7 @@ Source/Scripts/MagicAnomalySpawnerSCRIPT.psc:42:121:line-length
 Source/Scripts/MagicAnomalySpawnerSCRIPT.psc:54:121:line-length
 Source/Scripts/MagicAnomalySpawnerSCRIPT.psc:57:1:short-wait-interval
 Source/Scripts/MagicAnomalySpawnerSCRIPT.psc:57:13:forbidden-functions
+Source/Scripts/MagicAnomalySpawnerSCRIPT.psc:71:1:state-missing-empty-fallback
 Source/Scripts/MagicAnomalySpawnerSCRIPT.psc:71:1:undefined-event
 Source/Scripts/MagicAnomalySpawnerSCRIPT.psc:75:1:place-at-me
 Source/Scripts/MagicAnomalySpawnerSCRIPT.psc:76:12:forbidden-functions
@@ -25495,7 +25599,10 @@ Source/Scripts/MagicTrap.psc:64:1:none-form-usage
 Source/Scripts/MagicTrap.psc:64:31:forbidden-functions
 Source/Scripts/MagicTrap.psc:69:1:none-form-usage
 Source/Scripts/MagicTrap.psc:89:13:forbidden-functions
+Source/Scripts/MagicTrap.psc:120:1:state-missing-empty-fallback
 Source/Scripts/MagicTrap.psc:121:11:forbidden-functions
+Source/Scripts/MagicTrap.psc:135:1:state-missing-empty-fallback
+Source/Scripts/MagicTrap.psc:145:1:state-missing-empty-fallback
 Source/Scripts/MagicTrap.psc:155:1:multiple-auto-states
 Source/Scripts/MagicTrap.psc:255:1:none-form-usage
 Source/Scripts/MagicTrap.psc:258:1:none-form-usage
@@ -25569,17 +25676,21 @@ Source/Scripts/MiddenEnchantedSkull.psc:13:1:numeric-comparison
 Source/Scripts/MiddenEnchantedSkull.psc:17:1:none-form-usage
 Source/Scripts/MineOreFurnitureScript.psc:61:1:none-form-usage
 Source/Scripts/MineOreFurnitureScript.psc:65:121:line-length
+Source/Scripts/MineOreFurnitureScript.psc:75:1:state-missing-empty-fallback
 Source/Scripts/MineOreFurnitureScript.psc:75:1:undefined-event
 Source/Scripts/MineOreFurnitureScript.psc:85:27:forbidden-functions
 Source/Scripts/MineOreFurnitureScript.psc:90:31:forbidden-functions
+Source/Scripts/MineOreFurnitureScript.psc:107:1:state-missing-empty-fallback
 Source/Scripts/MineOreFurnitureScript.psc:107:1:undefined-event
 Source/Scripts/MineOreFurnitureScript.psc:122:32:forbidden-functions
 Source/Scripts/MineOreFurnitureScript.psc:129:31:forbidden-functions
 Source/Scripts/MineOreFurnitureScript.psc:130:19:forbidden-functions
 Source/Scripts/MineOreFurnitureScript.psc:131:4:empty-body
 Source/Scripts/MineOreFurnitureScript.psc:134:53:forbidden-functions
+Source/Scripts/MineOreFurnitureScript.psc:144:1:state-missing-empty-fallback
 Source/Scripts/MineOreFurnitureScript.psc:144:1:undefined-event
 Source/Scripts/MineOreFurnitureScript.psc:148:9:forbidden-functions
+Source/Scripts/MineOreFurnitureScript.psc:163:1:state-missing-empty-fallback
 Source/Scripts/MineOreFurnitureScript.psc:163:1:undefined-event
 Source/Scripts/MineOreFurnitureScript.psc:185:34:forbidden-functions
 Source/Scripts/MineOreFurnitureScript.psc:186:34:forbidden-functions
@@ -25741,6 +25852,7 @@ Source/Scripts/NorLever01SCRIPT.psc:16:121:line-length
 Source/Scripts/NorPortcullisSCRIPT.psc:57:121:line-length
 Source/Scripts/NorRetractableBridgeSCRIPT.psc:23:1:undefined-event
 Source/Scripts/NorRotatingDoorLeverScript.psc:28:1:undefined-event
+Source/Scripts/NorRotatingDoorLeverScript.psc:55:1:state-missing-empty-fallback
 Source/Scripts/NorRotatingDoorLeverScript.psc:55:1:undefined-event
 Source/Scripts/NorRotatingDoorLeverScript.psc:56:1:none-form-usage
 Source/Scripts/NorRotatingDoorLeverScript.psc:57:1:none-form-usage
@@ -25752,12 +25864,14 @@ Source/Scripts/NorRotatingDoorLeverScript.psc:62:1:none-form-usage
 Source/Scripts/NorRotatingDoorLeverScript.psc:63:1:none-form-usage
 Source/Scripts/NorRotatingDoorLeverScript.psc:64:1:none-form-usage
 Source/Scripts/NorRotatingDoorLeverScript.psc:65:1:none-form-usage
+Source/Scripts/NorRotatingDoorLeverScript.psc:75:1:state-missing-empty-fallback
 Source/Scripts/NorRotatingDoorLeverScript.psc:75:1:undefined-event
 Source/Scripts/NorRotatingDoorLeverScript.psc:76:1:none-form-usage
 Source/Scripts/NorRotatingDoorLeverScript.psc:78:1:none-form-usage
 Source/Scripts/NorRotatingDoorLeverScript.psc:80:1:none-form-usage
 Source/Scripts/NorRotatingDoorLeverScript.psc:82:1:none-form-usage
 Source/Scripts/NorRotatingDoorLeverScript.psc:84:1:none-form-usage
+Source/Scripts/NorRotatingDoorLeverScript.psc:91:1:state-missing-empty-fallback
 Source/Scripts/NorRotatingDoorLeverScript.psc:91:1:undefined-event
 Source/Scripts/NorRotatingDoorLeverScript.psc:92:1:none-form-usage
 Source/Scripts/NorRotatingDoorLeverScript.psc:93:1:none-form-usage
@@ -25769,6 +25883,7 @@ Source/Scripts/NorRotatingDoorLeverScript.psc:98:1:none-form-usage
 Source/Scripts/NorRotatingDoorLeverScript.psc:99:1:none-form-usage
 Source/Scripts/NorRotatingDoorLeverScript.psc:100:1:none-form-usage
 Source/Scripts/NorRotatingDoorLeverScript.psc:101:1:none-form-usage
+Source/Scripts/NorRotatingDoorLeverScript.psc:111:1:state-missing-empty-fallback
 Source/Scripts/NorRotatingDoorLeverScript.psc:111:1:undefined-event
 Source/Scripts/NorRotatingDoorLeverScript.psc:112:1:none-form-usage
 Source/Scripts/NorRotatingDoorLeverScript.psc:114:1:none-form-usage
@@ -26461,6 +26576,7 @@ Source/Scripts/PlayerBookShelfContainerScript.psc:563:2:strict-boolean
 Source/Scripts/PlayerBookShelfContainerScript.psc:575:2:strict-boolean
 Source/Scripts/PlayerBookShelfContainerScript.psc:579:2:strict-boolean
 Source/Scripts/PlayerBookShelfTriggerSCRIPT.psc:13:20:forbidden-functions
+Source/Scripts/PlayerBookShelfTriggerSCRIPT.psc:21:1:state-missing-empty-fallback
 Source/Scripts/PlayerBookShelfTriggerSCRIPT.psc:21:1:undefined-event
 Source/Scripts/PlayerBookShelfTriggerSCRIPT.psc:34:4:empty-body
 Source/Scripts/PlayerBookShelfTriggerSCRIPT.psc:39:1:none-form-usage
@@ -26470,6 +26586,7 @@ Source/Scripts/PlayerBookShelfTriggerSCRIPT.psc:41:1:unchecked-cast
 Source/Scripts/PlayerBookShelfTriggerSCRIPT.psc:41:121:line-length
 Source/Scripts/PlayerBookShelfTriggerSCRIPT.psc:42:1:unchecked-cast
 Source/Scripts/PlayerBookShelfTriggerSCRIPT.psc:43:5:empty-body
+Source/Scripts/PlayerBookShelfTriggerSCRIPT.psc:56:1:state-missing-empty-fallback
 Source/Scripts/PlayerBookShelfTriggerSCRIPT.psc:56:1:undefined-event
 Source/Scripts/PlayerHorseScript.psc:8:1:none-form-usage
 Source/Scripts/PlayerHorseScript.psc:10:1:none-form-usage
@@ -26602,12 +26719,14 @@ Source/Scripts/PlayerPotionRackContainerScript.psc:576:2:strict-boolean
 Source/Scripts/PlayerPotionRackContainerScript.psc:577:1:none-form-usage
 Source/Scripts/PlayerPotionRackContainerScript.psc:701:2:strict-boolean
 Source/Scripts/PlayerPotionRackTriggerScript.psc:13:20:forbidden-functions
+Source/Scripts/PlayerPotionRackTriggerScript.psc:21:1:state-missing-empty-fallback
 Source/Scripts/PlayerPotionRackTriggerScript.psc:21:1:undefined-event
 Source/Scripts/PlayerPotionRackTriggerScript.psc:32:1:none-form-usage
 Source/Scripts/PlayerPotionRackTriggerScript.psc:33:1:unchecked-cast
 Source/Scripts/PlayerPotionRackTriggerScript.psc:33:1:unchecked-cast
 Source/Scripts/PlayerPotionRackTriggerScript.psc:33:121:line-length
 Source/Scripts/PlayerPotionRackTriggerScript.psc:34:1:unchecked-cast
+Source/Scripts/PlayerPotionRackTriggerScript.psc:42:1:state-missing-empty-fallback
 Source/Scripts/PlayerPotionRackTriggerScript.psc:42:1:undefined-event
 Source/Scripts/PlayerRiderScript.psc:5:25:forbidden-functions
 Source/Scripts/PlayerRiderScript.psc:9:1:unchecked-cast
@@ -26894,11 +27013,13 @@ Source/Scripts/PortalGemSocket01SCRIPT.psc:214:5:forbidden-functions
 Source/Scripts/PortalGemSocket01SCRIPT.psc:216:10:forbidden-functions
 Source/Scripts/PortalGemSocket01SCRIPT.psc:229:3:empty-body
 Source/Scripts/PortalGemSocket01SCRIPT.psc:229:26:forbidden-functions
+Source/Scripts/PressurePlate.psc:11:1:state-missing-empty-fallback
 Source/Scripts/PressurePlate.psc:20:12:forbidden-functions
 Source/Scripts/PressurePlate.psc:22:12:forbidden-functions
 Source/Scripts/PressurePlate.psc:28:20:unresolved-script
 Source/Scripts/PressureReleasePlate.psc:44:1:missing-parent-call-in-override
 Source/Scripts/PressureReleasePlate.psc:68:3:empty-body
+Source/Scripts/PressureReleasePlate.psc:104:1:state-missing-empty-fallback
 Source/Scripts/QF_AchievementsHardWorkerFood_000FDE7D.psc:17:1:none-form-usage
 Source/Scripts/QF_ArenaCombatQuest00DBSpecia_00097594.psc:27:1:none-form-usage
 Source/Scripts/QF_ArenaCombatQuest00DBSpecia_00097594.psc:29:1:none-form-usage
@@ -42471,6 +42592,7 @@ Source/Scripts/SarcophagusSkullLock01SCRIPT.psc:78:1:none-form-usage
 Source/Scripts/SarcophagusSkullLock01SCRIPT.psc:81:1:none-form-usage
 Source/Scripts/SarcophagusSkullLock01SCRIPT.psc:82:1:none-form-usage
 Source/Scripts/SarcophagusSkullLock01SCRIPT.psc:85:1:none-form-usage
+Source/Scripts/SarcophagusSkullLock01SCRIPT.psc:94:1:state-missing-empty-fallback
 Source/Scripts/SarcophagusSkullLock01SCRIPT.psc:94:1:undefined-event
 Source/Scripts/SarcophagusSkullLock01SCRIPT.psc:96:1:none-form-usage
 Source/Scripts/SarcophagusSkullLock01SCRIPT.psc:105:12:forbidden-functions
@@ -42559,6 +42681,7 @@ Source/Scripts/SolitudeOpeningSetStageScript.psc:65:23:forbidden-functions
 Source/Scripts/SolitudeOpeningSetStageScript.psc:69:23:forbidden-functions
 Source/Scripts/SolitudeOpeningSetStageScript.psc:79:121:line-length
 Source/Scripts/SolitudeOpeningSetStageScript.psc:90:1:argument-naming
+Source/Scripts/SoundTrap.psc:13:1:state-missing-empty-fallback
 Source/Scripts/SoundTrap.psc:19:3:strict-boolean
 Source/Scripts/SoundTrap.psc:24:21:unresolved-script
 Source/Scripts/SoundTrap.psc:26:3:strict-boolean
@@ -42623,6 +42746,7 @@ Source/Scripts/SprigganSwarmActorSCRIPT.psc:25:1:argument-naming
 Source/Scripts/SprigganSwarmActorSCRIPT.psc:43:1:none-form-usage
 Source/Scripts/SprigganSwarmActorSCRIPT.psc:48:1:argument-naming
 Source/Scripts/SprigganSwarmActorSCRIPT.psc:50:1:none-form-usage
+Source/Scripts/SpringTrap.psc:11:1:state-missing-empty-fallback
 Source/Scripts/SpringTrap.psc:14:1:none-form-usage
 Source/Scripts/SpringTrap.psc:16:52:unresolved-script
 Source/Scripts/SpringTrap.psc:17:3:strict-boolean
@@ -43675,6 +43799,7 @@ Source/Scripts/TG08ASceneSequenceTriggerScript.psc:12:1:unchecked-cast
 Source/Scripts/TG08BCenturionAmbush.psc:2:121:line-length
 Source/Scripts/TG08BCenturionAmbush.psc:55:24:forbidden-functions
 Source/Scripts/TG08BCenturionAmbush.psc:66:121:line-length
+Source/Scripts/TG08BCenturionAmbush.psc:88:1:state-missing-empty-fallback
 Source/Scripts/TG08BCenturionAmbush.psc:88:1:undefined-event
 Source/Scripts/TG08BCenturionAmbush.psc:91:6:forbidden-functions
 Source/Scripts/TG08BCenturionAmbush.psc:92:4:forbidden-functions
@@ -43698,6 +43823,7 @@ Source/Scripts/TG08BExitTriggerSCRIPT.psc:18:1:unchecked-cast
 Source/Scripts/TG08BExploreTriggerScript01.psc:8:25:forbidden-functions
 Source/Scripts/TG08BExploreTriggerScript01.psc:10:12:forbidden-functions
 Source/Scripts/TG08BExploreTriggerScript01.psc:11:1:none-form-usage
+Source/Scripts/TG08BFightController.psc:45:1:state-missing-empty-fallback
 Source/Scripts/TG08BFightController.psc:45:1:undefined-event
 Source/Scripts/TG08BFightController.psc:48:1:none-form-usage
 Source/Scripts/TG08BFightController.psc:54:1:none-form-usage
@@ -43724,14 +43850,18 @@ Source/Scripts/TG08BFightController.psc:151:1:none-form-usage
 Source/Scripts/TG08BFightController.psc:156:10:forbidden-functions
 Source/Scripts/TG08BFinalCaveSetupScript.psc:8:1:none-form-usage
 Source/Scripts/TG08BFinalCaveSetupScript.psc:9:1:none-form-usage
+Source/Scripts/TG08BFloodPipeController.psc:55:1:state-missing-empty-fallback
 Source/Scripts/TG08BFloodPipeController.psc:55:1:undefined-event
+Source/Scripts/TG08BFloodPipeController.psc:93:1:state-missing-empty-fallback
 Source/Scripts/TG08BFloodPipeController.psc:93:1:undefined-event
+Source/Scripts/TG08BFloodPipeController.psc:105:1:state-missing-empty-fallback
 Source/Scripts/TG08BFloodPipeController.psc:105:1:undefined-event
 Source/Scripts/TG08BFloodPipeController.psc:120:1:none-form-usage
 Source/Scripts/TG08BFloodPipeController.psc:120:1:place-at-me
 Source/Scripts/TG08BFloodPipeController.psc:121:12:forbidden-functions
 Source/Scripts/TG08BFloodPipeController.psc:130:11:forbidden-functions
 Source/Scripts/TG08BFloodPipeController.psc:134:12:forbidden-functions
+Source/Scripts/TG08BFloodPipeController.psc:142:1:state-missing-empty-fallback
 Source/Scripts/TG08BFloodPipeController.psc:142:1:undefined-event
 Source/Scripts/TG08BFloodPipeController.psc:168:1:argument-naming
 Source/Scripts/TG08BFloodPipeController.psc:192:2:strict-boolean
@@ -43866,6 +43996,7 @@ Source/Scripts/TG08BStatueDoorTriggerSCRIPT.psc:13:1:unchecked-cast
 Source/Scripts/TG08BStatueDoorTriggerSCRIPT.psc:13:1:unchecked-cast
 Source/Scripts/TG08BStatueDoorTriggerSCRIPT.psc:15:25:forbidden-functions
 Source/Scripts/TG08BStatueDoorTriggerSCRIPT.psc:17:1:unchecked-cast
+Source/Scripts/TG08BTowerFallScript.psc:20:1:state-missing-empty-fallback
 Source/Scripts/TG08BTowerFallScript.psc:20:1:undefined-event
 Source/Scripts/TG08BTowerFallScript.psc:22:11:forbidden-functions
 Source/Scripts/TG08BTowerFallScript.psc:23:1:none-form-usage
@@ -43897,10 +44028,12 @@ Source/Scripts/TG08KarliahSayTriggerScript.psc:11:1:none-form-usage
 Source/Scripts/TG08KarliahSayTriggerScript.psc:12:1:none-form-usage
 Source/Scripts/TG08LeverPuzzle.psc:27:1:none-form-usage
 Source/Scripts/TG08LeverPuzzle.psc:40:121:line-length
+Source/Scripts/TG08LeverPuzzle.psc:58:1:state-missing-empty-fallback
 Source/Scripts/TG08LeverPuzzle.psc:58:1:undefined-event
 Source/Scripts/TG08LeverPuzzle.psc:64:1:unchecked-cast
 Source/Scripts/TG08LeverPuzzle.psc:65:1:unchecked-cast
 Source/Scripts/TG08LeverPuzzle.psc:68:11:forbidden-functions
+Source/Scripts/TG08LeverPuzzle.psc:92:1:state-missing-empty-fallback
 Source/Scripts/TG08LeverPuzzle.psc:92:1:undefined-event
 Source/Scripts/TG08LeverPuzzle.psc:94:1:none-form-usage
 Source/Scripts/TG08LeverPuzzle.psc:95:12:forbidden-functions
@@ -43916,6 +44049,7 @@ Source/Scripts/TG08LeverPuzzle.psc:128:1:none-form-usage
 Source/Scripts/TG08LeverPuzzle.psc:129:1:none-form-usage
 Source/Scripts/TG08LeverPuzzle.psc:130:1:none-form-usage
 Source/Scripts/TG08RisingWaterScript.psc:79:1:none-form-usage
+Source/Scripts/TG08RisingWaterScript.psc:89:1:state-missing-empty-fallback
 Source/Scripts/TG08RisingWaterScript.psc:89:1:undefined-event
 Source/Scripts/TG08RisingWaterScript.psc:95:1:none-form-usage
 Source/Scripts/TG08RisingWaterScript.psc:97:11:forbidden-functions
@@ -43932,6 +44066,7 @@ Source/Scripts/TG08RisingWaterScript.psc:122:1:none-form-usage
 Source/Scripts/TG08RisingWaterScript.psc:128:1:none-form-usage
 Source/Scripts/TG08RisingWaterScript.psc:175:12:forbidden-functions
 Source/Scripts/TG08RisingWaterScript.psc:184:11:forbidden-functions
+Source/Scripts/TG08RisingWaterScript.psc:190:1:state-missing-empty-fallback
 Source/Scripts/TG08RisingWaterScript.psc:190:1:undefined-event
 Source/Scripts/TG08RisingWaterScript.psc:193:1:none-form-usage
 Source/Scripts/TG08RisingWaterScript.psc:194:1:none-form-usage
@@ -48932,13 +49067,17 @@ Source/Scripts/TrainedAnimalScript.psc:28:1:none-form-usage
 Source/Scripts/TrapBase.psc:71:4:strict-boolean
 Source/Scripts/TrapBase.psc:110:4:strict-boolean
 Source/Scripts/TrapBase.psc:131:4:empty-body
+Source/Scripts/TrapBase.psc:142:1:state-missing-empty-fallback
 Source/Scripts/TrapBase.psc:142:1:undefined-event
 Source/Scripts/TrapBase.psc:146:3:strict-boolean
 Source/Scripts/TrapBase.psc:168:4:strict-boolean
 Source/Scripts/TrapBase.psc:206:4:strict-boolean
 Source/Scripts/TrapBase.psc:239:1:unchecked-cast
+Source/Scripts/TrapBear.psc:29:1:state-missing-empty-fallback
 Source/Scripts/TrapBear.psc:29:1:undefined-event
+Source/Scripts/TrapBear.psc:48:1:state-missing-empty-fallback
 Source/Scripts/TrapBear.psc:48:1:undefined-event
+Source/Scripts/TrapBear.psc:76:1:state-missing-empty-fallback
 Source/Scripts/TrapBear.psc:76:1:undefined-event
 Source/Scripts/TrapBear.psc:81:1:argument-naming
 Source/Scripts/TrapBear.psc:86:1:argument-naming
@@ -48956,11 +49095,13 @@ Source/Scripts/TrapDweBallista.psc:59:1:none-form-usage
 Source/Scripts/TrapDweBallista.psc:67:1:none-form-usage
 Source/Scripts/TrapDweBallista.psc:73:1:none-form-usage
 Source/Scripts/TrapDweBallista.psc:79:1:none-form-usage
+Source/Scripts/TrapDweBallista.psc:103:1:state-missing-empty-fallback
 Source/Scripts/TrapDweBallista.psc:110:14:goto-state
 Source/Scripts/TrapDweFlamePillar.psc:44:2:strict-boolean
 Source/Scripts/TrapDweFlamePillar.psc:46:2:empty-body
 Source/Scripts/TrapDweFlamePillar.psc:52:19:unresolved-script
 Source/Scripts/TrapDweFlamePillar.psc:92:1:none-form-usage
+Source/Scripts/TrapDweFlamePillarHit.psc:23:1:state-missing-empty-fallback
 Source/Scripts/TrapDweFlamePillarHit.psc:23:1:undefined-event
 Source/Scripts/TrapDweFlamePillarHit.psc:31:121:line-length
 Source/Scripts/TrapDweFlamePillarHit.psc:36:1:unchecked-cast
@@ -48998,15 +49139,19 @@ Source/Scripts/TrapFallingOilLampAnim.psc:49:1:none-form-usage
 Source/Scripts/TrapFallingOilLampAnim.psc:53:1:undefined-event
 Source/Scripts/TrapFallingOilLampColLayer.psc:27:121:line-length
 Source/Scripts/TrapFallingOilLampColLayer.psc:70:1:none-form-usage
+Source/Scripts/TrapFallingOilLampColLayer.psc:76:1:state-missing-empty-fallback
 Source/Scripts/TrapFallingOilLampColLayer.psc:76:1:undefined-event
 Source/Scripts/TrapFallingOilLampColLayer.psc:83:121:line-length
+Source/Scripts/TrapFirePlate.psc:29:1:state-missing-empty-fallback
 Source/Scripts/TrapFirePlate.psc:38:20:unresolved-script
 Source/Scripts/TrapFirePlate.psc:80:26:forbidden-functions
 Source/Scripts/TrapFirePlate.psc:106:10:forbidden-functions
 Source/Scripts/TrapFirePlate.psc:107:2:strict-boolean
+Source/Scripts/TrapFirePlate.psc:115:1:state-missing-empty-fallback
 Source/Scripts/TrapFirePlate.psc:168:1:missing-parent-call-in-override
 Source/Scripts/TrapFirePlate.psc:173:2:strict-boolean
 Source/Scripts/TrapFlamethrower.psc:64:1:nesting-depth
+Source/Scripts/TrapFlamethrower.psc:112:1:state-missing-empty-fallback
 Source/Scripts/TrapFlamethrower.psc:130:1:none-form-usage
 Source/Scripts/TrapFlamethrower.psc:133:31:forbidden-functions
 Source/Scripts/TrapFlamethrower.psc:134:1:none-form-usage
@@ -49025,6 +49170,7 @@ Source/Scripts/TrapFlamethrower.psc:406:121:line-length
 Source/Scripts/TrapGenericEffectHazard.psc:41:19:unresolved-script
 Source/Scripts/TrapGenericEffectHazard.psc:43:10:forbidden-functions
 Source/Scripts/TrapGenericEffectHazard.psc:59:12:forbidden-functions
+Source/Scripts/TrapGenericEffectHazard.psc:84:1:state-missing-empty-fallback
 Source/Scripts/TrapHitBase.psc:59:1:cyclomatic-complexity
 Source/Scripts/TrapHitBase.psc:59:1:nesting-depth
 Source/Scripts/TrapHitBase.psc:59:121:line-length
@@ -49049,6 +49195,7 @@ Source/Scripts/TrapNorPlatform.psc:141:10:forbidden-functions
 Source/Scripts/TrapNorPlatform.psc:165:12:forbidden-functions
 Source/Scripts/TrapNorPlatform.psc:174:1:none-form-usage
 Source/Scripts/TrapNorPlatform.psc:178:10:forbidden-functions
+Source/Scripts/TrapNorPlatform.psc:193:1:state-missing-empty-fallback
 Source/Scripts/TrapNorPlatform.psc:196:3:strict-boolean
 Source/Scripts/TrapNorPlatform.psc:283:1:local-variable-shadowing
 Source/Scripts/TrapNorPlatform.psc:319:2:strict-boolean
@@ -49058,12 +49205,15 @@ Source/Scripts/TrapOilPool.psc:68:121:line-length
 Source/Scripts/TrapOilPool.psc:85:16:forbidden-functions
 Source/Scripts/TrapPoisonGas.psc:104:121:line-length
 Source/Scripts/TrapPoisonGas.psc:118:121:line-length
+Source/Scripts/TrapPoisonGas.psc:133:1:state-missing-empty-fallback
 Source/Scripts/TrapPoisonGas.psc:133:1:undefined-event
 Source/Scripts/TrapPoisonGas.psc:143:1:unchecked-cast
 Source/Scripts/TrapPoisonGas.psc:146:1:place-at-me
 Source/Scripts/TrapPoisonGas.psc:157:121:line-length
 Source/Scripts/TrapPoisonGas.psc:158:24:forbidden-functions
+Source/Scripts/TrapPoisonGas.psc:165:1:state-missing-empty-fallback
 Source/Scripts/TrapPoisonGas.psc:165:1:undefined-event
+Source/Scripts/TrapPoisonGas.psc:176:1:state-missing-empty-fallback
 Source/Scripts/TrapPoisonGas.psc:176:1:undefined-event
 Source/Scripts/TrapPoisonGas.psc:179:11:forbidden-functions
 Source/Scripts/TrapPoisonGas.psc:232:1:nesting-depth
@@ -49073,9 +49223,11 @@ Source/Scripts/TrapPoisonGas.psc:283:4:empty-body
 Source/Scripts/TrapPoisonGas.psc:298:4:empty-body
 Source/Scripts/TrapPoisonGas.psc:302:2:empty-body
 Source/Scripts/TrapPoisonGas.psc:315:2:empty-body
+Source/Scripts/TrapPoisonGasCough.psc:29:1:state-missing-empty-fallback
 Source/Scripts/TrapPoisonGasCough.psc:29:1:undefined-event
 Source/Scripts/TrapPoisonGasCough.psc:31:22:forbidden-functions
 Source/Scripts/TrapPoisonGasCough.psc:45:11:forbidden-functions
+Source/Scripts/TrapRiggedBeam.psc:8:1:state-missing-empty-fallback
 Source/Scripts/TrapRiggedBeam.psc:10:20:unresolved-script
 Source/Scripts/TrapRiggedBeam.psc:41:1:argument-naming
 Source/Scripts/TrapRiggedBeam.psc:41:121:line-length
@@ -49096,6 +49248,7 @@ Source/Scripts/TrapTriggerBase.psc:141:3:strict-boolean
 Source/Scripts/TrapTriggerBase.psc:144:1:unchecked-cast
 Source/Scripts/TrapTriggerBase.psc:155:1:short-wait-interval
 Source/Scripts/TrapTriggerBase.psc:155:12:forbidden-functions
+Source/Scripts/TrapTriggerBase.psc:168:1:state-missing-empty-fallback
 Source/Scripts/TrapTriggerBase.psc:168:1:undefined-event
 Source/Scripts/TrapTriggerBase.psc:171:121:line-length
 Source/Scripts/TrapTriggerBase.psc:173:121:line-length
@@ -49108,6 +49261,7 @@ Source/Scripts/TrapTriggerBase.psc:212:121:line-length
 Source/Scripts/TrapTriggerBase.psc:214:121:line-length
 Source/Scripts/TrapTriggerBase.psc:217:13:forbidden-functions
 Source/Scripts/TrapTriggerBase.psc:219:13:forbidden-functions
+Source/Scripts/TrapTriggerBase.psc:229:1:state-missing-empty-fallback
 Source/Scripts/TrapTriggerBase.psc:229:1:undefined-event
 Source/Scripts/TrapTriggerBase.psc:234:12:forbidden-functions
 Source/Scripts/TrapTriggerBase.psc:236:12:forbidden-functions
@@ -49127,10 +49281,13 @@ Source/Scripts/TrapTriggerHinge.psc:16:1:missing-parent-call-in-override
 Source/Scripts/TrapTriggerHinge.psc:18:18:forbidden-functions
 Source/Scripts/TrapTriggerHinge.psc:19:2:strict-boolean
 Source/Scripts/TrapTriggerHinge.psc:20:1:unchecked-cast
+Source/Scripts/TrapTriggerHinge.psc:26:1:state-missing-empty-fallback
 Source/Scripts/TrapTriggerHinge.psc:40:34:forbidden-functions
 Source/Scripts/TrapTriggerHinge.psc:55:3:empty-body
 Source/Scripts/TrapTriggerHinge.psc:60:121:line-length
+Source/Scripts/TrapTriggerHinge.psc:71:1:state-missing-empty-fallback
 Source/Scripts/TrapTriggerHinge.psc:72:3:strict-boolean
+Source/Scripts/TrapTriggerHinge.psc:81:1:state-missing-empty-fallback
 Source/Scripts/TrapTriggerHinge.psc:88:1:missing-parent-call-in-override
 Source/Scripts/TrapTriggerHinge.psc:91:1:missing-parent-call-in-override
 Source/Scripts/TrapTriggerHinge.psc:94:1:multiple-auto-states
@@ -49144,8 +49301,10 @@ Source/Scripts/Trigger.psc:20:20:forbidden-functions
 Source/Scripts/Trigger.psc:24:1:argument-naming
 Source/Scripts/Trigger.psc:32:1:argument-naming
 Source/Scripts/TriggerBoxBase.psc:53:3:strict-boolean
+Source/Scripts/Tripwire.psc:14:1:state-missing-empty-fallback
 Source/Scripts/Tripwire.psc:16:20:unresolved-script
 Source/Scripts/Tripwire.psc:35:121:line-length
+Source/Scripts/Tripwire.psc:40:1:state-missing-empty-fallback
 Source/Scripts/Tripwire.psc:54:1:missing-parent-call-in-override
 Source/Scripts/Tripwire.psc:77:121:line-length
 Source/Scripts/TutorialPlayerScript.psc:7:1:none-form-usage
@@ -49704,6 +49863,7 @@ Source/Scripts/WRDrawBridge01SCRIPT.psc:44:4:empty-body
 Source/Scripts/WRDrawBridge01SCRIPT.psc:58:1:unchecked-cast
 Source/Scripts/WRDrawBridge01SCRIPT.psc:62:4:empty-body
 Source/Scripts/WRDrawBridge01SCRIPT.psc:66:1:unchecked-cast
+Source/Scripts/WRDrawBridge01SCRIPT.psc:75:1:state-missing-empty-fallback
 Source/Scripts/WRDrawBridge01SCRIPT.psc:75:1:undefined-event
 Source/Scripts/WRDrawBridge01SCRIPT.psc:77:1:none-form-usage
 Source/Scripts/WeaponRackActivateSCRIPT.psc:107:1:nesting-depth
@@ -50180,6 +50340,7 @@ Source/Scripts/ccBGSSSE001_CrabMQ4CrabSpawner.psc:119:121:line-length
 Source/Scripts/ccBGSSSE001_CrabMQ4CrabSpawner.psc:176:121:line-length
 Source/Scripts/ccBGSSSE001_CrabMQ4CrabSpawner.psc:181:12:forbidden-functions
 Source/Scripts/ccBGSSSE001_CrabMQ4CrabSpawner.psc:191:121:line-length
+Source/Scripts/ccBGSSSE001_CrabMQ4CrabSpawner.psc:198:1:state-missing-empty-fallback
 Source/Scripts/ccBGSSSE001_CrabMQ4CrabSpawner.psc:198:1:undefined-event
 Source/Scripts/ccBGSSSE001_CrabMQ4CrabSpawner.psc:199:1:none-form-usage
 Source/Scripts/ccBGSSSE001_CrabMQ4CrabSpawner.psc:199:30:slow-functions
@@ -50189,6 +50350,7 @@ Source/Scripts/ccBGSSSE001_CrabMQ4CrabSpawner.psc:205:121:line-length
 Source/Scripts/ccBGSSSE001_CrabMQ4CrabSpawner.psc:210:12:forbidden-functions
 Source/Scripts/ccBGSSSE001_CrabMQ4CrabSpawner.psc:223:121:line-length
 Source/Scripts/ccBGSSSE001_CrabMQ4CrabSpawner.psc:225:121:line-length
+Source/Scripts/ccBGSSSE001_CrabMQ4CrabSpawner.psc:232:1:state-missing-empty-fallback
 Source/Scripts/ccBGSSSE001_CrabMQ4CrabSpawner.psc:232:1:undefined-event
 Source/Scripts/ccBGSSSE001_CrabMQ4CrabSpawner.psc:233:1:none-form-usage
 Source/Scripts/ccBGSSSE001_CrabMQ4CrabSpawner.psc:233:30:slow-functions
@@ -50946,6 +51108,7 @@ Source/Scripts/ccBGS_ARPortcullisScript.psc:88:2:strict-boolean
 Source/Scripts/ccBGS_ARPortcullisScript.psc:94:17:forbidden-functions
 Source/Scripts/ccBGS_ARPortcullisScript.psc:95:2:strict-boolean
 Source/Scripts/ccBGS_ARPressurePlateScript.psc:4:121:line-length
+Source/Scripts/ccBGS_ARPressurePlateScript.psc:8:1:state-missing-empty-fallback
 Source/Scripts/ccBGS_ARPressurePlateScript.psc:13:12:forbidden-functions
 Source/Scripts/ccBGS_ARPressurePlateScript.psc:15:12:forbidden-functions
 Source/Scripts/ccBGS_ARPressurePlateScript.psc:20:20:unresolved-script
@@ -51114,8 +51277,10 @@ Source/Scripts/defaultAliasRespawnScript.psc:13:1:unchecked-cast
 Source/Scripts/defaultAliasRespawnScript.psc:15:2:empty-body
 Source/Scripts/defaultAliasRespawnScript.psc:27:1:unchecked-cast
 Source/Scripts/defaultAutosaveScript.psc:9:1:argument-naming
+Source/Scripts/defaultBiPressurePlate.psc:13:1:state-missing-empty-fallback
 Source/Scripts/defaultBiPressurePlate.psc:17:11:forbidden-functions
 Source/Scripts/defaultBiPressurePlate.psc:39:1:multiple-auto-states
+Source/Scripts/defaultBiPressurePlate.psc:40:1:state-missing-empty-fallback
 Source/Scripts/defaultBiPressurePlate.psc:44:11:forbidden-functions
 Source/Scripts/defaultBiPressurePlate.psc:63:12:forbidden-functions
 Source/Scripts/defaultClearLocationOnActivate.psc:2:121:line-length
@@ -51236,6 +51401,7 @@ Source/Scripts/defaultEnableLinkedRefOnLostLOS.psc:19:27:forbidden-functions
 Source/Scripts/defaultEnableLinkedRefOnLostLOS.psc:20:3:strict-boolean
 Source/Scripts/defaultEnableLinkedRefOnLostLOS.psc:34:23:forbidden-functions
 Source/Scripts/defaultEnableLinkedRefOnLostLOS.psc:36:34:forbidden-functions
+Source/Scripts/defaultFakeHarvestableScript.psc:48:1:state-missing-empty-fallback
 Source/Scripts/defaultFakeHarvestableScript.psc:48:1:undefined-event
 Source/Scripts/defaultFakeHarvestableScript.psc:53:1:none-form-usage
 Source/Scripts/defaultFakeHarvestableScript.psc:57:1:none-form-usage
@@ -51247,6 +51413,7 @@ Source/Scripts/defaultFakeHarvestableScript.psc:72:1:unchecked-cast
 Source/Scripts/defaultFakeHarvestableScript.psc:75:3:strict-boolean
 Source/Scripts/defaultFakeHarvestableScript.psc:76:1:unchecked-cast
 Source/Scripts/defaultFakeNPCLoadTRIG.psc:17:1:unchecked-cast
+Source/Scripts/defaultFakeNPCLoadTRIG.psc:37:1:state-missing-empty-fallback
 Source/Scripts/defaultFakeNPCLoadTRIG.psc:37:1:undefined-event
 Source/Scripts/defaultFakeRezSpell.psc:2:121:line-length
 Source/Scripts/defaultFakeRezSpell.psc:7:1:missing-parent-call-in-override
@@ -51260,6 +51427,7 @@ Source/Scripts/defaultFakeSummonSpell.psc:28:11:forbidden-functions
 Source/Scripts/defaultFakeSummonSpell.psc:35:1:undefined-event
 Source/Scripts/defaultFakeSummonSpell.psc:37:1:place-at-me
 Source/Scripts/defaultFireWeaponScript.psc:72:1:nesting-depth
+Source/Scripts/defaultFireWeaponScript.psc:72:1:state-missing-empty-fallback
 Source/Scripts/defaultFireWeaponScript.psc:72:1:undefined-event
 Source/Scripts/defaultFireWeaponScript.psc:81:4:strict-boolean
 Source/Scripts/defaultFireWeaponScript.psc:92:1:unchecked-cast
@@ -51851,6 +52019,7 @@ Source/Scripts/dragonActorSCRIPT.psc:152:3:empty-body
 Source/Scripts/dragonActorSCRIPT.psc:170:1:none-form-usage
 Source/Scripts/dragonActorSCRIPT.psc:190:1:none-form-usage
 Source/Scripts/dragonActorSCRIPT.psc:190:121:line-length
+Source/Scripts/dragonActorSCRIPT.psc:200:1:state-missing-empty-fallback
 Source/Scripts/dragonActorSCRIPT.psc:200:1:undefined-event
 Source/Scripts/dragonActorSCRIPT.psc:205:59:forbidden-functions
 Source/Scripts/dragonActorSCRIPT.psc:205:115:forbidden-functions
@@ -51865,6 +52034,7 @@ Source/Scripts/dragonActorSCRIPT.psc:255:1:none-form-usage
 Source/Scripts/dragonTowerWallScript.psc:28:1:none-form-usage
 Source/Scripts/dragonTowerWallScript.psc:30:1:none-form-usage
 Source/Scripts/dragonTowerWallScript.psc:31:1:none-form-usage
+Source/Scripts/dunAlftandFlameDoorController.psc:16:1:state-missing-empty-fallback
 Source/Scripts/dunAlftandFlameDoorController.psc:18:1:none-form-usage
 Source/Scripts/dunAlftandFlameDoorController.psc:20:1:none-form-usage
 Source/Scripts/dunAlftandFlameDoorController.psc:21:3:empty-body
@@ -51878,6 +52048,7 @@ Source/Scripts/dunAlftandFlameDoorController.psc:33:1:none-form-usage
 Source/Scripts/dunAlftandFlameDoorController.psc:34:1:none-form-usage
 Source/Scripts/dunAlftandFlameDoorController.psc:40:1:none-form-usage
 Source/Scripts/dunAlftandFlameDoorController.psc:47:1:multiple-auto-states
+Source/Scripts/dunAlftandFlameDoorController.psc:48:1:state-missing-empty-fallback
 Source/Scripts/dunAlftandFlameDoorController.psc:50:1:none-form-usage
 Source/Scripts/dunAlftandFlameDoorController.psc:52:1:none-form-usage
 Source/Scripts/dunAlftandFlameDoorController.psc:53:3:empty-body
@@ -51909,13 +52080,16 @@ Source/Scripts/dunAnsilvundKeyAliasScript.psc:13:1:unchecked-cast
 Source/Scripts/dunAnsilvundSCRIPT.psc:22:1:none-form-usage
 Source/Scripts/dunAnsilvundSCRIPT.psc:38:1:none-form-usage
 Source/Scripts/dunAnsilvundSCRIPT.psc:39:1:none-form-usage
+Source/Scripts/dunAnsilvundSCRIPT.psc:49:1:state-missing-empty-fallback
 Source/Scripts/dunAnsilvundSCRIPT.psc:49:1:undefined-event
+Source/Scripts/dunAnsilvundSCRIPT.psc:55:1:state-missing-empty-fallback
 Source/Scripts/dunAnsilvundSCRIPT.psc:55:1:undefined-event
 Source/Scripts/dunAnsilvundShrineSCRIPT.psc:13:25:forbidden-functions
 Source/Scripts/dunAnsilvundShrineSCRIPT.psc:14:1:none-form-usage
 Source/Scripts/dunAnsilvundShrineSCRIPT.psc:16:1:none-form-usage
 Source/Scripts/dunAnsilvundShrineSCRIPT.psc:16:10:forbidden-functions
 Source/Scripts/dunAnsilvundShrineSCRIPT.psc:17:1:none-form-usage
+Source/Scripts/dunAnsilvundShrineSCRIPT.psc:26:1:state-missing-empty-fallback
 Source/Scripts/dunAnsilvundShrineSCRIPT.psc:26:1:undefined-event
 Source/Scripts/dunAnsilvundShrineSCRIPT.psc:27:1:none-form-usage
 Source/Scripts/dunAnsilvundShrineSCRIPT.psc:31:25:forbidden-functions
@@ -52331,11 +52505,13 @@ Source/Scripts/dunDruadachRedoubtMap.psc:28:1:none-form-usage
 Source/Scripts/dunDruadachRedoubtMap.psc:29:1:none-form-usage
 Source/Scripts/dunDruadachRedoubtMap.psc:30:1:none-form-usage
 Source/Scripts/dunDruadachRedoubtMap.psc:31:1:none-form-usage
+Source/Scripts/dunDruadachRedoubtMap.psc:38:1:state-missing-empty-fallback
 Source/Scripts/dunDruadachRedoubtMap.psc:38:1:undefined-event
 Source/Scripts/dunDustmansCairnDraugrDeath.psc:11:6:forbidden-functions
 Source/Scripts/dunDustmansCairnDraugrDeath.psc:12:20:forbidden-functions
 Source/Scripts/dunDustmansCairnDraugrDeath.psc:13:1:unchecked-cast
 Source/Scripts/dunDustmansCairnDraugrDeath.psc:15:3:empty-body
+Source/Scripts/dunDustmansCairnEndController.psc:63:1:state-missing-empty-fallback
 Source/Scripts/dunDustmansCairnEndController.psc:63:1:undefined-event
 Source/Scripts/dunDustmansCairnEndController.psc:65:1:none-form-usage
 Source/Scripts/dunDustmansCairnEndController.psc:66:1:none-form-usage
@@ -52391,6 +52567,7 @@ Source/Scripts/dunDustmansCairnLever.psc:58:29:argument-types
 Source/Scripts/dunDustmansCairnLever.psc:59:1:none-form-usage
 Source/Scripts/dunDustmansCairnLever.psc:59:30:argument-types
 Source/Scripts/dunDustmansCairnLever.psc:75:4:empty-body
+Source/Scripts/dunDustmansCairnLever.psc:84:1:state-missing-empty-fallback
 Source/Scripts/dunDustmansCairnLever.psc:84:1:undefined-event
 Source/Scripts/dunDustmansCairnLever.psc:88:1:unchecked-cast
 Source/Scripts/dunDustmansCairnLever.psc:89:1:unchecked-cast
@@ -52402,6 +52579,7 @@ Source/Scripts/dunDustmansCairnLever.psc:103:1:none-form-usage
 Source/Scripts/dunExploreCompleteSCRIPT.psc:6:1:argument-naming
 Source/Scripts/dunExploreCompleteSCRIPT.psc:8:26:forbidden-functions
 Source/Scripts/dunExploreCompleteSCRIPT.psc:9:1:none-form-usage
+Source/Scripts/dunFaldarsToothCagedWolfScript.psc:17:1:state-missing-empty-fallback
 Source/Scripts/dunFaldarsToothCagedWolfScript.psc:17:1:undefined-event
 Source/Scripts/dunFaldarsToothDogScript.psc:16:1:unchecked-cast
 Source/Scripts/dunFaldarsToothDogScript.psc:17:1:unchecked-cast
@@ -52674,6 +52852,7 @@ Source/Scripts/dunForelhostGhostAmbushScript.psc:71:1:none-form-usage
 Source/Scripts/dunForelhostGhostAmbushScript.psc:71:36:forbidden-functions
 Source/Scripts/dunForelhostGhostAmbushScript.psc:77:26:forbidden-functions
 Source/Scripts/dunForelhostGhostAmbushScript.psc:90:121:line-length
+Source/Scripts/dunForelhostGhostAmbushScript.psc:109:1:state-missing-empty-fallback
 Source/Scripts/dunForelhostGhostAmbushScript.psc:109:1:undefined-event
 Source/Scripts/dunForelhostGhostAmbushScript.psc:126:22:unresolved-script
 Source/Scripts/dunForelhostGhostAmbushScript.psc:130:3:strict-boolean
@@ -52974,6 +53153,7 @@ Source/Scripts/dunHalldirBossFormGhostScript.psc:12:1:place-at-me
 Source/Scripts/dunHalldirBossFormGhostScript.psc:15:10:forbidden-functions
 Source/Scripts/dunHalldirGhostAmbushScript.psc:10:11:forbidden-functions
 Source/Scripts/dunHalldirGhostAmbushScript.psc:12:1:none-form-usage
+Source/Scripts/dunHalldirGhostAmbushScript.psc:18:1:state-missing-empty-fallback
 Source/Scripts/dunHalldirGhostAmbushScript.psc:35:1:none-form-usage
 Source/Scripts/dunHalldirGhostAmbushScript.psc:38:3:strict-boolean
 Source/Scripts/dunHalldirGhostAmbushScript.psc:38:7:forbidden-functions
@@ -53018,8 +53198,10 @@ Source/Scripts/dunHaltedStreamCampDeathScript.psc:19:1:unchecked-cast
 Source/Scripts/dunHaltedStreamCampDeathScript.psc:23:1:unchecked-cast
 Source/Scripts/dunHaltedStreamCampDoorScript.psc:15:1:unchecked-cast
 Source/Scripts/dunHaltedStreamCampGhostDebris.psc:40:1:none-form-usage
+Source/Scripts/dunHaltedStreamCampGhostDebris.psc:50:1:state-missing-empty-fallback
 Source/Scripts/dunHaltedStreamCampGhostDebris.psc:50:1:undefined-event
 Source/Scripts/dunHaltedStreamCampGhostDebris.psc:51:1:none-form-usage
+Source/Scripts/dunHaltedStreamCampGhostDebris.psc:75:1:state-missing-empty-fallback
 Source/Scripts/dunHaltedStreamCampGhostDebris.psc:75:1:undefined-event
 Source/Scripts/dunHaltedStreamCampGhostDebris.psc:81:1:none-form-usage
 Source/Scripts/dunHaltedStreamCampGhostDebris.psc:136:1:alias-cast-without-getreference
@@ -53121,8 +53303,10 @@ Source/Scripts/dunHillgrundsTombBoss.psc:21:1:none-form-usage
 Source/Scripts/dunHillgrundsTombBoss.psc:26:121:line-length
 Source/Scripts/dunHillgrundsTombBoss.psc:31:1:none-form-usage
 Source/Scripts/dunHillgrundsTombBoss.psc:41:121:line-length
+Source/Scripts/dunHillgrundsTombBoss.psc:53:1:state-missing-empty-fallback
 Source/Scripts/dunHillgrundsTombBoss.psc:53:1:undefined-event
 Source/Scripts/dunHillgrundsTombBoss.psc:59:121:line-length
+Source/Scripts/dunHillgrundsTombBoss.psc:81:1:state-missing-empty-fallback
 Source/Scripts/dunHillgrundsTombBoss.psc:81:1:undefined-event
 Source/Scripts/dunHillgrundsTombBoss.psc:82:1:unchecked-cast
 Source/Scripts/dunHillgrundsTombBoss.psc:97:1:place-at-me
@@ -53138,6 +53322,7 @@ Source/Scripts/dunHillgrundsTombDraugrDeath.psc:11:6:forbidden-functions
 Source/Scripts/dunHillgrundsTombDraugrDeath.psc:12:20:forbidden-functions
 Source/Scripts/dunHillgrundsTombDraugrDeath.psc:13:1:unchecked-cast
 Source/Scripts/dunHillgrundsTombDraugrDeath.psc:15:3:empty-body
+Source/Scripts/dunHillgrundsTombEndController.psc:64:1:state-missing-empty-fallback
 Source/Scripts/dunHillgrundsTombEndController.psc:64:1:undefined-event
 Source/Scripts/dunHillgrundsTombEndController.psc:69:1:unchecked-cast
 Source/Scripts/dunHillgrundsTombEndController.psc:70:1:unchecked-cast
@@ -53534,10 +53719,12 @@ Source/Scripts/dunLostEchoCaveBurnMushrooms.psc:43:1:none-form-usage
 Source/Scripts/dunLostEchoCaveBurnMushrooms.psc:45:1:none-form-usage
 Source/Scripts/dunLostValleyHagravenHitScript.psc:10:121:line-length
 Source/Scripts/dunLostValleyHagravenHitScript.psc:14:1:unchecked-cast
+Source/Scripts/dunMarkarthWizardBiPressurePlate.psc:14:1:state-missing-empty-fallback
 Source/Scripts/dunMarkarthWizardBiPressurePlate.psc:17:11:forbidden-functions
 Source/Scripts/dunMarkarthWizardBiPressurePlate.psc:33:1:none-form-usage
 Source/Scripts/dunMarkarthWizardBiPressurePlate.psc:38:26:forbidden-functions
 Source/Scripts/dunMarkarthWizardBiPressurePlate.psc:44:1:multiple-auto-states
+Source/Scripts/dunMarkarthWizardBiPressurePlate.psc:45:1:state-missing-empty-fallback
 Source/Scripts/dunMarkarthWizardBiPressurePlate.psc:48:11:forbidden-functions
 Source/Scripts/dunMarkarthWizardBiPressurePlate.psc:58:26:forbidden-functions
 Source/Scripts/dunMarkarthWizardBiPressurePlate.psc:64:26:forbidden-functions
@@ -53668,8 +53855,10 @@ Source/Scripts/dunMarkarthWizardMuseumKeyScript.psc:14:1:none-form-usage
 Source/Scripts/dunMarkarthWizardMuseumKeyScript.psc:15:1:none-form-usage
 Source/Scripts/dunMarkarthWizardPlateSystemManager.psc:22:10:forbidden-functions
 Source/Scripts/dunMarkarthWizardPlateSystemManager.psc:37:121:line-length
+Source/Scripts/dunMarkarthWizardPlateSystemManager.psc:70:1:state-missing-empty-fallback
 Source/Scripts/dunMarkarthWizardPlateSystemManager.psc:70:1:undefined-event
 Source/Scripts/dunMarkarthWizardPlateSystemManager.psc:73:11:forbidden-functions
+Source/Scripts/dunMarkarthWizardPlateSystemManager.psc:82:1:state-missing-empty-fallback
 Source/Scripts/dunMarkarthWizardPlateSystemManager.psc:82:1:undefined-event
 Source/Scripts/dunMarkarthWizardPlateSystemManager.psc:85:11:forbidden-functions
 Source/Scripts/dunMarkarthWizardPlateSystemPlate.psc:11:1:unchecked-cast
@@ -53677,6 +53866,8 @@ Source/Scripts/dunMarkarthWizardPlateSystemPlate.psc:13:1:none-form-usage
 Source/Scripts/dunMarkarthWizardPlateSystemPlate.psc:21:1:unchecked-cast
 Source/Scripts/dunMarkarthWizardPlateSystemPlate.psc:32:19:unresolved-script
 Source/Scripts/dunMarkarthWizardPlateSystemPlate.psc:38:19:unresolved-script
+Source/Scripts/dunMarkarthWizardPlateSystemPlate.psc:46:1:state-missing-empty-fallback
+Source/Scripts/dunMarkarthWizardPlateSystemPlate.psc:59:1:state-missing-empty-fallback
 Source/Scripts/dunMarkarthWizardReinforceManager.psc:29:1:none-form-usage
 Source/Scripts/dunMarkarthWizardReinforceManager.psc:30:1:none-form-usage
 Source/Scripts/dunMarkarthWizardReinforceManager.psc:31:1:none-form-usage
@@ -53713,6 +53904,7 @@ Source/Scripts/dunMarkarthWizard_UpdateFactions.psc:40:10:forbidden-functions
 Source/Scripts/dunMarkarthWizard_UpdateFactions.psc:41:10:forbidden-functions
 Source/Scripts/dunMarkarthWizard_UpdateFactions.psc:44:1:unchecked-cast
 Source/Scripts/dunMiddenAtronachForgeSCRIPT.psc:41:1:undefined-event
+Source/Scripts/dunMiddenAtronachForgeSCRIPT.psc:51:1:state-missing-empty-fallback
 Source/Scripts/dunMiddenAtronachForgeSCRIPT.psc:51:1:undefined-event
 Source/Scripts/dunMiddenAtronachForgeSCRIPT.psc:54:1:none-form-usage
 Source/Scripts/dunMiddenAtronachForgeSCRIPT.psc:61:11:forbidden-functions
@@ -53739,6 +53931,7 @@ Source/Scripts/dunMiddenAtronachForgeSCRIPT.psc:120:38:forbidden-functions
 Source/Scripts/dunMiddenAtronachForgeSCRIPT.psc:128:1:none-form-usage
 Source/Scripts/dunMiddenAtronachForgeSCRIPT.psc:128:1:none-form-usage
 Source/Scripts/dunMiddenAtronachForgeSCRIPT.psc:133:11:forbidden-functions
+Source/Scripts/dunMiddenAtronachForgeSCRIPT.psc:146:1:state-missing-empty-fallback
 Source/Scripts/dunMiddenAtronachForgeSCRIPT.psc:146:1:undefined-event
 Source/Scripts/dunMiddenAtronachForgeSCRIPT.psc:148:1:none-form-usage
 Source/Scripts/dunMiddenHandSculptureSCRIPT.psc:56:1:argument-naming
@@ -54593,9 +54786,11 @@ Source/Scripts/dunStonehillLairDelayedLever.psc:22:8:forbidden-functions
 Source/Scripts/dunStonehillLairDelayedLever.psc:23:11:forbidden-functions
 Source/Scripts/dunStonehill_SetStageIfBridgeDown.psc:8:1:unchecked-cast
 Source/Scripts/dunSyncopeSanctuaryMistDisperse.psc:10:25:forbidden-functions
+Source/Scripts/dunTolvaldsCaveSCRIPT.psc:35:1:state-missing-empty-fallback
 Source/Scripts/dunTolvaldsCaveSCRIPT.psc:35:1:undefined-event
 Source/Scripts/dunTolvaldsCaveSCRIPT.psc:36:1:none-form-usage
 Source/Scripts/dunTolvaldsCaveSCRIPT.psc:37:1:none-form-usage
+Source/Scripts/dunTolvaldsCaveSCRIPT.psc:43:1:state-missing-empty-fallback
 Source/Scripts/dunTolvaldsCaveSCRIPT.psc:43:1:undefined-event
 Source/Scripts/dunTolvaldsCaveSCRIPT.psc:44:1:none-form-usage
 Source/Scripts/dunTolvaldsCaveTrap.psc:12:1:none-form-usage
@@ -54653,6 +54848,7 @@ Source/Scripts/dunUstenPuzTrigSCRIPT.psc:57:1:none-form-usage
 Source/Scripts/dunUstenPuzTrigSCRIPT.psc:59:1:none-form-usage
 Source/Scripts/dunUstenPuzTrigSCRIPT.psc:60:1:none-form-usage
 Source/Scripts/dunUstenPuzTrigSCRIPT.psc:61:1:none-form-usage
+Source/Scripts/dunUstenPuzTrigSCRIPT.psc:70:1:state-missing-empty-fallback
 Source/Scripts/dunUstenPuzTrigSCRIPT.psc:70:1:undefined-event
 Source/Scripts/dunUstenPuzTrigSCRIPT.psc:71:1:none-form-usage
 Source/Scripts/dunUstengravRumbleScript.psc:5:1:argument-naming
@@ -54815,6 +55011,7 @@ Source/Scripts/dunYngolGlow.psc:22:5:forbidden-functions
 Source/Scripts/dunYngolGlow.psc:23:3:forbidden-functions
 Source/Scripts/dunYngolGlow.psc:38:1:none-form-usage
 Source/Scripts/dunYngolGlow.psc:44:1:none-form-usage
+Source/Scripts/dunYngolGlow.psc:64:1:state-missing-empty-fallback
 Source/Scripts/dunYngolGlow.psc:64:1:undefined-event
 Source/Scripts/dunYngolGlow.psc:80:1:numeric-comparison
 Source/Scripts/dunYngolGlow.psc:84:1:none-form-usage
@@ -55089,6 +55286,7 @@ Source/Scripts/magicSoundPlayIntroOutro.psc:26:1:argument-naming
 Source/Scripts/masterAmbushScript.psc:2:121:line-length
 Source/Scripts/masterAmbushScript.psc:52:24:forbidden-functions
 Source/Scripts/masterAmbushScript.psc:63:121:line-length
+Source/Scripts/masterAmbushScript.psc:88:1:state-missing-empty-fallback
 Source/Scripts/masterAmbushScript.psc:88:1:undefined-event
 Source/Scripts/masterAmbushScript.psc:91:6:forbidden-functions
 Source/Scripts/masterAmbushScript.psc:92:4:forbidden-functions
@@ -55683,8 +55881,10 @@ Source/Scripts/trapRockfallEffects.psc:54:2:strict-boolean
 Source/Scripts/trapRockfallEffects.psc:55:1:place-at-me
 Source/Scripts/trapSight.psc:12:1:none-form-usage
 Source/Scripts/trapSight.psc:14:1:none-form-usage
+Source/Scripts/trapSoulGemController.psc:21:1:state-missing-empty-fallback
 Source/Scripts/trapSoulGemController.psc:21:1:undefined-event
 Source/Scripts/trapSoulGemController.psc:24:121:line-length
+Source/Scripts/trapSoulGemController.psc:36:1:state-missing-empty-fallback
 Source/Scripts/trapSoulGemController.psc:36:1:undefined-event
 Source/Scripts/trapSoulGemController.psc:37:1:unchecked-cast
 Source/Scripts/trapSoulGemController.psc:39:121:line-length
@@ -55692,6 +55892,7 @@ Source/Scripts/trapSoulGemController.psc:42:121:line-length
 Source/Scripts/trapSoulGemController.psc:45:1:unchecked-cast
 Source/Scripts/trapSoulGemController.psc:52:1:unchecked-cast
 Source/Scripts/trapSoulGemController.psc:59:1:unchecked-cast
+Source/Scripts/trapSoulGemController.psc:67:1:state-missing-empty-fallback
 Source/Scripts/trapSoulGemController.psc:67:1:undefined-event
 Source/Scripts/trapSoulGemController.psc:69:13:forbidden-functions
 Source/Scripts/trapSoulGemController.psc:70:1:unchecked-cast
