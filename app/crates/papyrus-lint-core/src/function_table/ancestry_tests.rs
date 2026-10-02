@@ -6,6 +6,8 @@ mod events;
 mod functions;
 #[path = "ancestry_tests/members.rs"]
 mod members;
+#[path = "ancestry_tests/parent_events.rs"]
+mod parent_events;
 #[path = "ancestry_tests/properties_and_fields.rs"]
 mod properties_and_fields;
 #[path = "ancestry_tests/remote_events.rs"]
