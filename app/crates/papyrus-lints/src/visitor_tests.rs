@@ -225,6 +225,35 @@ fn token_walker_notifies_every_registered_lint_once_per_token() {
 }
 
 #[test]
+fn token_lint_default_callbacks_are_noops() {
+    #[derive(Default)]
+    struct Noop {
+        store: Store,
+    }
+    impl TokenLint for Noop {
+        fn store(&mut self) -> &mut Store {
+            &mut self.store
+        }
+    }
+
+    let mut session = Session::new();
+    session.add(LintVisitor::Tokens(Box::new(Noop::default())));
+
+    let source = "ScriptName Example\n";
+    let tokens = papyrus_parser::tokenize(source).ok();
+    let config = Config::default();
+    let diagnostics = session.collect(
+        source,
+        None,
+        tokens.as_deref(),
+        &config,
+        &mut NoExternalSignatures,
+    );
+
+    assert!(diagnostics.is_empty());
+}
+
+#[test]
 fn check_returns_diagnostics_from_the_visitor_store() {
     let source = "ScriptName Example\nFunction Run(Int a,Int b)\n    Int x = 1 / 0\nEndFunction\n";
     let ast = papyrus_parser::parse(source).ok();

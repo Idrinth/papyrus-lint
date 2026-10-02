@@ -22,6 +22,36 @@ fn forbid(source: &str) -> Vec<Diagnostic> {
 }
 
 #[test]
+fn direct_check_uses_the_supplied_ast_and_handles_a_missing_ast() {
+    let source = "ScriptName Example\n\nFunction F(Int count)\nEndFunction\n";
+    let ast = papyrus_parser::parse(source).expect("fixture parses");
+    let config = Config {
+        hungarian: Hungarian::Allow,
+        ..Config::default()
+    };
+
+    let diagnostics = check(
+        source,
+        Some(&ast),
+        None,
+        &config,
+        &mut crate::NoExternalSignatures,
+    );
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!(diagnostics[0].rule, RULE);
+    assert!(diagnostics[0].message.contains("prefix 'ai'"));
+
+    assert!(check(
+        source,
+        None,
+        None,
+        &config,
+        &mut crate::NoExternalSignatures,
+    )
+    .is_empty());
+}
+
+#[test]
 fn stays_off_unless_the_rule_is_enabled() {
     let source = "ScriptName Example\n\nFunction F(Actor target, Int count)\n  Bool done = false\nEndFunction\n";
     assert!(crate::lint(source, &Config::default())
