@@ -1,10 +1,7 @@
 #!/usr/bin/env python3
-"""Build the temporary shared/rules.json every other job's tooling reads.
+"""Optional debug dump of shared/rules/*.json into one JSON array.
 
-The table-assembly logic lives in ci_lib/rules_json.py; this is just the
-CLI entrypoint. Run before anything that reads shared/rules.json (a Rust
-crate build, pages/build.py, its own test suite, or the Nexus page
-generator) — it is git-ignored, not checked in.
+Builds do not read this file. The assembly check in CI writes it under /tmp.
 """
 
 from __future__ import annotations

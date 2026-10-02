@@ -5,17 +5,15 @@ Crate-local test and run commands live in that crate's `README.md`
 (`app/crates/*/README.md`, `app/src-tauri/README.md` for the desktop
 shell, and `app/src/README.md` for the UI). Do not copy them here.
 
-- Rule metadata: `shared/rules.json` (read by the Rust crates' build
-  scripts, `pages/build.py`, and its own tests) is generated, not
-  checked in — run `python3 .github/scripts/build_rules_json.py` after
-  cloning and again whenever a `shared/rules/*.json` file changes, before
-  any of the commands below that touch it.
+- Rule metadata lives in `shared/rules/<id>.json`. Rust build scripts,
+  `pages/build.py`, and `app/scripts/generate-config-types.mjs` read those
+  files directly. Do not generate `shared/rules.json` after cloning.
 - Setting metadata: edit `shared/configuration/project-settings/<key>.json`
   or `shared/configuration/lint-settings/<key>.json` (and the order list in
-  `lint-settings.yaml`). `shared/configuration/lint-settings.generated.yaml` is
-  git-ignored. `python3 .github/scripts/generate_default_config.py` refreshes
-  it; run `python3 .github/scripts/build_lint_settings_yaml.py` first only
-  when a Rust build will not go through that script. Don't edit the generated YAML.
+  `shared/configuration/lint-settings.yaml`). Do not generate
+  `lint-settings.generated.yaml` or `papyrus-lint.default.yaml` before a
+  build. `python3 .github/scripts/generate_default_config.py` only writes
+  the default YAML when you want that artifact on disk.
 - Full desktop app: `npm run tauri dev` / `npm run tauri build` (from `app/`).
   The desktop shell is built with [Tauri](https://tauri.app/), so building
   it requires Tauri's platform prerequisites (a Rust toolchain, plus the

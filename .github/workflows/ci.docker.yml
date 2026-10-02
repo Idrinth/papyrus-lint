@@ -1,7 +1,6 @@
 name: CI / Docker
 
 # Keep the preset matrix aligned with the images published by release.yml.
-# shared/rules.json is git-ignored, so the image build generates it first.
 
 on:
   push:
@@ -44,13 +43,6 @@ jobs:
         game: [skyrim, legacy, fallout4, starfield]
     steps:
       - uses: actions/checkout@v7
-
-      - name: Build rules.json from shared/rules/
-        run: python3 .github/scripts/build_rules_json.py
-
-      - name: Generate default configuration
-        shell: bash
-        run: python3 .github/scripts/generate_default_config.py
 
       - uses: dtolnay/rust-toolchain@stable
 

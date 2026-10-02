@@ -132,18 +132,11 @@ jobs:
             --dir coverage-artifacts \
             --pattern '*coverage*'
 
-      - name: Build rules.json from shared/rules/
-        run: python3 .github/scripts/build_rules_json.py
+      - name: Install PyYAML
+        run: pip install PyYAML==6.0.2
 
-      - name: Build lint-settings.yaml from per-setting JSON
-        run: python3 .github/scripts/build_lint_settings_yaml.py
-
-      - name: Generate default configuration
-        shell: bash
-        run: python3 .github/scripts/generate_default_config.py
-
-      - name: Regenerate Nexus page lint tables from rules.json
-        run: python3 .github/scripts/generate_nexuspage_tables.py shared/rules.json templates/nexuspage.bbcode
+      - name: Regenerate Nexus page lint tables from shared/rules
+        run: python3 .github/scripts/generate_nexuspage_tables.py shared/rules templates/nexuspage.bbcode
 
       - name: Generate version-specific Nexus page
         run: |
@@ -175,18 +168,6 @@ jobs:
           python-version: '3.13'
 
       - run: pip install PyYAML==6.0.2
-
-      - name: Build rules.json from shared/rules/
-        shell: bash
-        run: python3 .github/scripts/build_rules_json.py
-
-      - name: Build lint-settings.yaml from per-setting JSON
-        shell: bash
-        run: python3 .github/scripts/build_lint_settings_yaml.py
-
-      - name: Generate default configuration
-        shell: bash
-        run: python3 .github/scripts/generate_default_config.py
 
       - uses: actions/setup-node@v7
         with:
@@ -307,7 +288,9 @@ jobs:
       - name: Copy default configuration
         if: matrix.platform == 'ubuntu-latest'
         shell: bash
-        run: cp shared/configuration/papyrus-lint.default.yaml cli-dist/papyrus-lint.yaml
+        run: |
+          python3 .github/scripts/generate_default_config.py --skip-schema
+          cp shared/configuration/papyrus-lint.default.yaml cli-dist/papyrus-lint.yaml
 
       - name: Collect Tauri bundles under stable names
         shell: bash

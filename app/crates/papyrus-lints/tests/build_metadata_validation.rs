@@ -7,6 +7,10 @@ mod metadata;
 // validation without running Cargo's build script or touching the filesystem.
 pub struct BuildContext;
 impl BuildContext {
+    pub fn input(&self, relative: &str) -> std::path::PathBuf {
+        std::path::PathBuf::from(relative)
+    }
+
     pub fn load_json<T>(&self, _: &str, _: &str) -> T {
         unreachable!()
     }
@@ -205,7 +209,7 @@ fn rejects_configuration_keys_without_rule_metadata() {
 
     assert!(error
         .to_string()
-        .contains("lists rules.unknown_rule but shared/rules.json has no matching id"));
+        .contains("lists rules.unknown_rule but shared/rules has no matching id"));
 }
 
 #[test]

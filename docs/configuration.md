@@ -7,11 +7,11 @@ files in [`project-settings/`](../shared/configuration/project-settings) and
 [`lint-settings/`](../shared/configuration/lint-settings) (one file per key;
 order is [`lint-settings.yaml`](../shared/configuration/lint-settings.yaml))
 and from [`shared/rules/`](../shared/rules/). It is the reference for the
-available keys, accepted values, and rule switches. Regenerate the git-ignored
-default artifact with `python3 .github/scripts/generate_default_config.py`
-(that also refreshes the git-ignored `lint-settings.yaml` the other tools read).
-`PapyrusLinterCLI init` writes this file using the `strict` preset unless another
-preset is requested.
+available keys, accepted values, and rule switches. `PapyrusLinterCLI init`
+writes this file using the `strict` preset unless another preset is requested.
+The website renders the same document while it builds; write the file locally
+with `python3 .github/scripts/generate_default_config.py` only when you need
+the artifact itself.
 
 For an `.achlist`, the project root is the directory containing that file. For a
 single `.psc`, the CLI looks for a nearby config and the conventional
@@ -23,8 +23,8 @@ from those setting JSON files and [`shared/rules/`](../shared/rules/)
 (`python3 .github/scripts/generate_config_schema.py`)
 and published at
 `https://papyrus-lint.idrinth.de/schema/papyrus-lint.schema.json`. The generated
-file is git-ignored (like the default YAML); Pages and CI jobs produce it before
-publishing or testing the site.
+file is git-ignored (like the default YAML). Pages renders it while building
+the site, so it does not have to exist in a fresh checkout.
 
 Papyrus Lint supports `skyrim` (Skyrim Special Edition/Anniversary Edition),
 `legacy` (Skyrim Legendary Edition — same Papyrus dialect and lint rules as

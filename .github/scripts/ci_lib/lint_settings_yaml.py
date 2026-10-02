@@ -1,17 +1,12 @@
-"""Assembles shared/configuration/lint-settings.generated.yaml from per-setting JSON.
+"""Assembles the lint-settings document from per-setting JSON.
 
 Each project setting lives in shared/configuration/project-settings/<key>.json
 and each lint setting in shared/configuration/lint-settings/<key>.json.
 Declaration order (the Settings tab order) and the rules-section comment
 live in shared/configuration/lint-settings.yaml.
 
-The combined YAML is git-ignored. Rust build scripts,
-app/scripts/generate-config-types.mjs, and the default-config/schema
-generators still read that one file, so none of them parse the JSON
-directories themselves. Regenerate it with
-.github/scripts/build_lint_settings_yaml.py, or by running
-generate_default_config.py / generate_config_schema.py, which refresh it
-before they read.
+Callers use the returned dict. render_lint_settings_yaml dumps that dict
+as YAML; nothing in CI writes the dump to disk.
 """
 
 from __future__ import annotations
@@ -25,8 +20,7 @@ import yaml
 HEADER = """\
 # Generated from `shared/configuration/project-settings/*.json`,
 # `shared/configuration/lint-settings/*.json`, and
-# `shared/configuration/lint-settings.yaml` by
-# `.github/scripts/build_lint_settings_yaml.py`. Do not edit by hand.
+# `shared/configuration/lint-settings.yaml`. Do not edit by hand.
 """
 
 _DOUBLE_QUOTED_KEYS = frozenset({"comment", "description", "doc"})

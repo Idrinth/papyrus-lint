@@ -2,7 +2,7 @@
 
 Extracted out of pages/build.py (which was getting long and crowded with
 unrelated site-assembly concerns) with no behavior change. Renders
-shared/rules.json's own metadata (id, severity, tags, auto-fix support, full
+shared/rules/<id>.json metadata (id, severity, tags, auto-fix support, full
 documented behavior) into a searchable/filterable reference of every lint
 rule the linter implements.
 """
@@ -24,7 +24,7 @@ ROOT = Path(__file__).resolve().parent.parent
 PAGES_DIR = Path(__file__).resolve().parent
 SHARED_DIR = ROOT / "shared"
 
-RULES_FILE = SHARED_DIR / "rules.json"
+RULES_FILE = SHARED_DIR / "rules"
 
 RULE_SEVERITIES = ["error", "warning", "info"]
 RULE_TAGS = ["correctness", "performance", "maintainability", "style"]
@@ -33,7 +33,27 @@ NONE_PRESET = "none"
 
 
 def load_rules() -> list[dict]:
-    return json.loads(RULES_FILE.read_text(encoding="utf-8"))
+    """Rules from shared/rules/*.json, or from a JSON array when tests point
+    RULES_FILE at a single file."""
+    path = RULES_FILE
+    if path.is_file():
+        loaded = json.loads(path.read_text(encoding="utf-8"))
+        if not isinstance(loaded, list):
+            raise ValueError(f"{path} must contain a JSON array")
+        return loaded
+    paths = sorted(rule_path for rule_path in path.glob("*.json") if rule_path.is_file())
+    if not paths:
+        raise ValueError(f"no rule files found in {path}")
+    rules = []
+    for rule_path in paths:
+        rule = json.loads(rule_path.read_text(encoding="utf-8"))
+        if rule.get("id") != rule_path.stem:
+            raise ValueError(
+                f"{rule_path}: `id` is {rule.get('id')!r}, expected {rule_path.stem!r} to match the file name"
+            )
+        rule.pop("repair_order", None)
+        rules.append(rule)
+    return rules
 
 
 def presets_for(rule: dict) -> list[str]:
@@ -97,7 +117,7 @@ def render_rules_filter_bar(rules: list[dict]) -> str:
 
 
 def render_rules_table(rules: list[dict]) -> str:
-    """Renders every shared/rules.json rule into one table."""
+    """Renders every shared/rules/<id>.json rule into one table."""
     out = [
         '<div class="lint-table-wrap">',
         '<table class="lint-table lint-rules-table" id="rules-table">',
@@ -151,7 +171,7 @@ def render_rules_table(rules: list[dict]) -> str:
 
 
 def build_rules_page(out_dir: Path, version: str = "") -> None:
-    """Renders shared/rules.json into rules.html."""
+    """Renders shared/rules into rules.html."""
     rules = load_rules()
     template = (PAGES_DIR / "rules.template.html").read_text(encoding="utf-8")
     if "<!--RULES_CONTENT-->" not in template:

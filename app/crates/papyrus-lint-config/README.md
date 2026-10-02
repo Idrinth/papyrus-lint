@@ -3,8 +3,9 @@
 `papyrus-lint.yaml` discovery, presets, compiler detection, and script-root
 configuration.
 
-`shared/configuration/papyrus-lint.default.yaml` must match `init` output. Drift
-is a CI failure in this crate.
+`build.rs` renders the default YAML from `shared/rules/*.json` and the
+lint-settings JSON. `init` output must match that render. Drift is a test
+failure in this crate.
 
 ```sh
 cargo test --manifest-path app/crates/papyrus-lint-config/Cargo.toml

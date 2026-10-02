@@ -1,11 +1,9 @@
-"""Assembles shared/rules.json from shared/rules/<id>.json.
+"""Assembles rule metadata from shared/rules/<id>.json.
 
-shared/rules.json grew too large to review as one file, so each rule now
-lives in its own shared/rules/<id>.json (a single rule object). This module
-reassembles the combined array the Rust build scripts
-(papyrus-lints/build.rs, papyrus-lint-config/build.rs), pages/rules_page.py,
-and .github/scripts/generate_nexuspage_tables.py all still read from one
-shared/rules.json file, so none of those consumers needed to change.
+Each rule is one JSON object. assemble_rules returns them sorted by id.
+Rust build scripts, pages/rules_page.py, and the Nexus table generator
+read the directory themselves; render_rules_json is only the optional
+debug dump written by build_rules_json.py.
 """
 
 from __future__ import annotations

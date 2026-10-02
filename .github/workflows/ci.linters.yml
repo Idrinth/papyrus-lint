@@ -1,9 +1,7 @@
 name: CI / Linters
 
-# shared/rules.json and shared/configuration/lint-settings.yaml are
-# git-ignored. rustfmt does not run build scripts, but clippy does and
-# therefore regenerates the combined rule metadata first. The YAML job
-# rebuilds lint-settings.yaml so yamllint still sees the generator output.
+# rustfmt does not run build scripts. clippy does, and the build scripts
+# read shared/rules/*.json and the lint-settings JSON directly.
 
 on:
   push:
@@ -53,9 +51,6 @@ jobs:
 
       - name: Install yamllint
         run: pip install yamllint==1.37.1
-
-      - name: Build lint-settings.yaml from per-setting JSON
-        run: python3 .github/scripts/build_lint_settings_yaml.py
 
       - name: Lint YAML sources
         run: yamllint shared/configuration/lint-settings.yaml shared/rules/data/*/*.yaml shared/links.yaml
@@ -141,10 +136,6 @@ jobs:
           cache: npm
           cache-dependency-path: app/package-lock.json
 
-      - name: Generate default configuration
-        working-directory: ${{ github.workspace }}
-        run: python3 .github/scripts/generate_default_config.py
-
       - name: Install dependencies
         run: npm ci --ignore-scripts
 
@@ -204,13 +195,6 @@ jobs:
         - papyrus-lint-config
     steps:
       - uses: actions/checkout@v7
-
-      - name: Build rules.json from shared/rules/
-        run: python3 .github/scripts/build_rules_json.py
-
-      - name: Generate default configuration
-        shell: bash
-        run: python3 .github/scripts/generate_default_config.py
 
       - name: Install Tauri Linux dependencies
         if: matrix.crate == 'src-tauri'

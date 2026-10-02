@@ -1,12 +1,9 @@
-"""Regenerates a Nexus page's lint tables from its rules.json.
-
-Extracted out of generate_nexuspage_tables.py (which mixed this logic with
-its CLI entrypoint) with no behavior change.
+"""Regenerates a Nexus page's lint tables from rule metadata.
 
 Each `[spoiler][table]...[/table][/spoiler]` block in the BBCode file is
 replaced, in order, with a table row per rule sharing that block's category
 (the five categories, and their order, come from CATEGORIES below, matching
-shared/rules.json's own `category` values) - sourced from that rule's `name`,
+each rule's `category`) - sourced from that rule's `name`,
 `description`, and `fixable` fields. Everything else in the file (headings,
 intros, the configuration/CLI sections) is left untouched.
 """

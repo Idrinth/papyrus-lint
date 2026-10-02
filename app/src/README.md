@@ -19,11 +19,10 @@ Framework-free TypeScript UI for the Tauri app. Reusable linting stays in
   fieldset. The other Settings controls (game, formatting, thresholds)
   come from generated `LINT_SETTINGS` and are rendered into
   `#lint-config-game` and `#lint-config-settings`. Both are produced from
-  `shared/configuration/lint-settings.generated.yaml` (git-ignored; generated from
-  `shared/configuration/project-settings/*.json`,
-  `shared/configuration/lint-settings/*.json`, and
+  `shared/configuration/lint-settings/*.json` (ordered by
   `shared/configuration/lint-settings.yaml`) plus `shared/rules/*.json`; don't
-  hand-write either list or the generated lint-settings YAML.
+  hand-write either list. A fresh checkout builds without generating
+  `lint-settings.generated.yaml` or `papyrus-lint.default.yaml`.
 - The code viewer and live editor highlight, title, and act on the same
   filtered findings the Lint results list is showing. `codeViewerState`
   still keeps the full lint result so a filter change can re-apply

@@ -4,17 +4,16 @@ Source of truth:
   - shared/configuration/project-settings/*.json
   - shared/configuration/lint-settings/*.json
   - shared/configuration/lint-settings.yaml
-    (declaration order and rules_comment; refreshed into the
-    git-ignored lint-settings.generated.yaml for the other readers)
-  - shared/rules.json (or shared/rules/*.json) for each rule's description
-    and enabled_by_default
+    (declaration order and rules_comment)
+  - shared/rules/*.json for each rule's description and enabled_by_default
 
 Rules in the generated default YAML are ordered alphabetically by config key.
 Settings UI order follows declaration order in lint-settings.yaml.
 
-The checked-in papyrus-lint.default.yaml is no longer a source; this module
-(and papyrus-lint-config/build.rs) produce the same artifact for
-build/release/docs.
+Nothing in the Rust build or the desktop UI reads this file. `cargo build`
+and `npm run build` assemble the same inputs themselves. This module still
+renders the document for the website, the release archive, and
+`generate_default_config.py`.
 """
 
 from __future__ import annotations
@@ -35,24 +34,19 @@ def config_key_for(rule_id: str) -> str:
 
 
 def load_lint_settings(repo_root: Path) -> dict:
-    """The per-setting JSON files are the source of truth. When they are
-    present, refresh the git-ignored lint-settings.generated.yaml consumers
-    still read and return that document. A tree that only has the generated
-    YAML (unit tests) is loaded as-is.
+    """The per-setting JSON files plus lint-settings.yaml are the source of
+    truth. A tree that only has the generated YAML (unit tests) is loaded
+    as-is. This does not write that YAML.
     """
     configuration = repo_root / "shared" / "configuration"
     project_dir = configuration / "project-settings"
     lint_dir = configuration / "lint-settings"
     meta_path = configuration / "lint-settings.yaml"
-    generated_path = configuration / "lint-settings.generated.yaml"
     if project_dir.is_dir() and lint_dir.is_dir() and meta_path.is_file():
-        from ci_lib.lint_settings_yaml import assemble_lint_settings, render_lint_settings_yaml
+        from ci_lib.lint_settings_yaml import assemble_lint_settings
 
-        document = assemble_lint_settings(project_dir, lint_dir, meta_path)
-        rendered = render_lint_settings_yaml(document)
-        if not generated_path.is_file() or generated_path.read_text(encoding="utf-8") != rendered:
-            generated_path.write_text(rendered, encoding="utf-8")
-        return document
+        return assemble_lint_settings(project_dir, lint_dir, meta_path)
+    generated_path = configuration / "lint-settings.generated.yaml"
     yaml_path = generated_path if generated_path.is_file() else meta_path
     data = yaml.safe_load(yaml_path.read_text(encoding="utf-8"))
     if not isinstance(data, dict):
@@ -61,18 +55,18 @@ def load_lint_settings(repo_root: Path) -> dict:
 
 
 def load_rules(repo_root: Path) -> list[dict]:
+    rules_dir = repo_root / "shared" / "rules"
+    if rules_dir.is_dir() and any(rules_dir.glob("*.json")):
+        from ci_lib.rules_json import assemble_rules
+
+        return assemble_rules(rules_dir)
     combined = repo_root / "shared" / "rules.json"
     if combined.is_file():
-        return json.loads(combined.read_text(encoding="utf-8"))
-    rules_dir = repo_root / "shared" / "rules"
-    rules = []
-    for path in sorted(rules_dir.glob("*.json")):
-        rule = json.loads(path.read_text(encoding="utf-8"))
-        stem = path.stem
-        if rule.get("id") != stem:
-            raise ValueError(f"{path}: id {rule.get('id')!r} != {stem!r}")
-        rules.append(rule)
-    return rules
+        loaded = json.loads(combined.read_text(encoding="utf-8"))
+        if not isinstance(loaded, list):
+            raise ValueError(f"{combined} must contain a JSON array")
+        return loaded
+    raise ValueError(f"no rule files found in {rules_dir}")
 
 
 def _comment_block(text: str) -> str:

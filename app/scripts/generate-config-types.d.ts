@@ -45,11 +45,27 @@ export function renderConfigTypes(
   settings: LintSettingSource[],
 ): string;
 
+export function assembleLintSettings(configurationDir: string): {
+  project: LintSettingSource[];
+  settings: LintSettingSource[];
+  rules_comment: string;
+};
+
+export function renderDefaultYaml(
+  settings: {
+    project: Array<{ key: string; yaml: { comment: string; default: string } }>;
+    settings: Array<{ key: string; yaml: { comment: string; default: string } }>;
+    rules_comment: string;
+  },
+  rules: Array<{ id: string; description?: string; enabled_by_default?: boolean }>,
+): string;
+
 export function loadYamlFile(filePath: string): { settings: LintSettingSource[]; [key: string]: unknown };
 
 export function writeConfigTypes(options: {
   rulesDir: string;
-  defaultYamlPath: string;
-  settingsPath: string;
+  configurationDir?: string;
+  defaultYaml?: string;
+  settings?: LintSettingSource[];
   outPath: string;
 }): number;

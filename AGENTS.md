@@ -80,19 +80,15 @@ CI treats clippy warnings as errors.
    `templates/nexuspage.bbcode`'s own style, `category`, `visitor` (`ast`,
    `tokens`, or `none` — how the rule would walk a script as a visitor),
    `tags`, `severity`,
-   `importance`, `fixable`, optional `repair_order`, optional `games`). `shared/rules.json`
-   — the combined array every other consumer actually reads — is
-   generated from those files by `.github/scripts/build_rules_json.py`
-   and is git-ignored, not checked in; run that script (no arguments)
-   after adding/editing a `shared/rules/*.json` file and before building
-   or testing anything below. Nothing else is hand-edited from it:
+   `importance`, `fixable`, optional `games`). Consumers read those files
+   directly. Do not generate `shared/rules.json` before building or testing.
    `build.rs` compiles `app/crates/papyrus-lints`'s
    `KNOWN_RULE_IDS`/`FIXABLE_RULE_IDS` (`src/registry.rs`), `RULE_TAGS`
    (`src/tags.rs`), `Rules`/`default_rules()` (`src/config.rs`), the
    `collect_diagnostics`/`apply_repairs` dispatch, and each rule's
-   `mod` in `src/lib.rs` from the generated `shared/rules.json` at build time.
-   `Config`'s other fields are compiled from the generated
-   `shared/configuration/lint-settings.yaml` (see "Adding a lint" below).
+   `mod` in `src/lib.rs` from `shared/rules/*.json` at build time.
+   `Config`'s other fields are compiled from
+   `shared/configuration/lint-settings/*.json` (see "Adding a lint" below).
    `pages/build.py` generates the website's searchable `rules.html`
    straight from it; and release tooling fills in `templates/nexuspage.bbcode`'s
    five lint tables from it (see the comments in `.github/workflows/release.yml`) —
@@ -130,12 +126,11 @@ Minimum touch list (see also [`CONTRIBUTING.md`](CONTRIBUTING.md)):
    set `repair_order` (1..=N, no gaps). Optional `"games": ["skyrim", ...]`
    limits the rule to those `Config.game` values (`skyrim` / `fallout4` /
    `starfield`); omit it so the rule keeps applying everywhere. Set
-   `"enabled_by_default": false` only for opt-in rules. Run `python3
-   .github/scripts/build_rules_json.py` afterward (and before building or
-   testing anything below) to regenerate the git-ignored `shared/rules.json`
-   every consumer below actually reads, then
-   `python3 .github/scripts/generate_default_config.py` so the git-ignored
-   default YAML stays in sync. No Nexus page regeneration step
+   `"enabled_by_default": false` only for opt-in rules. No
+   `shared/rules.json` or default-YAML regeneration step is required
+   before building or testing — `build.rs` and
+   `app/scripts/generate-config-types.mjs` read `shared/rules/*.json`
+   themselves. No Nexus page regeneration step
    is needed here — that happens at release time (see the comments in
    `.github/workflows/release.yml`). `build.rs` generates
    `registry.rs`'s `KNOWN_RULE_IDS`/`FIXABLE_RULE_IDS`, `tags.rs`'s
@@ -143,28 +138,27 @@ Minimum touch list (see also [`CONTRIBUTING.md`](CONTRIBUTING.md)):
    `collect_diagnostics`/`apply_repairs`, and `lib.rs`'s rule `mod`s from
    this file at build time — don't hand-edit those. `Config`'s other
    fields (everything except `rules`) are generated from
-   `shared/configuration/lint-settings.yaml` by the same `build.rs`. The desktop
+   `shared/configuration/lint-settings/*.json` by the same `build.rs`, in
+   the order listed under `settings:` in
+   `shared/configuration/lint-settings.yaml`. The desktop
    Settings tab's per-rule checkboxes are the same: `app/scripts/generate-config-types.mjs`
    writes `RULE_SETTINGS` into `app/src/config-types.ts`, and
    `bindConfigSettings` renders `#lint-rules` from that. Don't add a
    checkbox to `app/index.html` (or the test fixture) for a new rule.
-   That script also writes `LINT_SETTINGS` from `shared/configuration/lint-settings.yaml`;
+   That script also writes `LINT_SETTINGS` from those same JSON files;
    `bindConfigSettings` renders those controls into `#lint-config-game` and
    `#lint-config-settings`. Don't hand-edit `Config` or those controls —
    add `shared/configuration/lint-settings/<key>.json` (a Config field) or
    `shared/configuration/project-settings/<key>.json` (a project setting)
    and append that key to the matching list in
-   `shared/configuration/lint-settings.meta.json` (that list is the UI
+   `shared/configuration/lint-settings.yaml` (that list is the UI
    order). The object needs `key` (matching the file name), `yaml.comment`,
    `yaml.default`, `schema`, and for Config fields `rust.type` /
-   `rust.default`. Then run
-   `python3 .github/scripts/build_lint_settings_yaml.py` so the git-ignored
-   `shared/configuration/lint-settings.yaml` is refreshed — consumers still
-   read that file, they just no longer find it in git — and regenerate
-   `schema/papyrus-lint.schema.json`
-   (`python3 .github/scripts/generate_config_schema.py`) and the git-ignored
-   default YAML (`python3 .github/scripts/generate_default_config.py`).
-   `doc_url()` links straight to `rules.html#rule-<rule>`, derived from
+   `rust.default` plus `doc`, `ts_type`, and `ui`. Do not generate
+   `lint-settings.generated.yaml` or `papyrus-lint.default.yaml` first.
+   Regenerate `schema/papyrus-lint.schema.json` only when publishing it
+   (`python3 .github/scripts/generate_config_schema.py`); Pages renders it
+   on its own. `doc_url()` links straight to `rules.html#rule-<rule>`, derived from
    the rule id alone, so it needs no separate slug field either. A new
    `"low"` importance rule is turned off by default in the generated
    `standard`/`careful` presets too (see `papyrus-lint-config/build.rs`);
@@ -188,8 +182,7 @@ If the rule introduces a new *kind* keyword (not `style` /
 ## Docs sync (humans and AI)
 
 - README lint tables → `shared/rules/<id>.json` (rule 4). `shared/rules/*.json` →
-  the generated `shared/rules.json` (`.github/scripts/build_rules_json.py`,
-  also git-ignored) → `templates/nexuspage.bbcode`'s lint tables (filled in at
+  `templates/nexuspage.bbcode`'s lint tables (filled in at
   release time, never checked in — see the comments in `.github/workflows/release.yml`) and
   `papyrus-lints`'s `registry.rs`/`tags.rs`/
   `lib.rs` rule `mod`s (via `build.rs`) — all generated, never hand-edited.
