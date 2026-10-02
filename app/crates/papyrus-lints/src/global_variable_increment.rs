@@ -98,10 +98,10 @@ pub fn repair(
     tokens: Option<&[papyrus_parser::token::Token]>,
     config: &crate::config::Config,
 ) -> String {
-    let _ = (ast, tokens, config);
+    let _ = (ast, tokens);
 
     let (Ok(script), Ok(tokens)) = (
-        papyrus_parser::parse(source),
+        papyrus_parser::parse_for_game(source, config.game),
         papyrus_parser::tokenize(source),
     ) else {
         return source.to_string();
