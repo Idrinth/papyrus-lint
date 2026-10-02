@@ -244,6 +244,64 @@ fn repairs_multiple_calls_and_nested_bodies() {
 }
 
 #[test]
+fn repairs_calls_in_lock_guard_success_and_fallback_bodies() {
+    let source = "\
+ScriptName Example
+
+Guard ValueGuard
+
+Function Test(GlobalVariable gv, Float x)
+    LockGuard ValueGuard
+        gv.SetValue(gv.GetValue() + x)
+    EndLockGuard
+    TryLockGuard ValueGuard
+        gv.SetValue(x + gv.GetValue())
+    ElseTryLockGuard
+        gv.SetValue(gv.GetValue() + 1.0)
+    EndTryLockGuard
+EndFunction
+";
+
+    let config = crate::config::Config {
+        game: crate::Game::Starfield,
+        ..Default::default()
+    };
+
+    let ast = papyrus_parser::parse_for_game(source, crate::Game::Starfield).unwrap();
+    let tokens = papyrus_parser::tokenize(source).unwrap();
+    assert_eq!(
+        super::check(
+            source,
+            Some(&ast),
+            Some(&tokens),
+            &config,
+            &mut crate::NoExternalSignatures,
+        )
+        .len(),
+        3
+    );
+    assert_eq!(
+        super::repair(source, None, None, &config),
+        "\
+ScriptName Example
+
+Guard ValueGuard
+
+Function Test(GlobalVariable gv, Float x)
+    LockGuard ValueGuard
+        gv.Mod(x)
+    EndLockGuard
+    TryLockGuard ValueGuard
+        gv.Mod(x)
+    ElseTryLockGuard
+        gv.Mod(1.0)
+    EndTryLockGuard
+EndFunction
+"
+    );
+}
+
+#[test]
 fn repair_leaves_setvalueint_untouched() {
     let source =
             "ScriptName Example\n\nFunction Test(GlobalVariable gv, Int x)\n    gv.SetValueInt(gv.GetValueInt() + x)\nEndFunction\n";
