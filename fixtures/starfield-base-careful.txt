@@ -2502,11 +2502,13 @@ Scripts/Source/DefaultCollectionAliasOnDeath.psc:59:121:line-length
 Scripts/Source/DefaultCollectionAliasOnDeath.psc:61:121:line-length
 Scripts/Source/DefaultCollectionAliasOnHit.psc:8:121:line-length
 Scripts/Source/DefaultCollectionAliasOnHit.psc:12:121:line-length
+Scripts/Source/DefaultCollectionAliasOnHit.psc:15:1:missing-parent-call-in-override
 Scripts/Source/DefaultCollectionAliasOnHit.psc:33:121:line-length
 Scripts/Source/DefaultCollectionAliasOnHit.psc:34:121:line-length
 Scripts/Source/DefaultCollectionAliasOnHit.psc:35:121:line-length
 Scripts/Source/DefaultCollectionAliasOnHit.psc:39:1:unchecked-cast
 Scripts/Source/DefaultCollectionAliasOnItemRemoved.psc:9:121:line-length
+Scripts/Source/DefaultCollectionAliasOnItemRemoved.psc:12:1:missing-parent-call-in-override
 Scripts/Source/DefaultCollectionAliasOnItemRemoved.psc:16:121:line-length
 Scripts/Source/DefaultCollectionAliasOnItemRemoved.psc:19:121:line-length
 Scripts/Source/DefaultCollectionAliasOnItemRemoved.psc:19:154:forbidden-functions
@@ -2558,6 +2560,7 @@ Scripts/Source/DefaultCollectionAliasRespawnScript.psc:11:8:forbidden-functions
 Scripts/Source/DefaultCollectionAliasRespawnScript.psc:14:3:strict-boolean
 Scripts/Source/DefaultCollectionChangeAV.psc:28:1:setvalue-in-loop
 Scripts/Source/DefaultCollectionOnCombatStateChanged.psc:10:121:line-length
+Scripts/Source/DefaultCollectionOnCombatStateChanged.psc:19:1:missing-parent-call-in-override
 Scripts/Source/DefaultCollectionOnCombatStateChanged.psc:42:121:line-length
 Scripts/Source/DefaultCollectionOnCombatStateChanged.psc:49:121:line-length
 Scripts/Source/DefaultCollectionOnCombatStateChanged.psc:56:121:line-length
@@ -3026,6 +3029,7 @@ Scripts/Source/DefaultRefEffectShader.psc:2:121:line-length
 Scripts/Source/DefaultRefEffectShader.psc:9:1:none-form-usage
 Scripts/Source/DefaultRefEnableLinkedRefOnActivate.psc:30:10:forbidden-functions
 Scripts/Source/DefaultRefEnableLinkedRefOnActivate.psc:35:121:line-length
+Scripts/Source/DefaultRefEnableLinkedRefOnTrigger.psc:23:1:missing-parent-call-in-override
 Scripts/Source/DefaultRefEnableLinkedRefOnTrigger.psc:33:10:forbidden-functions
 Scripts/Source/DefaultRefEnableLinkedRefOnTrigger.psc:38:121:line-length
 Scripts/Source/DefaultRefEnableLinkedRefOnTrigger.psc:47:121:line-length
@@ -3118,6 +3122,7 @@ Scripts/Source/DefaultRefSurfaceBoardingEncounter.psc:7:121:line-length
 Scripts/Source/DefaultReleaseToHavokScript.psc:13:121:line-length
 Scripts/Source/DefaultReleaseToHavokScript.psc:26:121:line-length
 Scripts/Source/DefaultReleaseToHavokScript.psc:30:121:line-length
+Scripts/Source/DefaultSceneStartOnEnterTrigger.psc:20:1:missing-parent-call-in-override
 Scripts/Source/DefaultSceneStartOnEnterTrigger.psc:25:121:line-length
 Scripts/Source/DefaultSceneStartOnEnterTrigger.psc:26:121:line-length
 Scripts/Source/DefaultSceneStartOnEnterTrigger.psc:29:121:line-length
@@ -3217,6 +3222,7 @@ Scripts/Source/DefaultShowMessageOnActivateRef.psc:71:121:line-length
 Scripts/Source/DefaultShowMessageOnActivateRef.psc:74:121:line-length
 Scripts/Source/DefaultShowMessageOnActivateRef.psc:77:121:line-length
 Scripts/Source/DefaultShowMessageOnActivateRef.psc:80:121:line-length
+Scripts/Source/DefaultStartQuestOnTriggerEnter.psc:17:1:missing-parent-call-in-override
 Scripts/Source/DefaultStartQuestOnTriggerEnter.psc:22:121:line-length
 Scripts/Source/DefaultStartQuestOnTriggerEnter.psc:23:121:line-length
 Scripts/Source/DefaultStartQuestOnTriggerEnter.psc:27:121:line-length
@@ -32738,6 +32744,7 @@ Scripts/Source/MissionCargoParentScript.psc:65:121:line-length
 Scripts/Source/MissionCargoParentScript.psc:66:121:line-length
 Scripts/Source/MissionCargoQuestScript.psc:36:121:line-length
 Scripts/Source/MissionCargoQuestScript.psc:47:121:line-length
+Scripts/Source/MissionCargoQuestScript.psc:52:1:missing-parent-call-in-override
 Scripts/Source/MissionCargoQuestScript.psc:53:8:forbidden-functions
 Scripts/Source/MissionCargoQuestScript.psc:64:1:nesting-depth
 Scripts/Source/MissionCargoQuestScript.psc:65:8:forbidden-functions
@@ -32900,6 +32907,7 @@ Scripts/Source/MissionParentScript.psc:413:121:line-length
 Scripts/Source/MissionParentScript.psc:416:121:line-length
 Scripts/Source/MissionParentScript.psc:417:121:line-length
 Scripts/Source/MissionPassengerQuestScript.psc:42:121:line-length
+Scripts/Source/MissionPassengerQuestScript.psc:56:1:missing-parent-call-in-override
 Scripts/Source/MissionPassengerQuestScript.psc:57:8:forbidden-functions
 Scripts/Source/MissionPassengerQuestScript.psc:63:8:forbidden-functions
 Scripts/Source/MissionPassengerQuestScript.psc:70:121:line-length
@@ -33114,6 +33122,7 @@ Scripts/Source/MissionSabotageQuestScript.psc:30:14:forbidden-functions
 Scripts/Source/MissionSabotageQuestScript.psc:51:10:forbidden-functions
 Scripts/Source/MissionSabotageQuestScript.psc:52:51:unresolved-script
 Scripts/Source/MissionSabotageQuestScript.psc:57:52:unresolved-script
+Scripts/Source/MissionStealQuestScript.psc:37:1:missing-parent-call-in-override
 Scripts/Source/MissionStealQuestScript.psc:38:8:forbidden-functions
 Scripts/Source/MissionStealQuestScript.psc:50:72:unresolved-script
 Scripts/Source/MissionStealQuestScript.psc:52:48:unresolved-script
@@ -35177,6 +35186,7 @@ Scripts/Source/RQ_PlaceObjectScript.psc:93:121:line-length
 Scripts/Source/RQ_PlaceObjectScript.psc:99:7:forbidden-functions
 Scripts/Source/RQ_RescueScript.psc:56:2:strict-boolean
 Scripts/Source/RQ_RescueScript.psc:58:2:strict-boolean
+Scripts/Source/RQ_RescueScript.psc:73:1:missing-parent-call-in-override
 Scripts/Source/RQ_SetStageOnExternalScene.psc:39:121:line-length
 Scripts/Source/RQ_SetStageOnExternalScene.psc:40:121:line-length
 Scripts/Source/RQ_SetStageOnExternalScene.psc:43:121:line-length
@@ -35696,6 +35706,7 @@ Scripts/Source/SEScript.psc:86:8:forbidden-functions
 Scripts/Source/SEScript.psc:86:121:line-length
 Scripts/Source/SEScript.psc:87:8:forbidden-functions
 Scripts/Source/SEScript.psc:94:10:forbidden-functions
+Scripts/Source/SEScript.psc:101:1:missing-parent-call-in-override
 Scripts/Source/SEScript.psc:106:1:cyclomatic-complexity
 Scripts/Source/SEScript.psc:107:8:forbidden-functions
 Scripts/Source/SEScript.psc:113:10:forbidden-functions
@@ -35719,6 +35730,7 @@ Scripts/Source/SEScript.psc:232:9:forbidden-functions
 Scripts/Source/SEScript.psc:232:115:unresolved-script
 Scripts/Source/SEScript.psc:243:13:forbidden-functions
 Scripts/Source/SEScript.psc:254:12:forbidden-functions
+Scripts/Source/SEScript.psc:285:1:missing-parent-call-in-override
 Scripts/Source/SEScript.psc:294:64:unresolved-script
 Scripts/Source/SEScript.psc:296:9:forbidden-functions
 Scripts/Source/SEScript.psc:300:63:unresolved-script
@@ -43204,6 +43216,7 @@ Scripts/Source/UC03_TextReplacementScript.psc:25:1:none-form-usage
 Scripts/Source/UC03_TextReplacementScript.psc:25:80:slow-functions
 Scripts/Source/UC03_TextReplacementScript.psc:26:1:none-form-usage
 Scripts/Source/UC03_TextReplacementScript.psc:26:80:slow-functions
+Scripts/Source/UC04_CabinetTriggerEnterScript.psc:13:1:missing-parent-call-in-override
 Scripts/Source/UC04_CabinetTriggerEnterScript.psc:14:14:forbidden-functions
 Scripts/Source/UC04_CabinetTriggerEnterScript.psc:17:121:line-length
 Scripts/Source/UC04_CabinetTriggerEnterScript.psc:18:121:line-length
@@ -43277,6 +43290,10 @@ Scripts/Source/UC04_QuestScript.psc:462:1:unchecked-cast
 Scripts/Source/UC04_QuestScript.psc:478:9:strict-boolean
 Scripts/Source/UC04_QuestScript.psc:491:121:line-length
 Scripts/Source/UC04_QuestScript.psc:492:121:line-length
+Scripts/Source/UC04_RefColl_WarnIfHitScript.psc:6:1:missing-parent-call-in-override
+Scripts/Source/UC04_RefColl_WarnIfHitScript.psc:10:1:missing-parent-call-in-override
+Scripts/Source/UC04_RefColl_WarnIfHitScript.psc:14:1:missing-parent-call-in-override
+Scripts/Source/UC04_RefColl_WarnIfHitScript.psc:24:1:missing-parent-call-in-override
 Scripts/Source/UC04_RefColl_WarnIfHitScript.psc:24:121:line-length
 Scripts/Source/UC04_RefColl_WarnIfHitScript.psc:25:26:forbidden-functions
 Scripts/Source/UC04_RefColl_WarnIfHitScript.psc:28:121:line-length

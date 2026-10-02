@@ -18505,6 +18505,7 @@ Scripts/Source/Base/DN102_LabDemo3Script.psc:33:1:identifier-casing
 Scripts/Source/Base/DN102_LabDemo3Script.psc:41:1:argument-naming
 Scripts/Source/Base/DN102_LabDemo3Script.psc:41:1:function-override
 Scripts/Source/Base/DN102_LabDemo3Script.psc:41:1:identifier-casing
+Scripts/Source/Base/DN102_LabDemo3Script.psc:41:1:missing-parent-call-in-override
 Scripts/Source/Base/DN102_LabDemo3Script.psc:45:1:unnecessary-function
 Scripts/Source/Base/DN102_LabDemo3Script.psc:50:1:function-length
 Scripts/Source/Base/DN102_LabDemo3Script.psc:50:1:function-override
@@ -94889,6 +94890,7 @@ Scripts/Source/Base/FusionGeneratorPowerPuzzleScript.psc:53:1:unused-property
 Scripts/Source/Base/FusionGeneratorPowerPuzzleScript.psc:54:1:identifier-casing
 Scripts/Source/Base/FusionGeneratorPowerPuzzleScript.psc:57:1:function-length
 Scripts/Source/Base/FusionGeneratorPowerPuzzleScript.psc:57:1:function-override
+Scripts/Source/Base/FusionGeneratorPowerPuzzleScript.psc:57:1:missing-parent-call-in-override
 Scripts/Source/Base/FusionGeneratorPowerPuzzleScript.psc:58:1:indentation
 Scripts/Source/Base/FusionGeneratorPowerPuzzleScript.psc:58:11:forbidden-functions
 Scripts/Source/Base/FusionGeneratorPowerPuzzleScript.psc:60:1:indentation
@@ -94922,6 +94924,7 @@ Scripts/Source/Base/FusionGeneratorPowerPuzzleScript.psc:83:1:indentation
 Scripts/Source/Base/FusionGeneratorPowerPuzzleScript.psc:84:1:indentation
 Scripts/Source/Base/FusionGeneratorPowerPuzzleScript.psc:85:1:indentation
 Scripts/Source/Base/FusionGeneratorPowerPuzzleScript.psc:88:1:function-override
+Scripts/Source/Base/FusionGeneratorPowerPuzzleScript.psc:88:1:missing-parent-call-in-override
 Scripts/Source/Base/FusionGeneratorPowerPuzzleScript.psc:89:1:indentation
 Scripts/Source/Base/FusionGeneratorPowerPuzzleScript.psc:90:1:indentation
 Scripts/Source/Base/FusionGeneratorPowerPuzzleScript.psc:91:1:indentation
@@ -94976,6 +94979,7 @@ Scripts/Source/Base/FusionGeneratorPowerPuzzleScript.psc:135:1:indentation
 Scripts/Source/Base/FusionGeneratorPowerPuzzleScript.psc:138:1:empty-event-handler
 Scripts/Source/Base/FusionGeneratorPowerPuzzleScript.psc:138:1:function-override
 Scripts/Source/Base/FusionGeneratorPowerPuzzleScript.psc:138:1:identifier-casing
+Scripts/Source/Base/FusionGeneratorPowerPuzzleScript.psc:138:1:missing-parent-call-in-override
 Scripts/Source/Base/FusionGeneratorPowerPuzzleScript.psc:139:1:indentation
 Scripts/Source/Base/FusionGeneratorPowerPuzzleScript.psc:142:1:identifier-casing
 Scripts/Source/Base/FusionGeneratorPowerPuzzleScript.psc:142:1:identifier-casing
@@ -110018,6 +110022,7 @@ Scripts/Source/Base/MinRecruitQuestScript.psc:70:1:identifier-casing
 Scripts/Source/Base/MinRecruitQuestScript.psc:70:1:identifier-casing
 Scripts/Source/Base/MinRecruitQuestScript.psc:70:1:identifier-casing
 Scripts/Source/Base/MinRecruitQuestScript.psc:70:1:identifier-casing
+Scripts/Source/Base/MinRecruitQuestScript.psc:70:1:missing-parent-call-in-override
 Scripts/Source/Base/MinRecruitQuestScript.psc:71:1:indentation
 Scripts/Source/Base/MinRecruitQuestScript.psc:72:1:indentation
 Scripts/Source/Base/MinRecruitQuestScript.psc:73:1:indentation
@@ -123208,6 +123213,7 @@ Scripts/Source/Base/TrapGun.psc:196:1:indentation
 Scripts/Source/Base/TrapGun.psc:197:1:indentation
 Scripts/Source/Base/TrapGun.psc:201:1:function-override
 Scripts/Source/Base/TrapGun.psc:201:1:identifier-casing
+Scripts/Source/Base/TrapGun.psc:201:1:missing-parent-call-in-override
 Scripts/Source/Base/TrapGun.psc:202:8:forbidden-functions
 Scripts/Source/Base/TrapGun.psc:205:1:indentation
 Scripts/Source/Base/TrapGun.psc:206:1:indentation
@@ -131310,6 +131316,7 @@ Scripts/Source/Base/abSentryBotSelfDestruct.psc:74:1:indentation
 Scripts/Source/Base/abSentryBotSelfDestruct.psc:75:1:trailing-whitespace
 Scripts/Source/Base/abSentryBotSelfDestruct.psc:78:1:function-override
 Scripts/Source/Base/abSentryBotSelfDestruct.psc:78:1:identifier-casing
+Scripts/Source/Base/abSentryBotSelfDestruct.psc:78:1:missing-parent-call-in-override
 Scripts/Source/Base/abSentryBotSelfDestruct.psc:79:1:identifier-casing
 Scripts/Source/Base/abSentryBotSelfDestruct.psc:80:15:boolean-simplification
 Scripts/Source/Base/abSentryBotSelfDestruct.psc:82:1:indentation
@@ -137028,6 +137035,7 @@ Scripts/Source/DLC01/DLC01/DLC01Lair_TrashbotRefColRespawnScript.psc:1:99:line-e
 Scripts/Source/DLC01/DLC01/DLC01Lair_TrashbotRefColRespawnScript.psc:4:1:function-override
 Scripts/Source/DLC01/DLC01/DLC01Lair_TrashbotRefColRespawnScript.psc:4:1:identifier-casing
 Scripts/Source/DLC01/DLC01/DLC01Lair_TrashbotRefColRespawnScript.psc:4:1:identifier-casing
+Scripts/Source/DLC01/DLC01/DLC01Lair_TrashbotRefColRespawnScript.psc:4:1:missing-parent-call-in-override
 Scripts/Source/DLC01/DLC01/DLC01Lair_TrashbotRefColRespawnScript.psc:7:1:identifier-casing
 Scripts/Source/DLC01/DLC01/DLC01Lair_TrashbotRefColRespawnScript.psc:8:3:strict-boolean
 Scripts/Source/DLC01/DLC01/DLC01MQ00Script.psc:1:12:script-filename-mismatch
@@ -140029,6 +140037,7 @@ Scripts/Source/DLC01/DLC01/DLC01_UnstableModRestrictionScript.psc:28:1:identifie
 Scripts/Source/DLC01/DLC01/DLC01_UnstableModRestrictionScript.psc:31:1:function-override
 Scripts/Source/DLC01/DLC01/DLC01_UnstableModRestrictionScript.psc:31:1:identifier-casing
 Scripts/Source/DLC01/DLC01/DLC01_UnstableModRestrictionScript.psc:31:1:identifier-casing
+Scripts/Source/DLC01/DLC01/DLC01_UnstableModRestrictionScript.psc:31:1:missing-parent-call-in-override
 Scripts/Source/DLC01/DLC01/DLC01_UnstableModRestrictionScript.psc:32:16:forbidden-functions
 Scripts/Source/DLC01/DLC01/DLC01_UnstableModRestrictionScript.psc:37:1:function-override
 Scripts/Source/DLC01/DLC01/DLC01_UnstableModRestrictionScript.psc:37:1:identifier-casing
@@ -145702,6 +145711,7 @@ Scripts/Source/DLC01/DLC01/WorkshopRobotScript.psc:32:1:identifier-casing
 Scripts/Source/DLC01/DLC01/WorkshopRobotScript.psc:32:1:unnecessary-function
 Scripts/Source/DLC01/DLC01/WorkshopRobotScript.psc:41:1:function-override
 Scripts/Source/DLC01/DLC01/WorkshopRobotScript.psc:41:1:identifier-casing
+Scripts/Source/DLC01/DLC01/WorkshopRobotScript.psc:41:1:missing-parent-call-in-override
 Scripts/Source/DLC01/DLC01/WorkshopRobotScript.psc:42:1:none-form-usage
 Scripts/Source/DLC01/DLC01/WorkshopRobotScript.psc:43:9:final-newline
 Scripts/Source/DLC02/DLC02/DLC02SwitchScript.psc:1:12:script-filename-mismatch
@@ -156198,6 +156208,7 @@ Scripts/Source/DLC03/DLC03/FogCondenserCollectionAliasScript.psc:18:1:function-l
 Scripts/Source/DLC03/DLC03/FogCondenserCollectionAliasScript.psc:18:1:function-override
 Scripts/Source/DLC03/DLC03/FogCondenserCollectionAliasScript.psc:18:1:identifier-casing
 Scripts/Source/DLC03/DLC03/FogCondenserCollectionAliasScript.psc:18:1:identifier-casing
+Scripts/Source/DLC03/DLC03/FogCondenserCollectionAliasScript.psc:18:1:missing-parent-call-in-override
 Scripts/Source/DLC03/DLC03/FogCondenserCollectionAliasScript.psc:18:1:nesting-depth
 Scripts/Source/DLC03/DLC03/FogCondenserCollectionAliasScript.psc:19:8:forbidden-functions
 Scripts/Source/DLC03/DLC03/FogCondenserCollectionAliasScript.psc:20:121:line-length
@@ -166027,6 +166038,7 @@ Scripts/Source/DLC03/DLC03/WorkshopRadiantOwnedScript.psc:15:1:identifier-casing
 Scripts/Source/DLC03/DLC03/WorkshopRadiantOwnedScript.psc:15:1:identifier-casing
 Scripts/Source/DLC03/DLC03/WorkshopRadiantOwnedScript.psc:15:1:identifier-casing
 Scripts/Source/DLC03/DLC03/WorkshopRadiantOwnedScript.psc:15:1:identifier-casing
+Scripts/Source/DLC03/DLC03/WorkshopRadiantOwnedScript.psc:15:1:missing-parent-call-in-override
 Scripts/Source/DLC03/DLC03/WorkshopRadiantOwnedScript.psc:16:1:indentation
 Scripts/Source/DLC03/DLC03/WorkshopRadiantOwnedScript.psc:18:1:unchecked-cast
 Scripts/Source/DLC03/DLC03/WorkshopRadiantOwnedScript.psc:18:34:unresolved-script
@@ -167191,6 +167203,7 @@ Scripts/Source/DLC04/DLC04/DLC04ArcadeShootingGalleryTarget.psc:29:4:forbidden-f
 Scripts/Source/DLC04/DLC04/DLC04ArcadeShootingGalleryTarget.psc:34:1:function-override
 Scripts/Source/DLC04/DLC04/DLC04ArcadeShootingGalleryTarget.psc:35:8:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04ArcadeShootingGalleryTarget.psc:44:1:function-override
+Scripts/Source/DLC04/DLC04/DLC04ArcadeShootingGalleryTarget.psc:44:1:missing-parent-call-in-override
 Scripts/Source/DLC04/DLC04/DLC04ArcadeShootingGalleryTarget.psc:47:9:final-newline
 Scripts/Source/DLC04/DLC04/DLC04ArcadeTicketDispenser.psc:1:12:script-filename-mismatch
 Scripts/Source/DLC04/DLC04/DLC04ArcadeTicketDispenser.psc:1:68:line-endings
@@ -171913,6 +171926,7 @@ Scripts/Source/DLC04/DLC04/DLC04NukaRacersScript.psc:20:1:unused-state
 Scripts/Source/DLC04/DLC04/DLC04NukaRacersScript.psc:21:1:identifier-casing
 Scripts/Source/DLC04/DLC04/DLC04NukaRacersScript.psc:26:1:function-length
 Scripts/Source/DLC04/DLC04/DLC04NukaRacersScript.psc:26:1:function-override
+Scripts/Source/DLC04/DLC04/DLC04NukaRacersScript.psc:26:1:missing-parent-call-in-override
 Scripts/Source/DLC04/DLC04/DLC04NukaRacersScript.psc:39:8:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04NukaRacersScript.psc:40:68:unresolved-script
 Scripts/Source/DLC04/DLC04/DLC04NukaRacersScript.psc:51:1:final-newline
@@ -174432,6 +174446,7 @@ Scripts/Source/DLC04/DLC04/DLC04RideActivatorScript.psc:20:1:unused-state
 Scripts/Source/DLC04/DLC04/DLC04RideActivatorScript.psc:21:1:identifier-casing
 Scripts/Source/DLC04/DLC04/DLC04RideActivatorScript.psc:24:35:unresolved-script
 Scripts/Source/DLC04/DLC04/DLC04RideActivatorScript.psc:29:1:function-override
+Scripts/Source/DLC04/DLC04/DLC04RideActivatorScript.psc:29:1:missing-parent-call-in-override
 Scripts/Source/DLC04/DLC04/DLC04RideActivatorScript.psc:33:9:final-newline
 Scripts/Source/DLC04/DLC04/DLC04RideControllerAnimDrivenScript.psc:1:12:script-filename-mismatch
 Scripts/Source/DLC04/DLC04/DLC04RideControllerAnimDrivenScript.psc:1:100:line-endings
@@ -174449,6 +174464,7 @@ Scripts/Source/DLC04/DLC04/DLC04RideControllerAnimDrivenScript.psc:22:6:exclamat
 Scripts/Source/DLC04/DLC04/DLC04RideControllerAnimDrivenScript.psc:37:1:identifier-casing
 Scripts/Source/DLC04/DLC04/DLC04RideControllerAnimDrivenScript.psc:41:1:function-length
 Scripts/Source/DLC04/DLC04/DLC04RideControllerAnimDrivenScript.psc:41:1:function-override
+Scripts/Source/DLC04/DLC04/DLC04RideControllerAnimDrivenScript.psc:41:1:missing-parent-call-in-override
 Scripts/Source/DLC04/DLC04/DLC04RideControllerAnimDrivenScript.psc:42:8:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04RideControllerAnimDrivenScript.psc:43:1:identifier-casing
 Scripts/Source/DLC04/DLC04/DLC04RideControllerAnimDrivenScript.psc:43:61:unresolved-script
@@ -190979,6 +190995,7 @@ Scripts/Source/DLC04/DLC04/Fragments/TopicInfos/TIF_UnknownQuest_02045CB4.psc:2:
 Scripts/Source/DLC04/DLC04/GrandchesterFlDummyScript.psc:1:12:script-filename-mismatch
 Scripts/Source/DLC04/DLC04/GrandchesterFlDummyScript.psc:1:73:line-endings
 Scripts/Source/DLC04/DLC04/GrandchesterFlDummyScript.psc:3:1:function-override
+Scripts/Source/DLC04/DLC04/GrandchesterFlDummyScript.psc:3:1:missing-parent-call-in-override
 Scripts/Source/DLC04/DLC04/GrandchesterFlDummyScript.psc:4:8:forbidden-functions
 Scripts/Source/DLC04/DLC04/GrandchesterFlDummyScript.psc:5:1:identifier-casing
 Scripts/Source/DLC04/DLC04/GrandchesterFlDummyScript.psc:5:1:useless-downcast
@@ -191162,6 +191179,7 @@ Scripts/Source/DLC04/DLC04/ShankWorkshopNPCScript.psc:9:1:function-length
 Scripts/Source/DLC04/DLC04/ShankWorkshopNPCScript.psc:9:1:function-override
 Scripts/Source/DLC04/DLC04/ShankWorkshopNPCScript.psc:9:1:identifier-casing
 Scripts/Source/DLC04/DLC04/ShankWorkshopNPCScript.psc:9:1:identifier-casing
+Scripts/Source/DLC04/DLC04/ShankWorkshopNPCScript.psc:9:1:missing-parent-call-in-override
 Scripts/Source/DLC04/DLC04/ShankWorkshopNPCScript.psc:11:121:line-length
 Scripts/Source/DLC04/DLC04/ShankWorkshopNPCScript.psc:14:42:unresolved-script
 Scripts/Source/DLC04/DLC04/ShankWorkshopNPCScript.psc:16:1:identifier-casing
@@ -193110,9 +193128,11 @@ Scripts/Source/DLC05/DLC05/WorkshopSorterScript.psc:16:1:identifier-casing
 Scripts/Source/DLC05/DLC05/WorkshopSorterScript.psc:16:1:identifier-casing
 Scripts/Source/DLC05/DLC05/WorkshopSorterScript.psc:16:1:identifier-casing
 Scripts/Source/DLC05/DLC05/WorkshopSorterScript.psc:16:1:identifier-casing
+Scripts/Source/DLC05/DLC05/WorkshopSorterScript.psc:16:1:missing-parent-call-in-override
 Scripts/Source/DLC05/DLC05/WorkshopSorterScript.psc:17:9:trailing-whitespace
 Scripts/Source/DLC05/DLC05/WorkshopSorterScript.psc:19:1:function-override
 Scripts/Source/DLC05/DLC05/WorkshopSorterScript.psc:19:1:identifier-casing
+Scripts/Source/DLC05/DLC05/WorkshopSorterScript.psc:19:1:missing-parent-call-in-override
 Scripts/Source/DLC05/DLC05/WorkshopSorterScript.psc:21:9:forbidden-functions
 Scripts/Source/DLC05/DLC05/WorkshopSorterScript.psc:22:29:boolean-simplification
 Scripts/Source/DLC05/DLC05/WorkshopSorterScript.psc:30:1:function-length
@@ -195628,6 +195648,7 @@ Scripts/Source/DLC06/DLC06/VaultWorkshopScript.psc:18:1:indentation
 Scripts/Source/DLC06/DLC06/VaultWorkshopScript.psc:21:1:function-length
 Scripts/Source/DLC06/DLC06/VaultWorkshopScript.psc:21:1:function-override
 Scripts/Source/DLC06/DLC06/VaultWorkshopScript.psc:21:1:identifier-casing
+Scripts/Source/DLC06/DLC06/VaultWorkshopScript.psc:21:1:missing-parent-call-in-override
 Scripts/Source/DLC06/DLC06/VaultWorkshopScript.psc:22:8:forbidden-functions
 Scripts/Source/DLC06/DLC06/VaultWorkshopScript.psc:23:25:forbidden-functions
 Scripts/Source/DLC06/DLC06/VaultWorkshopScript.psc:25:10:forbidden-functions

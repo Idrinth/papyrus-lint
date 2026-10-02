@@ -4088,6 +4088,7 @@ Scripts/Source/Base/DN102_LabDemo2Script.psc:71:1:unchecked-cast
 Scripts/Source/Base/DN102_LabDemo2TriggerScript.psc:7:8:forbidden-functions
 Scripts/Source/Base/DN102_LabDemo2TriggerScript.psc:8:1:none-form-usage
 Scripts/Source/Base/DN102_LabDemo3Script.psc:41:1:argument-naming
+Scripts/Source/Base/DN102_LabDemo3Script.psc:41:1:missing-parent-call-in-override
 Scripts/Source/Base/DN102_LabDemo3Script.psc:67:121:line-length
 Scripts/Source/Base/DN102_LabDemo3Script.psc:70:11:forbidden-functions
 Scripts/Source/Base/DN102_LabDemo5Script.psc:2:121:line-length
@@ -33031,6 +33032,7 @@ Scripts/Source/Base/FuseBox_BoxScript.psc:60:4:forbidden-functions
 Scripts/Source/Base/FuseBox_BoxScript.psc:81:4:forbidden-functions
 Scripts/Source/Base/FuseBox_BoxScript.psc:81:45:forbidden-functions
 Scripts/Source/Base/FusionGeneratorPowerPuzzleScript.psc:42:121:line-length
+Scripts/Source/Base/FusionGeneratorPowerPuzzleScript.psc:57:1:missing-parent-call-in-override
 Scripts/Source/Base/FusionGeneratorPowerPuzzleScript.psc:58:11:forbidden-functions
 Scripts/Source/Base/FusionGeneratorPowerPuzzleScript.psc:61:19:forbidden-functions
 Scripts/Source/Base/FusionGeneratorPowerPuzzleScript.psc:62:25:forbidden-functions
@@ -33038,9 +33040,11 @@ Scripts/Source/Base/FusionGeneratorPowerPuzzleScript.psc:63:32:forbidden-functio
 Scripts/Source/Base/FusionGeneratorPowerPuzzleScript.psc:64:34:forbidden-functions
 Scripts/Source/Base/FusionGeneratorPowerPuzzleScript.psc:72:15:forbidden-functions
 Scripts/Source/Base/FusionGeneratorPowerPuzzleScript.psc:79:15:forbidden-functions
+Scripts/Source/Base/FusionGeneratorPowerPuzzleScript.psc:88:1:missing-parent-call-in-override
 Scripts/Source/Base/FusionGeneratorPowerPuzzleScript.psc:99:15:forbidden-functions
 Scripts/Source/Base/FusionGeneratorPowerPuzzleScript.psc:109:15:forbidden-functions
 Scripts/Source/Base/FusionGeneratorPowerPuzzleScript.psc:118:1:none-form-usage
+Scripts/Source/Base/FusionGeneratorPowerPuzzleScript.psc:138:1:missing-parent-call-in-override
 Scripts/Source/Base/FusionGeneratorPowerPuzzleScript.psc:148:11:forbidden-functions
 Scripts/Source/Base/FusionGeneratorPowerPuzzleScript.psc:152:1:none-form-usage
 Scripts/Source/Base/FusionGeneratorPowerPuzzleScript.psc:153:1:none-form-usage
@@ -37317,6 +37321,7 @@ Scripts/Source/Base/MinRecruit08Script.psc:42:1:none-form-usage
 Scripts/Source/Base/MinRecruit08Script.psc:42:43:forbidden-functions
 Scripts/Source/Base/MinRecruitQuestScript.psc:22:121:line-length
 Scripts/Source/Base/MinRecruitQuestScript.psc:61:121:line-length
+Scripts/Source/Base/MinRecruitQuestScript.psc:70:1:missing-parent-call-in-override
 Scripts/Source/Base/MinRecruitQuestScript.psc:75:8:forbidden-functions
 Scripts/Source/Base/MinRecruitQuestScript.psc:81:10:forbidden-functions
 Scripts/Source/Base/MinRecruitQuestScript.psc:81:121:line-length
@@ -40276,6 +40281,7 @@ Scripts/Source/Base/TrapGun.psc:179:10:forbidden-functions
 Scripts/Source/Base/TrapGun.psc:179:46:forbidden-functions
 Scripts/Source/Base/TrapGun.psc:184:10:forbidden-functions
 Scripts/Source/Base/TrapGun.psc:184:46:forbidden-functions
+Scripts/Source/Base/TrapGun.psc:201:1:missing-parent-call-in-override
 Scripts/Source/Base/TrapGun.psc:202:8:forbidden-functions
 Scripts/Source/Base/TrapMonkeyScript.psc:8:3:forbidden-functions
 Scripts/Source/Base/TrapMonkeyTriggerScript.psc:74:14:forbidden-functions
@@ -42321,6 +42327,7 @@ Scripts/Source/Base/abProtectronSelfDestruct.psc:76:23:unresolved-script
 Scripts/Source/Base/abSentryBotSelfDestruct.psc:37:34:unresolved-script
 Scripts/Source/Base/abSentryBotSelfDestruct.psc:43:4:empty-body
 Scripts/Source/Base/abSentryBotSelfDestruct.psc:43:121:line-length
+Scripts/Source/Base/abSentryBotSelfDestruct.psc:78:1:missing-parent-call-in-override
 Scripts/Source/Base/abSentryBotSelfDestruct.psc:82:25:unresolved-script
 Scripts/Source/Base/abSentryBotSelfDestruct.psc:83:24:unresolved-script
 Scripts/Source/Base/abSentryBotSelfDestruct.psc:95:13:forbidden-functions
@@ -43609,6 +43616,7 @@ Scripts/Source/DLC01/DLC01/DLC01Lair_TrashbotQuestRespawnScript.psc:47:121:line-
 Scripts/Source/DLC01/DLC01/DLC01Lair_TrashbotQuestRespawnScript.psc:53:121:line-length
 Scripts/Source/DLC01/DLC01/DLC01Lair_TrashbotQuestRespawnScript.psc:57:3:empty-body
 Scripts/Source/DLC01/DLC01/DLC01Lair_TrashbotRefColRespawnScript.psc:1:12:script-filename-mismatch
+Scripts/Source/DLC01/DLC01/DLC01Lair_TrashbotRefColRespawnScript.psc:4:1:missing-parent-call-in-override
 Scripts/Source/DLC01/DLC01/DLC01Lair_TrashbotRefColRespawnScript.psc:8:3:strict-boolean
 Scripts/Source/DLC01/DLC01/DLC01MQ00Script.psc:1:12:script-filename-mismatch
 Scripts/Source/DLC01/DLC01/DLC01MQ00Script.psc:41:31:forbidden-functions
@@ -44344,6 +44352,7 @@ Scripts/Source/DLC01/DLC01/DLC01_UnstableModQuestScript.psc:10:121:line-length
 Scripts/Source/DLC01/DLC01/DLC01_UnstableModRestrictionScript.psc:1:12:script-filename-mismatch
 Scripts/Source/DLC01/DLC01/DLC01_UnstableModRestrictionScript.psc:2:121:line-length
 Scripts/Source/DLC01/DLC01/DLC01_UnstableModRestrictionScript.psc:4:121:line-length
+Scripts/Source/DLC01/DLC01/DLC01_UnstableModRestrictionScript.psc:31:1:missing-parent-call-in-override
 Scripts/Source/DLC01/DLC01/DLC01_UnstableModRestrictionScript.psc:32:16:forbidden-functions
 Scripts/Source/DLC01/DLC01/DLC01_UnstableModRestrictionScript.psc:49:1:argument-naming
 Scripts/Source/DLC01/DLC01/DLC01_UnstableModRestrictionScript.psc:49:1:nesting-depth
@@ -46756,6 +46765,7 @@ Scripts/Source/DLC01/DLC01/WorkshopRobotScript.psc:16:2:strict-boolean
 Scripts/Source/DLC01/DLC01/WorkshopRobotScript.psc:17:55:unresolved-script
 Scripts/Source/DLC01/DLC01/WorkshopRobotScript.psc:24:2:strict-boolean
 Scripts/Source/DLC01/DLC01/WorkshopRobotScript.psc:25:42:unresolved-script
+Scripts/Source/DLC01/DLC01/WorkshopRobotScript.psc:41:1:missing-parent-call-in-override
 Scripts/Source/DLC01/DLC01/WorkshopRobotScript.psc:42:1:none-form-usage
 Scripts/Source/DLC02/DLC02/DLC02SwitchScript.psc:1:12:script-filename-mismatch
 Scripts/Source/DLC02/DLC02/DLC02TamedActorScript.psc:1:12:script-filename-mismatch
@@ -49430,6 +49440,7 @@ Scripts/Source/DLC03/DLC03/FarHarborFF02CondenserScript.psc:29:9:forbidden-funct
 Scripts/Source/DLC03/DLC03/FarHarborFF02CondenserScript.psc:30:1:none-form-usage
 Scripts/Source/DLC03/DLC03/FarHarborFF02CondenserScript.psc:31:9:forbidden-functions
 Scripts/Source/DLC03/DLC03/FogCondenserCollectionAliasScript.psc:1:12:script-filename-mismatch
+Scripts/Source/DLC03/DLC03/FogCondenserCollectionAliasScript.psc:18:1:missing-parent-call-in-override
 Scripts/Source/DLC03/DLC03/FogCondenserCollectionAliasScript.psc:18:1:nesting-depth
 Scripts/Source/DLC03/DLC03/FogCondenserCollectionAliasScript.psc:19:8:forbidden-functions
 Scripts/Source/DLC03/DLC03/FogCondenserCollectionAliasScript.psc:20:121:line-length
@@ -53442,6 +53453,7 @@ Scripts/Source/DLC03/DLC03/WorkshopRadiantOwnedDefendScript.psc:129:1:numeric-co
 Scripts/Source/DLC03/DLC03/WorkshopRadiantOwnedDefendScript.psc:130:50:unresolved-script
 Scripts/Source/DLC03/DLC03/WorkshopRadiantOwnedDefendScript.psc:130:92:unresolved-script
 Scripts/Source/DLC03/DLC03/WorkshopRadiantOwnedScript.psc:1:12:script-filename-mismatch
+Scripts/Source/DLC03/DLC03/WorkshopRadiantOwnedScript.psc:15:1:missing-parent-call-in-override
 Scripts/Source/DLC03/DLC03/WorkshopRadiantOwnedScript.psc:18:1:unchecked-cast
 Scripts/Source/DLC03/DLC03/WorkshopRadiantOwnedScript.psc:18:34:unresolved-script
 Scripts/Source/DLC03/DLC03/WorkshopRadiantOwnedScript.psc:18:80:forbidden-functions
@@ -53715,6 +53727,7 @@ Scripts/Source/DLC04/DLC04/DLC04ArcadeShootingGalleryTarget.psc:21:8:forbidden-f
 Scripts/Source/DLC04/DLC04/DLC04ArcadeShootingGalleryTarget.psc:29:1:unchecked-cast
 Scripts/Source/DLC04/DLC04/DLC04ArcadeShootingGalleryTarget.psc:29:4:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04ArcadeShootingGalleryTarget.psc:35:8:forbidden-functions
+Scripts/Source/DLC04/DLC04/DLC04ArcadeShootingGalleryTarget.psc:44:1:missing-parent-call-in-override
 Scripts/Source/DLC04/DLC04/DLC04ArcadeTicketDispenser.psc:1:12:script-filename-mismatch
 Scripts/Source/DLC04/DLC04/DLC04ArcadeTicketDispenser.psc:31:44:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04ArcadeTicketDispenser.psc:32:9:forbidden-functions
@@ -55586,6 +55599,7 @@ Scripts/Source/DLC04/DLC04/DLC04NukaKillTrackerSCRIPT.psc:1:12:script-filename-m
 Scripts/Source/DLC04/DLC04/DLC04NukaKillTrackerSCRIPT.psc:6:7:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04NukaKillTrackerSCRIPT.psc:10:7:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04NukaRacersScript.psc:1:12:script-filename-mismatch
+Scripts/Source/DLC04/DLC04/DLC04NukaRacersScript.psc:26:1:missing-parent-call-in-override
 Scripts/Source/DLC04/DLC04/DLC04NukaRacersScript.psc:39:8:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04NukaRacersScript.psc:40:68:unresolved-script
 Scripts/Source/DLC04/DLC04/DLC04NukacadeOnCellAttachRef.psc:1:12:script-filename-mismatch
@@ -56680,8 +56694,10 @@ Scripts/Source/DLC04/DLC04/DLC04RideActivatorScript.psc:10:1:unchecked-cast
 Scripts/Source/DLC04/DLC04/DLC04RideActivatorScript.psc:13:1:unchecked-cast
 Scripts/Source/DLC04/DLC04/DLC04RideActivatorScript.psc:15:1:unchecked-cast
 Scripts/Source/DLC04/DLC04/DLC04RideActivatorScript.psc:24:35:unresolved-script
+Scripts/Source/DLC04/DLC04/DLC04RideActivatorScript.psc:29:1:missing-parent-call-in-override
 Scripts/Source/DLC04/DLC04/DLC04RideControllerAnimDrivenScript.psc:1:12:script-filename-mismatch
 Scripts/Source/DLC04/DLC04/DLC04RideControllerAnimDrivenScript.psc:17:8:forbidden-functions
+Scripts/Source/DLC04/DLC04/DLC04RideControllerAnimDrivenScript.psc:41:1:missing-parent-call-in-override
 Scripts/Source/DLC04/DLC04/DLC04RideControllerAnimDrivenScript.psc:42:8:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04RideControllerAnimDrivenScript.psc:43:61:unresolved-script
 Scripts/Source/DLC04/DLC04/DLC04RideControllerAnimDrivenScript.psc:45:9:forbidden-functions
@@ -62464,6 +62480,7 @@ Scripts/Source/DLC04/DLC04/Fragments/TopicInfos/TIF_UnknownQuest_02045CB2.psc:2:
 Scripts/Source/DLC04/DLC04/Fragments/TopicInfos/TIF_UnknownQuest_02045CB3.psc:2:12:script-filename-mismatch
 Scripts/Source/DLC04/DLC04/Fragments/TopicInfos/TIF_UnknownQuest_02045CB4.psc:2:12:script-filename-mismatch
 Scripts/Source/DLC04/DLC04/GrandchesterFlDummyScript.psc:1:12:script-filename-mismatch
+Scripts/Source/DLC04/DLC04/GrandchesterFlDummyScript.psc:3:1:missing-parent-call-in-override
 Scripts/Source/DLC04/DLC04/GrandchesterFlDummyScript.psc:4:8:forbidden-functions
 Scripts/Source/DLC04/DLC04/GrandchesterFlDummyScript.psc:6:36:unresolved-script
 Scripts/Source/DLC04/DLC04/GrandchesterFlDummyScript.psc:10:8:forbidden-functions
@@ -62505,6 +62522,7 @@ Scripts/Source/DLC04/DLC04/SetStageOnGainLOS.psc:15:11:forbidden-functions
 Scripts/Source/DLC04/DLC04/SetStageOnGainLOS.psc:15:121:line-length
 Scripts/Source/DLC04/DLC04/SetStageOnGainLOS.psc:24:29:forbidden-functions
 Scripts/Source/DLC04/DLC04/ShankWorkshopNPCScript.psc:1:12:script-filename-mismatch
+Scripts/Source/DLC04/DLC04/ShankWorkshopNPCScript.psc:9:1:missing-parent-call-in-override
 Scripts/Source/DLC04/DLC04/ShankWorkshopNPCScript.psc:11:121:line-length
 Scripts/Source/DLC04/DLC04/ShankWorkshopNPCScript.psc:14:42:unresolved-script
 Scripts/Source/DLC04/DLC04/ShankWorkshopNPCScript.psc:16:70:unresolved-script
@@ -63012,6 +63030,8 @@ Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:498:8:forbidden-functions
 Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:499:32:forbidden-functions
 Scripts/Source/DLC05/DLC05/WorkshopHopperScript.psc:500:2:strict-boolean
 Scripts/Source/DLC05/DLC05/WorkshopSorterScript.psc:1:12:script-filename-mismatch
+Scripts/Source/DLC05/DLC05/WorkshopSorterScript.psc:16:1:missing-parent-call-in-override
+Scripts/Source/DLC05/DLC05/WorkshopSorterScript.psc:19:1:missing-parent-call-in-override
 Scripts/Source/DLC05/DLC05/WorkshopSorterScript.psc:21:9:forbidden-functions
 Scripts/Source/DLC05/DLC05/WorkshopSorterScript.psc:34:9:forbidden-functions
 Scripts/Source/DLC05/DLC05/WorkshopSorterScript.psc:59:9:forbidden-functions
@@ -63770,6 +63790,7 @@ Scripts/Source/DLC06/DLC06/VaultWorkshopActivatorScript.psc:48:1:none-form-usage
 Scripts/Source/DLC06/DLC06/VaultWorkshopActivatorScript.psc:54:1:none-form-usage
 Scripts/Source/DLC06/DLC06/VaultWorkshopActivatorScript.psc:69:1:none-form-usage
 Scripts/Source/DLC06/DLC06/VaultWorkshopScript.psc:1:12:script-filename-mismatch
+Scripts/Source/DLC06/DLC06/VaultWorkshopScript.psc:21:1:missing-parent-call-in-override
 Scripts/Source/DLC06/DLC06/VaultWorkshopScript.psc:22:8:forbidden-functions
 Scripts/Source/DLC06/DLC06/VaultWorkshopScript.psc:23:25:forbidden-functions
 Scripts/Source/DLC06/DLC06/VaultWorkshopScript.psc:25:10:forbidden-functions
