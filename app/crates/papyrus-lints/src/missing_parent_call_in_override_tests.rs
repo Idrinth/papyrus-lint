@@ -119,6 +119,62 @@ fn parent_call_anywhere_in_the_body_is_quiet() {
 }
 
 #[test]
+fn parent_call_in_each_statement_position_is_quiet() {
+    let bodies = [
+        "    Int value = Parent.OnInit()\n",
+        "    value = Parent.OnInit()\n",
+        "    Return Parent.OnInit()\n",
+        "    If Parent.OnInit()\n    EndIf\n",
+        "    If ready\n        Parent.OnInit()\n    EndIf\n",
+        "    If ready\n    Else\n        Parent.OnInit()\n    EndIf\n",
+        "    While Parent.OnInit()\n    EndWhile\n",
+        "    While ready\n        Parent.OnInit()\n    EndWhile\n",
+    ];
+
+    for body in bodies {
+        let source = format!(
+            "ScriptName Child Extends ModBase\n\nEvent OnInit()\n{body}EndEvent\n"
+        );
+        assert!(
+            papyrus_parser::parse(&source).is_ok(),
+            "test case did not parse:\n{source}"
+        );
+        assert!(
+            check(&source, &mut ParentEvents).is_empty(),
+            "parent call was not found in:\n{source}"
+        );
+    }
+}
+
+#[test]
+fn parent_call_nested_in_expressions_is_quiet() {
+    let expressions = [
+        "Parent.OnInit() + 1",
+        "1 + Parent.OnInit()",
+        "!Parent.OnInit()",
+        "Consume(Parent.OnInit())",
+        "Consume(value = Parent.OnInit())",
+        "values[Parent.OnInit()]",
+        "Parent.OnInit() as Int",
+        "new Int[Parent.OnInit()]",
+    ];
+
+    for expression in expressions {
+        let source = format!(
+            "ScriptName Child Extends ModBase\n\nEvent OnInit()\n    Consume({expression})\nEndEvent\n"
+        );
+        assert!(
+            papyrus_parser::parse(&source).is_ok(),
+            "test case did not parse:\n{source}"
+        );
+        assert!(
+            check(&source, &mut ParentEvents).is_empty(),
+            "parent call was not found in:\n{source}"
+        );
+    }
+}
+
+#[test]
 fn no_parent_call_annotation_on_the_header_or_the_line_above_is_quiet() {
     let header = check(
         "ScriptName Child Extends ModBase\n\nEvent OnInit() ; @no-parent-call\n    MySetup()\nEndEvent\n",
