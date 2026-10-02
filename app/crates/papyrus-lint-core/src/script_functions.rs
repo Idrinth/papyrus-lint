@@ -163,6 +163,14 @@ pub(crate) struct ScriptFunctions {
     /// [`crate::function_table::FunctionTable::descendant_targets_state`]
     /// so a parent state a child activates is not reported unused.
     pub(crate) goto_state_targets: HashSet<String>,
+    /// Whether the `ScriptName` line itself carries `Native`. Events on a
+    /// bare engine script are not parent calls a child is required to make.
+    pub(crate) is_native: bool,
+    /// Lowercased event names whose canonical body is a noop: empty, or
+    /// only `Return`. The canonical declaration is the empty-state one
+    /// when both exist. A child that overrides one of these does not drop
+    /// parent setup by skipping `Parent.Event()`.
+    pub(crate) noop_events: HashSet<String>,
     /// Lowercased `Event` names declared directly on this script, including
     /// events that live only inside a `State`. Kept separate from
     /// [`Self::functions`] so an event query is a set lookup: a same-named
@@ -217,6 +225,12 @@ impl ScriptFunctions {
             }
         }
         let side_effects = side_effects_by_name(&canonical_decls);
+        let mut noop_events = HashSet::new();
+        for (key, decl) in &canonical_decls {
+            if decl.is_event && event_body_is_noop(&decl.body) {
+                noop_events.insert((*key).clone());
+            }
+        }
 
         let mut events = HashSet::new();
         let mut functions: HashMap<String, FunctionSignature> = script
@@ -296,11 +310,20 @@ impl ScriptFunctions {
             states,
             goto_state_targets: papyrus_lints::literal_goto_state_targets(script),
             events,
+            is_native: script.is_native,
+            noop_events,
             structs,
             registered_remote_events: remote.events,
             opaque_remote_event_registration: remote.opaque,
         }
     }
+}
+
+/// An event body `Parent.Event()` would run without doing anything: no
+/// statements, or only `Return`. Comments never become statements, so a
+/// comment-only handler is empty.
+fn event_body_is_noop(body: &[Stmt]) -> bool {
+    body.iter().all(|stmt| matches!(stmt, Stmt::Return { .. }))
 }
 
 fn deprecation_for(decl: &FunctionDecl, annotated: bool) -> Option<Deprecation> {

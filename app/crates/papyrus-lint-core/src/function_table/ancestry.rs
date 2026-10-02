@@ -29,6 +29,7 @@ fn parent_cache_key(script: &ScriptFunctions) -> Option<String> {
 mod cached;
 mod events;
 mod members;
+mod parent_events;
 mod remote_events;
 mod states;
 

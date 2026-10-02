@@ -24,6 +24,10 @@ impl external_signatures::ExternalSignatures for FakeExternalWithParentFunction 
             None
         }
     }
+
+    fn parent_event_needs_call(&mut self, type_name: &str, event_name: &str) -> Option<bool> {
+        Some(self.lookup(type_name, event_name).is_some())
+    }
 }
 
 pub(super) struct FakeExternalWithMissingScript;

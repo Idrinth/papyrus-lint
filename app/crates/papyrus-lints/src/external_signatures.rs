@@ -174,6 +174,24 @@ pub trait ExternalSignatures {
         false
     }
 
+    /// Whether a script that `Extends` `type_name` must call
+    /// `Parent.event_name()` when it overrides that event.
+    ///
+    /// Walks `type_name` and its ancestors and stops at the nearest `Event`
+    /// of that name — an empty override is the body `Parent.event_name()`
+    /// would run, so a non-empty grandparent behind it does not count.
+    /// `Some(true)` means that event is declared on a non-`Native` project
+    /// script, is not itself `Native`, and its body is not a noop (empty,
+    /// or only `Return`). `Some(false)` means the chain resolved and there
+    /// is nothing to call: no such event, a noop, or a bare engine native.
+    /// `None` means the chain could not be resolved, so callers must not
+    /// guess.
+    ///
+    /// The default always returns `None` ([`NoExternalSignatures`]).
+    fn parent_event_needs_call(&mut self, _type_name: &str, _event_name: &str) -> Option<bool> {
+        None
+    }
+
     /// Whether `type_name` or one of its ancestors declares `event_name`
     /// as an `Event`. `Some(false)` means the complete ancestry was resolved
     /// and no matching event exists; `None` means resolution was incomplete,

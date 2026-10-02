@@ -32,6 +32,33 @@ fn function_override_flag_gates_only_its_own_lint() {
 }
 
 /// Like `function_override_flag_gates_only_its_own_lint` above:
+/// `missing_parent_call_in_override` also needs an `external` resolver.
+#[test]
+fn missing_parent_call_in_override_flag_gates_only_its_own_lint() {
+    let source = "ScriptName Example Extends ParentScript\n\nEvent DoThing()\nEndEvent\n";
+
+    let enabled = lint_with_external_arguments(
+        source,
+        &Config::default(),
+        &mut FakeExternalWithParentFunction,
+    );
+    assert!(enabled
+        .iter()
+        .any(|diagnostic| diagnostic.rule == missing_parent_call_in_override::RULE));
+
+    let disabled_config =
+        config_with(|config| config.rules.missing_parent_call_in_override = false);
+    let disabled = lint_with_external_arguments(
+        source,
+        &disabled_config,
+        &mut FakeExternalWithParentFunction,
+    );
+    assert!(disabled
+        .iter()
+        .all(|diagnostic| diagnostic.rule != missing_parent_call_in_override::RULE));
+}
+
+/// Like `function_override_flag_gates_only_its_own_lint` above:
 /// `missing_override` also needs an `external` resolver, and is opt-in.
 #[test]
 fn missing_override_flag_gates_only_its_own_lint() {

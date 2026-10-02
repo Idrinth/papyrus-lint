@@ -11606,6 +11606,7 @@ Scripts/Source/Base/DN102_LabDemo3Script.psc:26:39:trailing-whitespace
 Scripts/Source/Base/DN102_LabDemo3Script.psc:28:1:indentation
 Scripts/Source/Base/DN102_LabDemo3Script.psc:29:1:indentation
 Scripts/Source/Base/DN102_LabDemo3Script.psc:41:1:argument-naming
+Scripts/Source/Base/DN102_LabDemo3Script.psc:41:1:missing-parent-call-in-override
 Scripts/Source/Base/DN102_LabDemo3Script.psc:52:16:trailing-whitespace
 Scripts/Source/Base/DN102_LabDemo3Script.psc:61:108:trailing-whitespace
 Scripts/Source/Base/DN102_LabDemo3Script.psc:62:19:exclamation-spacing
@@ -56909,6 +56910,7 @@ Scripts/Source/Base/FusionGeneratorPowerPuzzleScript.psc:42:1:indentation
 Scripts/Source/Base/FusionGeneratorPowerPuzzleScript.psc:42:121:line-length
 Scripts/Source/Base/FusionGeneratorPowerPuzzleScript.psc:44:1:indentation
 Scripts/Source/Base/FusionGeneratorPowerPuzzleScript.psc:45:1:indentation
+Scripts/Source/Base/FusionGeneratorPowerPuzzleScript.psc:57:1:missing-parent-call-in-override
 Scripts/Source/Base/FusionGeneratorPowerPuzzleScript.psc:58:1:indentation
 Scripts/Source/Base/FusionGeneratorPowerPuzzleScript.psc:58:11:forbidden-functions
 Scripts/Source/Base/FusionGeneratorPowerPuzzleScript.psc:60:1:indentation
@@ -56941,6 +56943,7 @@ Scripts/Source/Base/FusionGeneratorPowerPuzzleScript.psc:82:1:indentation
 Scripts/Source/Base/FusionGeneratorPowerPuzzleScript.psc:83:1:indentation
 Scripts/Source/Base/FusionGeneratorPowerPuzzleScript.psc:84:1:indentation
 Scripts/Source/Base/FusionGeneratorPowerPuzzleScript.psc:85:1:indentation
+Scripts/Source/Base/FusionGeneratorPowerPuzzleScript.psc:88:1:missing-parent-call-in-override
 Scripts/Source/Base/FusionGeneratorPowerPuzzleScript.psc:89:1:indentation
 Scripts/Source/Base/FusionGeneratorPowerPuzzleScript.psc:90:1:indentation
 Scripts/Source/Base/FusionGeneratorPowerPuzzleScript.psc:91:1:indentation
@@ -56983,6 +56986,7 @@ Scripts/Source/Base/FusionGeneratorPowerPuzzleScript.psc:131:1:indentation
 Scripts/Source/Base/FusionGeneratorPowerPuzzleScript.psc:133:1:indentation
 Scripts/Source/Base/FusionGeneratorPowerPuzzleScript.psc:134:1:indentation
 Scripts/Source/Base/FusionGeneratorPowerPuzzleScript.psc:135:1:indentation
+Scripts/Source/Base/FusionGeneratorPowerPuzzleScript.psc:138:1:missing-parent-call-in-override
 Scripts/Source/Base/FusionGeneratorPowerPuzzleScript.psc:139:1:indentation
 Scripts/Source/Base/FusionGeneratorPowerPuzzleScript.psc:143:1:indentation
 Scripts/Source/Base/FusionGeneratorPowerPuzzleScript.psc:148:1:indentation
@@ -66399,6 +66403,7 @@ Scripts/Source/Base/MinRecruitQuestScript.psc:60:1:indentation
 Scripts/Source/Base/MinRecruitQuestScript.psc:61:1:indentation
 Scripts/Source/Base/MinRecruitQuestScript.psc:61:121:line-length
 Scripts/Source/Base/MinRecruitQuestScript.psc:66:1:indentation
+Scripts/Source/Base/MinRecruitQuestScript.psc:70:1:missing-parent-call-in-override
 Scripts/Source/Base/MinRecruitQuestScript.psc:71:1:indentation
 Scripts/Source/Base/MinRecruitQuestScript.psc:72:1:indentation
 Scripts/Source/Base/MinRecruitQuestScript.psc:73:1:indentation
@@ -73523,6 +73528,7 @@ Scripts/Source/Base/TrapGun.psc:194:1:indentation
 Scripts/Source/Base/TrapGun.psc:195:1:indentation
 Scripts/Source/Base/TrapGun.psc:196:1:indentation
 Scripts/Source/Base/TrapGun.psc:197:1:indentation
+Scripts/Source/Base/TrapGun.psc:201:1:missing-parent-call-in-override
 Scripts/Source/Base/TrapGun.psc:202:8:forbidden-functions
 Scripts/Source/Base/TrapGun.psc:205:1:indentation
 Scripts/Source/Base/TrapGun.psc:206:1:indentation
@@ -78640,6 +78646,7 @@ Scripts/Source/Base/abSentryBotSelfDestruct.psc:71:48:trailing-whitespace
 Scripts/Source/Base/abSentryBotSelfDestruct.psc:72:1:indentation
 Scripts/Source/Base/abSentryBotSelfDestruct.psc:74:1:indentation
 Scripts/Source/Base/abSentryBotSelfDestruct.psc:75:1:trailing-whitespace
+Scripts/Source/Base/abSentryBotSelfDestruct.psc:78:1:missing-parent-call-in-override
 Scripts/Source/Base/abSentryBotSelfDestruct.psc:82:1:indentation
 Scripts/Source/Base/abSentryBotSelfDestruct.psc:82:25:unresolved-script
 Scripts/Source/Base/abSentryBotSelfDestruct.psc:83:1:indentation
@@ -82068,6 +82075,7 @@ Scripts/Source/DLC01/DLC01/DLC01Lair_TrashbotQuestRespawnScript.psc:54:1:indenta
 Scripts/Source/DLC01/DLC01/DLC01Lair_TrashbotQuestRespawnScript.psc:57:3:empty-body
 Scripts/Source/DLC01/DLC01/DLC01Lair_TrashbotQuestRespawnScript.psc:58:1:indentation
 Scripts/Source/DLC01/DLC01/DLC01Lair_TrashbotRefColRespawnScript.psc:1:12:script-filename-mismatch
+Scripts/Source/DLC01/DLC01/DLC01Lair_TrashbotRefColRespawnScript.psc:4:1:missing-parent-call-in-override
 Scripts/Source/DLC01/DLC01/DLC01Lair_TrashbotRefColRespawnScript.psc:8:3:strict-boolean
 Scripts/Source/DLC01/DLC01/DLC01MQ00Script.psc:1:12:script-filename-mismatch
 Scripts/Source/DLC01/DLC01/DLC01MQ00Script.psc:41:31:forbidden-functions
@@ -83787,6 +83795,7 @@ Scripts/Source/DLC01/DLC01/DLC01_UnstableModRestrictionScript.psc:18:1:indentati
 Scripts/Source/DLC01/DLC01/DLC01_UnstableModRestrictionScript.psc:19:1:indentation
 Scripts/Source/DLC01/DLC01/DLC01_UnstableModRestrictionScript.psc:21:1:indentation
 Scripts/Source/DLC01/DLC01/DLC01_UnstableModRestrictionScript.psc:22:1:indentation
+Scripts/Source/DLC01/DLC01/DLC01_UnstableModRestrictionScript.psc:31:1:missing-parent-call-in-override
 Scripts/Source/DLC01/DLC01/DLC01_UnstableModRestrictionScript.psc:32:16:forbidden-functions
 Scripts/Source/DLC01/DLC01/DLC01_UnstableModRestrictionScript.psc:49:1:argument-naming
 Scripts/Source/DLC01/DLC01/DLC01_UnstableModRestrictionScript.psc:49:1:cyclomatic-complexity
@@ -86819,6 +86828,7 @@ Scripts/Source/DLC01/DLC01/WorkshopRobotScript.psc:17:55:unresolved-script
 Scripts/Source/DLC01/DLC01/WorkshopRobotScript.psc:22:1:trailing-whitespace
 Scripts/Source/DLC01/DLC01/WorkshopRobotScript.psc:24:2:strict-boolean
 Scripts/Source/DLC01/DLC01/WorkshopRobotScript.psc:25:42:unresolved-script
+Scripts/Source/DLC01/DLC01/WorkshopRobotScript.psc:41:1:missing-parent-call-in-override
 Scripts/Source/DLC01/DLC01/WorkshopRobotScript.psc:42:1:none-form-usage
 Scripts/Source/DLC02/DLC02/DLC02SwitchScript.psc:1:12:script-filename-mismatch
 Scripts/Source/DLC02/DLC02/DLC02SwitchScript.psc:8:15:trailing-whitespace
@@ -92963,6 +92973,7 @@ Scripts/Source/DLC03/DLC03/FogCondenserCollectionAliasScript.psc:1:12:script-fil
 Scripts/Source/DLC03/DLC03/FogCondenserCollectionAliasScript.psc:9:47:trailing-whitespace
 Scripts/Source/DLC03/DLC03/FogCondenserCollectionAliasScript.psc:12:50:trailing-whitespace
 Scripts/Source/DLC03/DLC03/FogCondenserCollectionAliasScript.psc:13:35:trailing-whitespace
+Scripts/Source/DLC03/DLC03/FogCondenserCollectionAliasScript.psc:18:1:missing-parent-call-in-override
 Scripts/Source/DLC03/DLC03/FogCondenserCollectionAliasScript.psc:18:1:nesting-depth
 Scripts/Source/DLC03/DLC03/FogCondenserCollectionAliasScript.psc:19:8:forbidden-functions
 Scripts/Source/DLC03/DLC03/FogCondenserCollectionAliasScript.psc:20:121:line-length
@@ -98981,6 +98992,7 @@ Scripts/Source/DLC03/DLC03/WorkshopRadiantOwnedDefendScript.psc:130:50:unresolve
 Scripts/Source/DLC03/DLC03/WorkshopRadiantOwnedDefendScript.psc:130:92:unresolved-script
 Scripts/Source/DLC03/DLC03/WorkshopRadiantOwnedDefendScript.psc:130:113:trailing-whitespace
 Scripts/Source/DLC03/DLC03/WorkshopRadiantOwnedScript.psc:1:12:script-filename-mismatch
+Scripts/Source/DLC03/DLC03/WorkshopRadiantOwnedScript.psc:15:1:missing-parent-call-in-override
 Scripts/Source/DLC03/DLC03/WorkshopRadiantOwnedScript.psc:16:1:indentation
 Scripts/Source/DLC03/DLC03/WorkshopRadiantOwnedScript.psc:18:1:unchecked-cast
 Scripts/Source/DLC03/DLC03/WorkshopRadiantOwnedScript.psc:18:34:unresolved-script
@@ -99686,6 +99698,7 @@ Scripts/Source/DLC04/DLC04/DLC04ArcadeShootingGalleryTarget.psc:21:8:forbidden-f
 Scripts/Source/DLC04/DLC04/DLC04ArcadeShootingGalleryTarget.psc:29:1:unchecked-cast
 Scripts/Source/DLC04/DLC04/DLC04ArcadeShootingGalleryTarget.psc:29:4:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04ArcadeShootingGalleryTarget.psc:35:8:forbidden-functions
+Scripts/Source/DLC04/DLC04/DLC04ArcadeShootingGalleryTarget.psc:44:1:missing-parent-call-in-override
 Scripts/Source/DLC04/DLC04/DLC04ArcadeTicketDispenser.psc:1:12:script-filename-mismatch
 Scripts/Source/DLC04/DLC04/DLC04ArcadeTicketDispenser.psc:9:26:trailing-whitespace
 Scripts/Source/DLC04/DLC04/DLC04ArcadeTicketDispenser.psc:31:44:forbidden-functions
@@ -102697,6 +102710,7 @@ Scripts/Source/DLC04/DLC04/DLC04NukaKillTrackerSCRIPT.psc:10:7:forbidden-functio
 Scripts/Source/DLC04/DLC04/DLC04NukaRacersScript.psc:1:12:script-filename-mismatch
 Scripts/Source/DLC04/DLC04/DLC04NukaRacersScript.psc:4:1:indentation
 Scripts/Source/DLC04/DLC04/DLC04NukaRacersScript.psc:5:1:indentation
+Scripts/Source/DLC04/DLC04/DLC04NukaRacersScript.psc:26:1:missing-parent-call-in-override
 Scripts/Source/DLC04/DLC04/DLC04NukaRacersScript.psc:39:8:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04NukaRacersScript.psc:40:68:unresolved-script
 Scripts/Source/DLC04/DLC04/DLC04NukacadeOnCellAttachRef.psc:1:12:script-filename-mismatch
@@ -104406,6 +104420,7 @@ Scripts/Source/DLC04/DLC04/DLC04RideActivatorScript.psc:15:1:unchecked-cast
 Scripts/Source/DLC04/DLC04/DLC04RideActivatorScript.psc:16:1:indentation
 Scripts/Source/DLC04/DLC04/DLC04RideActivatorScript.psc:17:1:indentation
 Scripts/Source/DLC04/DLC04/DLC04RideActivatorScript.psc:24:35:unresolved-script
+Scripts/Source/DLC04/DLC04/DLC04RideActivatorScript.psc:29:1:missing-parent-call-in-override
 Scripts/Source/DLC04/DLC04/DLC04RideControllerAnimDrivenScript.psc:1:12:script-filename-mismatch
 Scripts/Source/DLC04/DLC04/DLC04RideControllerAnimDrivenScript.psc:4:1:indentation
 Scripts/Source/DLC04/DLC04/DLC04RideControllerAnimDrivenScript.psc:5:1:indentation
@@ -104416,6 +104431,7 @@ Scripts/Source/DLC04/DLC04/DLC04RideControllerAnimDrivenScript.psc:12:1:indentat
 Scripts/Source/DLC04/DLC04/DLC04RideControllerAnimDrivenScript.psc:13:1:indentation
 Scripts/Source/DLC04/DLC04/DLC04RideControllerAnimDrivenScript.psc:17:8:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04RideControllerAnimDrivenScript.psc:22:6:exclamation-spacing
+Scripts/Source/DLC04/DLC04/DLC04RideControllerAnimDrivenScript.psc:41:1:missing-parent-call-in-override
 Scripts/Source/DLC04/DLC04/DLC04RideControllerAnimDrivenScript.psc:42:8:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04RideControllerAnimDrivenScript.psc:43:61:unresolved-script
 Scripts/Source/DLC04/DLC04/DLC04RideControllerAnimDrivenScript.psc:45:9:forbidden-functions
@@ -114318,6 +114334,7 @@ Scripts/Source/DLC04/DLC04/Fragments/TopicInfos/TIF_UnknownQuest_02045CB2.psc:2:
 Scripts/Source/DLC04/DLC04/Fragments/TopicInfos/TIF_UnknownQuest_02045CB3.psc:2:12:script-filename-mismatch
 Scripts/Source/DLC04/DLC04/Fragments/TopicInfos/TIF_UnknownQuest_02045CB4.psc:2:12:script-filename-mismatch
 Scripts/Source/DLC04/DLC04/GrandchesterFlDummyScript.psc:1:12:script-filename-mismatch
+Scripts/Source/DLC04/DLC04/GrandchesterFlDummyScript.psc:3:1:missing-parent-call-in-override
 Scripts/Source/DLC04/DLC04/GrandchesterFlDummyScript.psc:4:8:forbidden-functions
 Scripts/Source/DLC04/DLC04/GrandchesterFlDummyScript.psc:6:36:unresolved-script
 Scripts/Source/DLC04/DLC04/GrandchesterFlDummyScript.psc:10:8:forbidden-functions
@@ -114430,6 +114447,7 @@ Scripts/Source/DLC04/DLC04/ShankWorkshopNPCScript.psc:5:1:indentation
 Scripts/Source/DLC04/DLC04/ShankWorkshopNPCScript.psc:5:51:trailing-whitespace
 Scripts/Source/DLC04/DLC04/ShankWorkshopNPCScript.psc:6:1:indentation
 Scripts/Source/DLC04/DLC04/ShankWorkshopNPCScript.psc:7:9:trailing-whitespace
+Scripts/Source/DLC04/DLC04/ShankWorkshopNPCScript.psc:9:1:missing-parent-call-in-override
 Scripts/Source/DLC04/DLC04/ShankWorkshopNPCScript.psc:11:121:line-length
 Scripts/Source/DLC04/DLC04/ShankWorkshopNPCScript.psc:14:42:unresolved-script
 Scripts/Source/DLC04/DLC04/ShankWorkshopNPCScript.psc:16:70:unresolved-script
@@ -115534,7 +115552,9 @@ Scripts/Source/DLC05/DLC05/WorkshopSorterScript.psc:6:1:indentation
 Scripts/Source/DLC05/DLC05/WorkshopSorterScript.psc:8:1:indentation
 Scripts/Source/DLC05/DLC05/WorkshopSorterScript.psc:9:1:indentation
 Scripts/Source/DLC05/DLC05/WorkshopSorterScript.psc:11:9:trailing-whitespace
+Scripts/Source/DLC05/DLC05/WorkshopSorterScript.psc:16:1:missing-parent-call-in-override
 Scripts/Source/DLC05/DLC05/WorkshopSorterScript.psc:17:9:trailing-whitespace
+Scripts/Source/DLC05/DLC05/WorkshopSorterScript.psc:19:1:missing-parent-call-in-override
 Scripts/Source/DLC05/DLC05/WorkshopSorterScript.psc:21:9:forbidden-functions
 Scripts/Source/DLC05/DLC05/WorkshopSorterScript.psc:34:9:forbidden-functions
 Scripts/Source/DLC05/DLC05/WorkshopSorterScript.psc:38:1:indentation
@@ -116892,6 +116912,7 @@ Scripts/Source/DLC06/DLC06/VaultWorkshopScript.psc:15:1:indentation
 Scripts/Source/DLC06/DLC06/VaultWorkshopScript.psc:15:68:trailing-whitespace
 Scripts/Source/DLC06/DLC06/VaultWorkshopScript.psc:16:1:indentation
 Scripts/Source/DLC06/DLC06/VaultWorkshopScript.psc:18:1:indentation
+Scripts/Source/DLC06/DLC06/VaultWorkshopScript.psc:21:1:missing-parent-call-in-override
 Scripts/Source/DLC06/DLC06/VaultWorkshopScript.psc:22:8:forbidden-functions
 Scripts/Source/DLC06/DLC06/VaultWorkshopScript.psc:23:25:forbidden-functions
 Scripts/Source/DLC06/DLC06/VaultWorkshopScript.psc:25:10:forbidden-functions

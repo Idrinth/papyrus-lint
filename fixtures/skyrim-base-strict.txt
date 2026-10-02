@@ -1467,6 +1467,7 @@ Source/Scripts/BYOHBuildingObjectExteriorScript.psc:1:77:line-endings
 Source/Scripts/BYOHBuildingObjectExteriorScript.psc:6:1:function-override
 Source/Scripts/BYOHBuildingObjectExteriorScript.psc:6:1:identifier-casing
 Source/Scripts/BYOHBuildingObjectExteriorScript.psc:6:1:identifier-casing
+Source/Scripts/BYOHBuildingObjectExteriorScript.psc:6:1:missing-parent-call-in-override
 Source/Scripts/BYOHBuildingObjectExteriorScript.psc:7:28:forbidden-functions
 Source/Scripts/BYOHBuildingObjectExteriorScript.psc:8:1:indentation
 Source/Scripts/BYOHBuildingObjectExteriorScript.psc:10:1:identifier-casing
@@ -1476,6 +1477,7 @@ Source/Scripts/BYOHBuildingObjectInteriorScript.psc:1:77:line-endings
 Source/Scripts/BYOHBuildingObjectInteriorScript.psc:5:1:function-override
 Source/Scripts/BYOHBuildingObjectInteriorScript.psc:5:1:identifier-casing
 Source/Scripts/BYOHBuildingObjectInteriorScript.psc:5:1:identifier-casing
+Source/Scripts/BYOHBuildingObjectInteriorScript.psc:5:1:missing-parent-call-in-override
 Source/Scripts/BYOHBuildingObjectInteriorScript.psc:6:28:forbidden-functions
 Source/Scripts/BYOHBuildingObjectInteriorScript.psc:7:1:indentation
 Source/Scripts/BYOHBuildingObjectInteriorScript.psc:9:1:identifier-casing
@@ -1507,6 +1509,7 @@ Source/Scripts/BYOHBuildingObjectTrophyScript.psc:1:75:line-endings
 Source/Scripts/BYOHBuildingObjectTrophyScript.psc:5:1:function-override
 Source/Scripts/BYOHBuildingObjectTrophyScript.psc:5:1:identifier-casing
 Source/Scripts/BYOHBuildingObjectTrophyScript.psc:5:1:identifier-casing
+Source/Scripts/BYOHBuildingObjectTrophyScript.psc:5:1:missing-parent-call-in-override
 Source/Scripts/BYOHBuildingObjectTrophyScript.psc:6:28:forbidden-functions
 Source/Scripts/BYOHBuildingObjectTrophyScript.psc:7:1:indentation
 Source/Scripts/BYOHBuildingObjectTrophyScript.psc:9:32:unresolved-script
@@ -1515,6 +1518,7 @@ Source/Scripts/BYOHBuildingRemodelEntryScript.psc:1:75:line-endings
 Source/Scripts/BYOHBuildingRemodelEntryScript.psc:5:1:function-override
 Source/Scripts/BYOHBuildingRemodelEntryScript.psc:5:1:identifier-casing
 Source/Scripts/BYOHBuildingRemodelEntryScript.psc:5:1:identifier-casing
+Source/Scripts/BYOHBuildingRemodelEntryScript.psc:5:1:missing-parent-call-in-override
 Source/Scripts/BYOHBuildingRemodelEntryScript.psc:6:28:forbidden-functions
 Source/Scripts/BYOHBuildingRemodelEntryScript.psc:7:1:indentation
 Source/Scripts/BYOHBuildingRemodelEntryScript.psc:9:1:identifier-casing
@@ -28869,6 +28873,7 @@ Source/Scripts/DBSanctuaryWordWallTriggerScript.psc:221:1:unnecessary-function
 Source/Scripts/DBSanctuaryWordWallTriggerScript.psc:227:1:function-length
 Source/Scripts/DBSanctuaryWordWallTriggerScript.psc:227:1:function-override
 Source/Scripts/DBSanctuaryWordWallTriggerScript.psc:227:1:identifier-casing
+Source/Scripts/DBSanctuaryWordWallTriggerScript.psc:227:1:missing-parent-call-in-override
 Source/Scripts/DBSanctuaryWordWallTriggerScript.psc:227:1:nesting-depth
 Source/Scripts/DBSanctuaryWordWallTriggerScript.psc:228:1:identifier-casing
 Source/Scripts/DBSanctuaryWordWallTriggerScript.psc:231:28:exclamation-spacing
@@ -35980,6 +35985,7 @@ Source/Scripts/DLC1TrapInfectedBones.psc:118:52:trailing-whitespace
 Source/Scripts/DLC1TrapInfectedBones.psc:120:1:trailing-whitespace
 Source/Scripts/DLC1TrapInfectedBones.psc:121:1:identifier-casing
 Source/Scripts/DLC1TrapInfectedBones.psc:125:1:function-override
+Source/Scripts/DLC1TrapInfectedBones.psc:125:1:missing-parent-call-in-override
 Source/Scripts/DLC1TrapInfectedBones.psc:130:1:empty-event-handler
 Source/Scripts/DLC1TrapInfectedBones.psc:130:1:function-override
 Source/Scripts/DLC1TrapInfectedBones.psc:133:1:function-override
@@ -36104,6 +36110,7 @@ Source/Scripts/DLC1TrapPoisonBloom.psc:193:1:function-length
 Source/Scripts/DLC1TrapPoisonBloom.psc:193:1:function-override
 Source/Scripts/DLC1TrapPoisonBloom.psc:193:1:identifier-casing
 Source/Scripts/DLC1TrapPoisonBloom.psc:193:1:identifier-casing
+Source/Scripts/DLC1TrapPoisonBloom.psc:193:1:missing-parent-call-in-override
 Source/Scripts/DLC1TrapPoisonBloom.psc:194:1:indentation
 Source/Scripts/DLC1TrapPoisonBloom.psc:195:1:indentation
 Source/Scripts/DLC1TrapPoisonBloom.psc:198:2:strict-boolean
@@ -50474,8 +50481,10 @@ Source/Scripts/DLC2ApoExtendingHallScript.psc:87:4:forbidden-functions
 Source/Scripts/DLC2ApoExtendingHallScript.psc:89:33:exclamation-spacing
 Source/Scripts/DLC2ApoExtendingHallScript.psc:95:1:trailing-whitespace
 Source/Scripts/DLC2ApoExtendingHallScript.psc:110:1:function-override
+Source/Scripts/DLC2ApoExtendingHallScript.psc:110:1:missing-parent-call-in-override
 Source/Scripts/DLC2ApoExtendingHallScript.psc:111:5:exclamation-spacing
 Source/Scripts/DLC2ApoExtendingHallScript.psc:116:1:function-override
+Source/Scripts/DLC2ApoExtendingHallScript.psc:116:1:missing-parent-call-in-override
 Source/Scripts/DLC2ApoExtendingHallScript.psc:118:9:final-newline
 Source/Scripts/DLC2ApoFontActScript.psc:1:56:line-endings
 Source/Scripts/DLC2ApoFontActScript.psc:4:1:identifier-casing
@@ -50597,6 +50606,7 @@ Source/Scripts/DLC2ApocryphaBookRewardAScript.psc:21:1:identifier-casing
 Source/Scripts/DLC2ApocryphaBookRewardAScript.psc:22:1:unused-property
 Source/Scripts/DLC2ApocryphaBookRewardAScript.psc:26:121:line-length
 Source/Scripts/DLC2ApocryphaBookRewardAScript.psc:27:1:function-override
+Source/Scripts/DLC2ApocryphaBookRewardAScript.psc:27:1:missing-parent-call-in-override
 Source/Scripts/DLC2ApocryphaBookRewardAScript.psc:45:9:final-newline
 Source/Scripts/DLC2ApocryphaBookRewardActivator.psc:1:68:line-endings
 Source/Scripts/DLC2ApocryphaBookRewardActivator.psc:2:121:line-length
@@ -50617,6 +50627,7 @@ Source/Scripts/DLC2ApocryphaBookRewardBScript.psc:18:1:identifier-casing
 Source/Scripts/DLC2ApocryphaBookRewardBScript.psc:19:1:identifier-casing
 Source/Scripts/DLC2ApocryphaBookRewardBScript.psc:23:121:line-length
 Source/Scripts/DLC2ApocryphaBookRewardBScript.psc:24:1:function-override
+Source/Scripts/DLC2ApocryphaBookRewardBScript.psc:24:1:missing-parent-call-in-override
 Source/Scripts/DLC2ApocryphaBookRewardBScript.psc:38:39:trailing-whitespace
 Source/Scripts/DLC2ApocryphaBookRewardBScript.psc:39:9:final-newline
 Source/Scripts/DLC2ApocryphaBookRewardCScript.psc:1:80:line-endings
@@ -50628,6 +50639,7 @@ Source/Scripts/DLC2ApocryphaBookRewardCScript.psc:18:1:identifier-casing
 Source/Scripts/DLC2ApocryphaBookRewardCScript.psc:19:1:identifier-casing
 Source/Scripts/DLC2ApocryphaBookRewardCScript.psc:22:121:line-length
 Source/Scripts/DLC2ApocryphaBookRewardCScript.psc:23:1:function-override
+Source/Scripts/DLC2ApocryphaBookRewardCScript.psc:23:1:missing-parent-call-in-override
 Source/Scripts/DLC2ApocryphaBookRewardCScript.psc:38:9:final-newline
 Source/Scripts/DLC2ApocryphaBookRewardDScript.psc:1:80:line-endings
 Source/Scripts/DLC2ApocryphaBookRewardDScript.psc:11:1:identifier-casing
@@ -50639,6 +50651,7 @@ Source/Scripts/DLC2ApocryphaBookRewardDScript.psc:22:1:identifier-casing
 Source/Scripts/DLC2ApocryphaBookRewardDScript.psc:25:121:line-length
 Source/Scripts/DLC2ApocryphaBookRewardDScript.psc:26:1:function-length
 Source/Scripts/DLC2ApocryphaBookRewardDScript.psc:26:1:function-override
+Source/Scripts/DLC2ApocryphaBookRewardDScript.psc:26:1:missing-parent-call-in-override
 Source/Scripts/DLC2ApocryphaBookRewardDScript.psc:44:9:final-newline
 Source/Scripts/DLC2ApocryphaBookRewardEScript.psc:1:80:line-endings
 Source/Scripts/DLC2ApocryphaBookRewardEScript.psc:8:1:identifier-casing
@@ -50649,6 +50662,7 @@ Source/Scripts/DLC2ApocryphaBookRewardEScript.psc:18:1:identifier-casing
 Source/Scripts/DLC2ApocryphaBookRewardEScript.psc:19:1:identifier-casing
 Source/Scripts/DLC2ApocryphaBookRewardEScript.psc:22:121:line-length
 Source/Scripts/DLC2ApocryphaBookRewardEScript.psc:23:1:function-override
+Source/Scripts/DLC2ApocryphaBookRewardEScript.psc:23:1:missing-parent-call-in-override
 Source/Scripts/DLC2ApocryphaBookRewardEScript.psc:27:1:indentation
 Source/Scripts/DLC2ApocryphaBookRewardEScript.psc:28:1:indentation
 Source/Scripts/DLC2ApocryphaBookRewardEScript.psc:29:1:indentation
@@ -50668,6 +50682,7 @@ Source/Scripts/DLC2ApocryphaBookRewardFScript.psc:18:1:identifier-casing
 Source/Scripts/DLC2ApocryphaBookRewardFScript.psc:19:1:identifier-casing
 Source/Scripts/DLC2ApocryphaBookRewardFScript.psc:23:121:line-length
 Source/Scripts/DLC2ApocryphaBookRewardFScript.psc:24:1:function-override
+Source/Scripts/DLC2ApocryphaBookRewardFScript.psc:24:1:missing-parent-call-in-override
 Source/Scripts/DLC2ApocryphaBookRewardFScript.psc:39:9:final-newline
 Source/Scripts/DLC2ApocryphaBookRewardScript.psc:1:73:line-endings
 Source/Scripts/DLC2ApocryphaBookRewardScript.psc:2:121:line-length
@@ -87243,6 +87258,7 @@ Source/Scripts/MaceTrap.psc:24:19:unresolved-script
 Source/Scripts/MaceTrap.psc:29:1:numeric-comparison
 Source/Scripts/MaceTrap.psc:31:21:unresolved-script
 Source/Scripts/MaceTrap.psc:36:1:function-override
+Source/Scripts/MaceTrap.psc:36:1:missing-parent-call-in-override
 Source/Scripts/MaceTrap.psc:39:1:useless-downcast
 Source/Scripts/MaceTrap.psc:43:1:function-override
 Source/Scripts/MaceTrap.psc:48:1:final-newline
@@ -92868,6 +92884,7 @@ Source/Scripts/PressureReleasePlate.psc:37:1:indentation
 Source/Scripts/PressureReleasePlate.psc:39:1:indentation
 Source/Scripts/PressureReleasePlate.psc:44:1:function-override
 Source/Scripts/PressureReleasePlate.psc:44:1:identifier-casing
+Source/Scripts/PressureReleasePlate.psc:44:1:missing-parent-call-in-override
 Source/Scripts/PressureReleasePlate.psc:45:1:indentation
 Source/Scripts/PressureReleasePlate.psc:46:1:useless-downcast
 Source/Scripts/PressureReleasePlate.psc:48:1:redundant-bool-assignment
@@ -134348,6 +134365,7 @@ Source/Scripts/SoundTrap.psc:45:52:trailing-whitespace
 Source/Scripts/SoundTrap.psc:47:1:trailing-whitespace
 Source/Scripts/SoundTrap.psc:48:1:identifier-casing
 Source/Scripts/SoundTrap.psc:52:1:function-override
+Source/Scripts/SoundTrap.psc:52:1:missing-parent-call-in-override
 Source/Scripts/SoundTrap.psc:56:1:empty-event-handler
 Source/Scripts/SoundTrap.psc:56:1:function-override
 Source/Scripts/SoundTrap.psc:59:1:function-override
@@ -134485,8 +134503,10 @@ Source/Scripts/SpearTrap.psc:85:1:function-override
 Source/Scripts/SpearTrap.psc:85:1:identifier-casing
 Source/Scripts/SpearTrap.psc:90:1:function-override
 Source/Scripts/SpearTrap.psc:90:1:identifier-casing
+Source/Scripts/SpearTrap.psc:90:1:missing-parent-call-in-override
 Source/Scripts/SpearTrap.psc:97:1:function-override
 Source/Scripts/SpearTrap.psc:97:1:identifier-casing
+Source/Scripts/SpearTrap.psc:97:1:missing-parent-call-in-override
 Source/Scripts/SpearTrap.psc:98:1:indentation
 Source/Scripts/SpearTrap.psc:103:1:final-newline
 Source/Scripts/Spell.psc:1:37:line-endings
@@ -141948,6 +141968,7 @@ Source/Scripts/TGTQ04BannerBurnScript.psc:21:1:identifier-casing
 Source/Scripts/TGTQ04BannerBurnScript.psc:25:1:empty-event-handler
 Source/Scripts/TGTQ04BannerBurnScript.psc:25:1:function-override
 Source/Scripts/TGTQ04BannerBurnScript.psc:25:1:identifier-casing
+Source/Scripts/TGTQ04BannerBurnScript.psc:25:1:missing-parent-call-in-override
 Source/Scripts/TGTQ04BannerBurnScript.psc:31:1:function-override
 Source/Scripts/TGTQ04BannerBurnScript.psc:31:1:identifier-casing
 Source/Scripts/TGTQ04BannerBurnScript.psc:31:1:identifier-casing
@@ -158890,6 +158911,7 @@ Source/Scripts/TrapDwePiston.psc:25:1:identifier-casing
 Source/Scripts/TrapDwePiston.psc:27:1:identifier-casing
 Source/Scripts/TrapDwePiston.psc:30:1:identifier-casing
 Source/Scripts/TrapDwePiston.psc:38:1:function-override
+Source/Scripts/TrapDwePiston.psc:38:1:missing-parent-call-in-override
 Source/Scripts/TrapDwePiston.psc:40:1:trailing-whitespace
 Source/Scripts/TrapDwePiston.psc:51:1:function-length
 Source/Scripts/TrapDwePiston.psc:51:1:function-override
@@ -159479,6 +159501,7 @@ Source/Scripts/TrapFirePlate.psc:165:1:trailing-whitespace
 Source/Scripts/TrapFirePlate.psc:168:1:function-length
 Source/Scripts/TrapFirePlate.psc:168:1:function-override
 Source/Scripts/TrapFirePlate.psc:168:1:identifier-casing
+Source/Scripts/TrapFirePlate.psc:168:1:missing-parent-call-in-override
 Source/Scripts/TrapFirePlate.psc:170:5:exclamation-spacing
 Source/Scripts/TrapFirePlate.psc:173:2:strict-boolean
 Source/Scripts/TrapFirePlate.psc:176:1:trailing-whitespace
@@ -160401,6 +160424,7 @@ Source/Scripts/TrapSwingingWall.psc:84:7:trailing-whitespace
 Source/Scripts/TrapSwingingWall.psc:85:1:indentation
 Source/Scripts/TrapSwingingWall.psc:89:1:function-length
 Source/Scripts/TrapSwingingWall.psc:89:1:function-override
+Source/Scripts/TrapSwingingWall.psc:89:1:missing-parent-call-in-override
 Source/Scripts/TrapSwingingWall.psc:91:5:exclamation-spacing
 Source/Scripts/TrapSwingingWall.psc:91:16:trailing-whitespace
 Source/Scripts/TrapSwingingWall.psc:94:2:empty-body
@@ -160665,6 +160689,7 @@ Source/Scripts/TrapTriggerHinge.psc:13:1:unused-property
 Source/Scripts/TrapTriggerHinge.psc:14:1:identifier-casing
 Source/Scripts/TrapTriggerHinge.psc:16:1:function-override
 Source/Scripts/TrapTriggerHinge.psc:16:1:identifier-casing
+Source/Scripts/TrapTriggerHinge.psc:16:1:missing-parent-call-in-override
 Source/Scripts/TrapTriggerHinge.psc:17:1:useless-downcast
 Source/Scripts/TrapTriggerHinge.psc:18:18:forbidden-functions
 Source/Scripts/TrapTriggerHinge.psc:19:2:strict-boolean
@@ -160707,10 +160732,12 @@ Source/Scripts/TrapTriggerHinge.psc:88:1:empty-event-handler
 Source/Scripts/TrapTriggerHinge.psc:88:1:function-override
 Source/Scripts/TrapTriggerHinge.psc:88:1:identifier-casing
 Source/Scripts/TrapTriggerHinge.psc:88:1:identifier-casing
+Source/Scripts/TrapTriggerHinge.psc:88:1:missing-parent-call-in-override
 Source/Scripts/TrapTriggerHinge.psc:91:1:empty-event-handler
 Source/Scripts/TrapTriggerHinge.psc:91:1:function-override
 Source/Scripts/TrapTriggerHinge.psc:91:1:identifier-casing
 Source/Scripts/TrapTriggerHinge.psc:91:1:identifier-casing
+Source/Scripts/TrapTriggerHinge.psc:91:1:missing-parent-call-in-override
 Source/Scripts/TrapTriggerHinge.psc:93:1:trailing-whitespace
 Source/Scripts/TrapTriggerHinge.psc:94:1:multiple-auto-states
 Source/Scripts/TrapTriggerHinge.psc:94:1:unused-state
@@ -160745,6 +160772,7 @@ Source/Scripts/TrapTriggerTimeInterval.psc:45:1:indentation
 Source/Scripts/TrapTriggerTimeInterval.psc:52:1:empty-event-handler
 Source/Scripts/TrapTriggerTimeInterval.psc:52:1:function-override
 Source/Scripts/TrapTriggerTimeInterval.psc:52:1:identifier-casing
+Source/Scripts/TrapTriggerTimeInterval.psc:52:1:missing-parent-call-in-override
 Source/Scripts/TrapTriggerTimeInterval.psc:55:1:empty-event-handler
 Source/Scripts/TrapTriggerTimeInterval.psc:55:1:function-override
 Source/Scripts/TrapTriggerTimeInterval.psc:55:1:identifier-casing
@@ -160847,6 +160875,7 @@ Source/Scripts/Tripwire.psc:47:52:trailing-whitespace
 Source/Scripts/Tripwire.psc:49:1:trailing-whitespace
 Source/Scripts/Tripwire.psc:50:1:identifier-casing
 Source/Scripts/Tripwire.psc:54:1:function-override
+Source/Scripts/Tripwire.psc:54:1:missing-parent-call-in-override
 Source/Scripts/Tripwire.psc:60:1:indentation
 Source/Scripts/Tripwire.psc:64:1:function-override
 Source/Scripts/Tripwire.psc:64:1:identifier-casing
@@ -165294,15 +165323,19 @@ Source/Scripts/ccBGSSSE001_CritterSpawn.psc:39:1:identifier-casing
 Source/Scripts/ccBGSSSE001_CritterSpawn.psc:40:1:identifier-casing
 Source/Scripts/ccBGSSSE001_CritterSpawn.psc:43:1:undefined-event
 Source/Scripts/ccBGSSSE001_CritterSpawn.psc:52:1:function-override
+Source/Scripts/ccBGSSSE001_CritterSpawn.psc:52:1:missing-parent-call-in-override
 Source/Scripts/ccBGSSSE001_CritterSpawn.psc:56:1:function-override
 Source/Scripts/ccBGSSSE001_CritterSpawn.psc:57:1:none-form-usage
 Source/Scripts/ccBGSSSE001_CritterSpawn.psc:64:1:function-override
+Source/Scripts/ccBGSSSE001_CritterSpawn.psc:64:1:missing-parent-call-in-override
 Source/Scripts/ccBGSSSE001_CritterSpawn.psc:68:1:function-override
+Source/Scripts/ccBGSSSE001_CritterSpawn.psc:68:1:missing-parent-call-in-override
 Source/Scripts/ccBGSSSE001_CritterSpawn.psc:73:1:identifier-casing
 Source/Scripts/ccBGSSSE001_CritterSpawn.psc:74:1:trailing-whitespace
 Source/Scripts/ccBGSSSE001_CritterSpawn.psc:75:1:identifier-casing
 Source/Scripts/ccBGSSSE001_CritterSpawn.psc:82:1:identifier-casing
 Source/Scripts/ccBGSSSE001_CritterSpawn.psc:83:1:function-override
+Source/Scripts/ccBGSSSE001_CritterSpawn.psc:83:1:missing-parent-call-in-override
 Source/Scripts/ccBGSSSE001_CritterSpawn.psc:96:1:function-override
 Source/Scripts/ccBGSSSE001_CritterSpawn.psc:96:1:identifier-casing
 Source/Scripts/ccBGSSSE001_CritterSpawn.psc:97:1:identifier-casing
@@ -168125,6 +168158,7 @@ Source/Scripts/ccBGS_ARSpikeTrapScript.psc:7:1:identifier-casing
 Source/Scripts/ccBGS_ARSpikeTrapScript.psc:7:1:identifier-casing
 Source/Scripts/ccBGS_ARSpikeTrapScript.psc:7:121:line-length
 Source/Scripts/ccBGS_ARSpikeTrapScript.psc:16:1:function-override
+Source/Scripts/ccBGS_ARSpikeTrapScript.psc:16:1:missing-parent-call-in-override
 Source/Scripts/ccBGS_ARSpikeTrapScript.psc:18:9:final-newline
 Source/Scripts/ccBGS_ARSwitchScript.psc:1:12:type-casing
 Source/Scripts/ccBGS_ARSwitchScript.psc:1:56:trailing-whitespace
@@ -169867,9 +169901,11 @@ Source/Scripts/defaultFakeRezSpell.psc:1:62:line-endings
 Source/Scripts/defaultFakeRezSpell.psc:2:121:line-length
 Source/Scripts/defaultFakeRezSpell.psc:4:1:identifier-casing
 Source/Scripts/defaultFakeRezSpell.psc:7:1:function-override
+Source/Scripts/defaultFakeRezSpell.psc:7:1:missing-parent-call-in-override
 Source/Scripts/defaultFakeRezSpell.psc:8:1:indentation
 Source/Scripts/defaultFakeRezSpell.psc:10:1:none-form-usage
 Source/Scripts/defaultFakeRezSpell.psc:14:1:function-override
+Source/Scripts/defaultFakeRezSpell.psc:14:1:missing-parent-call-in-override
 Source/Scripts/defaultFakeRezSpell.psc:16:9:final-newline
 Source/Scripts/defaultFakeSummonSpell.psc:1:12:type-casing
 Source/Scripts/defaultFakeSummonSpell.psc:1:48:line-endings
@@ -173003,6 +173039,7 @@ Source/Scripts/dunAlftandFlameDoorController.psc:71:1:identifier-casing
 Source/Scripts/dunAlftandFlameDoorController.psc:72:1:none-form-usage
 Source/Scripts/dunAlftandFlameDoorController.psc:79:1:function-override
 Source/Scripts/dunAlftandFlameDoorController.psc:79:1:identifier-casing
+Source/Scripts/dunAlftandFlameDoorController.psc:79:1:missing-parent-call-in-override
 Source/Scripts/dunAlftandFlameDoorController.psc:80:1:useless-downcast
 Source/Scripts/dunAlftandFlameDoorController.psc:86:1:final-newline
 Source/Scripts/dunAlftandLightTrigger.psc:1:12:type-casing
@@ -175448,9 +175485,11 @@ Source/Scripts/dunFolgunthurBossBattle.psc:18:1:unused-property
 Source/Scripts/dunFolgunthurBossBattle.psc:20:1:identifier-casing
 Source/Scripts/dunFolgunthurBossBattle.psc:22:1:function-override
 Source/Scripts/dunFolgunthurBossBattle.psc:22:1:identifier-casing
+Source/Scripts/dunFolgunthurBossBattle.psc:22:1:missing-parent-call-in-override
 Source/Scripts/dunFolgunthurBossBattle.psc:23:6:exclamation-spacing
 Source/Scripts/dunFolgunthurBossBattle.psc:26:51:unresolved-script
 Source/Scripts/dunFolgunthurBossBattle.psc:31:1:function-override
+Source/Scripts/dunFolgunthurBossBattle.psc:31:1:missing-parent-call-in-override
 Source/Scripts/dunFolgunthurBossBattle.psc:35:1:function-override
 Source/Scripts/dunFolgunthurBossBattle.psc:36:21:exclamation-spacing
 Source/Scripts/dunFolgunthurBossBattle.psc:38:11:forbidden-functions
@@ -176406,9 +176445,11 @@ Source/Scripts/dunHalldirBossFormGhostScript.psc:1:68:trailing-whitespace
 Source/Scripts/dunHalldirBossFormGhostScript.psc:1:70:line-endings
 Source/Scripts/dunHalldirBossFormGhostScript.psc:2:121:line-length
 Source/Scripts/dunHalldirBossFormGhostScript.psc:4:1:function-override
+Source/Scripts/dunHalldirBossFormGhostScript.psc:4:1:missing-parent-call-in-override
 Source/Scripts/dunHalldirBossFormGhostScript.psc:9:1:function-override
 Source/Scripts/dunHalldirBossFormGhostScript.psc:9:1:identifier-casing
 Source/Scripts/dunHalldirBossFormGhostScript.psc:9:1:identifier-casing
+Source/Scripts/dunHalldirBossFormGhostScript.psc:9:1:missing-parent-call-in-override
 Source/Scripts/dunHalldirBossFormGhostScript.psc:10:1:trailing-whitespace
 Source/Scripts/dunHalldirBossFormGhostScript.psc:12:1:place-at-me
 Source/Scripts/dunHalldirBossFormGhostScript.psc:13:1:trailing-whitespace
@@ -180820,6 +180861,7 @@ Source/Scripts/dunReachwaterRockGhostScript.psc:29:1:empty-event-handler
 Source/Scripts/dunReachwaterRockGhostScript.psc:29:1:function-override
 Source/Scripts/dunReachwaterRockGhostScript.psc:29:1:identifier-casing
 Source/Scripts/dunReachwaterRockGhostScript.psc:29:1:identifier-casing
+Source/Scripts/dunReachwaterRockGhostScript.psc:29:1:missing-parent-call-in-override
 Source/Scripts/dunReachwaterRockJyrikBossBattle.psc:1:12:type-casing
 Source/Scripts/dunReachwaterRockJyrikBossBattle.psc:1:67:line-endings
 Source/Scripts/dunReachwaterRockJyrikBossBattle.psc:18:16:trailing-whitespace
@@ -180937,6 +180979,7 @@ Source/Scripts/dunReachwaterRockMikrulBossBattle.psc:31:1:function-override
 Source/Scripts/dunReachwaterRockMikrulBossBattle.psc:35:1:empty-event-handler
 Source/Scripts/dunReachwaterRockMikrulBossBattle.psc:35:1:function-override
 Source/Scripts/dunReachwaterRockMikrulBossBattle.psc:35:1:identifier-casing
+Source/Scripts/dunReachwaterRockMikrulBossBattle.psc:35:1:missing-parent-call-in-override
 Source/Scripts/dunReachwaterRockMikrulBossBattle.psc:39:1:argument-naming
 Source/Scripts/dunReachwaterRockMikrulBossBattle.psc:39:1:function-override
 Source/Scripts/dunReachwaterRockMikrulBossBattle.psc:39:1:identifier-casing

@@ -1,0 +1,14 @@
+{
+  "id": "missing-parent-call-in-override",
+  "name": "Missing parent call in event override",
+  "category": "Bugprone",
+  "visitor": "ast",
+  "tags": [
+    "correctness"
+  ],
+  "severity": "warning",
+  "importance": "medium",
+  "fixable": false,
+  "description": "Flags an Event that overrides a non-empty event on a project script it Extends without calling Parent.Event(). Empty parent events, and events on Native scripts, are not flagged. Every event name is checked.",
+  "definition": "Flags, as a `[warning]`, a top-level `Event` (any name, not a fixed list such as `OnInit` / `OnPlayerLoadGame`) declared on a script that `Extends` another script, when the nearest ancestor event of that name has a real body and this handler never calls `Parent.EventName(...)`. Skipping that call drops the parent script's setup, a common mod-compatibility bug. The walk stops at the nearest ancestor declaration: an empty body, or a body that is only `Return`, is a noop, so children of that event are not warned even if a grandparent further up still has code — `Parent.EventName()` would run the empty override, not the grandparent. Events declared on a script marked `Native`, and events that are themselves `Native`, are not flagged (bare engine stubs, where `Parent` is empty or irrelevant). A same-named ordinary `Function` is not an event. Events inside a named `State`, and remote handlers (`Event OtherScript.OnFoo(...)`), are not checked. An explicit `Parent.EventName(...)` anywhere in the body (including inside `If` / `While`) silences the warning, as does `; @no-parent-call` on the header line or the line immediately above it. `; @disable missing-parent-call-in-override` also works. Only checked when the `Extends` chain can be resolved from project context; a missing parent is left unflagged rather than guessed at. Distinct from `function-override` (which only informs that a name overrides) and `missing-override` (which wants `; @override`, not a parent call)."
+}

@@ -6610,6 +6610,7 @@ Scripts/Source/DBSanctuaryWordWallTriggerScript.psc:189:26:unresolved-script
 Scripts/Source/DBSanctuaryWordWallTriggerScript.psc:203:24:unresolved-script
 Scripts/Source/DBSanctuaryWordWallTriggerScript.psc:212:25:unresolved-script
 Scripts/Source/DBSanctuaryWordWallTriggerScript.psc:213:32:unresolved-script
+Scripts/Source/DBSanctuaryWordWallTriggerScript.psc:227:1:missing-parent-call-in-override
 Scripts/Source/DBSanctuaryWordWallTriggerScript.psc:227:1:nesting-depth
 Scripts/Source/DBSanctuaryWordWallTriggerScript.psc:241:27:forbidden-functions
 Scripts/Source/DBSanctuaryWordWallTriggerScript.psc:243:28:unresolved-script
@@ -9108,12 +9109,14 @@ Scripts/Source/Dawnguard/DLC1TrapInfectedBones.psc:83:1:unchecked-cast
 Scripts/Source/Dawnguard/DLC1TrapInfectedBones.psc:86:1:none-form-usage
 Scripts/Source/Dawnguard/DLC1TrapInfectedBones.psc:86:1:unchecked-cast
 Scripts/Source/Dawnguard/DLC1TrapInfectedBones.psc:86:121:line-length
+Scripts/Source/Dawnguard/DLC1TrapInfectedBones.psc:125:1:missing-parent-call-in-override
 Scripts/Source/Dawnguard/DLC1TrapInfectedBones.psc:139:1:nesting-depth
 Scripts/Source/Dawnguard/DLC1TrapPoisonBloom.psc:54:3:strict-boolean
 Scripts/Source/Dawnguard/DLC1TrapPoisonBloom.psc:90:9:forbidden-functions
 Scripts/Source/Dawnguard/DLC1TrapPoisonBloom.psc:173:9:forbidden-functions
 Scripts/Source/Dawnguard/DLC1TrapPoisonBloom.psc:179:3:strict-boolean
 Scripts/Source/Dawnguard/DLC1TrapPoisonBloom.psc:183:11:forbidden-functions
+Scripts/Source/Dawnguard/DLC1TrapPoisonBloom.psc:193:1:missing-parent-call-in-override
 Scripts/Source/Dawnguard/DLC1TrapPoisonBloom.psc:198:2:strict-boolean
 Scripts/Source/Dawnguard/DLC1TrapPoisonBloom.psc:200:3:strict-boolean
 Scripts/Source/Dawnguard/DLC1TrapPoisonBloom.psc:204:3:strict-boolean
@@ -15190,6 +15193,7 @@ Scripts/Source/Dawnguard/SoundTrap.psc:19:3:strict-boolean
 Scripts/Source/Dawnguard/SoundTrap.psc:24:21:unresolved-script
 Scripts/Source/Dawnguard/SoundTrap.psc:26:3:strict-boolean
 Scripts/Source/Dawnguard/SoundTrap.psc:27:1:place-at-me
+Scripts/Source/Dawnguard/SoundTrap.psc:52:1:missing-parent-call-in-override
 Scripts/Source/Dawnguard/critterMoth.psc:58:1:none-form-usage
 Scripts/Source/Dawnguard/critterMoth.psc:66:12:forbidden-functions
 Scripts/Source/Dawnguard/critterMoth.psc:89:1:short-wait-interval
@@ -15862,6 +15866,8 @@ Scripts/Source/Dragonborn/DLC2ApoExtendingHallScript.psc:67:6:forbidden-function
 Scripts/Source/Dragonborn/DLC2ApoExtendingHallScript.psc:69:4:forbidden-functions
 Scripts/Source/Dragonborn/DLC2ApoExtendingHallScript.psc:86:6:forbidden-functions
 Scripts/Source/Dragonborn/DLC2ApoExtendingHallScript.psc:87:4:forbidden-functions
+Scripts/Source/Dragonborn/DLC2ApoExtendingHallScript.psc:110:1:missing-parent-call-in-override
+Scripts/Source/Dragonborn/DLC2ApoExtendingHallScript.psc:116:1:missing-parent-call-in-override
 Scripts/Source/Dragonborn/DLC2ApoFontActScript.psc:25:1:none-form-usage
 Scripts/Source/Dragonborn/DLC2ApoFontActScript.psc:25:22:forbidden-functions
 Scripts/Source/Dragonborn/DLC2ApoFontActScript.psc:25:40:forbidden-functions
@@ -15896,15 +15902,21 @@ Scripts/Source/Dragonborn/DLC2ApocryphaBookPortalActivator.psc:6:1:undefined-eve
 Scripts/Source/Dragonborn/DLC2ApocryphaBookPortalActivator.psc:11:1:argument-naming
 Scripts/Source/Dragonborn/DLC2ApocryphaBookPortalActivator.psc:12:1:none-form-usage
 Scripts/Source/Dragonborn/DLC2ApocryphaBookRewardAScript.psc:26:121:line-length
+Scripts/Source/Dragonborn/DLC2ApocryphaBookRewardAScript.psc:27:1:missing-parent-call-in-override
 Scripts/Source/Dragonborn/DLC2ApocryphaBookRewardActivator.psc:2:121:line-length
 Scripts/Source/Dragonborn/DLC2ApocryphaBookRewardActivator.psc:6:1:undefined-event
 Scripts/Source/Dragonborn/DLC2ApocryphaBookRewardActivator.psc:13:27:forbidden-functions
 Scripts/Source/Dragonborn/DLC2ApocryphaBookRewardActivator.psc:15:1:unchecked-cast
 Scripts/Source/Dragonborn/DLC2ApocryphaBookRewardBScript.psc:23:121:line-length
+Scripts/Source/Dragonborn/DLC2ApocryphaBookRewardBScript.psc:24:1:missing-parent-call-in-override
 Scripts/Source/Dragonborn/DLC2ApocryphaBookRewardCScript.psc:22:121:line-length
+Scripts/Source/Dragonborn/DLC2ApocryphaBookRewardCScript.psc:23:1:missing-parent-call-in-override
 Scripts/Source/Dragonborn/DLC2ApocryphaBookRewardDScript.psc:25:121:line-length
+Scripts/Source/Dragonborn/DLC2ApocryphaBookRewardDScript.psc:26:1:missing-parent-call-in-override
 Scripts/Source/Dragonborn/DLC2ApocryphaBookRewardEScript.psc:22:121:line-length
+Scripts/Source/Dragonborn/DLC2ApocryphaBookRewardEScript.psc:23:1:missing-parent-call-in-override
 Scripts/Source/Dragonborn/DLC2ApocryphaBookRewardFScript.psc:23:121:line-length
+Scripts/Source/Dragonborn/DLC2ApocryphaBookRewardFScript.psc:24:1:missing-parent-call-in-override
 Scripts/Source/Dragonborn/DLC2ApocryphaBookRewardScript.psc:2:121:line-length
 Scripts/Source/Dragonborn/DLC2ApocryphaBookRewardScript.psc:79:27:forbidden-functions
 Scripts/Source/Dragonborn/DLC2ApocryphaBookRewardScript.psc:80:27:forbidden-functions
@@ -23467,9 +23479,11 @@ Scripts/Source/Hearthfire/BYOHBreezehomeNavcutManager.psc:30:1:none-form-usage
 Scripts/Source/Hearthfire/BYOHBreezehomeNavcutManager.psc:34:1:none-form-usage
 Scripts/Source/Hearthfire/BYOHBreezehomeNavcutManager.psc:35:1:none-form-usage
 Scripts/Source/Hearthfire/BYOHBreezehomeNavcutManager.psc:36:1:none-form-usage
+Scripts/Source/Hearthfire/BYOHBuildingObjectExteriorScript.psc:6:1:missing-parent-call-in-override
 Scripts/Source/Hearthfire/BYOHBuildingObjectExteriorScript.psc:7:28:forbidden-functions
 Scripts/Source/Hearthfire/BYOHBuildingObjectExteriorScript.psc:8:9:forbidden-functions
 Scripts/Source/Hearthfire/BYOHBuildingObjectExteriorScript.psc:12:43:unresolved-script
+Scripts/Source/Hearthfire/BYOHBuildingObjectInteriorScript.psc:5:1:missing-parent-call-in-override
 Scripts/Source/Hearthfire/BYOHBuildingObjectInteriorScript.psc:6:28:forbidden-functions
 Scripts/Source/Hearthfire/BYOHBuildingObjectInteriorScript.psc:7:9:forbidden-functions
 Scripts/Source/Hearthfire/BYOHBuildingObjectInteriorScript.psc:14:43:unresolved-script
@@ -23483,9 +23497,11 @@ Scripts/Source/Hearthfire/BYOHBuildingObjectScript.psc:14:3:strict-boolean
 Scripts/Source/Hearthfire/BYOHBuildingObjectScript.psc:15:9:forbidden-functions
 Scripts/Source/Hearthfire/BYOHBuildingObjectScript.psc:18:1:none-form-usage
 Scripts/Source/Hearthfire/BYOHBuildingObjectScript.psc:18:121:line-length
+Scripts/Source/Hearthfire/BYOHBuildingObjectTrophyScript.psc:5:1:missing-parent-call-in-override
 Scripts/Source/Hearthfire/BYOHBuildingObjectTrophyScript.psc:6:28:forbidden-functions
 Scripts/Source/Hearthfire/BYOHBuildingObjectTrophyScript.psc:7:9:forbidden-functions
 Scripts/Source/Hearthfire/BYOHBuildingObjectTrophyScript.psc:9:32:unresolved-script
+Scripts/Source/Hearthfire/BYOHBuildingRemodelEntryScript.psc:5:1:missing-parent-call-in-override
 Scripts/Source/Hearthfire/BYOHBuildingRemodelEntryScript.psc:6:28:forbidden-functions
 Scripts/Source/Hearthfire/BYOHBuildingRemodelEntryScript.psc:7:9:forbidden-functions
 Scripts/Source/Hearthfire/BYOHBuildingRemodelEntryScript.psc:11:37:unresolved-script
@@ -28519,6 +28535,7 @@ Scripts/Source/MaceTrap.psc:22:20:unresolved-script
 Scripts/Source/MaceTrap.psc:24:19:unresolved-script
 Scripts/Source/MaceTrap.psc:29:1:numeric-comparison
 Scripts/Source/MaceTrap.psc:31:21:unresolved-script
+Scripts/Source/MaceTrap.psc:36:1:missing-parent-call-in-override
 Scripts/Source/MaceofMolagBalActivatorScript.psc:6:26:forbidden-functions
 Scripts/Source/MagicAnomalySpawnerSCRIPT.psc:40:19:forbidden-functions
 Scripts/Source/MagicAnomalySpawnerSCRIPT.psc:42:121:line-length
@@ -29801,6 +29818,7 @@ Scripts/Source/PlayerWerewolfScript.psc:12:1:unchecked-cast
 Scripts/Source/PressurePlate.psc:20:12:forbidden-functions
 Scripts/Source/PressurePlate.psc:22:12:forbidden-functions
 Scripts/Source/PressurePlate.psc:28:20:unresolved-script
+Scripts/Source/PressureReleasePlate.psc:44:1:missing-parent-call-in-override
 Scripts/Source/PressureReleasePlate.psc:68:3:empty-body
 Scripts/Source/QF_AchievementsHardWorkerFood_000FDE7D.psc:17:1:none-form-usage
 Scripts/Source/QF_ArenaCombatQuest00DBSpecia_00097594.psc:27:1:none-form-usage
@@ -44562,6 +44580,7 @@ Scripts/Source/SoundTrap.psc:19:3:strict-boolean
 Scripts/Source/SoundTrap.psc:24:21:unresolved-script
 Scripts/Source/SoundTrap.psc:26:3:strict-boolean
 Scripts/Source/SoundTrap.psc:27:1:place-at-me
+Scripts/Source/SoundTrap.psc:52:1:missing-parent-call-in-override
 Scripts/Source/SovngardeStatueScript.psc:17:1:undefined-event
 Scripts/Source/SovngardeStatueScript.psc:22:1:none-form-usage
 Scripts/Source/SovngardeStatueScript.psc:22:1:none-form-usage
@@ -44583,6 +44602,8 @@ Scripts/Source/SpearTrap.psc:40:19:unresolved-script
 Scripts/Source/SpearTrap.psc:42:19:unresolved-script
 Scripts/Source/SpearTrap.psc:65:1:short-wait-interval
 Scripts/Source/SpearTrap.psc:70:20:unresolved-script
+Scripts/Source/SpearTrap.psc:90:1:missing-parent-call-in-override
+Scripts/Source/SpearTrap.psc:97:1:missing-parent-call-in-override
 Scripts/Source/Spell.psc:16:10:forbidden-functions
 Scripts/Source/Spell.psc:22:10:forbidden-functions
 Scripts/Source/SpellTomeRemoveScript.psc:4:21:forbidden-functions
@@ -46066,6 +46087,7 @@ Scripts/Source/TGTQ03RegistryScript.psc:10:25:forbidden-functions
 Scripts/Source/TGTQ03RegistryScript.psc:11:1:none-form-usage
 Scripts/Source/TGTQ03RegistryScript.psc:12:1:none-form-usage
 Scripts/Source/TGTQ03RegistryScript.psc:13:1:none-form-usage
+Scripts/Source/TGTQ04BannerBurnScript.psc:25:1:missing-parent-call-in-override
 Scripts/Source/TGTQ04BannerBurnScript.psc:33:1:unchecked-cast
 Scripts/Source/TGTQ04BannerBurnScript.psc:41:121:line-length
 Scripts/Source/TGTQ04BannerBurnScript.psc:55:16:forbidden-functions
@@ -49974,6 +49996,7 @@ Scripts/Source/TrapDweFlamePillarHit.psc:31:121:line-length
 Scripts/Source/TrapDweFlamePillarHit.psc:36:1:unchecked-cast
 Scripts/Source/TrapDweFlamePillarHit.psc:40:1:place-at-me
 Scripts/Source/TrapDweFlamePillarHit.psc:52:121:line-length
+Scripts/Source/TrapDwePiston.psc:38:1:missing-parent-call-in-override
 Scripts/Source/TrapDwePiston.psc:59:20:unresolved-script
 Scripts/Source/TrapDweThresher.psc:40:19:unresolved-script
 Scripts/Source/TrapDweThresher.psc:41:18:unresolved-script
@@ -50011,6 +50034,7 @@ Scripts/Source/TrapFirePlate.psc:38:20:unresolved-script
 Scripts/Source/TrapFirePlate.psc:80:26:forbidden-functions
 Scripts/Source/TrapFirePlate.psc:106:10:forbidden-functions
 Scripts/Source/TrapFirePlate.psc:107:2:strict-boolean
+Scripts/Source/TrapFirePlate.psc:168:1:missing-parent-call-in-override
 Scripts/Source/TrapFirePlate.psc:173:2:strict-boolean
 Scripts/Source/TrapFlamethrower.psc:64:1:nesting-depth
 Scripts/Source/TrapFlamethrower.psc:130:1:none-form-usage
@@ -50089,6 +50113,7 @@ Scripts/Source/TrapSwingingWall.psc:69:1:argument-naming
 Scripts/Source/TrapSwingingWall.psc:71:2:strict-boolean
 Scripts/Source/TrapSwingingWall.psc:77:1:argument-naming
 Scripts/Source/TrapSwingingWall.psc:79:2:strict-boolean
+Scripts/Source/TrapSwingingWall.psc:89:1:missing-parent-call-in-override
 Scripts/Source/TrapSwingingWall.psc:94:2:empty-body
 Scripts/Source/TrapSwingingWall.psc:116:2:empty-body
 Scripts/Source/TrapSwingingWall.psc:120:20:unresolved-script
@@ -50128,6 +50153,7 @@ Scripts/Source/TrapTriggerBase.psc:333:1:unchecked-cast
 Scripts/Source/TrapTriggerBase.psc:335:1:none-form-usage
 Scripts/Source/TrapTriggerBase.psc:348:1:unchecked-cast
 Scripts/Source/TrapTriggerBase.psc:350:1:none-form-usage
+Scripts/Source/TrapTriggerHinge.psc:16:1:missing-parent-call-in-override
 Scripts/Source/TrapTriggerHinge.psc:18:18:forbidden-functions
 Scripts/Source/TrapTriggerHinge.psc:19:2:strict-boolean
 Scripts/Source/TrapTriggerHinge.psc:20:1:unchecked-cast
@@ -50135,11 +50161,14 @@ Scripts/Source/TrapTriggerHinge.psc:40:34:forbidden-functions
 Scripts/Source/TrapTriggerHinge.psc:55:3:empty-body
 Scripts/Source/TrapTriggerHinge.psc:60:121:line-length
 Scripts/Source/TrapTriggerHinge.psc:72:3:strict-boolean
+Scripts/Source/TrapTriggerHinge.psc:88:1:missing-parent-call-in-override
+Scripts/Source/TrapTriggerHinge.psc:91:1:missing-parent-call-in-override
 Scripts/Source/TrapTriggerHinge.psc:94:1:multiple-auto-states
 Scripts/Source/TrapTriggerTimeInterval.psc:21:1:multiple-auto-states
 Scripts/Source/TrapTriggerTimeInterval.psc:39:1:none-form-usage
 Scripts/Source/TrapTriggerTimeInterval.psc:40:1:short-wait-interval
 Scripts/Source/TrapTriggerTimeInterval.psc:40:12:forbidden-functions
+Scripts/Source/TrapTriggerTimeInterval.psc:52:1:missing-parent-call-in-override
 Scripts/Source/Trigger.psc:7:121:line-length
 Scripts/Source/Trigger.psc:20:20:forbidden-functions
 Scripts/Source/Trigger.psc:24:1:argument-naming
@@ -50147,6 +50176,7 @@ Scripts/Source/Trigger.psc:32:1:argument-naming
 Scripts/Source/TriggerBoxBase.psc:53:3:strict-boolean
 Scripts/Source/Tripwire.psc:16:20:unresolved-script
 Scripts/Source/Tripwire.psc:35:121:line-length
+Scripts/Source/Tripwire.psc:54:1:missing-parent-call-in-override
 Scripts/Source/Tripwire.psc:77:121:line-length
 Scripts/Source/TutorialPlayerScript.psc:7:1:none-form-usage
 Scripts/Source/TutorialPlayerScript.psc:7:11:forbidden-functions
@@ -51360,7 +51390,9 @@ Scripts/Source/defaultFakeHarvestableScript.psc:76:1:unchecked-cast
 Scripts/Source/defaultFakeNPCLoadTRIG.psc:17:1:unchecked-cast
 Scripts/Source/defaultFakeNPCLoadTRIG.psc:37:1:undefined-event
 Scripts/Source/defaultFakeRezSpell.psc:2:121:line-length
+Scripts/Source/defaultFakeRezSpell.psc:7:1:missing-parent-call-in-override
 Scripts/Source/defaultFakeRezSpell.psc:10:1:none-form-usage
+Scripts/Source/defaultFakeRezSpell.psc:14:1:missing-parent-call-in-override
 Scripts/Source/defaultFakeSummonSpell.psc:2:121:line-length
 Scripts/Source/defaultFakeSummonSpell.psc:10:18:forbidden-functions
 Scripts/Source/defaultFakeSummonSpell.psc:25:1:undefined-event
@@ -51787,6 +51819,7 @@ Scripts/Source/dunAlftandFlameDoorController.psc:63:1:none-form-usage
 Scripts/Source/dunAlftandFlameDoorController.psc:65:1:none-form-usage
 Scripts/Source/dunAlftandFlameDoorController.psc:66:1:none-form-usage
 Scripts/Source/dunAlftandFlameDoorController.psc:72:1:none-form-usage
+Scripts/Source/dunAlftandFlameDoorController.psc:79:1:missing-parent-call-in-override
 Scripts/Source/dunAlftandLightTrigger.psc:11:25:forbidden-functions
 Scripts/Source/dunAlftandLightTrigger.psc:14:1:none-form-usage
 Scripts/Source/dunAlftandLightTrigger.psc:15:9:forbidden-functions
@@ -52428,7 +52461,9 @@ Scripts/Source/dunFellglow_PrisonerFactionManager.psc:38:1:unchecked-cast
 Scripts/Source/dunFellglow_PrisonerFactionManager.psc:39:1:unchecked-cast
 Scripts/Source/dunFellglow_PrisonerSceneTrigger.psc:9:1:unchecked-cast
 Scripts/Source/dunFellglow_PrisonerSceneTrigger.psc:10:1:none-form-usage
+Scripts/Source/dunFolgunthurBossBattle.psc:22:1:missing-parent-call-in-override
 Scripts/Source/dunFolgunthurBossBattle.psc:26:51:unresolved-script
+Scripts/Source/dunFolgunthurBossBattle.psc:31:1:missing-parent-call-in-override
 Scripts/Source/dunFolgunthurBossBattle.psc:38:11:forbidden-functions
 Scripts/Source/dunFolgunthurBossBattle.psc:61:1:unchecked-cast
 Scripts/Source/dunFolgunthurBossBattle.psc:61:21:forbidden-functions
@@ -52860,6 +52895,8 @@ Scripts/Source/dunHalldirBossBattleForms.psc:66:1:none-form-usage
 Scripts/Source/dunHalldirBossBattleForms.psc:66:1:none-form-usage
 Scripts/Source/dunHalldirBossBattleForms.psc:67:10:forbidden-functions
 Scripts/Source/dunHalldirBossFormGhostScript.psc:2:121:line-length
+Scripts/Source/dunHalldirBossFormGhostScript.psc:4:1:missing-parent-call-in-override
+Scripts/Source/dunHalldirBossFormGhostScript.psc:9:1:missing-parent-call-in-override
 Scripts/Source/dunHalldirBossFormGhostScript.psc:12:1:place-at-me
 Scripts/Source/dunHalldirBossFormGhostScript.psc:15:10:forbidden-functions
 Scripts/Source/dunHalldirGhostAmbushScript.psc:10:11:forbidden-functions
@@ -54048,6 +54085,7 @@ Scripts/Source/dunReachwaterRockGhostScript.psc:7:21:unresolved-script
 Scripts/Source/dunReachwaterRockGhostScript.psc:12:21:unresolved-script
 Scripts/Source/dunReachwaterRockGhostScript.psc:20:1:place-at-me
 Scripts/Source/dunReachwaterRockGhostScript.psc:21:10:forbidden-functions
+Scripts/Source/dunReachwaterRockGhostScript.psc:29:1:missing-parent-call-in-override
 Scripts/Source/dunReachwaterRockJyrikBossBattle.psc:45:1:place-at-me
 Scripts/Source/dunReachwaterRockJyrikBossBattle.psc:49:48:forbidden-functions
 Scripts/Source/dunReachwaterRockJyrikBossBattle.psc:50:11:forbidden-functions
@@ -54098,6 +54136,7 @@ Scripts/Source/dunReachwaterRockMikrulBossBattle.psc:15:10:forbidden-functions
 Scripts/Source/dunReachwaterRockMikrulBossBattle.psc:19:1:place-at-me
 Scripts/Source/dunReachwaterRockMikrulBossBattle.psc:20:10:forbidden-functions
 Scripts/Source/dunReachwaterRockMikrulBossBattle.psc:24:35:forbidden-functions
+Scripts/Source/dunReachwaterRockMikrulBossBattle.psc:35:1:missing-parent-call-in-override
 Scripts/Source/dunReachwaterRockMikrulBossBattle.psc:39:1:argument-naming
 Scripts/Source/dunReachwaterRockMikrulBossBattle.psc:47:1:place-at-me
 Scripts/Source/dunReachwaterRockMikrulBossBattle.psc:51:47:forbidden-functions
