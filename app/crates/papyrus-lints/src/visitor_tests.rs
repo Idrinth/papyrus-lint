@@ -72,6 +72,7 @@ fn ast_rules_return_an_ast_visitor() {
     assert_ast(crate::setvalue_in_loop::visitor());
     assert_ast(crate::short_wait_interval::visitor());
     assert_ast(crate::state_function_signature::visitor());
+    assert_ast(crate::state_missing_empty_fallback::visitor());
     assert_ast(crate::static_condition::visitor());
     assert_ast(crate::static_function_call_via_instance::visitor());
     assert_ast(crate::strict_boolean::visitor());

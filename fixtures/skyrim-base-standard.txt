@@ -5669,6 +5669,7 @@ Source/Scripts/C06TombEntranceCheatScript.psc:25:1:indentation
 Source/Scripts/C06TombEntranceCheatScript.psc:25:1:none-form-usage
 Source/Scripts/C06WolfSpriitScript.psc:1:54:trailing-whitespace
 Source/Scripts/C06YsgramorStatueScript.psc:1:59:trailing-whitespace
+Source/Scripts/C06YsgramorStatueScript.psc:9:1:state-missing-empty-fallback
 Source/Scripts/C06YsgramorStatueScript.psc:9:1:undefined-event
 Source/Scripts/C06YsgramorStatueScript.psc:10:1:none-form-usage
 Source/Scripts/C06YsgramorStatueScript.psc:12:1:none-form-usage
@@ -5679,6 +5680,7 @@ Source/Scripts/C06YsgramorStatueScript.psc:23:10:forbidden-functions
 Source/Scripts/C06YsgramorStatueScript.psc:24:1:none-form-usage
 Source/Scripts/C06YsgramorStatueScript.psc:24:1:none-form-usage
 Source/Scripts/C06YsgramorStatueScript.psc:25:1:none-form-usage
+Source/Scripts/C06YsgramorStatueScript.psc:34:1:state-missing-empty-fallback
 Source/Scripts/C06YsgramorStatueScript.psc:34:1:undefined-event
 Source/Scripts/C06YsgramorStatueScript.psc:35:1:none-form-usage
 Source/Scripts/C06YsgramorStatueScript.psc:36:1:none-form-usage
@@ -5688,6 +5690,7 @@ Source/Scripts/C06YsgramorStatueScript.psc:40:1:trailing-whitespace
 Source/Scripts/C06YsgramorStatueScript.psc:42:12:forbidden-functions
 Source/Scripts/C06YsgramorStatueScript.psc:46:1:indentation
 Source/Scripts/C06YsgramorStatueScript.psc:48:9:forbidden-functions
+Source/Scripts/C06YsgramorStatueScript.psc:55:1:state-missing-empty-fallback
 Source/Scripts/C06YsgramorStatueScript.psc:55:1:undefined-event
 Source/Scripts/C06YsgramorStatueScript.psc:56:1:none-form-usage
 Source/Scripts/CCHorseArmorChangeScript.psc:22:121:line-length
@@ -6861,6 +6864,7 @@ Source/Scripts/CWCampaignFieldCOScript.psc:3:121:line-length
 Source/Scripts/CWCampaignFieldCOScript.psc:5:32:trailing-whitespace
 Source/Scripts/CWCampaignFieldCOScript.psc:6:25:trailing-whitespace
 Source/Scripts/CWCampaignFieldCOScript.psc:10:121:line-length
+Source/Scripts/CWCampaignFieldCOScript.psc:14:1:state-missing-empty-fallback
 Source/Scripts/CWCampaignFieldCOScript.psc:14:1:undefined-event
 Source/Scripts/CWCampaignFieldCOScript.psc:15:1:indentation
 Source/Scripts/CWCampaignFieldCOScript.psc:19:1:indentation
@@ -7891,11 +7895,13 @@ Source/Scripts/CWCatapultScript.psc:128:45:trailing-whitespace
 Source/Scripts/CWCatapultScript.psc:129:44:trailing-whitespace
 Source/Scripts/CWCatapultScript.psc:131:47:trailing-whitespace
 Source/Scripts/CWCatapultScript.psc:132:49:trailing-whitespace
+Source/Scripts/CWCatapultScript.psc:136:1:state-missing-empty-fallback
 Source/Scripts/CWCatapultScript.psc:136:1:undefined-event
 Source/Scripts/CWCatapultScript.psc:137:1:indentation
 Source/Scripts/CWCatapultScript.psc:139:1:trailing-whitespace
 Source/Scripts/CWCatapultScript.psc:142:1:indentation
 Source/Scripts/CWCatapultScript.psc:145:1:trailing-whitespace
+Source/Scripts/CWCatapultScript.psc:149:1:state-missing-empty-fallback
 Source/Scripts/CWCatapultScript.psc:149:1:undefined-event
 Source/Scripts/CWCatapultScript.psc:150:1:indentation
 Source/Scripts/CWCatapultScript.psc:152:1:trailing-whitespace
@@ -7909,6 +7915,7 @@ Source/Scripts/CWCatapultScript.psc:165:121:line-length
 Source/Scripts/CWCatapultScript.psc:166:1:trailing-whitespace
 Source/Scripts/CWCatapultScript.psc:171:1:trailing-whitespace
 Source/Scripts/CWCatapultScript.psc:172:1:trailing-whitespace
+Source/Scripts/CWCatapultScript.psc:176:1:state-missing-empty-fallback
 Source/Scripts/CWCatapultScript.psc:176:1:undefined-event
 Source/Scripts/CWCatapultScript.psc:177:1:indentation
 Source/Scripts/CWCatapultScript.psc:179:1:trailing-whitespace
@@ -8040,6 +8047,7 @@ Source/Scripts/CWCatapultStrikeSpawnerScript.psc:33:1:place-at-me
 Source/Scripts/CWCatapultStrikeSpawnerScript.psc:34:1:trailing-whitespace
 Source/Scripts/CWCatapultWeaponFireSCRIPT.psc:1:62:trailing-whitespace
 Source/Scripts/CWCatapultWeaponFireSCRIPT.psc:15:15:trailing-whitespace
+Source/Scripts/CWCatapultWeaponFireSCRIPT.psc:34:1:state-missing-empty-fallback
 Source/Scripts/CWCatapultWeaponFireSCRIPT.psc:34:1:undefined-event
 Source/Scripts/CWCatapultWeaponFireSCRIPT.psc:44:1:unchecked-cast
 Source/Scripts/CWCatapultWeaponFireSCRIPT.psc:46:1:none-form-usage
@@ -16707,7 +16715,9 @@ Source/Scripts/DA04BloodHarvestVictimScript.psc:78:1:trailing-whitespace
 Source/Scripts/DA04BloodHarvestVictimScript.psc:79:1:indentation
 Source/Scripts/DA04ButtonScript.psc:1:52:trailing-whitespace
 Source/Scripts/DA04ButtonScript.psc:29:1:undefined-event
+Source/Scripts/DA04ButtonScript.psc:35:1:state-missing-empty-fallback
 Source/Scripts/DA04ButtonScript.psc:35:1:undefined-event
+Source/Scripts/DA04ButtonScript.psc:49:1:state-missing-empty-fallback
 Source/Scripts/DA04ButtonScript.psc:49:1:undefined-event
 Source/Scripts/DA04ButtonScript.psc:55:1:trailing-whitespace
 Source/Scripts/DA04ButtonScript.psc:57:27:forbidden-functions
@@ -16741,9 +16751,11 @@ Source/Scripts/DA04LexiconStand.psc:23:1:none-form-usage
 Source/Scripts/DA04LexiconStand.psc:25:8:exclamation-spacing
 Source/Scripts/DA04LexiconStand.psc:26:1:none-form-usage
 Source/Scripts/DA04LexiconStand.psc:32:1:trailing-whitespace
+Source/Scripts/DA04LexiconStand.psc:33:1:state-missing-empty-fallback
 Source/Scripts/DA04LexiconStand.psc:33:1:undefined-event
 Source/Scripts/DA04LexiconStand.psc:34:1:unchecked-cast
 Source/Scripts/DA04LexiconStand.psc:35:1:unchecked-cast
+Source/Scripts/DA04LexiconStand.psc:40:1:state-missing-empty-fallback
 Source/Scripts/DA04LexiconStand.psc:40:1:undefined-event
 Source/Scripts/DA04LexiconStand.psc:41:1:unchecked-cast
 Source/Scripts/DA04LexiconStand.psc:42:1:unchecked-cast
@@ -17489,6 +17501,7 @@ Source/Scripts/DA10GhostTrap.psc:21:1:indentation
 Source/Scripts/DA10GhostTrap.psc:22:1:indentation
 Source/Scripts/DA10GhostTrap.psc:23:1:indentation
 Source/Scripts/DA10GhostTrap.psc:24:1:trailing-whitespace
+Source/Scripts/DA10GhostTrap.psc:37:1:state-missing-empty-fallback
 Source/Scripts/DA10GhostTrap.psc:37:1:undefined-event
 Source/Scripts/DA10GhostTrap.psc:38:1:none-form-usage
 Source/Scripts/DA10GhostTrap.psc:40:1:trailing-whitespace
@@ -17498,10 +17511,12 @@ Source/Scripts/DA10GhostTrap.psc:43:57:trailing-whitespace
 Source/Scripts/DA10GhostTrap.psc:50:1:indentation
 Source/Scripts/DA10GhostTrap.psc:51:2:strict-boolean
 Source/Scripts/DA10GhostTrap.psc:51:16:trailing-whitespace
+Source/Scripts/DA10GhostTrap.psc:63:1:state-missing-empty-fallback
 Source/Scripts/DA10GhostTrap.psc:63:1:undefined-event
 Source/Scripts/DA10GhostTrap.psc:65:3:strict-boolean
 Source/Scripts/DA10GhostTrap.psc:68:1:none-form-usage
 Source/Scripts/DA10GhostTrap.psc:77:27:exclamation-spacing
+Source/Scripts/DA10GhostTrap.psc:92:1:state-missing-empty-fallback
 Source/Scripts/DA10GhostTrap.psc:92:1:undefined-event
 Source/Scripts/DA10GhostTrap.psc:93:6:exclamation-spacing
 Source/Scripts/DA10GhostTrap.psc:99:4:strict-boolean
@@ -17538,6 +17553,7 @@ Source/Scripts/DA10HauntingControllerScript.psc:83:55:trailing-whitespace
 Source/Scripts/DA10HauntingControllerScript.psc:84:54:trailing-whitespace
 Source/Scripts/DA10HauntingControllerScript.psc:114:1:cyclomatic-complexity
 Source/Scripts/DA10HauntingControllerScript.psc:114:1:nesting-depth
+Source/Scripts/DA10HauntingControllerScript.psc:114:1:state-missing-empty-fallback
 Source/Scripts/DA10HauntingControllerScript.psc:114:1:undefined-event
 Source/Scripts/DA10HauntingControllerScript.psc:118:1:indentation
 Source/Scripts/DA10HauntingControllerScript.psc:119:4:empty-body
@@ -18199,6 +18215,7 @@ Source/Scripts/DA16DreamGuardianAmbush.psc:66:1:trailing-whitespace
 Source/Scripts/DA16DreamGuardianAmbush.psc:67:43:comma-spacing
 Source/Scripts/DA16DreamGuardianAmbush.psc:72:1:trailing-whitespace
 Source/Scripts/DA16DreamGuardianAmbush.psc:75:1:trailing-whitespace
+Source/Scripts/DA16DreamGuardianAmbush.psc:81:1:state-missing-empty-fallback
 Source/Scripts/DA16DreamGuardianAmbush.psc:81:1:undefined-event
 Source/Scripts/DA16DreamGuardianAmbush.psc:82:1:trailing-whitespace
 Source/Scripts/DA16DreamGuardianAmbush.psc:83:1:trailing-whitespace
@@ -18285,6 +18302,7 @@ Source/Scripts/DA16MagicBarrier.psc:54:1:trailing-whitespace
 Source/Scripts/DA16MagicBarrier.psc:57:9:argument-types
 Source/Scripts/DA16MagicBarrier.psc:60:1:trailing-whitespace
 Source/Scripts/DA16MagicBarrier.psc:64:1:trailing-whitespace
+Source/Scripts/DA16MagicBarrier.psc:65:1:state-missing-empty-fallback
 Source/Scripts/DA16MagicBarrier.psc:65:1:undefined-event
 Source/Scripts/DA16MagicBarrier.psc:66:1:indentation
 Source/Scripts/DA16MagicBarrier.psc:67:6:forbidden-functions
@@ -18372,6 +18390,7 @@ Source/Scripts/DA16MistFill.psc:59:1:none-form-usage
 Source/Scripts/DA16MistFill.psc:59:26:assignment-operator-spacing
 Source/Scripts/DA16MistFill.psc:59:26:assignment-operator-spacing
 Source/Scripts/DA16MistFill.psc:61:1:trailing-whitespace
+Source/Scripts/DA16MistFill.psc:67:1:state-missing-empty-fallback
 Source/Scripts/DA16MistFill.psc:67:1:undefined-event
 Source/Scripts/DA16MistFill.psc:75:1:none-form-usage
 Source/Scripts/DA16MistFill.psc:76:1:none-form-usage
@@ -18661,6 +18680,7 @@ Source/Scripts/DB05FallingStatueActivate.psc:37:1:indentation
 Source/Scripts/DB05FallingStatueActivate.psc:46:25:forbidden-functions
 Source/Scripts/DB05FallingStatueActivate.psc:51:121:line-length
 Source/Scripts/DB05FallingStatueActivate.psc:52:26:forbidden-functions
+Source/Scripts/DB05FallingStatueActivate.psc:60:1:state-missing-empty-fallback
 Source/Scripts/DB05FallingStatueActivate.psc:60:1:undefined-event
 Source/Scripts/DB05FallingStatueActivate.psc:61:1:trailing-whitespace
 Source/Scripts/DB05FallingStatueActivate.psc:64:121:line-length
@@ -18674,6 +18694,7 @@ Source/Scripts/DB05FallingStatueActivate.psc:77:5:strict-boolean
 Source/Scripts/DB05FallingStatueActivate.psc:82:31:forbidden-functions
 Source/Scripts/DB05FallingStatueActivate.psc:91:1:trailing-whitespace
 Source/Scripts/DB05FallingStatueActivate.psc:93:1:trailing-whitespace
+Source/Scripts/DB05FallingStatueActivate.psc:104:1:state-missing-empty-fallback
 Source/Scripts/DB05FallingStatueActivate.psc:104:1:undefined-event
 Source/Scripts/DB05FallingStatueActivate.psc:105:1:indentation
 Source/Scripts/DB05FallingStatueActivate.psc:122:10:forbidden-functions
@@ -18714,6 +18735,7 @@ Source/Scripts/DB05MoveRefOnLostLOS.psc:1:56:trailing-whitespace
 Source/Scripts/DB05MoveRefOnLostLOS.psc:16:1:none-form-usage
 Source/Scripts/DB05MoveRefOnLostLOS.psc:18:1:indentation
 Source/Scripts/DB05MoveRefOnLostLOS.psc:19:1:unchecked-cast
+Source/Scripts/DB05MoveRefOnLostLOS.psc:32:1:state-missing-empty-fallback
 Source/Scripts/DB05MoveRefOnLostLOS.psc:32:1:undefined-event
 Source/Scripts/DB05MoveRefOnLostLOS.psc:34:33:forbidden-functions
 Source/Scripts/DB05MoveRefOnLostLOS.psc:39:27:trailing-whitespace
@@ -20688,6 +20710,7 @@ Source/Scripts/DLC1ArkngthamzBallista.psc:90:1:trailing-whitespace
 Source/Scripts/DLC1ArkngthamzBallista.psc:91:14:trailing-whitespace
 Source/Scripts/DLC1ArkngthamzBallista.psc:96:1:trailing-whitespace
 Source/Scripts/DLC1ArkngthamzBallista.psc:98:1:trailing-whitespace
+Source/Scripts/DLC1ArkngthamzBallista.psc:103:1:state-missing-empty-fallback
 Source/Scripts/DLC1ArkngthamzBallista.psc:114:1:trailing-whitespace
 Source/Scripts/DLC1ArkngthamzBallista.psc:116:1:trailing-whitespace
 Source/Scripts/DLC1ArkngthamzBallista.psc:118:1:indentation
@@ -20867,6 +20890,7 @@ Source/Scripts/DLC1CastleThrallScript.psc:4:1:undefined-event
 Source/Scripts/DLC1CastleThrallScript.psc:11:1:trailing-whitespace
 Source/Scripts/DLC1CavewormTriggerControlScript.psc:11:121:line-length
 Source/Scripts/DLC1CavewormTriggerControlScript.psc:21:13:forbidden-functions
+Source/Scripts/DLC1CavewormTriggerControlScript.psc:33:1:state-missing-empty-fallback
 Source/Scripts/DLC1CavewormTriggerControlScript.psc:33:1:undefined-event
 Source/Scripts/DLC1CavewormTriggerControlScript.psc:37:1:indentation
 Source/Scripts/DLC1CavewormTriggerControlScript.psc:38:13:forbidden-functions
@@ -20901,6 +20925,7 @@ Source/Scripts/DLC1ChatterTriggerScript.psc:35:1:none-form-usage
 Source/Scripts/DLC1ChaurusCocoonScript.psc:9:121:line-length
 Source/Scripts/DLC1ChaurusCocoonScript.psc:10:20:trailing-whitespace
 Source/Scripts/DLC1ChaurusCocoonScript.psc:17:1:trailing-whitespace
+Source/Scripts/DLC1ChaurusCocoonScript.psc:18:1:state-missing-empty-fallback
 Source/Scripts/DLC1ChaurusCocoonScript.psc:18:1:undefined-event
 Source/Scripts/DLC1ChaurusCocoonScript.psc:21:8:forbidden-functions
 Source/Scripts/DLC1ChaurusCocoonScript.psc:26:121:line-length
@@ -21121,6 +21146,7 @@ Source/Scripts/DLC1DeerFXGlowScript.psc:71:6:exclamation-spacing
 Source/Scripts/DLC1DeerFXGlowScript.psc:79:42:forbidden-functions
 Source/Scripts/DLC1DeerFXGlowScript.psc:84:1:indentation
 Source/Scripts/DLC1DeerFXGlowScript.psc:85:42:forbidden-functions
+Source/Scripts/DLC1DeerFXGlowScript.psc:93:1:state-missing-empty-fallback
 Source/Scripts/DLC1DeerFXGlowScript.psc:93:1:undefined-event
 Source/Scripts/DLC1DeerFXGlowScript.psc:97:1:indentation
 Source/Scripts/DLC1DeerFXGlowScript.psc:101:121:line-length
@@ -21211,7 +21237,9 @@ Source/Scripts/DLC1DunStatueHitSCRIPT.psc:80:1:indentation
 Source/Scripts/DLC1DunStatueHitSCRIPT.psc:81:4:strict-boolean
 Source/Scripts/DLC1DunStatueHitSCRIPT.psc:83:1:indentation
 Source/Scripts/DLC1DunStatueHitSCRIPT.psc:84:5:strict-boolean
+Source/Scripts/DLC1DunStatueHitSCRIPT.psc:111:1:state-missing-empty-fallback
 Source/Scripts/DLC1DunStatueHitSCRIPT.psc:111:1:undefined-event
+Source/Scripts/DLC1DunStatueHitSCRIPT.psc:158:1:state-missing-empty-fallback
 Source/Scripts/DLC1DunStatueHitSCRIPT.psc:158:1:undefined-event
 Source/Scripts/DLC1DunStatueHitSCRIPT.psc:161:1:unchecked-cast
 Source/Scripts/DLC1DunStatueHitSCRIPT.psc:161:1:unchecked-cast
@@ -21629,6 +21657,7 @@ Source/Scripts/DLC1GargoyleAmbushScript.psc:84:1:trailing-whitespace
 Source/Scripts/DLC1GargoyleAmbushScript.psc:93:1:trailing-whitespace
 Source/Scripts/DLC1GargoyleAmbushScript.psc:94:43:comma-spacing
 Source/Scripts/DLC1GargoyleAmbushScript.psc:100:1:trailing-whitespace
+Source/Scripts/DLC1GargoyleAmbushScript.psc:103:1:state-missing-empty-fallback
 Source/Scripts/DLC1GargoyleAmbushScript.psc:103:1:undefined-event
 Source/Scripts/DLC1GargoyleAmbushScript.psc:106:1:place-at-me
 Source/Scripts/DLC1GargoyleAmbushScript.psc:116:1:trailing-whitespace
@@ -21646,11 +21675,13 @@ Source/Scripts/DLC1GargoyleAmbushScript.psc:137:5:forbidden-functions
 Source/Scripts/DLC1GargoyleAmbushScript.psc:147:1:trailing-whitespace
 Source/Scripts/DLC1GargoyleBossSCRIPT.psc:1:48:trailing-whitespace
 Source/Scripts/DLC1GargoyleBossSCRIPT.psc:7:121:line-length
+Source/Scripts/DLC1GargoyleBossSCRIPT.psc:13:1:state-missing-empty-fallback
 Source/Scripts/DLC1GargoyleBossSCRIPT.psc:13:1:undefined-event
 Source/Scripts/DLC1GargoyleBossSCRIPT.psc:21:10:trailing-whitespace
 Source/Scripts/DLC1GargoyleBossSCRIPT.psc:25:121:line-length
 Source/Scripts/DLC1GargoyleBossSCRIPT.psc:26:1:indentation
 Source/Scripts/DLC1GargoyleBossSCRIPT.psc:28:1:indentation
+Source/Scripts/DLC1GargoyleBossSCRIPT.psc:35:1:state-missing-empty-fallback
 Source/Scripts/DLC1GargoyleBossSCRIPT.psc:35:1:undefined-event
 Source/Scripts/DLC1GargoyleBossSCRIPT.psc:36:1:indentation
 Source/Scripts/DLC1GargoyleBossSCRIPT.psc:36:16:operator-spacing
@@ -21663,6 +21694,7 @@ Source/Scripts/DLC1GargoyleBossSCRIPT.psc:47:26:trailing-whitespace
 Source/Scripts/DLC1GargoyleBossSCRIPT.psc:48:1:none-form-usage
 Source/Scripts/DLC1GargoyleBossSCRIPT.psc:53:1:none-form-usage
 Source/Scripts/DLC1GargoyleBossSCRIPT.psc:59:10:trailing-whitespace
+Source/Scripts/DLC1GargoyleBossSCRIPT.psc:63:1:state-missing-empty-fallback
 Source/Scripts/DLC1GargoyleBossSCRIPT.psc:63:1:undefined-event
 Source/Scripts/DLC1GargoyleBossSCRIPT.psc:64:11:forbidden-functions
 Source/Scripts/DLC1GargoyleBossSCRIPT.psc:70:121:line-length
@@ -24191,6 +24223,7 @@ Source/Scripts/DLC1SabreCatFXGlowScript.psc:79:1:indentation
 Source/Scripts/DLC1SabreCatFXGlowScript.psc:83:42:forbidden-functions
 Source/Scripts/DLC1SabreCatFXGlowScript.psc:88:1:indentation
 Source/Scripts/DLC1SabreCatFXGlowScript.psc:89:42:forbidden-functions
+Source/Scripts/DLC1SabreCatFXGlowScript.psc:97:1:state-missing-empty-fallback
 Source/Scripts/DLC1SabreCatFXGlowScript.psc:97:1:undefined-event
 Source/Scripts/DLC1SabreCatFXGlowScript.psc:101:1:indentation
 Source/Scripts/DLC1SabreCatFXGlowScript.psc:105:121:line-length
@@ -24260,6 +24293,7 @@ Source/Scripts/DLC1SkeletonAmbushScript.psc:76:1:trailing-whitespace
 Source/Scripts/DLC1SkeletonAmbushScript.psc:85:1:trailing-whitespace
 Source/Scripts/DLC1SkeletonAmbushScript.psc:86:43:comma-spacing
 Source/Scripts/DLC1SkeletonAmbushScript.psc:92:1:trailing-whitespace
+Source/Scripts/DLC1SkeletonAmbushScript.psc:100:1:state-missing-empty-fallback
 Source/Scripts/DLC1SkeletonAmbushScript.psc:100:1:undefined-event
 Source/Scripts/DLC1SkeletonAmbushScript.psc:103:6:forbidden-functions
 Source/Scripts/DLC1SkeletonAmbushScript.psc:104:4:forbidden-functions
@@ -24473,6 +24507,7 @@ Source/Scripts/DLC1TrapCrossbow.psc:81:1:trailing-whitespace
 Source/Scripts/DLC1TrapCrossbow.psc:82:14:trailing-whitespace
 Source/Scripts/DLC1TrapCrossbow.psc:87:1:trailing-whitespace
 Source/Scripts/DLC1TrapCrossbow.psc:89:1:trailing-whitespace
+Source/Scripts/DLC1TrapCrossbow.psc:94:1:state-missing-empty-fallback
 Source/Scripts/DLC1TrapCrossbow.psc:99:31:comma-spacing
 Source/Scripts/DLC1TrapCrossbow.psc:104:1:trailing-whitespace
 Source/Scripts/DLC1TrapCrossbow.psc:106:1:trailing-whitespace
@@ -24486,6 +24521,7 @@ Source/Scripts/DLC1TrapCrossbow.psc:120:9:forbidden-functions
 Source/Scripts/DLC1TrapCrossbow.psc:121:1:indentation
 Source/Scripts/DLC1TrapCrossbow.psc:121:9:forbidden-functions
 Source/Scripts/DLC1TrapCrossbow.psc:122:1:indentation
+Source/Scripts/DLC1TrapCrossbow.psc:129:1:state-missing-empty-fallback
 Source/Scripts/DLC1TrapCrossbow.psc:133:1:trailing-whitespace
 Source/Scripts/DLC1TrapCrossbow.psc:138:9:forbidden-functions
 Source/Scripts/DLC1TrapCrossbow.psc:139:9:forbidden-functions
@@ -24513,6 +24549,7 @@ Source/Scripts/DLC1TrapInfectedBones.psc:54:1:indentation
 Source/Scripts/DLC1TrapInfectedBones.psc:55:1:indentation
 Source/Scripts/DLC1TrapInfectedBones.psc:56:1:indentation
 Source/Scripts/DLC1TrapInfectedBones.psc:57:1:indentation
+Source/Scripts/DLC1TrapInfectedBones.psc:61:1:state-missing-empty-fallback
 Source/Scripts/DLC1TrapInfectedBones.psc:63:1:indentation
 Source/Scripts/DLC1TrapInfectedBones.psc:67:3:strict-boolean
 Source/Scripts/DLC1TrapInfectedBones.psc:72:21:unresolved-script
@@ -24556,6 +24593,7 @@ Source/Scripts/DLC1TrapPoisonBloom.psc:3:1:semicolon
 Source/Scripts/DLC1TrapPoisonBloom.psc:4:1:semicolon
 Source/Scripts/DLC1TrapPoisonBloom.psc:19:1:indentation
 Source/Scripts/DLC1TrapPoisonBloom.psc:22:1:trailing-whitespace
+Source/Scripts/DLC1TrapPoisonBloom.psc:27:1:state-missing-empty-fallback
 Source/Scripts/DLC1TrapPoisonBloom.psc:32:1:indentation
 Source/Scripts/DLC1TrapPoisonBloom.psc:33:1:indentation
 Source/Scripts/DLC1TrapPoisonBloom.psc:34:1:trailing-whitespace
@@ -24577,6 +24615,7 @@ Source/Scripts/DLC1TrapPoisonBloom.psc:69:1:indentation
 Source/Scripts/DLC1TrapPoisonBloom.psc:74:1:trailing-whitespace
 Source/Scripts/DLC1TrapPoisonBloom.psc:81:1:indentation
 Source/Scripts/DLC1TrapPoisonBloom.psc:82:1:indentation
+Source/Scripts/DLC1TrapPoisonBloom.psc:87:1:state-missing-empty-fallback
 Source/Scripts/DLC1TrapPoisonBloom.psc:90:1:indentation
 Source/Scripts/DLC1TrapPoisonBloom.psc:100:52:trailing-whitespace
 Source/Scripts/DLC1TrapPoisonBloom.psc:101:1:indentation
@@ -24585,9 +24624,11 @@ Source/Scripts/DLC1TrapPoisonBloom.psc:105:47:trailing-whitespace
 Source/Scripts/DLC1TrapPoisonBloom.psc:107:1:trailing-whitespace
 Source/Scripts/DLC1TrapPoisonBloom.psc:109:1:indentation
 Source/Scripts/DLC1TrapPoisonBloom.psc:114:1:trailing-whitespace
+Source/Scripts/DLC1TrapPoisonBloom.psc:121:1:state-missing-empty-fallback
 Source/Scripts/DLC1TrapPoisonBloom.psc:126:1:trailing-whitespace
 Source/Scripts/DLC1TrapPoisonBloom.psc:127:52:trailing-whitespace
 Source/Scripts/DLC1TrapPoisonBloom.psc:129:1:trailing-whitespace
+Source/Scripts/DLC1TrapPoisonBloom.psc:136:1:state-missing-empty-fallback
 Source/Scripts/DLC1TrapPoisonBloom.psc:146:1:trailing-whitespace
 Source/Scripts/DLC1TrapPoisonBloom.psc:149:1:trailing-whitespace
 Source/Scripts/DLC1TrapPoisonBloom.psc:150:52:trailing-whitespace
@@ -24672,6 +24713,7 @@ Source/Scripts/DLC1TrapSpotLight.psc:93:1:trailing-whitespace
 Source/Scripts/DLC1TrapSpotLight.psc:100:1:trailing-whitespace
 Source/Scripts/DLC1TrapSpotLight.psc:107:1:trailing-whitespace
 Source/Scripts/DLC1TrapSpotLight.psc:108:14:trailing-whitespace
+Source/Scripts/DLC1TrapSpotLight.psc:119:1:state-missing-empty-fallback
 Source/Scripts/DLC1TrapSpotLight.psc:121:1:trailing-whitespace
 Source/Scripts/DLC1TrapSpotLight.psc:126:1:trailing-whitespace
 Source/Scripts/DLC1TrapSpotLight.psc:129:1:trailing-whitespace
@@ -24817,6 +24859,7 @@ Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:37:1:indentation
 Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:38:1:indentation
 Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:39:1:indentation
 Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:41:10:trailing-whitespace
+Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:42:1:state-missing-empty-fallback
 Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:42:1:undefined-event
 Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:43:1:none-form-usage
 Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:52:19:trailing-whitespace
@@ -24845,6 +24888,7 @@ Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:80:3:empty-body
 Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:81:1:indentation
 Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:81:14:trailing-whitespace
 Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:83:1:none-form-usage
+Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:92:1:state-missing-empty-fallback
 Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:92:1:undefined-event
 Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:93:1:none-form-usage
 Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:101:76:trailing-whitespace
@@ -24860,7 +24904,9 @@ Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:113:30:trailing-whitespace
 Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:115:3:empty-body
 Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:116:1:indentation
 Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:118:1:none-form-usage
+Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:124:1:state-missing-empty-fallback
 Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:124:1:undefined-event
+Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:133:1:state-missing-empty-fallback
 Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:133:1:undefined-event
 Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:134:1:none-form-usage
 Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:142:43:operator-spacing
@@ -24875,7 +24921,9 @@ Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:154:30:trailing-whitespace
 Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:156:3:empty-body
 Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:157:1:indentation
 Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:159:1:none-form-usage
+Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:165:1:state-missing-empty-fallback
 Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:165:1:undefined-event
+Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:173:1:state-missing-empty-fallback
 Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:173:1:undefined-event
 Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:175:1:indentation
 Source/Scripts/DLC1VQ01PuzzleBrazierScript.psc:176:1:indentation
@@ -25156,6 +25204,7 @@ Source/Scripts/DLC1VQ03VamprieCharmDexion.psc:9:46:comma-spacing
 Source/Scripts/DLC1VQ03VamprieCharmDexion.psc:10:46:comma-spacing
 Source/Scripts/DLC1VQ03VamprieCharmDexion.psc:16:44:trailing-whitespace
 Source/Scripts/DLC1VQ04BloodbowlFurnitureScript.psc:16:1:indentation
+Source/Scripts/DLC1VQ04BloodbowlFurnitureScript.psc:27:1:state-missing-empty-fallback
 Source/Scripts/DLC1VQ04BloodbowlFurnitureScript.psc:27:1:undefined-event
 Source/Scripts/DLC1VQ04BloodbowlFurnitureScript.psc:29:40:comma-spacing
 Source/Scripts/DLC1VQ04BloodbowlFurnitureScript.psc:30:11:forbidden-functions
@@ -33956,6 +34005,7 @@ Source/Scripts/DLC2Book01PuzzleActivator.psc:62:1:unchecked-cast
 Source/Scripts/DLC2Book01PuzzleActivator.psc:66:1:none-form-usage
 Source/Scripts/DLC2Book01PuzzleActivator.psc:68:1:none-form-usage
 Source/Scripts/DLC2Book01PuzzleActivator.psc:69:5:forbidden-functions
+Source/Scripts/DLC2Book01PuzzleActivator.psc:84:1:state-missing-empty-fallback
 Source/Scripts/DLC2Book01PuzzleActivator.psc:84:1:undefined-event
 Source/Scripts/DLC2Book01PuzzleBookHolder.psc:13:26:forbidden-functions
 Source/Scripts/DLC2Book01PuzzleBookHolder.psc:17:1:unchecked-cast
@@ -33968,7 +34018,9 @@ Source/Scripts/DLC2Book01PuzzleBookHolder.psc:25:24:forbidden-functions
 Source/Scripts/DLC2Book01PuzzleBookHolder.psc:25:82:forbidden-functions
 Source/Scripts/DLC2Book01PuzzleBookHolder.psc:26:18:forbidden-functions
 Source/Scripts/DLC2Book01PuzzleBookHolder.psc:27:32:forbidden-functions
+Source/Scripts/DLC2Book01PuzzleBookHolder.psc:37:1:state-missing-empty-fallback
 Source/Scripts/DLC2Book01PuzzleBookHolder.psc:37:1:undefined-event
+Source/Scripts/DLC2Book01PuzzleController.psc:34:1:state-missing-empty-fallback
 Source/Scripts/DLC2Book01PuzzleController.psc:34:1:undefined-event
 Source/Scripts/DLC2Book01PuzzleController.psc:35:1:none-form-usage
 Source/Scripts/DLC2Book01PuzzleController.psc:36:1:none-form-usage
@@ -34064,6 +34116,7 @@ Source/Scripts/DLC2Book02DungeonBridgeTrigger.psc:1:66:trailing-whitespace
 Source/Scripts/DLC2Book02DungeonBridgeTrigger.psc:12:24:forbidden-functions
 Source/Scripts/DLC2Book02DungeonBridgeTrigger.psc:14:1:none-form-usage
 Source/Scripts/DLC2Book02DungeonBridgeTrigger.psc:15:1:none-form-usage
+Source/Scripts/DLC2Book02DungeonBridgeTrigger.psc:22:1:state-missing-empty-fallback
 Source/Scripts/DLC2Book02DungeonBridgeTrigger.psc:22:1:undefined-event
 Source/Scripts/DLC2BookDungeonControllerScript.psc:8:1:indentation
 Source/Scripts/DLC2BookDungeonControllerScript.psc:8:121:line-length
@@ -35064,6 +35117,7 @@ Source/Scripts/DLC2ExplodingSpiderEggSCRIPT.psc:62:1:trailing-whitespace
 Source/Scripts/DLC2ExplodingSpiderEggSCRIPT.psc:63:1:trailing-whitespace
 Source/Scripts/DLC2ExplodingSpiderEggSCRIPT.psc:64:1:indentation
 Source/Scripts/DLC2ExplodingSpiderEggSCRIPT.psc:65:121:line-length
+Source/Scripts/DLC2ExplodingSpiderEggSCRIPT.psc:76:1:state-missing-empty-fallback
 Source/Scripts/DLC2ExplodingSpiderEggSCRIPT.psc:76:1:undefined-event
 Source/Scripts/DLC2ExplodingSpiderEggSCRIPT.psc:77:1:indentation
 Source/Scripts/DLC2ExplodingSpiderEggSCRIPT.psc:85:1:indentation
@@ -35351,6 +35405,7 @@ Source/Scripts/DLC2HMDaedraEffectScript.psc:39:1:trailing-whitespace
 Source/Scripts/DLC2HermaeusMoraFaceFXSCRIPT.psc:1:64:trailing-whitespace
 Source/Scripts/DLC2HermaeusMoraFaceFXSCRIPT.psc:16:1:indentation
 Source/Scripts/DLC2HermaeusMoraFaceFXSCRIPT.psc:21:1:indentation
+Source/Scripts/DLC2HermaeusMoraFaceFXSCRIPT.psc:21:1:state-missing-empty-fallback
 Source/Scripts/DLC2HermaeusMoraFaceFXSCRIPT.psc:21:1:undefined-event
 Source/Scripts/DLC2HermaeusMoraFaceFXSCRIPT.psc:22:1:indentation
 Source/Scripts/DLC2HermaeusMoraFaceFXSCRIPT.psc:22:3:strict-boolean
@@ -35430,6 +35485,7 @@ Source/Scripts/DLC2HermaeusMoraFaceFXSCRIPT.psc:77:1:indentation
 Source/Scripts/DLC2HermaeusMoraFaceFXSCRIPT.psc:77:1:none-form-usage
 Source/Scripts/DLC2HermaeusMoraFaceFXSCRIPT.psc:78:1:indentation
 Source/Scripts/DLC2HermaeusMoraFaceFXSCRIPT.psc:80:1:indentation
+Source/Scripts/DLC2HermaeusMoraFaceFXSCRIPT.psc:80:1:state-missing-empty-fallback
 Source/Scripts/DLC2HermaeusMoraFaceFXSCRIPT.psc:80:1:undefined-event
 Source/Scripts/DLC2HermaeusMoraFaceFXSCRIPT.psc:81:1:indentation
 Source/Scripts/DLC2HermaeusMoraFaceFXSCRIPT.psc:81:3:strict-boolean
@@ -35725,6 +35781,7 @@ Source/Scripts/DLC2KagrumezGemScript.psc:8:31:trailing-whitespace
 Source/Scripts/DLC2KagrumezGemScript.psc:9:38:trailing-whitespace
 Source/Scripts/DLC2KagrumezGemScript.psc:10:36:trailing-whitespace
 Source/Scripts/DLC2KagrumezGemScript.psc:19:44:trailing-whitespace
+Source/Scripts/DLC2KagrumezGemScript.psc:23:1:state-missing-empty-fallback
 Source/Scripts/DLC2KagrumezGemScript.psc:23:1:undefined-event
 Source/Scripts/DLC2KagrumezGemScript.psc:26:1:cyclomatic-complexity
 Source/Scripts/DLC2KagrumezGemScript.psc:28:24:forbidden-functions
@@ -35756,6 +35813,7 @@ Source/Scripts/DLC2KagrumezGemScript.psc:59:28:forbidden-functions
 Source/Scripts/DLC2KagrumezGemScript.psc:59:48:forbidden-functions
 Source/Scripts/DLC2KagrumezGemScript.psc:60:1:none-form-usage
 Source/Scripts/DLC2KagrumezGemScript.psc:66:1:indentation
+Source/Scripts/DLC2KagrumezGemScript.psc:67:1:state-missing-empty-fallback
 Source/Scripts/DLC2KagrumezGemScript.psc:67:1:undefined-event
 Source/Scripts/DLC2KagrumezGemScript.psc:70:12:forbidden-functions
 Source/Scripts/DLC2KagrumezGemScript.psc:73:1:none-form-usage
@@ -35768,6 +35826,7 @@ Source/Scripts/DLC2KagrumezLightningScript.psc:24:1:none-form-usage
 Source/Scripts/DLC2KagrumezLightningScript.psc:26:1:none-form-usage
 Source/Scripts/DLC2KagrumezLightningScript.psc:28:1:none-form-usage
 Source/Scripts/DLC2KagrumezLightningScript.psc:30:23:trailing-whitespace
+Source/Scripts/DLC2KagrumezLightningScript.psc:36:1:state-missing-empty-fallback
 Source/Scripts/DLC2KagrumezLightningScript.psc:36:1:undefined-event
 Source/Scripts/DLC2KagrumezMasterScript.psc:1:60:trailing-whitespace
 Source/Scripts/DLC2KagrumezMasterScript.psc:33:56:trailing-whitespace
@@ -36243,6 +36302,7 @@ Source/Scripts/DLC2MQ04Script.psc:94:52:trailing-whitespace
 Source/Scripts/DLC2MQ05HermaeusMoraFXScript.psc:1:64:trailing-whitespace
 Source/Scripts/DLC2MQ05HermaeusMoraFXScript.psc:12:1:indentation
 Source/Scripts/DLC2MQ05HermaeusMoraFXScript.psc:17:1:indentation
+Source/Scripts/DLC2MQ05HermaeusMoraFXScript.psc:17:1:state-missing-empty-fallback
 Source/Scripts/DLC2MQ05HermaeusMoraFXScript.psc:17:1:undefined-event
 Source/Scripts/DLC2MQ05HermaeusMoraFXScript.psc:19:1:indentation
 Source/Scripts/DLC2MQ05HermaeusMoraFXScript.psc:20:1:indentation
@@ -36283,6 +36343,7 @@ Source/Scripts/DLC2MQ05HermaeusMoraFXScript.psc:53:1:indentation
 Source/Scripts/DLC2MQ05HermaeusMoraFXScript.psc:54:1:indentation
 Source/Scripts/DLC2MQ05HermaeusMoraFXScript.psc:55:1:indentation
 Source/Scripts/DLC2MQ05HermaeusMoraFXScript.psc:57:1:indentation
+Source/Scripts/DLC2MQ05HermaeusMoraFXScript.psc:57:1:state-missing-empty-fallback
 Source/Scripts/DLC2MQ05HermaeusMoraFXScript.psc:57:1:undefined-event
 Source/Scripts/DLC2MQ05HermaeusMoraFXScript.psc:58:1:indentation
 Source/Scripts/DLC2MQ05HermaeusMoraFXScript.psc:59:1:indentation
@@ -36410,12 +36471,14 @@ Source/Scripts/DLC2MQ06MiraakBossBattle.psc:117:1:indentation
 Source/Scripts/DLC2MQ06MiraakBossBattle.psc:118:1:indentation
 Source/Scripts/DLC2MQ06MiraakBossBattle.psc:120:1:indentation
 Source/Scripts/DLC2MQ06MiraakBossBattle.psc:128:1:indentation
+Source/Scripts/DLC2MQ06MiraakBossBattle.psc:128:1:state-missing-empty-fallback
 Source/Scripts/DLC2MQ06MiraakBossBattle.psc:128:1:undefined-event
 Source/Scripts/DLC2MQ06MiraakBossBattle.psc:129:1:indentation
 Source/Scripts/DLC2MQ06MiraakBossBattle.psc:130:1:indentation
 Source/Scripts/DLC2MQ06MiraakBossBattle.psc:131:1:indentation
 Source/Scripts/DLC2MQ06MiraakBossBattle.psc:132:1:indentation
 Source/Scripts/DLC2MQ06MiraakBossBattle.psc:137:1:indentation
+Source/Scripts/DLC2MQ06MiraakBossBattle.psc:137:1:state-missing-empty-fallback
 Source/Scripts/DLC2MQ06MiraakBossBattle.psc:137:1:undefined-event
 Source/Scripts/DLC2MQ06MiraakBossBattle.psc:138:1:indentation
 Source/Scripts/DLC2MQ06MiraakBossBattle.psc:139:1:indentation
@@ -36428,6 +36491,7 @@ Source/Scripts/DLC2MQ06MiraakBossBattle.psc:143:1:indentation
 Source/Scripts/DLC2MQ06MiraakBossBattle.psc:144:1:indentation
 Source/Scripts/DLC2MQ06MiraakBossBattle.psc:145:1:indentation
 Source/Scripts/DLC2MQ06MiraakBossBattle.psc:149:1:indentation
+Source/Scripts/DLC2MQ06MiraakBossBattle.psc:149:1:state-missing-empty-fallback
 Source/Scripts/DLC2MQ06MiraakBossBattle.psc:149:1:undefined-event
 Source/Scripts/DLC2MQ06MiraakBossBattle.psc:150:1:indentation
 Source/Scripts/DLC2MQ06MiraakBossBattle.psc:151:1:indentation
@@ -36443,6 +36507,7 @@ Source/Scripts/DLC2MQ06MiraakBossBattle.psc:158:1:indentation
 Source/Scripts/DLC2MQ06MiraakBossBattle.psc:159:1:indentation
 Source/Scripts/DLC2MQ06MiraakBossBattle.psc:160:1:indentation
 Source/Scripts/DLC2MQ06MiraakBossBattle.psc:164:1:indentation
+Source/Scripts/DLC2MQ06MiraakBossBattle.psc:164:1:state-missing-empty-fallback
 Source/Scripts/DLC2MQ06MiraakBossBattle.psc:164:1:undefined-event
 Source/Scripts/DLC2MQ06MiraakBossBattle.psc:165:1:indentation
 Source/Scripts/DLC2MQ06MiraakBossBattle.psc:166:1:indentation
@@ -38253,6 +38318,7 @@ Source/Scripts/DLC2RieklingAmbushFX.psc:53:1:trailing-whitespace
 Source/Scripts/DLC2RieklingAmbushFX.psc:58:24:forbidden-functions
 Source/Scripts/DLC2RieklingAmbushFX.psc:67:1:trailing-whitespace
 Source/Scripts/DLC2RieklingAmbushFX.psc:68:1:trailing-whitespace
+Source/Scripts/DLC2RieklingAmbushFX.psc:74:1:state-missing-empty-fallback
 Source/Scripts/DLC2RieklingAmbushFX.psc:74:1:undefined-event
 Source/Scripts/DLC2RieklingAmbushFX.psc:77:6:forbidden-functions
 Source/Scripts/DLC2RieklingAmbushFX.psc:78:4:forbidden-functions
@@ -38285,6 +38351,7 @@ Source/Scripts/DLC2RieklingBarrelAmbushScript.psc:84:1:trailing-whitespace
 Source/Scripts/DLC2RieklingBarrelAmbushScript.psc:93:1:trailing-whitespace
 Source/Scripts/DLC2RieklingBarrelAmbushScript.psc:94:43:comma-spacing
 Source/Scripts/DLC2RieklingBarrelAmbushScript.psc:100:1:trailing-whitespace
+Source/Scripts/DLC2RieklingBarrelAmbushScript.psc:103:1:state-missing-empty-fallback
 Source/Scripts/DLC2RieklingBarrelAmbushScript.psc:103:1:undefined-event
 Source/Scripts/DLC2RieklingBarrelAmbushScript.psc:106:1:place-at-me
 Source/Scripts/DLC2RieklingBarrelAmbushScript.psc:116:1:trailing-whitespace
@@ -38314,6 +38381,7 @@ Source/Scripts/DLC2RieklingBarrelScript.psc:41:11:forbidden-functions
 Source/Scripts/DLC2RieklingBarrelScript.psc:42:8:forbidden-functions
 Source/Scripts/DLC2RieklingRescuePlayerScript.psc:1:65:trailing-whitespace
 Source/Scripts/DLC2RieklingRescuePlayerScript.psc:8:121:line-length
+Source/Scripts/DLC2RieklingRescuePlayerScript.psc:12:1:state-missing-empty-fallback
 Source/Scripts/DLC2RieklingRescuePlayerScript.psc:12:1:undefined-event
 Source/Scripts/DLC2RieklingRescuePlayerScript.psc:13:1:indentation
 Source/Scripts/DLC2RieklingRescuePlayerScript.psc:13:121:line-length
@@ -38380,6 +38448,7 @@ Source/Scripts/DLC2SV01HalfClawKeyholeSCRIPT.psc:1:72:trailing-whitespace
 Source/Scripts/DLC2SV01HalfClawKeyholeSCRIPT.psc:20:12:forbidden-functions
 Source/Scripts/DLC2SV01HalfClawKeyholeSCRIPT.psc:22:1:none-form-usage
 Source/Scripts/DLC2SV01HalfClawKeyholeSCRIPT.psc:25:1:none-form-usage
+Source/Scripts/DLC2SV01HalfClawKeyholeSCRIPT.psc:38:1:state-missing-empty-fallback
 Source/Scripts/DLC2SV01HalfClawKeyholeSCRIPT.psc:38:1:undefined-event
 Source/Scripts/DLC2SV01HalfClawKeyholeSCRIPT.psc:39:1:unchecked-cast
 Source/Scripts/DLC2SV01HalfClawKeyholeSCRIPT.psc:39:7:forbidden-functions
@@ -39250,9 +39319,11 @@ Source/Scripts/DLC2ToldarsTombPuzzlePlateSCRIPT.psc:34:4:forbidden-functions
 Source/Scripts/DLC2ToldarsTombPuzzlePlateSCRIPT.psc:38:3:empty-body
 Source/Scripts/DLC2ToldarsTombPuzzlePlateSCRIPT.psc:39:1:indentation
 Source/Scripts/DLC2ToldarsTombPuzzlePlateSCRIPT.psc:42:1:none-form-usage
+Source/Scripts/DLC2ToldarsTombPuzzlePlateSCRIPT.psc:49:1:state-missing-empty-fallback
 Source/Scripts/DLC2ToldarsTombPuzzlePlateSCRIPT.psc:49:1:undefined-event
 Source/Scripts/DLC2ToldarsTombPuzzlePlateSCRIPT.psc:50:3:empty-body
 Source/Scripts/DLC2ToldarsTombPuzzlePlateSCRIPT.psc:51:1:indentation
+Source/Scripts/DLC2ToldarsTombPuzzlePlateSCRIPT.psc:57:1:state-missing-empty-fallback
 Source/Scripts/DLC2ToldarsTombPuzzlePlateSCRIPT.psc:57:1:undefined-event
 Source/Scripts/DLC2ToldarsTombPuzzlePlateSCRIPT.psc:58:3:empty-body
 Source/Scripts/DLC2ToldarsTombPuzzlePlateSCRIPT.psc:59:1:indentation
@@ -39298,6 +39369,7 @@ Source/Scripts/DLC2TrapApoTentacle.psc:155:1:trailing-whitespace
 Source/Scripts/DLC2TrapApoTentacle.psc:160:4:empty-body
 Source/Scripts/DLC2TrapApoTentacle.psc:161:1:trailing-whitespace
 Source/Scripts/DLC2TrapApoTentacle.psc:164:1:trailing-whitespace
+Source/Scripts/DLC2TrapApoTentacle.psc:171:1:state-missing-empty-fallback
 Source/Scripts/DLC2TrapApoTentacle.psc:176:21:unresolved-script
 Source/Scripts/DLC2TrapApoTentacle.psc:179:1:trailing-whitespace
 Source/Scripts/DLC2TrapApoTentacle.psc:183:1:trailing-whitespace
@@ -39368,6 +39440,7 @@ Source/Scripts/DLC2TribalWerebearScript.psc:17:1:none-form-usage
 Source/Scripts/DLC2TribalWerebearScript.psc:20:20:forbidden-functions
 Source/Scripts/DLC2TribalWerebearScript.psc:21:13:trailing-whitespace
 Source/Scripts/DLC2TribalWerebearScript.psc:24:121:line-length
+Source/Scripts/DLC2TribalWerebearScript.psc:30:1:state-missing-empty-fallback
 Source/Scripts/DLC2TribalWerebearScript.psc:30:1:undefined-event
 Source/Scripts/DLC2TribalWerebearScript.psc:49:11:forbidden-functions
 Source/Scripts/DLC2VoiceBattleFuryScript.psc:1:63:trailing-whitespace
@@ -43288,6 +43361,7 @@ Source/Scripts/DLC2dunBookLevel4Bend.psc:23:45:forbidden-functions
 Source/Scripts/DLC2dunBookLevel4Bend.psc:24:1:unchecked-cast
 Source/Scripts/DLC2dunBookLevel4Bend.psc:31:23:forbidden-functions
 Source/Scripts/DLC2dunBookLevel4Bend.psc:43:1:trailing-whitespace
+Source/Scripts/DLC2dunBookLevel4BendControl.psc:33:1:state-missing-empty-fallback
 Source/Scripts/DLC2dunBookLevel4BendControl.psc:33:1:undefined-event
 Source/Scripts/DLC2dunBookLevel4BendControl.psc:34:1:trailing-whitespace
 Source/Scripts/DLC2dunEnableDisableLinkRefOnActTimer.psc:1:73:trailing-whitespace
@@ -43324,6 +43398,7 @@ Source/Scripts/DLC2dunFahlbtharzResonatorScript.psc:48:1:trailing-whitespace
 Source/Scripts/DLC2dunFahlbtharzResonatorScript.psc:50:1:none-form-usage
 Source/Scripts/DLC2dunFahlbtharzResonatorScript.psc:50:6:exclamation-spacing
 Source/Scripts/DLC2dunFahlbtharzResonatorScript.psc:51:1:none-form-usage
+Source/Scripts/DLC2dunFahlbtharzResonatorScript.psc:67:1:state-missing-empty-fallback
 Source/Scripts/DLC2dunFahlbtharzResonatorScript.psc:67:1:undefined-event
 Source/Scripts/DLC2dunFahlbtharzResonatorScript.psc:77:10:forbidden-functions
 Source/Scripts/DLC2dunFahlbtharzResonatorScript.psc:77:19:trailing-whitespace
@@ -43534,11 +43609,13 @@ Source/Scripts/DLC2dunGyldenhulFurnitureScript.psc:35:8:forbidden-functions
 Source/Scripts/DLC2dunGyldenhulFurnitureScript.psc:37:8:forbidden-functions
 Source/Scripts/DLC2dunGyldenhulFurnitureScript.psc:38:7:trailing-whitespace
 Source/Scripts/DLC2dunGyldenhulFurnitureScript.psc:40:121:line-length
+Source/Scripts/DLC2dunGyldenhulFurnitureScript.psc:47:1:state-missing-empty-fallback
 Source/Scripts/DLC2dunGyldenhulFurnitureScript.psc:47:1:undefined-event
 Source/Scripts/DLC2dunGyldenhulFurnitureScript.psc:50:1:trailing-whitespace
 Source/Scripts/DLC2dunGyldenhulFurnitureScript.psc:55:27:forbidden-functions
 Source/Scripts/DLC2dunGyldenhulFurnitureScript.psc:55:42:exclamation-spacing
 Source/Scripts/DLC2dunGyldenhulFurnitureScript.psc:58:31:forbidden-functions
+Source/Scripts/DLC2dunGyldenhulFurnitureScript.psc:69:1:state-missing-empty-fallback
 Source/Scripts/DLC2dunGyldenhulFurnitureScript.psc:69:1:undefined-event
 Source/Scripts/DLC2dunGyldenhulFurnitureScript.psc:72:1:trailing-whitespace
 Source/Scripts/DLC2dunGyldenhulFurnitureScript.psc:80:32:forbidden-functions
@@ -43547,6 +43624,7 @@ Source/Scripts/DLC2dunGyldenhulFurnitureScript.psc:85:19:forbidden-functions
 Source/Scripts/DLC2dunGyldenhulFurnitureScript.psc:86:4:empty-body
 Source/Scripts/DLC2dunGyldenhulFurnitureScript.psc:88:10:exclamation-spacing
 Source/Scripts/DLC2dunGyldenhulFurnitureScript.psc:88:53:forbidden-functions
+Source/Scripts/DLC2dunGyldenhulFurnitureScript.psc:97:1:state-missing-empty-fallback
 Source/Scripts/DLC2dunGyldenhulFurnitureScript.psc:97:1:undefined-event
 Source/Scripts/DLC2dunGyldenhulFurnitureScript.psc:100:9:forbidden-functions
 Source/Scripts/DLC2dunGyldenhulFurnitureScript.psc:108:5:exclamation-spacing
@@ -44784,6 +44862,7 @@ Source/Scripts/DLC2dunSeekerInvisScript.psc:69:1:short-wait-interval
 Source/Scripts/DLC2dunSeekerInvisScript.psc:70:1:indentation
 Source/Scripts/DLC2dunSeekerInvisScript.psc:71:1:indentation
 Source/Scripts/DLC2dunSeekerInvisScript.psc:72:1:indentation
+Source/Scripts/DLC2dunSeekerInvisScript.psc:79:1:state-missing-empty-fallback
 Source/Scripts/DLC2dunSeekerInvisScript.psc:79:1:undefined-event
 Source/Scripts/DLC2dunStandingStoneTreeFX.psc:9:1:none-form-usage
 Source/Scripts/DLC2dunStandingStoneTreeFX.psc:9:5:exclamation-spacing
@@ -44878,6 +44957,7 @@ Source/Scripts/DLCWeatherSwapZoneSCRIPT.psc:26:1:indentation
 Source/Scripts/DLCWeatherSwapZoneSCRIPT.psc:27:1:indentation
 Source/Scripts/DLCWeatherSwapZoneSCRIPT.psc:28:1:trailing-whitespace
 Source/Scripts/DLc2VahlokstombTrapPlateSCRIPT.psc:1:71:trailing-whitespace
+Source/Scripts/DLc2VahlokstombTrapPlateSCRIPT.psc:6:1:state-missing-empty-fallback
 Source/Scripts/DLc2VahlokstombTrapPlateSCRIPT.psc:8:6:exclamation-spacing
 Source/Scripts/DLc2VahlokstombTrapPlateSCRIPT.psc:15:20:unresolved-script
 Source/Scripts/DLc2VahlokstombTrapPlateSCRIPT.psc:24:1:trailing-whitespace
@@ -45127,6 +45207,7 @@ Source/Scripts/DartTrap.psc:69:1:trailing-whitespace
 Source/Scripts/DartTrap.psc:76:1:trailing-whitespace
 Source/Scripts/DartTrap.psc:77:13:trailing-whitespace
 Source/Scripts/DartTrap.psc:82:1:trailing-whitespace
+Source/Scripts/DartTrap.psc:87:1:state-missing-empty-fallback
 Source/Scripts/DartTrap.psc:93:1:trailing-whitespace
 Source/Scripts/DartTrap.psc:95:1:indentation
 Source/Scripts/DartTrap.psc:97:1:trailing-whitespace
@@ -46486,6 +46567,7 @@ Source/Scripts/FXAlduinScript.psc:41:41:trailing-whitespace
 Source/Scripts/FXAlduinScript.psc:42:41:trailing-whitespace
 Source/Scripts/FXAlduinScript.psc:59:1:indentation
 Source/Scripts/FXAlduinScript.psc:61:10:trailing-whitespace
+Source/Scripts/FXAlduinScript.psc:65:1:state-missing-empty-fallback
 Source/Scripts/FXAlduinScript.psc:65:1:undefined-event
 Source/Scripts/FXAlduinScript.psc:66:1:indentation
 Source/Scripts/FXAlduinScript.psc:67:1:none-form-usage
@@ -46517,6 +46599,7 @@ Source/Scripts/FXAlduinScript.psc:84:1:none-form-usage
 Source/Scripts/FXAlduinScript.psc:84:105:semicolon
 Source/Scripts/FXAlduinScript.psc:85:11:forbidden-functions
 Source/Scripts/FXAlduinScript.psc:88:11:forbidden-functions
+Source/Scripts/FXAlduinScript.psc:96:1:state-missing-empty-fallback
 Source/Scripts/FXAlduinScript.psc:96:1:undefined-event
 Source/Scripts/FXAlduinScript.psc:97:1:indentation
 Source/Scripts/FXAlduinScript.psc:98:1:none-form-usage
@@ -46569,6 +46652,7 @@ Source/Scripts/FXAlduinScript.psc:131:27:trailing-whitespace
 Source/Scripts/FXAlduinScript.psc:132:1:indentation
 Source/Scripts/FXAlduinScript.psc:132:1:none-form-usage
 Source/Scripts/FXAlduinScript.psc:133:11:forbidden-functions
+Source/Scripts/FXAlduinScript.psc:140:1:state-missing-empty-fallback
 Source/Scripts/FXAlduinScript.psc:140:1:undefined-event
 Source/Scripts/FXAlduinScript.psc:142:1:none-form-usage
 Source/Scripts/FXAlduinScript.psc:147:1:cyclomatic-complexity
@@ -46639,6 +46723,7 @@ Source/Scripts/FXBirdFleeSCRIPT.psc:28:47:forbidden-functions
 Source/Scripts/FXBirdFleeSCRIPT.psc:31:1:none-form-usage
 Source/Scripts/FXBirdFleeonActivateSCRIPT.psc:1:62:trailing-whitespace
 Source/Scripts/FXBirdFleeonActivateSCRIPT.psc:21:1:none-form-usage
+Source/Scripts/FXBirdFleeonActivateSCRIPT.psc:28:1:state-missing-empty-fallback
 Source/Scripts/FXBirdFleeonActivateSCRIPT.psc:28:1:undefined-event
 Source/Scripts/FXBirdFleeonActivateSCRIPT.psc:31:1:trailing-whitespace
 Source/Scripts/FXBirdFleeonActivateSCRIPT.psc:37:1:indentation
@@ -46774,9 +46859,11 @@ Source/Scripts/FXChaurusScript.psc:30:39:trailing-whitespace
 Source/Scripts/FXChaurusScript.psc:31:1:indentation
 Source/Scripts/FXChaurusScript.psc:32:1:trailing-whitespace
 Source/Scripts/FXCobwebWallSCRIPT.psc:1:54:trailing-whitespace
+Source/Scripts/FXCobwebWallSCRIPT.psc:22:1:state-missing-empty-fallback
 Source/Scripts/FXCobwebWallSCRIPT.psc:22:1:undefined-event
 Source/Scripts/FXCobwebWallSCRIPT.psc:26:1:trailing-whitespace
 Source/Scripts/FXCobwebWallSCRIPT.psc:36:1:trailing-whitespace
+Source/Scripts/FXCobwebWallSCRIPT.psc:41:1:state-missing-empty-fallback
 Source/Scripts/FXCobwebWallSCRIPT.psc:41:1:undefined-event
 Source/Scripts/FXCobwebWallSCRIPT.psc:56:1:trailing-whitespace
 Source/Scripts/FXDragonBloodDamageScript.psc:1:63:trailing-whitespace
@@ -47342,6 +47429,7 @@ Source/Scripts/FXReadElderScrollSCRIPT.psc:80:1:none-form-usage
 Source/Scripts/FXReadElderScrollSCRIPT.psc:80:42:forbidden-functions
 Source/Scripts/FXReadElderScrollSCRIPT.psc:81:1:indentation
 Source/Scripts/FXReadElderScrollSCRIPT.psc:82:1:indentation
+Source/Scripts/FXReadElderScrollSCRIPT.psc:87:1:state-missing-empty-fallback
 Source/Scripts/FXReadElderScrollSCRIPT.psc:87:1:undefined-event
 Source/Scripts/FXReadElderScrollSCRIPT.psc:88:1:indentation
 Source/Scripts/FXReadElderScrollSCRIPT.psc:89:1:indentation
@@ -47353,6 +47441,7 @@ Source/Scripts/FXReadElderScrollSCRIPT.psc:96:12:forbidden-functions
 Source/Scripts/FXReadElderScrollSCRIPT.psc:100:12:forbidden-functions
 Source/Scripts/FXReadElderScrollSCRIPT.psc:104:12:forbidden-functions
 Source/Scripts/FXReadElderScrollSCRIPT.psc:108:1:trailing-whitespace
+Source/Scripts/FXReadElderScrollSCRIPT.psc:113:1:state-missing-empty-fallback
 Source/Scripts/FXReadElderScrollSCRIPT.psc:113:1:undefined-event
 Source/Scripts/FXReadElderScrollSCRIPT.psc:115:3:semicolon
 Source/Scripts/FXReadElderScrollSCRIPT.psc:116:3:semicolon
@@ -47565,6 +47654,7 @@ Source/Scripts/FXSkuldafnPortal.psc:125:39:trailing-whitespace
 Source/Scripts/FXSkuldafnPortal.psc:128:45:trailing-whitespace
 Source/Scripts/FXSnowBlowingFogAttachScript.psc:1:64:trailing-whitespace
 Source/Scripts/FXSnowBlowingFogAttachScript.psc:27:1:trailing-whitespace
+Source/Scripts/FXSnowBlowingFogAttachScript.psc:32:1:state-missing-empty-fallback
 Source/Scripts/FXSnowBlowingFogAttachScript.psc:32:1:undefined-event
 Source/Scripts/FXSnowBlowingFogAttachScript.psc:33:1:none-form-usage
 Source/Scripts/FXSnowBlowingFogAttachScript.psc:34:1:none-form-usage
@@ -47691,6 +47781,7 @@ Source/Scripts/FXdustDropTrigSCRIPT.psc:41:25:comma-spacing
 Source/Scripts/FXdustDropTrigSCRIPT.psc:44:1:trailing-whitespace
 Source/Scripts/FXdustDropTrigSCRIPT.psc:51:13:trailing-whitespace
 Source/Scripts/FXdustDropTrigSCRIPT.psc:52:1:indentation
+Source/Scripts/FXdustDropTrigSCRIPT.psc:52:1:state-missing-empty-fallback
 Source/Scripts/FXdustDropTrigSCRIPT.psc:52:1:undefined-event
 Source/Scripts/FXdustDropTrigSCRIPT.psc:53:1:indentation
 Source/Scripts/FXdustDropTrigSCRIPT.psc:54:1:indentation
@@ -47715,6 +47806,7 @@ Source/Scripts/FXdustDropTrigSCRIPT.psc:68:1:indentation
 Source/Scripts/FXdustDropTrigSCRIPT.psc:69:1:indentation
 Source/Scripts/FXdustDropTrigSCRIPT.psc:71:1:indentation
 Source/Scripts/FXdustDropTrigSCRIPT.psc:76:1:indentation
+Source/Scripts/FXdustDropTrigSCRIPT.psc:76:1:state-missing-empty-fallback
 Source/Scripts/FXdustDropTrigSCRIPT.psc:76:1:undefined-event
 Source/Scripts/FXdustDropTrigSCRIPT.psc:77:1:indentation
 Source/Scripts/FXdustDropTrigSCRIPT.psc:77:31:comma-spacing
@@ -47791,7 +47883,9 @@ Source/Scripts/FXfakeCritterScript.psc:81:3:strict-boolean
 Source/Scripts/FXfakeCritterScript.psc:84:3:strict-boolean
 Source/Scripts/FXmothScaredSCRIPT.psc:1:54:trailing-whitespace
 Source/Scripts/FXmothScaredSCRIPT.psc:24:1:trailing-whitespace
+Source/Scripts/FXmothScaredSCRIPT.psc:29:1:state-missing-empty-fallback
 Source/Scripts/FXmothScaredSCRIPT.psc:29:1:undefined-event
+Source/Scripts/FXmothScaredSCRIPT.psc:38:1:state-missing-empty-fallback
 Source/Scripts/FXmothScaredSCRIPT.psc:38:1:undefined-event
 Source/Scripts/FXmothScaredSCRIPT.psc:41:1:trailing-whitespace
 Source/Scripts/FXtriggerAmbFX.psc:1:50:trailing-whitespace
@@ -48343,6 +48437,7 @@ Source/Scripts/FerrySystemScript.psc:244:43:trailing-whitespace
 Source/Scripts/FerrySystemScript.psc:246:50:trailing-whitespace
 Source/Scripts/FerrySystemScript.psc:248:54:trailing-whitespace
 Source/Scripts/FerrySystemScript.psc:250:54:trailing-whitespace
+Source/Scripts/FestivalEndScript.psc:12:1:state-missing-empty-fallback
 Source/Scripts/FestivalEndScript.psc:12:1:undefined-event
 Source/Scripts/FestivalEndScript.psc:16:1:trailing-whitespace
 Source/Scripts/FestivalEndScript.psc:20:1:trailing-whitespace
@@ -49216,7 +49311,9 @@ Source/Scripts/GhostTrap.psc:2:1:semicolon
 Source/Scripts/GhostTrap.psc:3:1:semicolon
 Source/Scripts/GhostTrap.psc:21:20:trailing-whitespace
 Source/Scripts/GhostTrap.psc:24:19:unresolved-script
+Source/Scripts/GhostTrap.psc:35:1:state-missing-empty-fallback
 Source/Scripts/GhostTrap.psc:36:1:none-form-usage
+Source/Scripts/GhostTrap.psc:60:1:state-missing-empty-fallback
 Source/Scripts/GhostTrap.psc:66:1:none-form-usage
 Source/Scripts/GhostTrap.psc:75:26:assignment-operator-spacing
 Source/Scripts/GhostTrap.psc:88:1:local-variable-shadowing
@@ -50678,7 +50775,9 @@ Source/Scripts/MG06ArmillaryScript.psc:245:40:trailing-whitespace
 Source/Scripts/MG06ArmillaryScript.psc:247:39:trailing-whitespace
 Source/Scripts/MG06ArmillaryScript.psc:249:40:trailing-whitespace
 Source/Scripts/MG06ButtonScript.psc:27:1:undefined-event
+Source/Scripts/MG06ButtonScript.psc:33:1:state-missing-empty-fallback
 Source/Scripts/MG06ButtonScript.psc:33:1:undefined-event
+Source/Scripts/MG06ButtonScript.psc:47:1:state-missing-empty-fallback
 Source/Scripts/MG06ButtonScript.psc:47:1:undefined-event
 Source/Scripts/MG06ButtonScript.psc:53:1:trailing-whitespace
 Source/Scripts/MG06ButtonScript.psc:55:27:forbidden-functions
@@ -54587,6 +54686,7 @@ Source/Scripts/MS06StageSetter.psc:106:34:trailing-whitespace
 Source/Scripts/MS06rotatingDoorSCRIPT.psc:30:12:forbidden-functions
 Source/Scripts/MS06rotatingDoorSCRIPT.psc:35:35:comma-spacing
 Source/Scripts/MS06rotatingDoorSCRIPT.psc:40:35:comma-spacing
+Source/Scripts/MS06rotatingDoorSCRIPT.psc:49:1:state-missing-empty-fallback
 Source/Scripts/MS06rotatingDoorSCRIPT.psc:49:1:undefined-event
 Source/Scripts/MS06rotatingDoorSCRIPT.psc:50:11:forbidden-functions
 Source/Scripts/MS06rotatingDoorSCRIPT.psc:51:1:none-form-usage
@@ -54597,9 +54697,11 @@ Source/Scripts/MS06rotatingDoorSCRIPT.psc:59:1:indentation
 Source/Scripts/MS06rotatingDoorSCRIPT.psc:60:11:forbidden-functions
 Source/Scripts/MS06rotatingDoorSCRIPT.psc:61:1:indentation
 Source/Scripts/MS06rotatingDoorSCRIPT.psc:64:1:trailing-whitespace
+Source/Scripts/MS06rotatingDoorSCRIPT.psc:65:1:state-missing-empty-fallback
 Source/Scripts/MS06rotatingDoorSCRIPT.psc:65:1:undefined-event
 Source/Scripts/MS06rotatingDoorSCRIPT.psc:66:1:indentation
 Source/Scripts/MS06rotatingDoorSCRIPT.psc:67:1:none-form-usage
+Source/Scripts/MS06rotatingDoorSCRIPT.psc:74:1:state-missing-empty-fallback
 Source/Scripts/MS06rotatingDoorSCRIPT.psc:74:1:undefined-event
 Source/Scripts/MS06rotatingDoorSCRIPT.psc:75:11:forbidden-functions
 Source/Scripts/MS06rotatingDoorSCRIPT.psc:76:1:none-form-usage
@@ -54608,6 +54710,7 @@ Source/Scripts/MS06rotatingDoorSCRIPT.psc:80:1:trailing-whitespace
 Source/Scripts/MS06rotatingDoorSCRIPT.psc:83:32:comma-spacing
 Source/Scripts/MS06rotatingDoorSCRIPT.psc:84:11:forbidden-functions
 Source/Scripts/MS06rotatingDoorSCRIPT.psc:87:1:trailing-whitespace
+Source/Scripts/MS06rotatingDoorSCRIPT.psc:88:1:state-missing-empty-fallback
 Source/Scripts/MS06rotatingDoorSCRIPT.psc:88:1:undefined-event
 Source/Scripts/MS06rotatingDoorSCRIPT.psc:89:1:none-form-usage
 Source/Scripts/MS06switchTosserSCRIPT.psc:26:1:none-form-usage
@@ -55421,6 +55524,7 @@ Source/Scripts/MagicAnomalySpawnerSCRIPT.psc:55:1:indentation
 Source/Scripts/MagicAnomalySpawnerSCRIPT.psc:57:1:short-wait-interval
 Source/Scripts/MagicAnomalySpawnerSCRIPT.psc:57:13:forbidden-functions
 Source/Scripts/MagicAnomalySpawnerSCRIPT.psc:69:1:indentation
+Source/Scripts/MagicAnomalySpawnerSCRIPT.psc:71:1:state-missing-empty-fallback
 Source/Scripts/MagicAnomalySpawnerSCRIPT.psc:71:1:undefined-event
 Source/Scripts/MagicAnomalySpawnerSCRIPT.psc:72:1:indentation
 Source/Scripts/MagicAnomalySpawnerSCRIPT.psc:75:1:place-at-me
@@ -55637,12 +55741,15 @@ Source/Scripts/MagicTrap.psc:110:1:indentation
 Source/Scripts/MagicTrap.psc:111:1:indentation
 Source/Scripts/MagicTrap.psc:112:1:indentation
 Source/Scripts/MagicTrap.psc:113:1:indentation
+Source/Scripts/MagicTrap.psc:120:1:state-missing-empty-fallback
 Source/Scripts/MagicTrap.psc:121:11:forbidden-functions
 Source/Scripts/MagicTrap.psc:124:1:trailing-whitespace
 Source/Scripts/MagicTrap.psc:132:1:indentation
 Source/Scripts/MagicTrap.psc:133:1:indentation
+Source/Scripts/MagicTrap.psc:135:1:state-missing-empty-fallback
 Source/Scripts/MagicTrap.psc:136:1:indentation
 Source/Scripts/MagicTrap.psc:138:1:trailing-whitespace
+Source/Scripts/MagicTrap.psc:145:1:state-missing-empty-fallback
 Source/Scripts/MagicTrap.psc:146:1:indentation
 Source/Scripts/MagicTrap.psc:149:1:trailing-whitespace
 Source/Scripts/MagicTrap.psc:152:1:trailing-whitespace
@@ -55899,6 +56006,7 @@ Source/Scripts/MineOreFurnitureScript.psc:61:1:none-form-usage
 Source/Scripts/MineOreFurnitureScript.psc:62:7:trailing-whitespace
 Source/Scripts/MineOreFurnitureScript.psc:64:1:trailing-whitespace
 Source/Scripts/MineOreFurnitureScript.psc:65:121:line-length
+Source/Scripts/MineOreFurnitureScript.psc:75:1:state-missing-empty-fallback
 Source/Scripts/MineOreFurnitureScript.psc:75:1:undefined-event
 Source/Scripts/MineOreFurnitureScript.psc:77:1:indentation
 Source/Scripts/MineOreFurnitureScript.psc:79:1:trailing-whitespace
@@ -55910,6 +56018,7 @@ Source/Scripts/MineOreFurnitureScript.psc:89:1:trailing-whitespace
 Source/Scripts/MineOreFurnitureScript.psc:90:31:forbidden-functions
 Source/Scripts/MineOreFurnitureScript.psc:91:1:indentation
 Source/Scripts/MineOreFurnitureScript.psc:95:1:indentation
+Source/Scripts/MineOreFurnitureScript.psc:107:1:state-missing-empty-fallback
 Source/Scripts/MineOreFurnitureScript.psc:107:1:undefined-event
 Source/Scripts/MineOreFurnitureScript.psc:110:1:trailing-whitespace
 Source/Scripts/MineOreFurnitureScript.psc:114:1:indentation
@@ -55922,12 +56031,14 @@ Source/Scripts/MineOreFurnitureScript.psc:131:4:empty-body
 Source/Scripts/MineOreFurnitureScript.psc:134:10:exclamation-spacing
 Source/Scripts/MineOreFurnitureScript.psc:134:53:forbidden-functions
 Source/Scripts/MineOreFurnitureScript.psc:135:1:indentation
+Source/Scripts/MineOreFurnitureScript.psc:144:1:state-missing-empty-fallback
 Source/Scripts/MineOreFurnitureScript.psc:144:1:undefined-event
 Source/Scripts/MineOreFurnitureScript.psc:145:1:indentation
 Source/Scripts/MineOreFurnitureScript.psc:148:9:forbidden-functions
 Source/Scripts/MineOreFurnitureScript.psc:153:1:trailing-whitespace
 Source/Scripts/MineOreFurnitureScript.psc:156:1:trailing-whitespace
 Source/Scripts/MineOreFurnitureScript.psc:158:1:indentation
+Source/Scripts/MineOreFurnitureScript.psc:163:1:state-missing-empty-fallback
 Source/Scripts/MineOreFurnitureScript.psc:163:1:undefined-event
 Source/Scripts/MineOreFurnitureScript.psc:167:1:trailing-whitespace
 Source/Scripts/MineOreFurnitureScript.psc:169:1:indentation
@@ -56382,6 +56493,7 @@ Source/Scripts/NorRetractableBridgeSCRIPT.psc:58:1:indentation
 Source/Scripts/NorRotatingDoorLeverScript.psc:28:1:undefined-event
 Source/Scripts/NorRotatingDoorLeverScript.psc:41:35:comma-spacing
 Source/Scripts/NorRotatingDoorLeverScript.psc:46:35:comma-spacing
+Source/Scripts/NorRotatingDoorLeverScript.psc:55:1:state-missing-empty-fallback
 Source/Scripts/NorRotatingDoorLeverScript.psc:55:1:undefined-event
 Source/Scripts/NorRotatingDoorLeverScript.psc:56:1:none-form-usage
 Source/Scripts/NorRotatingDoorLeverScript.psc:57:1:none-form-usage
@@ -56396,12 +56508,14 @@ Source/Scripts/NorRotatingDoorLeverScript.psc:65:1:none-form-usage
 Source/Scripts/NorRotatingDoorLeverScript.psc:68:1:trailing-whitespace
 Source/Scripts/NorRotatingDoorLeverScript.psc:71:32:comma-spacing
 Source/Scripts/NorRotatingDoorLeverScript.psc:74:1:trailing-whitespace
+Source/Scripts/NorRotatingDoorLeverScript.psc:75:1:state-missing-empty-fallback
 Source/Scripts/NorRotatingDoorLeverScript.psc:75:1:undefined-event
 Source/Scripts/NorRotatingDoorLeverScript.psc:76:1:none-form-usage
 Source/Scripts/NorRotatingDoorLeverScript.psc:78:1:none-form-usage
 Source/Scripts/NorRotatingDoorLeverScript.psc:80:1:none-form-usage
 Source/Scripts/NorRotatingDoorLeverScript.psc:82:1:none-form-usage
 Source/Scripts/NorRotatingDoorLeverScript.psc:84:1:none-form-usage
+Source/Scripts/NorRotatingDoorLeverScript.psc:91:1:state-missing-empty-fallback
 Source/Scripts/NorRotatingDoorLeverScript.psc:91:1:undefined-event
 Source/Scripts/NorRotatingDoorLeverScript.psc:92:1:none-form-usage
 Source/Scripts/NorRotatingDoorLeverScript.psc:93:1:none-form-usage
@@ -56416,6 +56530,7 @@ Source/Scripts/NorRotatingDoorLeverScript.psc:101:1:none-form-usage
 Source/Scripts/NorRotatingDoorLeverScript.psc:104:1:trailing-whitespace
 Source/Scripts/NorRotatingDoorLeverScript.psc:107:32:comma-spacing
 Source/Scripts/NorRotatingDoorLeverScript.psc:110:1:trailing-whitespace
+Source/Scripts/NorRotatingDoorLeverScript.psc:111:1:state-missing-empty-fallback
 Source/Scripts/NorRotatingDoorLeverScript.psc:111:1:undefined-event
 Source/Scripts/NorRotatingDoorLeverScript.psc:112:1:none-form-usage
 Source/Scripts/NorRotatingDoorLeverScript.psc:114:1:none-form-usage
@@ -57494,6 +57609,7 @@ Source/Scripts/PlayerBookShelfContainerScript.psc:611:1:trailing-whitespace
 Source/Scripts/PlayerBookShelfContainerScript.psc:621:1:trailing-whitespace
 Source/Scripts/PlayerBookShelfTriggerSCRIPT.psc:1:64:trailing-whitespace
 Source/Scripts/PlayerBookShelfTriggerSCRIPT.psc:13:20:forbidden-functions
+Source/Scripts/PlayerBookShelfTriggerSCRIPT.psc:21:1:state-missing-empty-fallback
 Source/Scripts/PlayerBookShelfTriggerSCRIPT.psc:21:1:undefined-event
 Source/Scripts/PlayerBookShelfTriggerSCRIPT.psc:34:4:empty-body
 Source/Scripts/PlayerBookShelfTriggerSCRIPT.psc:39:1:none-form-usage
@@ -57504,6 +57620,7 @@ Source/Scripts/PlayerBookShelfTriggerSCRIPT.psc:41:121:line-length
 Source/Scripts/PlayerBookShelfTriggerSCRIPT.psc:42:1:unchecked-cast
 Source/Scripts/PlayerBookShelfTriggerSCRIPT.psc:43:5:empty-body
 Source/Scripts/PlayerBookShelfTriggerSCRIPT.psc:44:1:indentation
+Source/Scripts/PlayerBookShelfTriggerSCRIPT.psc:56:1:state-missing-empty-fallback
 Source/Scripts/PlayerBookShelfTriggerSCRIPT.psc:56:1:undefined-event
 Source/Scripts/PlayerBookShelfTriggerSCRIPT.psc:63:27:trailing-whitespace
 Source/Scripts/PlayerHorseScript.psc:1:52:trailing-whitespace
@@ -57659,12 +57776,14 @@ Source/Scripts/PlayerPotionRackContainerScript.psc:701:2:strict-boolean
 Source/Scripts/PlayerPotionRackContainerScript.psc:707:1:trailing-whitespace
 Source/Scripts/PlayerPotionRackTriggerScript.psc:1:65:trailing-whitespace
 Source/Scripts/PlayerPotionRackTriggerScript.psc:13:20:forbidden-functions
+Source/Scripts/PlayerPotionRackTriggerScript.psc:21:1:state-missing-empty-fallback
 Source/Scripts/PlayerPotionRackTriggerScript.psc:21:1:undefined-event
 Source/Scripts/PlayerPotionRackTriggerScript.psc:32:1:none-form-usage
 Source/Scripts/PlayerPotionRackTriggerScript.psc:33:1:unchecked-cast
 Source/Scripts/PlayerPotionRackTriggerScript.psc:33:1:unchecked-cast
 Source/Scripts/PlayerPotionRackTriggerScript.psc:33:121:line-length
 Source/Scripts/PlayerPotionRackTriggerScript.psc:34:1:unchecked-cast
+Source/Scripts/PlayerPotionRackTriggerScript.psc:42:1:state-missing-empty-fallback
 Source/Scripts/PlayerPotionRackTriggerScript.psc:42:1:undefined-event
 Source/Scripts/PlayerRiderScript.psc:1:52:trailing-whitespace
 Source/Scripts/PlayerRiderScript.psc:5:25:forbidden-functions
@@ -58417,6 +58536,7 @@ Source/Scripts/PortalGemSocket01SCRIPT.psc:229:26:forbidden-functions
 Source/Scripts/PressurePlate.psc:2:1:semicolon
 Source/Scripts/PressurePlate.psc:3:1:semicolon
 Source/Scripts/PressurePlate.psc:4:1:semicolon
+Source/Scripts/PressurePlate.psc:11:1:state-missing-empty-fallback
 Source/Scripts/PressurePlate.psc:16:1:indentation
 Source/Scripts/PressurePlate.psc:17:1:indentation
 Source/Scripts/PressurePlate.psc:20:12:forbidden-functions
@@ -58463,6 +58583,7 @@ Source/Scripts/PressureReleasePlate.psc:84:1:indentation
 Source/Scripts/PressureReleasePlate.psc:85:1:trailing-whitespace
 Source/Scripts/PressureReleasePlate.psc:93:1:trailing-whitespace
 Source/Scripts/PressureReleasePlate.psc:95:1:indentation
+Source/Scripts/PressureReleasePlate.psc:104:1:state-missing-empty-fallback
 Source/Scripts/PressureReleasePlate.psc:105:6:exclamation-spacing
 Source/Scripts/PressureReleasePlate.psc:110:1:indentation
 Source/Scripts/PressureReleasePlate.psc:123:1:trailing-whitespace
@@ -84296,6 +84417,7 @@ Source/Scripts/SarcophagusSkullLock01SCRIPT.psc:81:1:none-form-usage
 Source/Scripts/SarcophagusSkullLock01SCRIPT.psc:82:1:none-form-usage
 Source/Scripts/SarcophagusSkullLock01SCRIPT.psc:85:1:none-form-usage
 Source/Scripts/SarcophagusSkullLock01SCRIPT.psc:87:1:trailing-whitespace
+Source/Scripts/SarcophagusSkullLock01SCRIPT.psc:94:1:state-missing-empty-fallback
 Source/Scripts/SarcophagusSkullLock01SCRIPT.psc:94:1:undefined-event
 Source/Scripts/SarcophagusSkullLock01SCRIPT.psc:95:1:indentation
 Source/Scripts/SarcophagusSkullLock01SCRIPT.psc:96:1:none-form-usage
@@ -84524,6 +84646,7 @@ Source/Scripts/SoulSwordQuestScript.psc:3:41:trailing-whitespace
 Source/Scripts/SoundTrap.psc:2:1:semicolon
 Source/Scripts/SoundTrap.psc:3:1:semicolon
 Source/Scripts/SoundTrap.psc:4:1:semicolon
+Source/Scripts/SoundTrap.psc:13:1:state-missing-empty-fallback
 Source/Scripts/SoundTrap.psc:15:1:indentation
 Source/Scripts/SoundTrap.psc:19:3:strict-boolean
 Source/Scripts/SoundTrap.psc:24:21:unresolved-script
@@ -84777,6 +84900,7 @@ Source/Scripts/SprigganSwarmActorSCRIPT.psc:52:1:indentation
 Source/Scripts/SpringTrap.psc:2:1:semicolon
 Source/Scripts/SpringTrap.psc:3:1:semicolon
 Source/Scripts/SpringTrap.psc:4:1:semicolon
+Source/Scripts/SpringTrap.psc:11:1:state-missing-empty-fallback
 Source/Scripts/SpringTrap.psc:14:1:none-form-usage
 Source/Scripts/SpringTrap.psc:16:52:unresolved-script
 Source/Scripts/SpringTrap.psc:17:3:strict-boolean
@@ -86787,6 +86911,7 @@ Source/Scripts/TG08BCenturionAmbush.psc:75:1:indentation
 Source/Scripts/TG08BCenturionAmbush.psc:78:1:trailing-whitespace
 Source/Scripts/TG08BCenturionAmbush.psc:79:43:comma-spacing
 Source/Scripts/TG08BCenturionAmbush.psc:85:1:trailing-whitespace
+Source/Scripts/TG08BCenturionAmbush.psc:88:1:state-missing-empty-fallback
 Source/Scripts/TG08BCenturionAmbush.psc:88:1:undefined-event
 Source/Scripts/TG08BCenturionAmbush.psc:89:1:indentation
 Source/Scripts/TG08BCenturionAmbush.psc:91:6:forbidden-functions
@@ -86830,6 +86955,7 @@ Source/Scripts/TG08BExploreTriggerScript01.psc:10:12:forbidden-functions
 Source/Scripts/TG08BExploreTriggerScript01.psc:11:1:none-form-usage
 Source/Scripts/TG08BFightController.psc:38:1:indentation
 Source/Scripts/TG08BFightController.psc:45:1:cyclomatic-complexity
+Source/Scripts/TG08BFightController.psc:45:1:state-missing-empty-fallback
 Source/Scripts/TG08BFightController.psc:45:1:undefined-event
 Source/Scripts/TG08BFightController.psc:46:1:indentation
 Source/Scripts/TG08BFightController.psc:48:1:none-form-usage
@@ -86894,6 +87020,7 @@ Source/Scripts/TG08BFloodPipeController.psc:2:1:semicolon
 Source/Scripts/TG08BFloodPipeController.psc:23:29:assignment-operator-spacing
 Source/Scripts/TG08BFloodPipeController.psc:24:29:assignment-operator-spacing
 Source/Scripts/TG08BFloodPipeController.psc:42:1:indentation
+Source/Scripts/TG08BFloodPipeController.psc:55:1:state-missing-empty-fallback
 Source/Scripts/TG08BFloodPipeController.psc:55:1:undefined-event
 Source/Scripts/TG08BFloodPipeController.psc:56:1:indentation
 Source/Scripts/TG08BFloodPipeController.psc:58:1:indentation
@@ -86908,11 +87035,13 @@ Source/Scripts/TG08BFloodPipeController.psc:83:1:indentation
 Source/Scripts/TG08BFloodPipeController.psc:84:1:indentation
 Source/Scripts/TG08BFloodPipeController.psc:86:1:trailing-whitespace
 Source/Scripts/TG08BFloodPipeController.psc:92:1:trailing-whitespace
+Source/Scripts/TG08BFloodPipeController.psc:93:1:state-missing-empty-fallback
 Source/Scripts/TG08BFloodPipeController.psc:93:1:undefined-event
 Source/Scripts/TG08BFloodPipeController.psc:94:1:indentation
 Source/Scripts/TG08BFloodPipeController.psc:96:1:indentation
 Source/Scripts/TG08BFloodPipeController.psc:97:1:indentation
 Source/Scripts/TG08BFloodPipeController.psc:104:1:trailing-whitespace
+Source/Scripts/TG08BFloodPipeController.psc:105:1:state-missing-empty-fallback
 Source/Scripts/TG08BFloodPipeController.psc:105:1:undefined-event
 Source/Scripts/TG08BFloodPipeController.psc:106:1:indentation
 Source/Scripts/TG08BFloodPipeController.psc:108:1:indentation
@@ -86930,6 +87059,7 @@ Source/Scripts/TG08BFloodPipeController.psc:130:11:forbidden-functions
 Source/Scripts/TG08BFloodPipeController.psc:131:6:exclamation-spacing
 Source/Scripts/TG08BFloodPipeController.psc:134:12:forbidden-functions
 Source/Scripts/TG08BFloodPipeController.psc:141:1:trailing-whitespace
+Source/Scripts/TG08BFloodPipeController.psc:142:1:state-missing-empty-fallback
 Source/Scripts/TG08BFloodPipeController.psc:142:1:undefined-event
 Source/Scripts/TG08BFloodPipeController.psc:143:1:indentation
 Source/Scripts/TG08BFloodPipeController.psc:145:1:indentation
@@ -87158,6 +87288,7 @@ Source/Scripts/TG08BStatueDoorTriggerSCRIPT.psc:15:1:indentation
 Source/Scripts/TG08BStatueDoorTriggerSCRIPT.psc:15:25:forbidden-functions
 Source/Scripts/TG08BStatueDoorTriggerSCRIPT.psc:16:1:trailing-whitespace
 Source/Scripts/TG08BStatueDoorTriggerSCRIPT.psc:17:1:unchecked-cast
+Source/Scripts/TG08BTowerFallScript.psc:20:1:state-missing-empty-fallback
 Source/Scripts/TG08BTowerFallScript.psc:20:1:undefined-event
 Source/Scripts/TG08BTowerFallScript.psc:22:11:forbidden-functions
 Source/Scripts/TG08BTowerFallScript.psc:23:1:none-form-usage
@@ -87215,6 +87346,7 @@ Source/Scripts/TG08LeverPuzzle.psc:53:1:indentation
 Source/Scripts/TG08LeverPuzzle.psc:54:1:indentation
 Source/Scripts/TG08LeverPuzzle.psc:55:1:indentation
 Source/Scripts/TG08LeverPuzzle.psc:57:1:trailing-whitespace
+Source/Scripts/TG08LeverPuzzle.psc:58:1:state-missing-empty-fallback
 Source/Scripts/TG08LeverPuzzle.psc:58:1:undefined-event
 Source/Scripts/TG08LeverPuzzle.psc:62:1:trailing-whitespace
 Source/Scripts/TG08LeverPuzzle.psc:63:64:exclamation-spacing
@@ -87225,6 +87357,7 @@ Source/Scripts/TG08LeverPuzzle.psc:68:11:forbidden-functions
 Source/Scripts/TG08LeverPuzzle.psc:70:1:trailing-whitespace
 Source/Scripts/TG08LeverPuzzle.psc:71:6:exclamation-spacing
 Source/Scripts/TG08LeverPuzzle.psc:75:35:comma-spacing
+Source/Scripts/TG08LeverPuzzle.psc:92:1:state-missing-empty-fallback
 Source/Scripts/TG08LeverPuzzle.psc:92:1:undefined-event
 Source/Scripts/TG08LeverPuzzle.psc:94:1:none-form-usage
 Source/Scripts/TG08LeverPuzzle.psc:95:12:forbidden-functions
@@ -87245,6 +87378,7 @@ Source/Scripts/TG08RisingWaterScript.psc:2:1:semicolon
 Source/Scripts/TG08RisingWaterScript.psc:79:1:none-form-usage
 Source/Scripts/TG08RisingWaterScript.psc:83:1:indentation
 Source/Scripts/TG08RisingWaterScript.psc:89:1:cyclomatic-complexity
+Source/Scripts/TG08RisingWaterScript.psc:89:1:state-missing-empty-fallback
 Source/Scripts/TG08RisingWaterScript.psc:89:1:undefined-event
 Source/Scripts/TG08RisingWaterScript.psc:91:1:trailing-whitespace
 Source/Scripts/TG08RisingWaterScript.psc:92:1:indentation
@@ -87294,6 +87428,7 @@ Source/Scripts/TG08RisingWaterScript.psc:175:12:forbidden-functions
 Source/Scripts/TG08RisingWaterScript.psc:178:1:trailing-whitespace
 Source/Scripts/TG08RisingWaterScript.psc:181:1:indentation
 Source/Scripts/TG08RisingWaterScript.psc:184:11:forbidden-functions
+Source/Scripts/TG08RisingWaterScript.psc:190:1:state-missing-empty-fallback
 Source/Scripts/TG08RisingWaterScript.psc:190:1:undefined-event
 Source/Scripts/TG08RisingWaterScript.psc:191:1:indentation
 Source/Scripts/TG08RisingWaterScript.psc:193:1:none-form-usage
@@ -96593,6 +96728,7 @@ Source/Scripts/TrapBase.psc:126:1:trailing-whitespace
 Source/Scripts/TrapBase.psc:131:4:empty-body
 Source/Scripts/TrapBase.psc:132:1:trailing-whitespace
 Source/Scripts/TrapBase.psc:135:1:trailing-whitespace
+Source/Scripts/TrapBase.psc:142:1:state-missing-empty-fallback
 Source/Scripts/TrapBase.psc:142:1:undefined-event
 Source/Scripts/TrapBase.psc:146:3:strict-boolean
 Source/Scripts/TrapBase.psc:150:1:trailing-whitespace
@@ -96621,6 +96757,7 @@ Source/Scripts/TrapBase.psc:221:1:trailing-whitespace
 Source/Scripts/TrapBase.psc:239:1:unchecked-cast
 Source/Scripts/TrapBear.psc:2:1:semicolon
 Source/Scripts/TrapBear.psc:3:1:semicolon
+Source/Scripts/TrapBear.psc:29:1:state-missing-empty-fallback
 Source/Scripts/TrapBear.psc:29:1:undefined-event
 Source/Scripts/TrapBear.psc:30:1:indentation
 Source/Scripts/TrapBear.psc:32:1:trailing-whitespace
@@ -96631,6 +96768,7 @@ Source/Scripts/TrapBear.psc:39:1:indentation
 Source/Scripts/TrapBear.psc:40:1:indentation
 Source/Scripts/TrapBear.psc:41:33:comma-spacing
 Source/Scripts/TrapBear.psc:44:1:trailing-whitespace
+Source/Scripts/TrapBear.psc:48:1:state-missing-empty-fallback
 Source/Scripts/TrapBear.psc:48:1:undefined-event
 Source/Scripts/TrapBear.psc:49:1:indentation
 Source/Scripts/TrapBear.psc:54:1:indentation
@@ -96639,6 +96777,7 @@ Source/Scripts/TrapBear.psc:64:1:trailing-whitespace
 Source/Scripts/TrapBear.psc:66:1:indentation
 Source/Scripts/TrapBear.psc:67:1:indentation
 Source/Scripts/TrapBear.psc:70:35:comma-spacing
+Source/Scripts/TrapBear.psc:76:1:state-missing-empty-fallback
 Source/Scripts/TrapBear.psc:76:1:undefined-event
 Source/Scripts/TrapBear.psc:77:1:indentation
 Source/Scripts/TrapBear.psc:81:1:argument-naming
@@ -96695,6 +96834,7 @@ Source/Scripts/TrapDweBallista.psc:90:1:trailing-whitespace
 Source/Scripts/TrapDweBallista.psc:91:14:trailing-whitespace
 Source/Scripts/TrapDweBallista.psc:96:1:trailing-whitespace
 Source/Scripts/TrapDweBallista.psc:98:1:trailing-whitespace
+Source/Scripts/TrapDweBallista.psc:103:1:state-missing-empty-fallback
 Source/Scripts/TrapDweBallista.psc:110:14:goto-state
 Source/Scripts/TrapDweBallista.psc:112:1:trailing-whitespace
 Source/Scripts/TrapDweBallista.psc:114:1:trailing-whitespace
@@ -96744,6 +96884,7 @@ Source/Scripts/TrapDweFlamePillarHit.psc:18:1:indentation
 Source/Scripts/TrapDweFlamePillarHit.psc:19:1:trailing-whitespace
 Source/Scripts/TrapDweFlamePillarHit.psc:21:1:trailing-whitespace
 Source/Scripts/TrapDweFlamePillarHit.psc:22:18:trailing-whitespace
+Source/Scripts/TrapDweFlamePillarHit.psc:23:1:state-missing-empty-fallback
 Source/Scripts/TrapDweFlamePillarHit.psc:23:1:undefined-event
 Source/Scripts/TrapDweFlamePillarHit.psc:24:1:indentation
 Source/Scripts/TrapDweFlamePillarHit.psc:25:6:exclamation-spacing
@@ -97043,6 +97184,7 @@ Source/Scripts/TrapFallingOilLampColLayer.psc:70:1:none-form-usage
 Source/Scripts/TrapFallingOilLampColLayer.psc:71:1:indentation
 Source/Scripts/TrapFallingOilLampColLayer.psc:71:26:trailing-whitespace
 Source/Scripts/TrapFallingOilLampColLayer.psc:72:1:indentation
+Source/Scripts/TrapFallingOilLampColLayer.psc:76:1:state-missing-empty-fallback
 Source/Scripts/TrapFallingOilLampColLayer.psc:76:1:undefined-event
 Source/Scripts/TrapFallingOilLampColLayer.psc:77:1:indentation
 Source/Scripts/TrapFallingOilLampColLayer.psc:83:121:line-length
@@ -97119,6 +97261,7 @@ Source/Scripts/TrapFirePlate.psc:20:1:indentation
 Source/Scripts/TrapFirePlate.psc:21:1:indentation
 Source/Scripts/TrapFirePlate.psc:24:1:indentation
 Source/Scripts/TrapFirePlate.psc:25:1:indentation
+Source/Scripts/TrapFirePlate.psc:29:1:state-missing-empty-fallback
 Source/Scripts/TrapFirePlate.psc:31:6:exclamation-spacing
 Source/Scripts/TrapFirePlate.psc:38:20:unresolved-script
 Source/Scripts/TrapFirePlate.psc:47:1:trailing-whitespace
@@ -97149,6 +97292,7 @@ Source/Scripts/TrapFirePlate.psc:97:1:indentation
 Source/Scripts/TrapFirePlate.psc:98:1:indentation
 Source/Scripts/TrapFirePlate.psc:106:10:forbidden-functions
 Source/Scripts/TrapFirePlate.psc:107:2:strict-boolean
+Source/Scripts/TrapFirePlate.psc:115:1:state-missing-empty-fallback
 Source/Scripts/TrapFirePlate.psc:121:1:trailing-whitespace
 Source/Scripts/TrapFirePlate.psc:122:1:trailing-whitespace
 Source/Scripts/TrapFirePlate.psc:128:1:trailing-whitespace
@@ -97202,6 +97346,7 @@ Source/Scripts/TrapFlamethrower.psc:90:1:trailing-whitespace
 Source/Scripts/TrapFlamethrower.psc:94:1:trailing-whitespace
 Source/Scripts/TrapFlamethrower.psc:100:1:trailing-whitespace
 Source/Scripts/TrapFlamethrower.psc:101:14:trailing-whitespace
+Source/Scripts/TrapFlamethrower.psc:112:1:state-missing-empty-fallback
 Source/Scripts/TrapFlamethrower.psc:118:1:trailing-whitespace
 Source/Scripts/TrapFlamethrower.psc:121:1:trailing-whitespace
 Source/Scripts/TrapFlamethrower.psc:130:1:none-form-usage
@@ -97252,6 +97397,7 @@ Source/Scripts/TrapGenericEffectHazard.psc:68:8:trailing-whitespace
 Source/Scripts/TrapGenericEffectHazard.psc:70:1:trailing-whitespace
 Source/Scripts/TrapGenericEffectHazard.psc:77:1:trailing-whitespace
 Source/Scripts/TrapGenericEffectHazard.psc:80:1:trailing-whitespace
+Source/Scripts/TrapGenericEffectHazard.psc:84:1:state-missing-empty-fallback
 Source/Scripts/TrapGenericEffectHazard.psc:87:1:trailing-whitespace
 Source/Scripts/TrapGenericEffectHazard.psc:96:25:semicolon
 Source/Scripts/TrapGenericEffectHazard.psc:101:1:indentation
@@ -97448,6 +97594,7 @@ Source/Scripts/TrapNorPlatform.psc:178:27:trailing-whitespace
 Source/Scripts/TrapNorPlatform.psc:179:1:trailing-whitespace
 Source/Scripts/TrapNorPlatform.psc:187:1:trailing-whitespace
 Source/Scripts/TrapNorPlatform.psc:188:1:trailing-whitespace
+Source/Scripts/TrapNorPlatform.psc:193:1:state-missing-empty-fallback
 Source/Scripts/TrapNorPlatform.psc:196:3:strict-boolean
 Source/Scripts/TrapNorPlatform.psc:200:1:trailing-whitespace
 Source/Scripts/TrapNorPlatform.psc:204:1:trailing-whitespace
@@ -97592,6 +97739,7 @@ Source/Scripts/TrapPoisonGas.psc:124:1:indentation
 Source/Scripts/TrapPoisonGas.psc:125:1:indentation
 Source/Scripts/TrapPoisonGas.psc:126:1:indentation
 Source/Scripts/TrapPoisonGas.psc:130:54:semicolon
+Source/Scripts/TrapPoisonGas.psc:133:1:state-missing-empty-fallback
 Source/Scripts/TrapPoisonGas.psc:133:1:undefined-event
 Source/Scripts/TrapPoisonGas.psc:137:1:trailing-whitespace
 Source/Scripts/TrapPoisonGas.psc:140:29:exclamation-spacing
@@ -97604,8 +97752,10 @@ Source/Scripts/TrapPoisonGas.psc:150:1:trailing-whitespace
 Source/Scripts/TrapPoisonGas.psc:155:1:trailing-whitespace
 Source/Scripts/TrapPoisonGas.psc:157:121:line-length
 Source/Scripts/TrapPoisonGas.psc:158:24:forbidden-functions
+Source/Scripts/TrapPoisonGas.psc:165:1:state-missing-empty-fallback
 Source/Scripts/TrapPoisonGas.psc:165:1:undefined-event
 Source/Scripts/TrapPoisonGas.psc:169:1:trailing-whitespace
+Source/Scripts/TrapPoisonGas.psc:176:1:state-missing-empty-fallback
 Source/Scripts/TrapPoisonGas.psc:176:1:undefined-event
 Source/Scripts/TrapPoisonGas.psc:179:11:forbidden-functions
 Source/Scripts/TrapPoisonGas.psc:186:1:trailing-whitespace
@@ -97643,6 +97793,7 @@ Source/Scripts/TrapPoisonGas.psc:347:1:trailing-whitespace
 Source/Scripts/TrapPoisonGas.psc:352:1:trailing-whitespace
 Source/Scripts/TrapPoisonGas.psc:385:1:trailing-whitespace
 Source/Scripts/TrapPoisonGas.psc:393:1:trailing-whitespace
+Source/Scripts/TrapPoisonGasCough.psc:29:1:state-missing-empty-fallback
 Source/Scripts/TrapPoisonGasCough.psc:29:1:undefined-event
 Source/Scripts/TrapPoisonGasCough.psc:31:22:forbidden-functions
 Source/Scripts/TrapPoisonGasCough.psc:36:1:trailing-whitespace
@@ -97651,6 +97802,7 @@ Source/Scripts/TrapPoisonGasCough.psc:67:1:trailing-whitespace
 Source/Scripts/TrapRiggedBeam.psc:2:1:semicolon
 Source/Scripts/TrapRiggedBeam.psc:3:1:semicolon
 Source/Scripts/TrapRiggedBeam.psc:4:1:semicolon
+Source/Scripts/TrapRiggedBeam.psc:8:1:state-missing-empty-fallback
 Source/Scripts/TrapRiggedBeam.psc:8:22:trailing-whitespace
 Source/Scripts/TrapRiggedBeam.psc:10:20:unresolved-script
 Source/Scripts/TrapRiggedBeam.psc:13:1:trailing-whitespace
@@ -97782,6 +97934,7 @@ Source/Scripts/TrapTriggerBase.psc:152:1:trailing-whitespace
 Source/Scripts/TrapTriggerBase.psc:155:1:short-wait-interval
 Source/Scripts/TrapTriggerBase.psc:155:12:forbidden-functions
 Source/Scripts/TrapTriggerBase.psc:160:1:trailing-whitespace
+Source/Scripts/TrapTriggerBase.psc:168:1:state-missing-empty-fallback
 Source/Scripts/TrapTriggerBase.psc:168:1:undefined-event
 Source/Scripts/TrapTriggerBase.psc:169:1:indentation
 Source/Scripts/TrapTriggerBase.psc:170:1:indentation
@@ -97805,6 +97958,7 @@ Source/Scripts/TrapTriggerBase.psc:214:121:line-length
 Source/Scripts/TrapTriggerBase.psc:217:13:forbidden-functions
 Source/Scripts/TrapTriggerBase.psc:219:13:forbidden-functions
 Source/Scripts/TrapTriggerBase.psc:224:1:trailing-whitespace
+Source/Scripts/TrapTriggerBase.psc:229:1:state-missing-empty-fallback
 Source/Scripts/TrapTriggerBase.psc:229:1:undefined-event
 Source/Scripts/TrapTriggerBase.psc:230:1:indentation
 Source/Scripts/TrapTriggerBase.psc:231:1:indentation
@@ -97864,6 +98018,7 @@ Source/Scripts/TrapTriggerHinge.psc:16:1:missing-parent-call-in-override
 Source/Scripts/TrapTriggerHinge.psc:18:18:forbidden-functions
 Source/Scripts/TrapTriggerHinge.psc:19:2:strict-boolean
 Source/Scripts/TrapTriggerHinge.psc:20:1:unchecked-cast
+Source/Scripts/TrapTriggerHinge.psc:26:1:state-missing-empty-fallback
 Source/Scripts/TrapTriggerHinge.psc:28:1:trailing-whitespace
 Source/Scripts/TrapTriggerHinge.psc:31:1:trailing-whitespace
 Source/Scripts/TrapTriggerHinge.psc:34:1:trailing-whitespace
@@ -97876,7 +98031,9 @@ Source/Scripts/TrapTriggerHinge.psc:55:3:empty-body
 Source/Scripts/TrapTriggerHinge.psc:59:1:trailing-whitespace
 Source/Scripts/TrapTriggerHinge.psc:60:121:line-length
 Source/Scripts/TrapTriggerHinge.psc:62:1:indentation
+Source/Scripts/TrapTriggerHinge.psc:71:1:state-missing-empty-fallback
 Source/Scripts/TrapTriggerHinge.psc:72:3:strict-boolean
+Source/Scripts/TrapTriggerHinge.psc:81:1:state-missing-empty-fallback
 Source/Scripts/TrapTriggerHinge.psc:88:1:missing-parent-call-in-override
 Source/Scripts/TrapTriggerHinge.psc:91:1:missing-parent-call-in-override
 Source/Scripts/TrapTriggerHinge.psc:93:1:trailing-whitespace
@@ -97937,6 +98094,7 @@ Source/Scripts/Tripwire.psc:4:1:semicolon
 Source/Scripts/Tripwire.psc:7:1:indentation
 Source/Scripts/Tripwire.psc:8:1:indentation
 Source/Scripts/Tripwire.psc:9:1:indentation
+Source/Scripts/Tripwire.psc:14:1:state-missing-empty-fallback
 Source/Scripts/Tripwire.psc:16:20:unresolved-script
 Source/Scripts/Tripwire.psc:25:1:trailing-whitespace
 Source/Scripts/Tripwire.psc:28:1:trailing-whitespace
@@ -97946,6 +98104,7 @@ Source/Scripts/Tripwire.psc:32:52:trailing-whitespace
 Source/Scripts/Tripwire.psc:34:1:trailing-whitespace
 Source/Scripts/Tripwire.psc:35:121:line-length
 Source/Scripts/Tripwire.psc:36:10:trailing-whitespace
+Source/Scripts/Tripwire.psc:40:1:state-missing-empty-fallback
 Source/Scripts/Tripwire.psc:44:52:trailing-whitespace
 Source/Scripts/Tripwire.psc:46:1:trailing-whitespace
 Source/Scripts/Tripwire.psc:47:52:trailing-whitespace
@@ -99391,6 +99550,7 @@ Source/Scripts/WRDrawBridge01SCRIPT.psc:58:1:unchecked-cast
 Source/Scripts/WRDrawBridge01SCRIPT.psc:62:4:empty-body
 Source/Scripts/WRDrawBridge01SCRIPT.psc:66:1:unchecked-cast
 Source/Scripts/WRDrawBridge01SCRIPT.psc:71:1:trailing-whitespace
+Source/Scripts/WRDrawBridge01SCRIPT.psc:75:1:state-missing-empty-fallback
 Source/Scripts/WRDrawBridge01SCRIPT.psc:75:1:undefined-event
 Source/Scripts/WRDrawBridge01SCRIPT.psc:77:1:none-form-usage
 Source/Scripts/WeaponRackActivateSCRIPT.psc:1:67:trailing-whitespace
@@ -100545,6 +100705,7 @@ Source/Scripts/ccBGSSSE001_CrabMQ4CrabSpawner.psc:151:8:exclamation-spacing
 Source/Scripts/ccBGSSSE001_CrabMQ4CrabSpawner.psc:176:121:line-length
 Source/Scripts/ccBGSSSE001_CrabMQ4CrabSpawner.psc:181:12:forbidden-functions
 Source/Scripts/ccBGSSSE001_CrabMQ4CrabSpawner.psc:191:121:line-length
+Source/Scripts/ccBGSSSE001_CrabMQ4CrabSpawner.psc:198:1:state-missing-empty-fallback
 Source/Scripts/ccBGSSSE001_CrabMQ4CrabSpawner.psc:198:1:undefined-event
 Source/Scripts/ccBGSSSE001_CrabMQ4CrabSpawner.psc:199:1:none-form-usage
 Source/Scripts/ccBGSSSE001_CrabMQ4CrabSpawner.psc:199:30:slow-functions
@@ -100555,6 +100716,7 @@ Source/Scripts/ccBGSSSE001_CrabMQ4CrabSpawner.psc:210:12:forbidden-functions
 Source/Scripts/ccBGSSSE001_CrabMQ4CrabSpawner.psc:218:1:trailing-whitespace
 Source/Scripts/ccBGSSSE001_CrabMQ4CrabSpawner.psc:223:121:line-length
 Source/Scripts/ccBGSSSE001_CrabMQ4CrabSpawner.psc:225:121:line-length
+Source/Scripts/ccBGSSSE001_CrabMQ4CrabSpawner.psc:232:1:state-missing-empty-fallback
 Source/Scripts/ccBGSSSE001_CrabMQ4CrabSpawner.psc:232:1:undefined-event
 Source/Scripts/ccBGSSSE001_CrabMQ4CrabSpawner.psc:233:1:none-form-usage
 Source/Scripts/ccBGSSSE001_CrabMQ4CrabSpawner.psc:233:30:slow-functions
@@ -101805,6 +101967,7 @@ Source/Scripts/ccBGS_ARPortcullisScript.psc:88:2:strict-boolean
 Source/Scripts/ccBGS_ARPortcullisScript.psc:94:17:forbidden-functions
 Source/Scripts/ccBGS_ARPortcullisScript.psc:95:2:strict-boolean
 Source/Scripts/ccBGS_ARPressurePlateScript.psc:4:121:line-length
+Source/Scripts/ccBGS_ARPressurePlateScript.psc:8:1:state-missing-empty-fallback
 Source/Scripts/ccBGS_ARPressurePlateScript.psc:13:12:forbidden-functions
 Source/Scripts/ccBGS_ARPressurePlateScript.psc:15:12:forbidden-functions
 Source/Scripts/ccBGS_ARPressurePlateScript.psc:20:20:unresolved-script
@@ -102323,6 +102486,7 @@ Source/Scripts/defaultAutosaveScript.psc:10:1:indentation
 Source/Scripts/defaultAutosaveScript.psc:12:9:exclamation-spacing
 Source/Scripts/defaultAutosaveScript.psc:16:1:indentation
 Source/Scripts/defaultAutosaveScript.psc:17:20:trailing-whitespace
+Source/Scripts/defaultBiPressurePlate.psc:13:1:state-missing-empty-fallback
 Source/Scripts/defaultBiPressurePlate.psc:17:11:forbidden-functions
 Source/Scripts/defaultBiPressurePlate.psc:18:1:indentation
 Source/Scripts/defaultBiPressurePlate.psc:19:1:indentation
@@ -102331,6 +102495,7 @@ Source/Scripts/defaultBiPressurePlate.psc:28:1:indentation
 Source/Scripts/defaultBiPressurePlate.psc:29:7:exclamation-spacing
 Source/Scripts/defaultBiPressurePlate.psc:33:1:trailing-whitespace
 Source/Scripts/defaultBiPressurePlate.psc:39:1:multiple-auto-states
+Source/Scripts/defaultBiPressurePlate.psc:40:1:state-missing-empty-fallback
 Source/Scripts/defaultBiPressurePlate.psc:44:11:forbidden-functions
 Source/Scripts/defaultBiPressurePlate.psc:45:1:indentation
 Source/Scripts/defaultBiPressurePlate.psc:46:1:indentation
@@ -102599,6 +102764,7 @@ Source/Scripts/defaultEquipItemOnLoad.psc:11:6:exclamation-spacing
 Source/Scripts/defaultEquipItemOnLoad.psc:11:24:exclamation-spacing
 Source/Scripts/defaultEquipItemOnLoad.psc:20:1:indentation
 Source/Scripts/defaultFakeHarvestableScript.psc:2:1:semicolon
+Source/Scripts/defaultFakeHarvestableScript.psc:48:1:state-missing-empty-fallback
 Source/Scripts/defaultFakeHarvestableScript.psc:48:1:undefined-event
 Source/Scripts/defaultFakeHarvestableScript.psc:53:1:none-form-usage
 Source/Scripts/defaultFakeHarvestableScript.psc:57:1:none-form-usage
@@ -102612,6 +102778,7 @@ Source/Scripts/defaultFakeHarvestableScript.psc:75:3:strict-boolean
 Source/Scripts/defaultFakeHarvestableScript.psc:76:1:unchecked-cast
 Source/Scripts/defaultFakeNPCLoadTRIG.psc:15:1:indentation
 Source/Scripts/defaultFakeNPCLoadTRIG.psc:17:1:unchecked-cast
+Source/Scripts/defaultFakeNPCLoadTRIG.psc:37:1:state-missing-empty-fallback
 Source/Scripts/defaultFakeNPCLoadTRIG.psc:37:1:undefined-event
 Source/Scripts/defaultFakeRezSpell.psc:2:121:line-length
 Source/Scripts/defaultFakeRezSpell.psc:7:1:missing-parent-call-in-override
@@ -102631,6 +102798,7 @@ Source/Scripts/defaultFakeSummonSpell.psc:37:1:place-at-me
 Source/Scripts/defaultFireWeaponScript.psc:1:59:trailing-whitespace
 Source/Scripts/defaultFireWeaponScript.psc:72:1:cyclomatic-complexity
 Source/Scripts/defaultFireWeaponScript.psc:72:1:nesting-depth
+Source/Scripts/defaultFireWeaponScript.psc:72:1:state-missing-empty-fallback
 Source/Scripts/defaultFireWeaponScript.psc:72:1:undefined-event
 Source/Scripts/defaultFireWeaponScript.psc:77:53:trailing-whitespace
 Source/Scripts/defaultFireWeaponScript.psc:80:1:trailing-whitespace
@@ -104063,6 +104231,7 @@ Source/Scripts/dragonActorSCRIPT.psc:189:1:trailing-whitespace
 Source/Scripts/dragonActorSCRIPT.psc:190:1:none-form-usage
 Source/Scripts/dragonActorSCRIPT.psc:190:121:line-length
 Source/Scripts/dragonActorSCRIPT.psc:191:1:trailing-whitespace
+Source/Scripts/dragonActorSCRIPT.psc:200:1:state-missing-empty-fallback
 Source/Scripts/dragonActorSCRIPT.psc:200:1:undefined-event
 Source/Scripts/dragonActorSCRIPT.psc:205:59:forbidden-functions
 Source/Scripts/dragonActorSCRIPT.psc:205:115:forbidden-functions
@@ -104089,6 +104258,7 @@ Source/Scripts/dragonTowerWallScript.psc:28:1:none-form-usage
 Source/Scripts/dragonTowerWallScript.psc:30:1:none-form-usage
 Source/Scripts/dragonTowerWallScript.psc:30:32:trailing-whitespace
 Source/Scripts/dragonTowerWallScript.psc:31:1:none-form-usage
+Source/Scripts/dunAlftandFlameDoorController.psc:16:1:state-missing-empty-fallback
 Source/Scripts/dunAlftandFlameDoorController.psc:17:1:indentation
 Source/Scripts/dunAlftandFlameDoorController.psc:18:1:none-form-usage
 Source/Scripts/dunAlftandFlameDoorController.psc:19:1:indentation
@@ -104107,6 +104277,7 @@ Source/Scripts/dunAlftandFlameDoorController.psc:36:1:trailing-whitespace
 Source/Scripts/dunAlftandFlameDoorController.psc:38:1:trailing-whitespace
 Source/Scripts/dunAlftandFlameDoorController.psc:40:1:none-form-usage
 Source/Scripts/dunAlftandFlameDoorController.psc:47:1:multiple-auto-states
+Source/Scripts/dunAlftandFlameDoorController.psc:48:1:state-missing-empty-fallback
 Source/Scripts/dunAlftandFlameDoorController.psc:49:1:indentation
 Source/Scripts/dunAlftandFlameDoorController.psc:50:1:none-form-usage
 Source/Scripts/dunAlftandFlameDoorController.psc:51:1:indentation
@@ -104304,7 +104475,9 @@ Source/Scripts/dunAnsilvundSCRIPT.psc:25:1:trailing-whitespace
 Source/Scripts/dunAnsilvundSCRIPT.psc:27:1:indentation
 Source/Scripts/dunAnsilvundSCRIPT.psc:38:1:none-form-usage
 Source/Scripts/dunAnsilvundSCRIPT.psc:39:1:none-form-usage
+Source/Scripts/dunAnsilvundSCRIPT.psc:49:1:state-missing-empty-fallback
 Source/Scripts/dunAnsilvundSCRIPT.psc:49:1:undefined-event
+Source/Scripts/dunAnsilvundSCRIPT.psc:55:1:state-missing-empty-fallback
 Source/Scripts/dunAnsilvundSCRIPT.psc:55:1:undefined-event
 Source/Scripts/dunAnsilvundShrineSCRIPT.psc:2:1:semicolon
 Source/Scripts/dunAnsilvundShrineSCRIPT.psc:3:1:semicolon
@@ -104313,6 +104486,7 @@ Source/Scripts/dunAnsilvundShrineSCRIPT.psc:14:1:none-form-usage
 Source/Scripts/dunAnsilvundShrineSCRIPT.psc:16:1:none-form-usage
 Source/Scripts/dunAnsilvundShrineSCRIPT.psc:16:10:forbidden-functions
 Source/Scripts/dunAnsilvundShrineSCRIPT.psc:17:1:none-form-usage
+Source/Scripts/dunAnsilvundShrineSCRIPT.psc:26:1:state-missing-empty-fallback
 Source/Scripts/dunAnsilvundShrineSCRIPT.psc:26:1:undefined-event
 Source/Scripts/dunAnsilvundShrineSCRIPT.psc:27:1:none-form-usage
 Source/Scripts/dunAnsilvundShrineSCRIPT.psc:31:25:forbidden-functions
@@ -105044,6 +105218,7 @@ Source/Scripts/dunDruadachRedoubtMap.psc:28:1:none-form-usage
 Source/Scripts/dunDruadachRedoubtMap.psc:29:1:none-form-usage
 Source/Scripts/dunDruadachRedoubtMap.psc:30:1:none-form-usage
 Source/Scripts/dunDruadachRedoubtMap.psc:31:1:none-form-usage
+Source/Scripts/dunDruadachRedoubtMap.psc:38:1:state-missing-empty-fallback
 Source/Scripts/dunDruadachRedoubtMap.psc:38:1:undefined-event
 Source/Scripts/dunDustmansCairnDraugrDeath.psc:2:1:semicolon
 Source/Scripts/dunDustmansCairnDraugrDeath.psc:11:6:forbidden-functions
@@ -105055,6 +105230,7 @@ Source/Scripts/dunDustmansCairnEndController.psc:2:1:semicolon
 Source/Scripts/dunDustmansCairnEndController.psc:39:16:assignment-operator-spacing
 Source/Scripts/dunDustmansCairnEndController.psc:40:18:assignment-operator-spacing
 Source/Scripts/dunDustmansCairnEndController.psc:63:1:cyclomatic-complexity
+Source/Scripts/dunDustmansCairnEndController.psc:63:1:state-missing-empty-fallback
 Source/Scripts/dunDustmansCairnEndController.psc:63:1:undefined-event
 Source/Scripts/dunDustmansCairnEndController.psc:65:1:none-form-usage
 Source/Scripts/dunDustmansCairnEndController.psc:66:1:none-form-usage
@@ -105155,6 +105331,7 @@ Source/Scripts/dunDustmansCairnLever.psc:67:1:indentation
 Source/Scripts/dunDustmansCairnLever.psc:73:36:comma-spacing
 Source/Scripts/dunDustmansCairnLever.psc:75:4:empty-body
 Source/Scripts/dunDustmansCairnLever.psc:76:1:indentation
+Source/Scripts/dunDustmansCairnLever.psc:84:1:state-missing-empty-fallback
 Source/Scripts/dunDustmansCairnLever.psc:84:1:undefined-event
 Source/Scripts/dunDustmansCairnLever.psc:86:1:trailing-whitespace
 Source/Scripts/dunDustmansCairnLever.psc:87:6:exclamation-spacing
@@ -105187,6 +105364,7 @@ Source/Scripts/dunExploreCompleteSCRIPT.psc:9:1:none-form-usage
 Source/Scripts/dunFaldarsToothCagedWolfScript.psc:2:1:semicolon
 Source/Scripts/dunFaldarsToothCagedWolfScript.psc:3:1:semicolon
 Source/Scripts/dunFaldarsToothCagedWolfScript.psc:10:1:indentation
+Source/Scripts/dunFaldarsToothCagedWolfScript.psc:17:1:state-missing-empty-fallback
 Source/Scripts/dunFaldarsToothCagedWolfScript.psc:17:1:undefined-event
 Source/Scripts/dunFaldarsToothCagedWolfScript.psc:18:1:indentation
 Source/Scripts/dunFaldarsToothDogScript.psc:2:1:semicolon
@@ -105571,6 +105749,7 @@ Source/Scripts/dunForelhostGhostAmbushScript.psc:95:1:trailing-whitespace
 Source/Scripts/dunForelhostGhostAmbushScript.psc:100:1:trailing-whitespace
 Source/Scripts/dunForelhostGhostAmbushScript.psc:101:43:comma-spacing
 Source/Scripts/dunForelhostGhostAmbushScript.psc:106:1:trailing-whitespace
+Source/Scripts/dunForelhostGhostAmbushScript.psc:109:1:state-missing-empty-fallback
 Source/Scripts/dunForelhostGhostAmbushScript.psc:109:1:undefined-event
 Source/Scripts/dunForelhostGhostAmbushScript.psc:114:1:trailing-whitespace
 Source/Scripts/dunForelhostGhostAmbushScript.psc:118:1:trailing-whitespace
@@ -105998,6 +106177,7 @@ Source/Scripts/dunHalldirBossFormGhostScript.psc:16:1:trailing-whitespace
 Source/Scripts/dunHalldirGhostAmbushScript.psc:10:11:forbidden-functions
 Source/Scripts/dunHalldirGhostAmbushScript.psc:12:1:none-form-usage
 Source/Scripts/dunHalldirGhostAmbushScript.psc:15:1:trailing-whitespace
+Source/Scripts/dunHalldirGhostAmbushScript.psc:18:1:state-missing-empty-fallback
 Source/Scripts/dunHalldirGhostAmbushScript.psc:23:1:trailing-whitespace
 Source/Scripts/dunHalldirGhostAmbushScript.psc:27:1:trailing-whitespace
 Source/Scripts/dunHalldirGhostAmbushScript.psc:32:1:trailing-whitespace
@@ -106095,8 +106275,10 @@ Source/Scripts/dunHaltedStreamCampGhostDebris.psc:25:1:trailing-whitespace
 Source/Scripts/dunHaltedStreamCampGhostDebris.psc:31:1:indentation
 Source/Scripts/dunHaltedStreamCampGhostDebris.psc:39:1:indentation
 Source/Scripts/dunHaltedStreamCampGhostDebris.psc:40:1:none-form-usage
+Source/Scripts/dunHaltedStreamCampGhostDebris.psc:50:1:state-missing-empty-fallback
 Source/Scripts/dunHaltedStreamCampGhostDebris.psc:50:1:undefined-event
 Source/Scripts/dunHaltedStreamCampGhostDebris.psc:51:1:none-form-usage
+Source/Scripts/dunHaltedStreamCampGhostDebris.psc:75:1:state-missing-empty-fallback
 Source/Scripts/dunHaltedStreamCampGhostDebris.psc:75:1:undefined-event
 Source/Scripts/dunHaltedStreamCampGhostDebris.psc:81:1:none-form-usage
 Source/Scripts/dunHaltedStreamCampGhostDebris.psc:91:26:assignment-operator-spacing
@@ -106277,6 +106459,7 @@ Source/Scripts/dunHillgrundsTombBoss.psc:39:1:indentation
 Source/Scripts/dunHillgrundsTombBoss.psc:41:121:line-length
 Source/Scripts/dunHillgrundsTombBoss.psc:44:1:trailing-whitespace
 Source/Scripts/dunHillgrundsTombBoss.psc:46:1:indentation
+Source/Scripts/dunHillgrundsTombBoss.psc:53:1:state-missing-empty-fallback
 Source/Scripts/dunHillgrundsTombBoss.psc:53:1:undefined-event
 Source/Scripts/dunHillgrundsTombBoss.psc:54:6:exclamation-spacing
 Source/Scripts/dunHillgrundsTombBoss.psc:59:121:line-length
@@ -106285,6 +106468,7 @@ Source/Scripts/dunHillgrundsTombBoss.psc:62:49:exclamation-spacing
 Source/Scripts/dunHillgrundsTombBoss.psc:70:1:trailing-whitespace
 Source/Scripts/dunHillgrundsTombBoss.psc:72:1:indentation
 Source/Scripts/dunHillgrundsTombBoss.psc:73:6:exclamation-spacing
+Source/Scripts/dunHillgrundsTombBoss.psc:81:1:state-missing-empty-fallback
 Source/Scripts/dunHillgrundsTombBoss.psc:81:1:undefined-event
 Source/Scripts/dunHillgrundsTombBoss.psc:82:1:unchecked-cast
 Source/Scripts/dunHillgrundsTombBoss.psc:92:1:indentation
@@ -106312,6 +106496,7 @@ Source/Scripts/dunHillgrundsTombEndController.psc:2:1:semicolon
 Source/Scripts/dunHillgrundsTombEndController.psc:40:16:assignment-operator-spacing
 Source/Scripts/dunHillgrundsTombEndController.psc:41:18:assignment-operator-spacing
 Source/Scripts/dunHillgrundsTombEndController.psc:64:1:cyclomatic-complexity
+Source/Scripts/dunHillgrundsTombEndController.psc:64:1:state-missing-empty-fallback
 Source/Scripts/dunHillgrundsTombEndController.psc:64:1:undefined-event
 Source/Scripts/dunHillgrundsTombEndController.psc:69:1:unchecked-cast
 Source/Scripts/dunHillgrundsTombEndController.psc:70:1:unchecked-cast
@@ -107391,6 +107576,7 @@ Source/Scripts/dunLostEchoCaveBurnMushrooms.psc:43:1:none-form-usage
 Source/Scripts/dunLostEchoCaveBurnMushrooms.psc:45:1:none-form-usage
 Source/Scripts/dunLostValleyHagravenHitScript.psc:10:121:line-length
 Source/Scripts/dunLostValleyHagravenHitScript.psc:14:1:unchecked-cast
+Source/Scripts/dunMarkarthWizardBiPressurePlate.psc:14:1:state-missing-empty-fallback
 Source/Scripts/dunMarkarthWizardBiPressurePlate.psc:17:11:forbidden-functions
 Source/Scripts/dunMarkarthWizardBiPressurePlate.psc:19:1:indentation
 Source/Scripts/dunMarkarthWizardBiPressurePlate.psc:25:1:trailing-whitespace
@@ -107399,6 +107585,7 @@ Source/Scripts/dunMarkarthWizardBiPressurePlate.psc:33:1:none-form-usage
 Source/Scripts/dunMarkarthWizardBiPressurePlate.psc:36:1:trailing-whitespace
 Source/Scripts/dunMarkarthWizardBiPressurePlate.psc:38:26:forbidden-functions
 Source/Scripts/dunMarkarthWizardBiPressurePlate.psc:44:1:multiple-auto-states
+Source/Scripts/dunMarkarthWizardBiPressurePlate.psc:45:1:state-missing-empty-fallback
 Source/Scripts/dunMarkarthWizardBiPressurePlate.psc:48:11:forbidden-functions
 Source/Scripts/dunMarkarthWizardBiPressurePlate.psc:49:1:indentation
 Source/Scripts/dunMarkarthWizardBiPressurePlate.psc:56:1:trailing-whitespace
@@ -107553,9 +107740,11 @@ Source/Scripts/dunMarkarthWizardPlateSystemManager.psc:31:1:trailing-whitespace
 Source/Scripts/dunMarkarthWizardPlateSystemManager.psc:37:121:line-length
 Source/Scripts/dunMarkarthWizardPlateSystemManager.psc:42:1:indentation
 Source/Scripts/dunMarkarthWizardPlateSystemManager.psc:45:10:exclamation-spacing
+Source/Scripts/dunMarkarthWizardPlateSystemManager.psc:70:1:state-missing-empty-fallback
 Source/Scripts/dunMarkarthWizardPlateSystemManager.psc:70:1:undefined-event
 Source/Scripts/dunMarkarthWizardPlateSystemManager.psc:73:11:forbidden-functions
 Source/Scripts/dunMarkarthWizardPlateSystemManager.psc:75:1:indentation
+Source/Scripts/dunMarkarthWizardPlateSystemManager.psc:82:1:state-missing-empty-fallback
 Source/Scripts/dunMarkarthWizardPlateSystemManager.psc:82:1:undefined-event
 Source/Scripts/dunMarkarthWizardPlateSystemManager.psc:85:11:forbidden-functions
 Source/Scripts/dunMarkarthWizardPlateSystemManager.psc:86:1:indentation
@@ -107569,7 +107758,9 @@ Source/Scripts/dunMarkarthWizardPlateSystemPlate.psc:31:1:indentation
 Source/Scripts/dunMarkarthWizardPlateSystemPlate.psc:32:19:unresolved-script
 Source/Scripts/dunMarkarthWizardPlateSystemPlate.psc:37:1:indentation
 Source/Scripts/dunMarkarthWizardPlateSystemPlate.psc:38:19:unresolved-script
+Source/Scripts/dunMarkarthWizardPlateSystemPlate.psc:46:1:state-missing-empty-fallback
 Source/Scripts/dunMarkarthWizardPlateSystemPlate.psc:48:1:trailing-whitespace
+Source/Scripts/dunMarkarthWizardPlateSystemPlate.psc:59:1:state-missing-empty-fallback
 Source/Scripts/dunMarkarthWizardPlateSystemPlate.psc:61:1:trailing-whitespace
 Source/Scripts/dunMarkarthWizardReinforceManager.psc:27:1:indentation
 Source/Scripts/dunMarkarthWizardReinforceManager.psc:28:1:indentation
@@ -107639,6 +107830,7 @@ Source/Scripts/dunMiddenAtronachForgeSCRIPT.psc:41:1:undefined-event
 Source/Scripts/dunMiddenAtronachForgeSCRIPT.psc:47:1:indentation
 Source/Scripts/dunMiddenAtronachForgeSCRIPT.psc:47:46:trailing-whitespace
 Source/Scripts/dunMiddenAtronachForgeSCRIPT.psc:48:1:indentation
+Source/Scripts/dunMiddenAtronachForgeSCRIPT.psc:51:1:state-missing-empty-fallback
 Source/Scripts/dunMiddenAtronachForgeSCRIPT.psc:51:1:undefined-event
 Source/Scripts/dunMiddenAtronachForgeSCRIPT.psc:52:1:indentation
 Source/Scripts/dunMiddenAtronachForgeSCRIPT.psc:54:1:none-form-usage
@@ -107696,6 +107888,7 @@ Source/Scripts/dunMiddenAtronachForgeSCRIPT.psc:129:1:trailing-whitespace
 Source/Scripts/dunMiddenAtronachForgeSCRIPT.psc:131:1:trailing-whitespace
 Source/Scripts/dunMiddenAtronachForgeSCRIPT.psc:133:11:forbidden-functions
 Source/Scripts/dunMiddenAtronachForgeSCRIPT.psc:134:1:indentation
+Source/Scripts/dunMiddenAtronachForgeSCRIPT.psc:146:1:state-missing-empty-fallback
 Source/Scripts/dunMiddenAtronachForgeSCRIPT.psc:146:1:undefined-event
 Source/Scripts/dunMiddenAtronachForgeSCRIPT.psc:147:1:indentation
 Source/Scripts/dunMiddenAtronachForgeSCRIPT.psc:148:1:none-form-usage
@@ -109288,10 +109481,12 @@ Source/Scripts/dunSyncopeSanctuaryMistDisperse.psc:3:1:semicolon
 Source/Scripts/dunSyncopeSanctuaryMistDisperse.psc:10:25:forbidden-functions
 Source/Scripts/dunTolvaldsCaveSCRIPT.psc:1:54:trailing-whitespace
 Source/Scripts/dunTolvaldsCaveSCRIPT.psc:34:22:trailing-whitespace
+Source/Scripts/dunTolvaldsCaveSCRIPT.psc:35:1:state-missing-empty-fallback
 Source/Scripts/dunTolvaldsCaveSCRIPT.psc:35:1:undefined-event
 Source/Scripts/dunTolvaldsCaveSCRIPT.psc:36:1:none-form-usage
 Source/Scripts/dunTolvaldsCaveSCRIPT.psc:37:1:none-form-usage
 Source/Scripts/dunTolvaldsCaveSCRIPT.psc:39:1:trailing-whitespace
+Source/Scripts/dunTolvaldsCaveSCRIPT.psc:43:1:state-missing-empty-fallback
 Source/Scripts/dunTolvaldsCaveSCRIPT.psc:43:1:undefined-event
 Source/Scripts/dunTolvaldsCaveSCRIPT.psc:44:1:none-form-usage
 Source/Scripts/dunTolvaldsCaveTrap.psc:12:1:none-form-usage
@@ -109371,6 +109566,7 @@ Source/Scripts/dunUstenPuzTrigSCRIPT.psc:60:1:none-form-usage
 Source/Scripts/dunUstenPuzTrigSCRIPT.psc:61:1:none-form-usage
 Source/Scripts/dunUstenPuzTrigSCRIPT.psc:69:1:trailing-whitespace
 Source/Scripts/dunUstenPuzTrigSCRIPT.psc:70:1:indentation
+Source/Scripts/dunUstenPuzTrigSCRIPT.psc:70:1:state-missing-empty-fallback
 Source/Scripts/dunUstenPuzTrigSCRIPT.psc:70:1:undefined-event
 Source/Scripts/dunUstenPuzTrigSCRIPT.psc:71:1:indentation
 Source/Scripts/dunUstenPuzTrigSCRIPT.psc:71:1:none-form-usage
@@ -109668,6 +109864,7 @@ Source/Scripts/dunYngolGlow.psc:55:1:trailing-whitespace
 Source/Scripts/dunYngolGlow.psc:57:1:trailing-whitespace
 Source/Scripts/dunYngolGlow.psc:58:1:trailing-whitespace
 Source/Scripts/dunYngolGlow.psc:59:9:trailing-whitespace
+Source/Scripts/dunYngolGlow.psc:64:1:state-missing-empty-fallback
 Source/Scripts/dunYngolGlow.psc:64:1:undefined-event
 Source/Scripts/dunYngolGlow.psc:66:11:trailing-whitespace
 Source/Scripts/dunYngolGlow.psc:78:1:trailing-whitespace
@@ -110476,6 +110673,7 @@ Source/Scripts/masterAmbushScript.psc:69:1:trailing-whitespace
 Source/Scripts/masterAmbushScript.psc:78:1:trailing-whitespace
 Source/Scripts/masterAmbushScript.psc:79:43:comma-spacing
 Source/Scripts/masterAmbushScript.psc:85:1:trailing-whitespace
+Source/Scripts/masterAmbushScript.psc:88:1:state-missing-empty-fallback
 Source/Scripts/masterAmbushScript.psc:88:1:undefined-event
 Source/Scripts/masterAmbushScript.psc:91:6:forbidden-functions
 Source/Scripts/masterAmbushScript.psc:92:4:forbidden-functions
@@ -112365,10 +112563,12 @@ Source/Scripts/trapSoulGemController.psc:2:1:semicolon
 Source/Scripts/trapSoulGemController.psc:3:1:semicolon
 Source/Scripts/trapSoulGemController.psc:14:1:indentation
 Source/Scripts/trapSoulGemController.psc:15:1:indentation
+Source/Scripts/trapSoulGemController.psc:21:1:state-missing-empty-fallback
 Source/Scripts/trapSoulGemController.psc:21:1:undefined-event
 Source/Scripts/trapSoulGemController.psc:23:1:trailing-whitespace
 Source/Scripts/trapSoulGemController.psc:24:121:line-length
 Source/Scripts/trapSoulGemController.psc:29:1:trailing-whitespace
+Source/Scripts/trapSoulGemController.psc:36:1:state-missing-empty-fallback
 Source/Scripts/trapSoulGemController.psc:36:1:undefined-event
 Source/Scripts/trapSoulGemController.psc:37:1:unchecked-cast
 Source/Scripts/trapSoulGemController.psc:38:1:indentation
@@ -112384,6 +112584,7 @@ Source/Scripts/trapSoulGemController.psc:53:1:indentation
 Source/Scripts/trapSoulGemController.psc:56:1:trailing-whitespace
 Source/Scripts/trapSoulGemController.psc:59:1:unchecked-cast
 Source/Scripts/trapSoulGemController.psc:60:1:indentation
+Source/Scripts/trapSoulGemController.psc:67:1:state-missing-empty-fallback
 Source/Scripts/trapSoulGemController.psc:67:1:undefined-event
 Source/Scripts/trapSoulGemController.psc:69:13:forbidden-functions
 Source/Scripts/trapSoulGemController.psc:70:1:unchecked-cast

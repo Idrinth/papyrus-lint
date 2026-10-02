@@ -35,6 +35,38 @@ impl FunctionTable {
         CacheProbe::Hit(None)
     }
 
+    pub(in crate::function_table) fn has_empty_state_function_cached(
+        &self,
+        type_name: &str,
+        function_name: &str,
+    ) -> CacheProbe<Option<bool>> {
+        let function_key = function_name.to_ascii_lowercase();
+        let mut visited = Vec::new();
+        let mut current = Some(type_name.to_ascii_lowercase());
+
+        while let Some(name) = current {
+            if visited.contains(&name) {
+                return CacheProbe::Hit(None);
+            }
+            let script = match cached_script(self, &name) {
+                CacheProbe::Miss => return CacheProbe::Miss,
+                CacheProbe::Hit(None) => return CacheProbe::Hit(None),
+                CacheProbe::Hit(Some(script)) => script,
+            };
+            if script
+                .functions
+                .get(&function_key)
+                .is_some_and(|signature| signature.state.is_none())
+            {
+                return CacheProbe::Hit(Some(true));
+            }
+            current = parent_cache_key(script);
+            visited.push(name);
+        }
+
+        CacheProbe::Hit(Some(false))
+    }
+
     pub(in crate::function_table) fn has_event_cached(
         &self,
         type_name: &str,

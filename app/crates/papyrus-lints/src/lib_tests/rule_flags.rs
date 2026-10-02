@@ -283,6 +283,12 @@ fn each_rule_flag_gates_only_its_own_lint() {
                 config_with(|c| c.rules.state_function_signature = false),
             ),
             (
+                "ScriptName Example\n\nState Active\n    Function DoWork()\n    EndFunction\nEndState\n",
+                state_missing_empty_fallback::RULE,
+                Config::default(),
+                config_with(|c| c.rules.state_missing_empty_fallback = false),
+            ),
+            (
                 "ScriptName Example\n\nFunction Test()\n    GoToState(\"Missing\")\nEndFunction\n",
                 goto_state::RULE,
                 Config::default(),

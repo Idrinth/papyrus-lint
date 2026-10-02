@@ -13,12 +13,11 @@
 //! function instead of the behavior swap the author presumably intended.
 //!
 //! This only compares against an empty-state declaration already present
-//! on the script being linted. Per the quote above, a state function may
-//! instead match one declared on a *parent* script, which this lint has no
-//! way to resolve (unlike e.g. [`crate::function_override`], there's no
-//! `ExternalSignatures` lookup for "the parent's empty-state declaration of
-//! this exact name"), so a state function with no local empty-state
-//! counterpart is left unflagged rather than guessed at.
+//! on the script being linted. A parent empty-state declaration is a valid
+//! fallback, but signature comparison stays local. A state function with
+//! no empty-state declaration at all is [`crate::state_missing_empty_fallback`]'s
+//! job, including the parent lookup via
+//! [`crate::ExternalSignatures::has_empty_state_function`].
 
 use std::collections::HashMap;
 
@@ -50,16 +49,16 @@ impl AstLint for Collect {
     fn visit_script(&mut self, script: &Script, _ctx: &mut VisitCtx<'_>) {
         let mut empty = HashMap::new();
         for function in &script.functions {
-            empty.entry(function.name.to_ascii_lowercase()).or_insert_with(|| {
-                EmptySignature {
+            empty
+                .entry(function.name.to_ascii_lowercase())
+                .or_insert_with(|| EmptySignature {
                     params: function
                         .params
                         .iter()
                         .map(|param| param.type_name.clone())
                         .collect(),
                     return_type: function.return_type.clone(),
-                }
-            });
+                });
         }
         self.empty = empty;
     }
