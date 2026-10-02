@@ -266,6 +266,54 @@ fn invalid_source_returns_no_diagnostics() {
 }
 
 #[test]
+fn direct_check_requires_both_the_ast_and_tokens() {
+    let source = function("    If ready == true\n    EndIf\n");
+    let ast = papyrus_parser::parse(&source).expect("fixture parses");
+    let tokens = papyrus_parser::tokenize(&source).expect("fixture tokenizes");
+    let config = crate::config::Config::default();
+
+    assert!(super::check(
+        &source,
+        Some(&ast),
+        None,
+        &config,
+        &mut crate::external_signatures::NoExternalSignatures,
+    )
+    .is_empty());
+    assert!(super::check(
+        &source,
+        None,
+        Some(&tokens),
+        &config,
+        &mut crate::external_signatures::NoExternalSignatures,
+    )
+    .is_empty());
+}
+
+#[test]
+fn direct_check_fails_closed_when_ast_and_tokens_do_not_match() {
+    let source = function("    If ready == true\n    EndIf\n");
+    let ast = papyrus_parser::parse(&source).expect("fixture parses");
+    let no_comparison = papyrus_parser::tokenize(&function("    If ready\n    EndIf\n"))
+        .expect("fixture tokenizes");
+    let different_comparison =
+        papyrus_parser::tokenize(&function("    If ready != true\n    EndIf\n"))
+            .expect("fixture tokenizes");
+    let config = crate::config::Config::default();
+
+    for tokens in [&no_comparison, &different_comparison] {
+        assert!(super::check(
+            &source,
+            Some(&ast),
+            Some(tokens),
+            &config,
+            &mut crate::external_signatures::NoExternalSignatures,
+        )
+        .is_empty());
+    }
+}
+
+#[test]
 fn checks_declaration_initializers_and_state_functions() {
     let source = "\
 ScriptName Example
@@ -360,6 +408,17 @@ fn operand_rendering_preserves_expression_precedence() {
     assert_eq!(render_operand("! ready", true), "ready");
     assert_eq!(render_operand("((ready))", false), "ready");
     assert_eq!(render_operand("value as Bool", true), "! (value as Bool)");
+    assert_eq!(render_operand("ready + other", true), "! (ready + other)");
+    assert_eq!(render_operand("ready is Bool", true), "! (ready is Bool)");
+    assert_eq!(render_operand("\"ready && other\"", true), "! \"ready && other\"");
+    assert_eq!(render_operand("!= ready", true), "! (!= ready)");
+}
+
+#[test]
+fn malformed_parentheses_are_not_stripped() {
+    assert_eq!(strip_wrapping_parens("(ready) + other"), None);
+    assert_eq!(strip_wrapping_parens("((ready)"), None);
+    assert_eq!(strip_one_not("!= ready"), None);
 }
 
 #[test]
@@ -418,4 +477,5 @@ fn empty_and_unbalanced_token_ranges_are_not_literals() {
     assert!(!outer_parens_wrap(&tokens, 0, 2));
     assert_eq!(token_slice("(true) false", &[0], &tokens, &(1..1)), "");
     assert_eq!(token_slice("(true) false", &[0], &tokens, &(99..100)), "");
+    assert_eq!(token_slice("(true) false", &[0], &tokens, &(0..99)), "");
 }
