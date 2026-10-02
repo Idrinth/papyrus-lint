@@ -167,11 +167,8 @@ generated from the per-setting JSON files under
 [`shared/configuration/project-settings/`](shared/configuration/project-settings)
 and [`shared/configuration/lint-settings/`](shared/configuration/lint-settings),
 plus [`shared/rules/`](shared/rules/). `PapyrusLinterCLI init` writes that
-annotated file. The generated copy used by builds and docs is git-ignored at
-`shared/configuration/papyrus-lint.default.yaml`; regenerate it with
-`python3 .github/scripts/generate_default_config.py` (after
-`python3 .github/scripts/build_rules_json.py` when `shared/rules.json` is
-missing). Built-in and user presets (`strict`, `standard`, `careful`, plus
+annotated file from the same sources; a build does not need a generated
+copy on disk. Built-in and user presets (`strict`, `standard`, `careful`, plus
 files next to the binary) are available from `init --preset` and from the
 desktop app's Settings/Presets tabs.
 

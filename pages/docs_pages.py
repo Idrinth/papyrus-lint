@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import html
 import json
+import sys
 from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlsplit, urlunsplit
@@ -241,6 +242,24 @@ def raw_github_link(doc: dict) -> str:
     )
 
 
+def generated_doc_source(filename: str) -> str | None:
+    """Default YAML and the config schema are rendered from the JSON sources.
+    They are not build inputs and are not checked in."""
+    if filename not in {"papyrus-lint.default.yaml", "papyrus-lint.schema.json"}:
+        return None
+    scripts = ROOT / ".github" / "scripts"
+    if str(scripts) not in sys.path:
+        sys.path.insert(0, str(scripts))
+    from ci_lib.config_schema import render_schema
+    from ci_lib.default_config import load_lint_settings, load_rules, render_default_yaml
+
+    settings = load_lint_settings(ROOT)
+    rules = load_rules(ROOT)
+    if filename == "papyrus-lint.default.yaml":
+        return render_default_yaml(settings, rules)
+    return json.dumps(render_schema(settings, rules), indent=2) + "\n"
+
+
 def load_doc_source(doc: dict) -> str:
     """Load a document from this checkout or its configured remote source.
 
@@ -255,6 +274,8 @@ def load_doc_source(doc: dict) -> str:
                 return response.read().decode("utf-8")
         except (HTTPError, URLError, TimeoutError, UnicodeDecodeError) as error:
             raise SystemExit(f"Could not download documentation from {content_url}: {error}") from error
+    if generated := generated_doc_source(doc["filename"]):
+        return generated
     return (doc.get("source_dir", DOCS_DIR) / doc["filename"]).read_text(encoding="utf-8")
 
 

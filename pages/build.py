@@ -46,7 +46,7 @@ Also renders action.html (via pages/action.template.html) and every doc's
 own subpage (via pages/docs.template.html) - see pages/docs_pages.py.
 Also renders rules.html (via pages/rules.template.html) - a searchable/
 filterable reference of every lint rule generated straight from
-shared/rules.json's own metadata (id, severity, tags, auto-fix support, full
+shared/rules/<id>.json metadata (id, severity, tags, auto-fix support, full
 documented behavior) - see pages/rules_page.py; the homepage itself only
 links to it rather than duplicating any of that content.
 Also renders coverage.html (via pages/coverage.template.html), a per-module,

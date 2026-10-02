@@ -60,7 +60,55 @@ impl fmt::Display for ValidationError {
 }
 
 pub fn load(context: &BuildContext) -> Vec<RuleMetadata> {
-    context.load_json("shared/rules.json", "rule metadata")
+    let relative_dir = "shared/rules";
+    let dir = context.input(relative_dir);
+    println!("cargo:rerun-if-changed={}", dir.display());
+    let mut paths: Vec<_> = std::fs::read_dir(&dir)
+        .unwrap_or_else(|error| {
+            panic!("failed to read rule metadata in {}: {error}", dir.display())
+        })
+        .map(|entry| {
+            entry
+                .unwrap_or_else(|error| {
+                    panic!("failed to read rule metadata in {}: {error}", dir.display())
+                })
+                .path()
+        })
+        .filter(|path| path.extension().and_then(|ext| ext.to_str()) == Some("json"))
+        .collect();
+    paths.sort();
+    if paths.is_empty() {
+        panic!("no rule files found in {}", dir.display());
+    }
+    let mut rules = Vec::with_capacity(paths.len());
+    for path in paths {
+        println!("cargo:rerun-if-changed={}", path.display());
+        let source = std::fs::read_to_string(&path).unwrap_or_else(|error| {
+            panic!(
+                "failed to read rule metadata at {}: {error}",
+                path.display()
+            )
+        });
+        let rule: RuleMetadata = serde_json::from_str(&source).unwrap_or_else(|error| {
+            panic!(
+                "failed to parse rule metadata at {}: {error}",
+                path.display()
+            )
+        });
+        let stem = path
+            .file_stem()
+            .and_then(|stem| stem.to_str())
+            .unwrap_or("");
+        if rule.id != stem {
+            panic!(
+                "{}: `id` is {:?}, expected {stem:?} to match the file name",
+                path.display(),
+                rule.id
+            );
+        }
+        rules.push(rule);
+    }
+    rules
 }
 
 #[derive(Debug, Deserialize)]
@@ -98,30 +146,27 @@ pub fn validate(
     let mut seen = HashSet::new();
     for rule in rules {
         if !seen.insert(rule.id.as_str()) {
-            return fail(format!(
-                "shared/rules.json lists `{}` more than once",
-                rule.id
-            ));
+            return fail(format!("shared/rules lists `{}` more than once", rule.id));
         }
         if rule.tags.is_empty() {
-            return fail(format!("shared/rules.json: {} has no tags", rule.id));
+            return fail(format!("shared/rules: {} has no tags", rule.id));
         }
         if !matches!(rule.importance.as_str(), "low" | "medium" | "high") {
             return fail(format!(
-                "shared/rules.json: unknown importance `{}` for {}",
+                "shared/rules: unknown importance `{}` for {}",
                 rule.importance, rule.id
             ));
         }
         if !matches!(rule.visitor.as_str(), "ast" | "tokens" | "none") {
             return fail(format!(
-                "shared/rules.json: unknown visitor `{}` for {} (expected ast, tokens, or none)",
+                "shared/rules: unknown visitor `{}` for {} (expected ast, tokens, or none)",
                 rule.visitor, rule.id
             ));
         }
         for game in &rule.games {
             if papyrus_lint_globals::Game::from_str(game).is_err() {
                 return fail(format!(
-                    "shared/rules.json: unknown game `{game}` for {} (expected skyrim, legacy, fallout4, or starfield)",
+                    "shared/rules: unknown game `{game}` for {} (expected skyrim, legacy, fallout4, or starfield)",
                     rule.id
                 ));
             }
@@ -130,7 +175,7 @@ pub fn validate(
         for game in &rule.games {
             if !seen_games.insert(game.as_str()) {
                 return fail(format!(
-                    "shared/rules.json: duplicate game `{game}` for {}",
+                    "shared/rules: duplicate game `{game}` for {}",
                     rule.id
                 ));
             }
@@ -170,7 +215,7 @@ pub fn validate(
         }
         let Some(rule) = by_id.get(id.as_str()) else {
             return fail(format!(
-                "shared/rule-order.yaml lists `{id}` under `repair` but shared/rules.json has no matching id"
+                "shared/rule-order.yaml lists `{id}` under `repair` but shared/rules has no matching id"
             ));
         };
         if !rule.fixable {
@@ -188,7 +233,7 @@ pub fn validate(
         }
         let Some(rule) = by_id.get(id.as_str()) else {
             return fail(format!(
-                "shared/rule-order.yaml lists `{id}` under `external_repair` but shared/rules.json has no matching id"
+                "shared/rule-order.yaml lists `{id}` under `external_repair` but shared/rules has no matching id"
             ));
         };
         if !rule.fixable {
@@ -214,7 +259,7 @@ pub fn order_by_config<'a>(
     let mut ordered = Vec::with_capacity(rules.len());
     for key in field_order {
         let Some(rule) = by_key.remove(key) else {
-            return fail(format!("shared/configuration/papyrus-lint.default.yaml lists rules.{key} but shared/rules.json has no matching id"));
+            return fail(format!("shared/configuration/papyrus-lint.default.yaml lists rules.{key} but shared/rules has no matching id"));
         };
         ordered.push(rule);
     }

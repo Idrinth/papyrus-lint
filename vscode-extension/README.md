@@ -29,7 +29,7 @@ are not executing something untrusted.
   pairing GitHub Actions uses for workflow files) with the published JSON
   Schema at
   <https://papyrus-lint.idrinth.de/schema/papyrus-lint.schema.json>
-  (generated from lint-settings + rules; not checked into git).
+  (rendered from lint-settings + rules while the site builds; not checked into git).
   The Red Hat YAML extension picks that `yamlValidation` contribution up
   for hover, completion, and diagnostics. The extension also activates
   when a YAML file is opened or when a workspace contains those filenames,

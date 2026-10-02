@@ -129,7 +129,16 @@ class DefaultConfigTests(unittest.TestCase):
                 ]
             )
 
-    def test_load_rules_prefers_combined_file(self) -> None:
+    def test_load_rules_reads_split_files_ahead_of_a_stale_combined_file(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            rules_dir = root / "shared" / "rules"
+            rules_dir.mkdir(parents=True)
+            rules_dir.joinpath("from-dir.json").write_text(json.dumps({"id": "from-dir"}), encoding="utf-8")
+            (root / "shared/rules.json").write_text(json.dumps([{"id": "combined"}]), encoding="utf-8")
+            self.assertEqual([{"id": "from-dir"}], load_rules(root))
+
+    def test_load_rules_reads_a_combined_file_when_there_is_no_rules_directory(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             (root / "shared").mkdir()
@@ -143,7 +152,7 @@ class DefaultConfigTests(unittest.TestCase):
             rules_dir = root / "shared" / "rules"
             rules_dir.mkdir(parents=True)
             rules_dir.joinpath("file-name.json").write_text(json.dumps({"id": "different-id"}), encoding="utf-8")
-            with self.assertRaisesRegex(ValueError, "id 'different-id' != 'file-name'"):
+            with self.assertRaisesRegex(ValueError, "expected 'file-name'"):
                 load_rules(root)
 
     def test_load_lint_settings_rejects_a_non_mapping_document(self) -> None:

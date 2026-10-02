@@ -8,7 +8,6 @@ name: CI / Base scripts snapshot
 #     --cli path/to/PapyrusLinterCLI --all --update
 # or run the manual Generate fixtures workflow
 # (.github/workflows/generate-fixtures.yml) from the Actions tab.
-# shared/rules.json is git-ignored, so it must be generated before building.
 
 on:
   push:
@@ -29,13 +28,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-
-      - name: Build rules.json from shared/rules/
-        run: python3 .github/scripts/build_rules_json.py
-
-      - name: Generate default configuration
-        shell: bash
-        run: python3 .github/scripts/generate_default_config.py
 
       - uses: dtolnay/rust-toolchain@stable
 

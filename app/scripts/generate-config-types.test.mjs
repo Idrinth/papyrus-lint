@@ -1,9 +1,9 @@
-import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { assembleRules, configKeyFor, loadYamlFile, renderConfigTypes } from "./generate-config-types.mjs";
+import { assembleLintSettings, assembleRules, configKeyFor, renderConfigTypes, renderDefaultYaml } from "./generate-config-types.mjs";
 
 const SAMPLE_SETTINGS = [
   {
@@ -221,21 +221,17 @@ describe("generate-config-types", () => {
     ).toThrow(/missing rules: unused_property/);
   });
 
-  it("renders the repository lint settings against the default YAML and rules", () => {
+  it("renders the repository lint settings from the source JSON", () => {
     const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-    const settings = loadYamlFile(
-      path.join(repoRoot, "shared/configuration/lint-settings.generated.yaml"),
-    ).settings;
-    const rendered = renderConfigTypes(
-      assembleRules(path.join(repoRoot, "shared/rules")),
-      readFileSync(path.join(repoRoot, "shared/configuration/papyrus-lint.default.yaml"), "utf8"),
-      settings,
-    );
+    const document = assembleLintSettings(path.join(repoRoot, "shared/configuration"));
+    const rules = assembleRules(path.join(repoRoot, "shared/rules"));
+    const rendered = renderConfigTypes(rules, renderDefaultYaml(document, rules), document.settings);
     expect(rendered).toContain('"id":"semicolon-style"');
     expect(rendered).toContain("assume_auto_properties_filled: boolean;");
     expect(rendered).toContain(
       'export const SELECTABLE_GAMES = ["skyrim","legacy","fallout4","starfield"] as const;',
     );
+    expect(renderDefaultYaml(document, rules).startsWith("# Target game.")).toBe(true);
   });
 
   it("assembles rule files and rejects an id/filename mismatch", () => {

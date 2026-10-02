@@ -1,8 +1,8 @@
 #!/usr/bin/env node
-// Generates app/src/config-types.ts from shared/rules/*.json,
-// shared/configuration/papyrus-lint.default.yaml, and shared/configuration/lint-settings.generated.yaml.
-// Mirrors papyrus-lints/build.rs writing Rules / default_rules() and Config
-// into $OUT_DIR.
+// Generates app/src/config-types.ts from shared/rules/*.json and
+// shared/configuration/{project-settings,lint-settings}/*.json, ordered by
+// shared/configuration/lint-settings.yaml. Mirrors papyrus-lints/build.rs
+// writing Rules / default_rules() and Config into $OUT_DIR.
 
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -37,9 +37,8 @@ export const RULE_ID_TO_CONFIG_KEY = {
 };
 
 const HEADER = [
-  "// Generated from `shared/rules/*.json`,",
-  "// `shared/configuration/papyrus-lint.default.yaml`, and",
-  "// `shared/configuration/lint-settings.generated.yaml` by",
+  "// Generated from `shared/rules/*.json` and",
+  "// `shared/configuration/lint-settings/*.json` by",
   "// `app/scripts/generate-config-types.mjs`. Do not edit by hand.",
   "",
 ].join("\n");
@@ -90,6 +89,130 @@ export function assembleRules(rulesDir) {
     }
     return rule;
   });
+}
+
+export function commentBlock(text) {
+  return String(text)
+    .split("\n")
+    .map((line) => (line ? `# ${line}` : "#"))
+    .join("\n");
+}
+
+export function renderDefaultYaml(settings, rules) {
+  const byKey = new Map();
+  for (const rule of rules) {
+    const key = configKeyFor(rule.id);
+    if (byKey.has(key)) {
+      throw new Error(`duplicate rule config key: ${key}`);
+    }
+    byKey.set(key, rule);
+  }
+  const lines = [];
+  const lintByKey = new Map(settings.settings.map((setting) => [setting.key, setting]));
+  const game = lintByKey.get("game");
+  if (!game) {
+    throw new Error("lint settings are missing game");
+  }
+  lines.push(commentBlock(game.yaml.comment));
+  lines.push(`game: ${game.yaml.default}`);
+  for (const setting of settings.project) {
+    lines.push(commentBlock(setting.yaml.comment));
+    lines.push(`${setting.key}: ${setting.yaml.default}`);
+  }
+  for (const setting of settings.settings) {
+    if (setting.key === "game") {
+      continue;
+    }
+    lines.push(commentBlock(setting.yaml.comment));
+    lines.push(`${setting.key}: ${setting.yaml.default}`);
+  }
+  lines.push(commentBlock(settings.rules_comment));
+  lines.push("rules:");
+  for (const key of [...byKey.keys()].sort()) {
+    const rule = byKey.get(key);
+    const enabled = rule.enabled_by_default !== false;
+    lines.push(`  ${key}: ${enabled ? "true" : "false"} # ${rule.description}`);
+  }
+  lines.push("");
+  return lines.join("\n");
+}
+
+export function parseSettingsMeta(source) {
+  let rulesComment = null;
+  let section = null;
+  const project = [];
+  const settings = [];
+  for (const line of source.split("\n")) {
+    if (!line.trim() || line.trim().startsWith("#")) {
+      continue;
+    }
+    if (!line.startsWith(" ")) {
+      const sep = line.indexOf(":");
+      if (sep < 0) {
+        throw new Error(`lint-settings.yaml line is not key: value: ${JSON.stringify(line)}`);
+      }
+      const key = line.slice(0, sep).trim();
+      const value = line.slice(sep + 1).trim();
+      if (key === "rules_comment") {
+        rulesComment = value;
+        section = null;
+      } else if (key === "project" || key === "settings") {
+        section = key;
+      } else {
+        throw new Error(`unexpected lint-settings.yaml key ${key}`);
+      }
+      continue;
+    }
+    const item = line.trim().replace(/^- /, "");
+    if (!item || item.startsWith("-")) {
+      throw new Error(`could not parse lint-settings.yaml list item ${JSON.stringify(line)}`);
+    }
+    if (section === "project") {
+      project.push(item);
+    } else if (section === "settings") {
+      settings.push(item);
+    } else {
+      throw new Error(`list item outside a section: ${JSON.stringify(line)}`);
+    }
+  }
+  if (!rulesComment || project.length === 0 || settings.length === 0) {
+    throw new Error("lint-settings.yaml is missing rules_comment, project, or settings");
+  }
+  return { rules_comment: rulesComment, project, settings };
+}
+
+export function assembleLintSettings(configurationDir) {
+  const meta = parseSettingsMeta(fs.readFileSync(path.join(configurationDir, "lint-settings.yaml"), "utf8"));
+  const loadListed = (subdir, keys, field) => {
+    const dir = path.join(configurationDir, subdir);
+    const found = new Set(
+      fs.readdirSync(dir).filter((name) => name.endsWith(".json")).map((name) => name.slice(0, -".json".length)),
+    );
+    const listed = new Set(keys);
+    const extras = [...found].filter((name) => !listed.has(name)).sort();
+    if (extras.length > 0) {
+      throw new Error(`${subdir} has setting files not listed in lint-settings.yaml ${field}: ${extras.join(", ")}`);
+    }
+    if (listed.size !== keys.length) {
+      throw new Error(`lint-settings.yaml ${field} lists a key more than once`);
+    }
+    return keys.map((key) => {
+      if (!found.has(key)) {
+        throw new Error(`lint-settings.yaml ${field} lists ${key} but ${subdir}/${key}.json does not exist`);
+      }
+      const filePath = path.join(dir, `${key}.json`);
+      const setting = JSON.parse(fs.readFileSync(filePath, "utf8"));
+      if (setting.key !== key) {
+        throw new Error(`${filePath}: key is ${JSON.stringify(setting.key)}, expected ${JSON.stringify(key)}`);
+      }
+      return setting;
+    });
+  };
+  return {
+    project: loadListed("project-settings", meta.project, "project"),
+    settings: loadListed("lint-settings", meta.settings, "settings"),
+    rules_comment: meta.rules_comment,
+  };
 }
 
 export function parseDefaultYaml(source) {
@@ -351,7 +474,7 @@ export function renderConfigTypes(rules, defaultYaml, settings) {
   lines.push("}");
   lines.push("");
   lines.push("export const LINT_SETTINGS: readonly LintSetting[] = [");
-  // Declaration order in lint-settings.yaml (via the generated aggregate) is the UI order.
+  // Declaration order in lint-settings.yaml is the UI order.
   for (const setting of settings) {
     lines.push(`  ${JSON.stringify(lintSettingForTs(setting))},`);
   }
@@ -368,34 +491,29 @@ export function renderConfigTypes(rules, defaultYaml, settings) {
 
 export function writeConfigTypes(options) {
   const rules = assembleRules(options.rulesDir);
-  const defaultYaml = fs.readFileSync(options.defaultYamlPath, "utf8");
-  const settingsFile = loadYamlFile(options.settingsPath);
-  const rendered = renderConfigTypes(rules, defaultYaml, settingsFile.settings);
+  let defaultYaml = options.defaultYaml;
+  let settings = options.settings;
+  if (options.configurationDir) {
+    const document = assembleLintSettings(options.configurationDir);
+    defaultYaml = renderDefaultYaml(document, rules);
+    settings = document.settings;
+  }
+  if (defaultYaml == null || settings == null) {
+    throw new Error("writeConfigTypes needs configurationDir, or defaultYaml and settings");
+  }
+  const rendered = renderConfigTypes(rules, defaultYaml, settings);
   fs.mkdirSync(path.dirname(options.outPath), { recursive: true });
   fs.writeFileSync(options.outPath, rendered, "utf8");
   return rules.length;
-}
-
-function ensureDefaultYaml(repoRoot) {
-  const script = path.join(repoRoot, ".github", "scripts", "generate_default_config.py");
-  const result = spawnSync("python3", [script, "--repo-root", repoRoot], { stdio: "inherit" });
-  if (result.error) {
-    throw new Error(`could not run ${script}: ${result.error.message}`);
-  }
-  if (result.status !== 0) {
-    throw new Error(`failed to generate shared/configuration/papyrus-lint.default.yaml (exit ${result.status})`);
-  }
 }
 
 const isMain = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 if (isMain) {
   const appDir = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
   const repoRoot = path.resolve(appDir, "..");
-  ensureDefaultYaml(repoRoot);
   const count = writeConfigTypes({
     rulesDir: path.join(repoRoot, "shared", "rules"),
-    defaultYamlPath: path.join(repoRoot, "shared", "configuration", "papyrus-lint.default.yaml"),
-    settingsPath: path.join(repoRoot, "shared", "configuration", "lint-settings.generated.yaml"),
+    configurationDir: path.join(repoRoot, "shared", "configuration"),
     outPath: path.join(appDir, "src", "config-types.ts"),
   });
   console.log(`Wrote ${count} rule flags to app/src/config-types.ts.`);

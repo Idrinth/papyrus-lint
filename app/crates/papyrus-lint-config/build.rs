@@ -1,45 +1,55 @@
 //! Generates the saved-config comment injector and each built-in preset's
-//! full, annotated YAML at build time from
-//! `shared/configuration/papyrus-lint.default.yaml`. This avoids separately maintaining
-//! the comments in Rust and avoids checking in three near-complete preset copies.
-//! For each preset this layers two things onto the default config:
+//! full, annotated YAML at build time from the per-setting JSON files and
+//! `shared/rules/*.json`. This avoids separately maintaining the comments in
+//! Rust, avoids checking in three near-complete preset copies, and does not
+//! require a generated `papyrus-lint.default.yaml` on disk before `cargo build`.
+//! For each preset this layers two things onto the rendered default config:
 //!
 //! - the small `shared/configuration/presets/papyrus-lint.<name>.yaml` overwrite file (a
 //!   header comment plus any non-rule settings the preset changes, e.g.
 //!   `careful`'s relaxed cyclomatic complexity thresholds);
 //! - for `standard`/`careful`, every `rules:` toggle that's `true` by
-//!   default and tagged `"low"` importance in `shared/rules.json` is turned
-//!   off, except the handful `shared/rules.json` marks `kept_in_standard`
+//!   default and tagged `"low"` importance in `shared/rules/<id>.json` is turned
+//!   off, except the handful marked `kept_in_standard`
 //!   (the cheap, auto-fixable formatting rules `standard` keeps on) — see
 //!   [`preset_rule_value`].
 //!
 //! The merged output for each preset is written to
 //! `$OUT_DIR/papyrus-lint.<name>.yaml`, which `presets.rs` embeds via
 //! `include_str!` exactly as it used to embed the checked-in file directly.
+//! The rendered default itself is written to `$OUT_DIR/papyrus-lint.default.yaml`
+//! so tests can compare `init` output against it.
 
-use std::collections::HashMap;
+use std::collections::{BTreeSet, HashMap};
 use std::env;
 use std::fmt::Write;
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 /// Built-in preset names, matching `papyrus_lint_config::presets::PRESET_NAMES`
 /// (duplicated here since a build script can't depend on its own crate).
 const PRESET_NAMES: [&str; 3] = ["strict", "standard", "careful"];
 
-/// The subset of a `shared/rules.json` entry this build script needs to
-/// decide a rule's value under `standard`/`careful` (see
-/// [`preset_rule_value`]). Mirrors `papyrus-lints/build.rs`'s own
-/// `RawRuleTag`, but only the fields used here.
+/// The subset of a `shared/rules/<id>.json` entry this build script needs.
+/// Mirrors `papyrus-lints/build.rs`'s own rule metadata, but only the fields
+/// used to render the default YAML and to decide a rule's value under
+/// `standard`/`careful` (see [`preset_rule_value`]).
 #[derive(serde::Deserialize)]
 struct RuleEntry {
     id: String,
+    description: String,
     importance: String,
+    #[serde(default = "enabled_by_default")]
+    enabled_by_default: bool,
     #[serde(default)]
     kept_in_standard: bool,
 }
 
-/// `shared/rules.json` `id`s (hyphenated) that don't turn into their
+fn enabled_by_default() -> bool {
+    true
+}
+
+/// `shared/rules/<id>.json` `id`s (hyphenated) that don't turn into their
 /// `Config.rules` toggle name (see `papyrus-lints/src/config.rs`) by simply
 /// replacing `-` with `_` — everything else does.
 const RULE_ID_TO_CONFIG_KEY: [(&str, &str); 2] = [
@@ -47,9 +57,8 @@ const RULE_ID_TO_CONFIG_KEY: [(&str, &str); 2] = [
     ("too-many-named-states", "too_many_states"),
 ];
 
-/// `id`'s `Config.rules` toggle name (as it appears in
-/// `shared/configuration/papyrus-lint.default.yaml`'s `rules:` section) — the key
-/// [`preset_rule_value`] looks up in `rule_meta`.
+/// `id`'s `Config.rules` toggle name (as it appears in the rendered default
+/// YAML's `rules:` section) — the key [`preset_rule_value`] looks up in `rule_meta`.
 fn config_key_for(id: &str) -> String {
     RULE_ID_TO_CONFIG_KEY
         .iter()
@@ -64,29 +73,37 @@ fn main() {
     let shared_dir = repo_root.join("shared");
     let configuration_dir = shared_dir.join("configuration");
 
-    let default_path = configuration_dir.join("papyrus-lint.default.yaml");
-    println!("cargo:rerun-if-changed={}", default_path.display());
-    let default_yaml = fs::read_to_string(&default_path)
-        .unwrap_or_else(|err| panic!("failed to read {}: {err}", default_path.display()));
+    let meta_path = configuration_dir.join("lint-settings.yaml");
+    let meta = load_settings_meta(&meta_path);
+    let project = load_setting_group(
+        &configuration_dir.join("project-settings"),
+        &meta.project,
+        "project",
+    );
+    let settings = load_setting_group(
+        &configuration_dir.join("lint-settings"),
+        &meta.settings,
+        "settings",
+    );
+    let rules = load_rules(&shared_dir.join("rules"));
+    let default_yaml = render_default_yaml(&project, &settings, &meta.rules_comment, &rules);
 
     let out_dir = PathBuf::from(env::var("OUT_DIR").expect("OUT_DIR"));
+    fs::write(out_dir.join("papyrus-lint.default.yaml"), &default_yaml)
+        .unwrap_or_else(|err| panic!("failed to write rendered default config: {err}"));
     fs::write(
         out_dir.join("comments.rs"),
         generate_comments(&default_yaml),
     )
     .unwrap_or_else(|err| panic!("failed to write generated comments module: {err}"));
 
-    let rules_path = shared_dir.join("rules.json");
-    println!("cargo:rerun-if-changed={}", rules_path.display());
-    let rules_json = fs::read_to_string(&rules_path)
-        .unwrap_or_else(|err| panic!("failed to read {}: {err}", rules_path.display()));
-    let rule_entries: Vec<RuleEntry> = serde_json::from_str(&rules_json)
-        .unwrap_or_else(|err| panic!("failed to parse {}: {err}", rules_path.display()));
-    let rule_meta: HashMap<String, (String, bool)> = rule_entries
-        .into_iter()
+    let rule_meta: HashMap<String, (String, bool)> = rules
+        .iter()
         .map(|rule| {
-            let config_key = config_key_for(&rule.id);
-            (config_key, (rule.importance, rule.kept_in_standard))
+            (
+                config_key_for(&rule.id),
+                (rule.importance.clone(), rule.kept_in_standard),
+            )
         })
         .collect();
 
@@ -100,6 +117,200 @@ fn main() {
         fs::write(out_dir.join(format!("papyrus-lint.{name}.yaml")), merged)
             .unwrap_or_else(|err| panic!("failed to write generated {name} preset: {err}"));
     }
+}
+
+#[derive(serde::Deserialize)]
+struct SettingsMeta {
+    rules_comment: String,
+    project: Vec<String>,
+    settings: Vec<String>,
+}
+
+#[derive(serde::Deserialize)]
+struct SettingFile {
+    key: String,
+    yaml: SettingYaml,
+}
+
+#[derive(serde::Deserialize)]
+struct SettingYaml {
+    default: String,
+    comment: String,
+}
+
+fn watch(path: &Path) {
+    println!("cargo:rerun-if-changed={}", path.display());
+}
+
+fn read_to_string(path: &Path, description: &str) -> String {
+    watch(path);
+    fs::read_to_string(path)
+        .unwrap_or_else(|err| panic!("failed to read {description} at {}: {err}", path.display()))
+}
+
+fn load_settings_meta(path: &Path) -> SettingsMeta {
+    let source = read_to_string(path, "lint settings index");
+    serde_norway::from_str(&source)
+        .unwrap_or_else(|err| panic!("failed to parse {}: {err}", path.display()))
+}
+
+fn load_setting_group(dir: &Path, keys: &[String], field: &str) -> Vec<SettingFile> {
+    watch(dir);
+    let found: BTreeSet<String> = fs::read_dir(dir)
+        .unwrap_or_else(|err| panic!("failed to read {}: {err}", dir.display()))
+        .map(|entry| {
+            entry
+                .unwrap_or_else(|err| panic!("failed to read {}: {err}", dir.display()))
+                .path()
+        })
+        .filter(|path| path.extension().and_then(|ext| ext.to_str()) == Some("json"))
+        .map(|path| {
+            path.file_stem()
+                .and_then(|stem| stem.to_str())
+                .unwrap_or("")
+                .to_string()
+        })
+        .collect();
+    let listed: BTreeSet<&str> = keys.iter().map(String::as_str).collect();
+    let extras: Vec<_> = found
+        .iter()
+        .filter(|name| !listed.contains(name.as_str()))
+        .cloned()
+        .collect();
+    if !extras.is_empty() {
+        panic!(
+            "{} has setting files not listed in lint-settings.yaml `{field}`: {}",
+            dir.display(),
+            extras.join(", ")
+        );
+    }
+    if keys.len() != listed.len() {
+        panic!("lint-settings.yaml `{field}` lists a key more than once");
+    }
+    keys.iter()
+        .map(|key| {
+            if !found.contains(key) {
+                panic!(
+                    "lint-settings.yaml `{field}` lists {key:?} but {}/{key}.json does not exist",
+                    dir.display()
+                );
+            }
+            let path = dir.join(format!("{key}.json"));
+            let source = read_to_string(&path, "setting");
+            let setting: SettingFile = serde_json::from_str(&source)
+                .unwrap_or_else(|err| panic!("failed to parse {}: {err}", path.display()));
+            if setting.key != *key {
+                panic!(
+                    "{}: `key` is {:?}, expected {key:?} to match the file name",
+                    path.display(),
+                    setting.key
+                );
+            }
+            setting
+        })
+        .collect()
+}
+
+fn load_rules(dir: &Path) -> Vec<RuleEntry> {
+    watch(dir);
+    let mut paths: Vec<_> = fs::read_dir(dir)
+        .unwrap_or_else(|err| panic!("failed to read {}: {err}", dir.display()))
+        .map(|entry| {
+            entry
+                .unwrap_or_else(|err| panic!("failed to read {}: {err}", dir.display()))
+                .path()
+        })
+        .filter(|path| path.extension().and_then(|ext| ext.to_str()) == Some("json"))
+        .collect();
+    paths.sort();
+    if paths.is_empty() {
+        panic!("no rule files found in {}", dir.display());
+    }
+    let mut seen = BTreeSet::new();
+    paths
+        .into_iter()
+        .map(|path| {
+            let source = read_to_string(&path, "rule metadata");
+            let rule: RuleEntry = serde_json::from_str(&source)
+                .unwrap_or_else(|err| panic!("failed to parse {}: {err}", path.display()));
+            let stem = path
+                .file_stem()
+                .and_then(|stem| stem.to_str())
+                .unwrap_or("");
+            if rule.id != stem {
+                panic!(
+                    "{}: `id` is {:?}, expected {stem:?} to match the file name",
+                    path.display(),
+                    rule.id
+                );
+            }
+            let key = config_key_for(&rule.id);
+            if !seen.insert(key.clone()) {
+                panic!("duplicate rule config key: {key}");
+            }
+            rule
+        })
+        .collect()
+}
+
+fn comment_block(text: &str) -> String {
+    text.split('\n')
+        .map(|line| {
+            if line.is_empty() {
+                "#".to_string()
+            } else {
+                format!("# {line}")
+            }
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
+}
+
+/// Same document `.github/scripts/ci_lib/default_config.py` renders for Pages
+/// and the release archive: game, then project settings, then the other lint
+/// settings, then rules in config-key order.
+fn render_default_yaml(
+    project: &[SettingFile],
+    settings: &[SettingFile],
+    rules_comment: &str,
+    rules: &[RuleEntry],
+) -> String {
+    let mut by_key: Vec<(String, &RuleEntry)> = rules
+        .iter()
+        .map(|rule| (config_key_for(&rule.id), rule))
+        .collect();
+    by_key.sort_by(|left, right| left.0.cmp(&right.0));
+
+    let mut lines = Vec::new();
+    let game = settings
+        .iter()
+        .find(|setting| setting.key == "game")
+        .unwrap_or_else(|| panic!("shared/configuration/lint-settings is missing game"));
+    lines.push(comment_block(&game.yaml.comment));
+    lines.push(format!("game: {}", game.yaml.default));
+    for setting in project {
+        lines.push(comment_block(&setting.yaml.comment));
+        lines.push(format!("{}: {}", setting.key, setting.yaml.default));
+    }
+    for setting in settings {
+        if setting.key == "game" {
+            continue;
+        }
+        lines.push(comment_block(&setting.yaml.comment));
+        lines.push(format!("{}: {}", setting.key, setting.yaml.default));
+    }
+    lines.push(comment_block(rules_comment));
+    lines.push("rules:".to_string());
+    for (key, rule) in by_key {
+        let enabled = if rule.enabled_by_default {
+            "true"
+        } else {
+            "false"
+        };
+        lines.push(format!("  {key}: {enabled} # {}", rule.description));
+    }
+    lines.push(String::new());
+    lines.join("\n")
 }
 
 /// Generates the comment-injection module from the annotated default config,
@@ -133,7 +344,7 @@ fn generate_comments(default: &str) -> String {
     }
 
     let mut generated = String::from(
-        "// @generated by build.rs from shared/configuration/papyrus-lint.default.yaml.\n\
+        "// @generated by build.rs from the rendered default configuration.\n\
          // Do not edit this file directly.\n\n\
          const FIELD_COMMENTS: &[(&str, &str)] = &[\n",
     );
@@ -191,7 +402,7 @@ const RULE_COMMENTS: &[(&str, &str)] = &[
 /// as the header), followed by zero or more top-level `key: value` override
 /// lines (there is currently no rule that needs a hand-written `rules:`
 /// override here, since [`preset_rule_value`] derives every rule's value
-/// from `shared/rules.json`). Each override line replaces the matching key's
+/// from `shared/rules/<id>.json`). Each override line replaces the matching key's
 /// line in `default` outright; every other top-level line of `default`
 /// (including its own per-field comments) is kept as-is.
 fn merge_preset(
@@ -263,8 +474,8 @@ fn merge_preset(
 }
 
 /// `rule_id`'s boolean value under `preset`, derived from `default_value`
-/// (its value in `shared/configuration/papyrus-lint.default.yaml`, i.e. under `strict`) and
-/// its `importance`/`kept_in_standard` metadata in `shared/rules.json`:
+/// (its value in the rendered default YAML, i.e. under `strict`) and
+/// its `importance`/`kept_in_standard` metadata in `shared/rules/<id>.json`:
 /// `careful` turns off every `"low"` importance rule; `standard` does the
 /// same except for the handful marked `kept_in_standard` (the cheap,
 /// auto-fixable formatting rules). A rule already `false` by default is
@@ -280,7 +491,7 @@ fn preset_rule_value(
     }
     let (importance, kept_in_standard) = rule_meta
         .get(rule_id)
-        .unwrap_or_else(|| panic!("no shared/rules.json entry for rule {rule_id:?}"));
+        .unwrap_or_else(|| panic!("no shared/rules entry for rule {rule_id:?}"));
     if importance != "low" {
         return true;
     }

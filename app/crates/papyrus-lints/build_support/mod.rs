@@ -11,7 +11,7 @@ pub mod script_catalog;
 use serde::de::DeserializeOwned;
 use std::env;
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 pub struct BuildContext {
     manifest_dir: PathBuf,
@@ -69,17 +69,6 @@ impl BuildContext {
         })
     }
 
-    pub fn load_text(&self, relative: &str, description: &str) -> String {
-        let path = self.input(relative);
-        println!("cargo:rerun-if-changed={}", path.display());
-        fs::read_to_string(&path).unwrap_or_else(|error| {
-            panic!(
-                "failed to read {description} at {}: {error}",
-                path.display()
-            )
-        })
-    }
-
     pub fn write(&self, filename: &str, description: &str, contents: &str) {
         let destination = self.out_dir.join(filename);
         fs::write(&destination, contents).unwrap_or_else(|error| {
@@ -90,7 +79,7 @@ impl BuildContext {
         });
     }
 
-    /// `src/<module>.rs` for a lint rule module generated from `shared/rules.json`.
+    /// `src/<module>.rs` for a lint rule module generated from `shared/rules/*.json`.
     pub fn src_module(&self, module: &str) -> PathBuf {
         self.manifest_dir.join("src").join(format!("{module}.rs"))
     }
@@ -98,29 +87,4 @@ impl BuildContext {
 
 pub fn generated_header(source: &str) -> String {
     format!("/// Compiled from `{source}` by `build.rs`. Do not edit by hand.")
-}
-
-pub fn default_config_order(source: &str, path: &Path) -> Result<Vec<String>, String> {
-    let mut keys = Vec::new();
-    let mut in_rules = false;
-    for line in source.lines() {
-        if line == "rules:" {
-            in_rules = true;
-            continue;
-        }
-        if !in_rules {
-            continue;
-        }
-        if !line.starts_with("  ") || line.starts_with("   ") {
-            break;
-        }
-        let Some((key, _)) = line.trim().split_once(':') else {
-            break;
-        };
-        keys.push(key.to_string());
-    }
-    if keys.is_empty() {
-        return Err(format!("{} has no `rules:` entries", path.display()));
-    }
-    Ok(keys)
 }

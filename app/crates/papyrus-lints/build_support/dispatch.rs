@@ -1,15 +1,16 @@
 use super::metadata::{self, RuleMetadata, NO_SOURCE_CHECK_IDS};
 use super::renderer::Renderer;
-use super::{default_config_order, BuildContext};
+use super::BuildContext;
 use std::collections::{BTreeSet, HashMap};
 
 pub fn compile(context: &BuildContext, rules: &[RuleMetadata], repair_order: &[String]) {
-    let relative = "shared/configuration/papyrus-lint.default.yaml";
-    let source = context.load_text(relative, "default config");
-    let order = default_config_order(&source, &context.input(relative))
-        .unwrap_or_else(|error| panic!("{error}"));
+    let mut field_order: Vec<String> = rules
+        .iter()
+        .map(|rule| metadata::config_key(&rule.id))
+        .collect();
+    field_order.sort();
     let ordered =
-        metadata::order_by_config(rules, &order).unwrap_or_else(|error| panic!("{error}"));
+        metadata::order_by_config(rules, &field_order).unwrap_or_else(|error| panic!("{error}"));
     lint_modules(context, rules);
     rules_struct(context, &ordered);
     rules_dispatch(context, rules, repair_order);
@@ -22,7 +23,7 @@ pub fn compile(context: &BuildContext, rules: &[RuleMetadata], repair_order: &[S
 fn lint_modules(context: &BuildContext, rules: &[RuleMetadata]) {
     let mut modules = BTreeSet::new();
     let mut out = Renderer::new();
-    out.line("// Rule modules generated from `shared/rules.json` by `build.rs`.");
+    out.line("// Rule modules generated from `shared/rules/*.json` by `build.rs`.");
     out.line("// Do not edit by hand.");
     out.blank();
     for rule in rules {
@@ -37,7 +38,7 @@ fn lint_modules(context: &BuildContext, rules: &[RuleMetadata]) {
                 continue;
             }
             panic!(
-                "shared/rules.json lists `{}` but {} is missing; add the rule module (or list the id in NO_SOURCE_CHECK_IDS if it has no crate-local module)",
+                "shared/rules/*.json lists `{}` but {} is missing; add the rule module (or list the id in NO_SOURCE_CHECK_IDS if it has no crate-local module)",
                 rule.id,
                 path.display()
             );
@@ -61,13 +62,13 @@ fn lint_modules(context: &BuildContext, rules: &[RuleMetadata]) {
 fn rules_struct(context: &BuildContext, rules: &[&RuleMetadata]) {
     let mut out = Renderer::new();
     out.line("/// Individual enable/disable switches for each lint ruleset.");
-    out.line("/// Generated from `shared/rules.json` by `build.rs`. Do not edit by hand.");
+    out.line("/// Generated from `shared/rules/*.json` by `build.rs`. Do not edit by hand.");
     out.line("///");
     out.line("/// A ruleset set to `false` here is skipped by both");
     out.line("/// [`crate::lint`]/[`crate::lint_with_external_arguments`] and, for");
     out.line("/// rulesets with an automatic fix, [`crate::repair`]. Most rulesets");
     out.line("/// default to `true`; those tagged `enabled_by_default: false` in");
-    out.line("/// `shared/rules.json` default to `false`.");
+    out.line("/// `shared/rules/*.json` default to `false`.");
     out.line("#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]");
     out.line("#[serde(default)]");
     out.block("pub struct Rules", |out| {
@@ -85,7 +86,7 @@ fn rules_struct(context: &BuildContext, rules: &[&RuleMetadata]) {
     });
     out.blank();
     out.line("/// Default enable/disable flags for [`Rules`]. Generated from");
-    out.line("/// `shared/rules.json` (`enabled_by_default`, defaulting to `true`).");
+    out.line("/// `shared/rules/*.json` (`enabled_by_default`, defaulting to `true`).");
     out.block("pub fn default_rules() -> Rules", |out| {
         out.block("Rules", |out| {
             for rule in rules {
@@ -116,7 +117,7 @@ fn rules_dispatch(context: &BuildContext, rules: &[RuleMetadata], repair_order: 
     out.line("};");
     out.blank();
     out.line("/// Runs every enabled source-level lint against `source`.");
-    out.line("/// Generated from `shared/rules.json` by `build.rs`. Do not edit by hand.");
+    out.line("/// Generated from `shared/rules/*.json` by `build.rs`. Do not edit by hand.");
     out.line("#[allow(clippy::too_many_lines)]");
     out.line("pub fn collect_diagnostics<E: ExternalSignatures>(");
     out.line("    source: &str,");
@@ -155,7 +156,7 @@ fn rules_dispatch(context: &BuildContext, rules: &[RuleMetadata], repair_order: 
                 out.line(format_args!("        session.add({module}::visitor());"));
             }
             other => panic!(
-                "shared/rules.json: unknown visitor `{other}` for {}",
+                "shared/rules/*.json: unknown visitor `{other}` for {}",
                 rule.id
             ),
         }
@@ -165,7 +166,7 @@ fn rules_dispatch(context: &BuildContext, rules: &[RuleMetadata], repair_order: 
     out.line("}");
     out.blank();
     out.line("/// Applies every self-contained automatic fix whose ruleset is enabled.");
-    out.line("/// Generated from `shared/rules.json` by `build.rs`. Do not edit by hand.");
+    out.line("/// Generated from `shared/rules/*.json` by `build.rs`. Do not edit by hand.");
     out.line("/// Repair order is `shared/rule-order.yaml` (not rule-id order),");
     out.line("/// because later fixes see earlier rewrites.");
     out.line("#[allow(clippy::too_many_lines)]");
@@ -178,7 +179,7 @@ fn rules_dispatch(context: &BuildContext, rules: &[RuleMetadata], repair_order: 
         .map(|id| {
             *by_id.get(id.as_str()).unwrap_or_else(|| {
                 panic!(
-                    "shared/rule-order.yaml lists `{id}` but shared/rules.json has no matching id"
+                    "shared/rule-order.yaml lists `{id}` but shared/rules/*.json has no matching id"
                 )
             })
         })
@@ -221,7 +222,7 @@ fn games_slice(games: &[String]) -> String {
             "legacy" => "crate::Game::Legacy".to_string(),
             "fallout4" => "crate::Game::Fallout4".to_string(),
             "starfield" => "crate::Game::Starfield".to_string(),
-            other => panic!("shared/rules.json: unknown game `{other}`"),
+            other => panic!("shared/rules/*.json: unknown game `{other}`"),
         })
         .collect();
     format!("&[{}]", variants.join(", "))

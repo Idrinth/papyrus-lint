@@ -501,8 +501,11 @@ class RepositoryDocsConfigurationTest(unittest.TestCase):
         self.assertEqual(len(slugs), len(set(slugs)), "documentation slugs must be unique")
         self.assertEqual(len(filenames), len(set(filenames)), "documentation sources must be unique")
         for doc in docs_with_filenames:
-            source = doc.get("source_dir", docs_pages.DOCS_DIR) / doc["filename"]
             with self.subTest(filename=doc["filename"]):
+                if docs_pages.generated_doc_source(doc["filename"]) is not None:
+                    self.assertTrue(docs_pages.load_doc_source(doc).strip())
+                    continue
+                source = doc.get("source_dir", docs_pages.DOCS_DIR) / doc["filename"]
                 self.assertTrue(source.is_file(), f"missing documentation source: {source}")
                 self.assertTrue(source.read_text(encoding="utf-8").strip())
 

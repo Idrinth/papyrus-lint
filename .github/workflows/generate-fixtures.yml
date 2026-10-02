@@ -6,7 +6,6 @@ name: Generate fixtures
 # Comparison of those fixtures still lives in ci.base-scripts.yml and runs on
 # push/PR. This workflow is manual so an intentional output change can land
 # as its own pull request instead of being mixed into every CI run.
-# shared/rules.json is git-ignored, so it must be generated before building.
 
 on:
   workflow_dispatch:
@@ -82,13 +81,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-
-      - name: Build rules.json from shared/rules/
-        run: python3 .github/scripts/build_rules_json.py
-
-      - name: Generate default configuration
-        shell: bash
-        run: python3 .github/scripts/generate_default_config.py
 
       - uses: dtolnay/rust-toolchain@stable
 
