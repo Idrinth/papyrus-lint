@@ -103,6 +103,64 @@ fn does_not_crash_when_string_tokenization_fails() {
 }
 
 #[test]
+fn malformed_string_token_locations_are_ignored() {
+    use papyrus_parser::token::{Token, TokenKind};
+
+    let cases = [
+        ("\"value\"", Token::new(TokenKind::StringLiteral("value".into()), 0, 1)),
+        ("\"value\"", Token::new(TokenKind::StringLiteral("value".into()), 2, 1)),
+        ("\"value\"", Token::new(TokenKind::StringLiteral("value".into()), 1, 0)),
+        (
+            "\n\"value\"",
+            Token::new(TokenKind::StringLiteral("value".into()), 2, usize::MAX),
+        ),
+    ];
+
+    for (source, token) in cases {
+        let diagnostics = super::check(
+            source,
+            None,
+            Some(&[token]),
+            &crate::config::Config::default(),
+            &mut crate::external_signatures::NoExternalSignatures,
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+}
+
+#[test]
+fn raw_string_scan_stops_at_closing_quote_or_line_ending() {
+    let mut escapes = Vec::new();
+
+    visit_escapes_in_string("\"ok\"\\n", 1, 0, |column, letter| {
+        escapes.push((column, letter));
+    });
+    visit_escapes_in_string("\"ok\n\\t", 1, 0, |column, letter| {
+        escapes.push((column, letter));
+    });
+    visit_escapes_in_string("\"ok\r\\t", 1, 0, |column, letter| {
+        escapes.push((column, letter));
+    });
+
+    assert!(escapes.is_empty());
+}
+
+#[test]
+fn raw_string_scan_ignores_invalid_offsets_and_trailing_backslashes() {
+    let mut escapes = Vec::new();
+
+    visit_escapes_in_string("not a string", 1, 0, |column, letter| {
+        escapes.push((column, letter));
+    });
+    visit_escapes_in_string("\"trailing\\", 1, 0, |column, letter| {
+        escapes.push((column, letter));
+    });
+
+    assert!(escapes.is_empty());
+}
+
+#[test]
 fn disable_directives_suppress_diagnostics() {
     let line_disabled = crate::lint(
         "ScriptName Example\n\nFunction Test()\n    Debug.Trace(\"hi\\n\") ; @disable invalid-string-escape\nEndFunction\n",
