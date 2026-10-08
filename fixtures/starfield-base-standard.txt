@@ -74814,7 +74814,6 @@ Scripts/Source/SFBGS003/SFBGS003_WantedPosterQuestScript.psc:32:1:indentation
 Scripts/Source/SFBGS003/SFBGS003_WantedPosterQuestScript.psc:33:1:indentation
 Scripts/Source/SFBGS003/SFBGS003_WantedPosterQuestScript.psc:39:1:indentation
 Scripts/Source/SFBGS003/SFBGS003_WantedPosterQuestScript.psc:40:1:indentation
-Scripts/Source/SFBGS003/SFBGS003_WantedPosterQuestScript.psc:40:62:argument-types
 Scripts/Source/SFBGS003/SFBGS003_WantedPosterQuestScript.psc:41:1:indentation
 Scripts/Source/SFBGS003/SFBGS003_WantedPosterQuestScript.psc:43:1:indentation
 Scripts/Source/SFBGS003/SFBGS003_WantedPosterQuestScript.psc:44:1:indentation

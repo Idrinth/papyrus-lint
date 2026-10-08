@@ -58869,9 +58869,7 @@ Scripts/Source/DLC04/DLC04/DLC04_RQ_QuestScript.psc:241:121:line-length
 Scripts/Source/DLC04/DLC04/DLC04_RQ_QuestScript.psc:287:121:line-length
 Scripts/Source/DLC04/DLC04/DLC04_RQ_QuestScript.psc:291:19:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04_RQ_QuestScript.psc:297:121:line-length
-Scripts/Source/DLC04/DLC04/DLC04_RQ_QuestScript.psc:306:31:argument-types
 Scripts/Source/DLC04/DLC04/DLC04_RQ_QuestScript.psc:315:2:strict-boolean
-Scripts/Source/DLC04/DLC04/DLC04_RQ_QuestScript.psc:331:36:argument-types
 Scripts/Source/DLC04/DLC04/DLC04_RQ_QuestScript.psc:350:121:line-length
 Scripts/Source/DLC04/DLC04/DLC04_RobotLiftLightScript.psc:1:12:script-filename-mismatch
 Scripts/Source/DLC04/DLC04/DLC04_RobotLiftLightScript.psc:9:1:unregistered-remote-event
