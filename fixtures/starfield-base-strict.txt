@@ -124921,7 +124921,6 @@ Scripts/Source/SFBGS003/SFBGS003_WantedPosterQuestScript.psc:38:1:identifier-cas
 Scripts/Source/SFBGS003/SFBGS003_WantedPosterQuestScript.psc:38:1:identifier-casing
 Scripts/Source/SFBGS003/SFBGS003_WantedPosterQuestScript.psc:39:1:indentation
 Scripts/Source/SFBGS003/SFBGS003_WantedPosterQuestScript.psc:40:1:indentation
-Scripts/Source/SFBGS003/SFBGS003_WantedPosterQuestScript.psc:40:62:argument-types
 Scripts/Source/SFBGS003/SFBGS003_WantedPosterQuestScript.psc:41:1:indentation
 Scripts/Source/SFBGS003/SFBGS003_WantedPosterQuestScript.psc:43:1:indentation
 Scripts/Source/SFBGS003/SFBGS003_WantedPosterQuestScript.psc:44:1:indentation

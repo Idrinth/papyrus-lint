@@ -36761,7 +36761,6 @@ Scripts/Source/SFBGS003/SFBGS003_ShutdownQuestScript.psc:65:121:line-length
 Scripts/Source/SFBGS003/SFBGS003_ShutdownQuestScript.psc:66:121:line-length
 Scripts/Source/SFBGS003/SFBGS003_WantedPosterQuestScript.psc:14:121:line-length
 Scripts/Source/SFBGS003/SFBGS003_WantedPosterQuestScript.psc:31:5:strict-boolean
-Scripts/Source/SFBGS003/SFBGS003_WantedPosterQuestScript.psc:40:62:argument-types
 Scripts/Source/SFBGS003/SFBGS003_WantedPosterQuestScript.psc:53:121:line-length
 Scripts/Source/SFBGS003/SFBGS003_WantedPosterQuestScript.psc:61:121:line-length
 Scripts/Source/SFBGS003/SFBGS003_WantedPosterQuestScript.psc:62:121:line-length

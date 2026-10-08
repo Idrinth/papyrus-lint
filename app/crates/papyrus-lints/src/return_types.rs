@@ -36,6 +36,7 @@ struct Collect {
     store: Store,
     env: Option<TypeEnv>,
     locals: LocalReturns,
+    script: argument_types::SelfScript,
     return_type: Option<TypeName>,
     function_name: String,
 }
@@ -48,6 +49,7 @@ impl AstLint for Collect {
     fn visit_script(&mut self, script: &Script, _ctx: &mut VisitCtx<'_>) {
         self.env = Some(TypeEnv::for_script(script));
         self.locals = LocalReturns::from_script(script);
+        self.script = argument_types::SelfScript::from_script(script);
     }
 
     fn visit_function(&mut self, function: &FunctionDecl, _ctx: &mut VisitCtx<'_>) {
@@ -97,6 +99,7 @@ impl AstLint for Collect {
                     || ctx.external.is_subtype(&value_type.name, "Form"));
             if !form_as_bool
                 && !argument_types::is_compatible(return_type, &value_type, ctx.external)
+                && !self.script.accepts(return_type, &value_type, ctx.external)
             {
                 diagnostics.push(mismatch(
                     *line,
@@ -260,3 +263,7 @@ fn mismatch(line: usize, function_name: &str, return_type: &TypeName, got: &str)
 #[cfg(test)]
 #[path = "return_types_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "return_types_self_tests.rs"]
+mod self_tests;

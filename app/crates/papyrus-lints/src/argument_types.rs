@@ -34,6 +34,7 @@ struct Collect {
     store: Store,
     locals: LocalFunctions,
     env: Option<TypeEnv>,
+    self_script: SelfScript,
 }
 
 impl AstLint for Collect {
@@ -43,6 +44,7 @@ impl AstLint for Collect {
 
     fn visit_script(&mut self, script: &Script, _ctx: &mut VisitCtx<'_>) {
         self.locals = LocalFunctions::from_script(script);
+        self.self_script = SelfScript::from_script(script);
         self.env = Some(TypeEnv::for_script(script));
     }
 
@@ -79,7 +81,7 @@ impl AstLint for Collect {
             &name,
             &params,
             args,
-            env,
+            (env, &self.self_script),
             ctx.config.bool_like_int,
             ctx.external,
         ));
@@ -229,7 +231,7 @@ fn check_args<E: ExternalSignatures + ?Sized>(
     function_name: &str,
     params: &[ParamInfo],
     args: &[Expr],
-    env: &TypeEnv,
+    (env, self_script): (&TypeEnv, &SelfScript),
     allow_bool_like_int: bool,
     external: &mut E,
 ) -> Vec<Diagnostic> {
@@ -276,7 +278,9 @@ fn check_args<E: ExternalSignatures + ?Sized>(
         let Some(arg_type) = infer_type(arg, env) else {
             continue;
         };
-        if !is_compatible(param_type, &arg_type, external) {
+        if !is_compatible(param_type, &arg_type, external)
+            && !self_script.accepts(param_type, &arg_type, external)
+        {
             diagnostics.push(mismatch(
                 line,
                 col,
@@ -288,6 +292,111 @@ fn check_args<E: ExternalSignatures + ?Sized>(
         }
     }
     diagnostics
+}
+
+/// The script being linted, as declared on its own `ScriptName` line.
+///
+/// [`is_compatible`] relates two object types only through
+/// [`ExternalSignatures::is_subtype`], which has to find the argument's
+/// script by name. For a value of the linted script's own type (`self`, or
+/// a variable declared as that script) that lookup can fail even though
+/// the answer is right here in the AST: a resolver with no project data
+/// ([`crate::NoExternalSignatures`]), an unsaved buffer or a file outside
+/// the configured script roots, or a namespaced script whose parameter
+/// spells the same type without (or with) its `Namespace:` prefix. This
+/// starts the `Extends` walk from the declared parent instead, so
+/// `ScriptName A Extends B` may pass `self` where a `B` is expected.
+#[derive(Default)]
+pub(crate) struct SelfScript {
+    name: String,
+    extends: Option<String>,
+}
+
+impl SelfScript {
+    pub(crate) fn from_script(script: &Script) -> Self {
+        SelfScript {
+            name: script.name.clone(),
+            extends: script.extends.clone(),
+        }
+    }
+
+    /// The `Namespace` of a `Namespace:Script` name (Fallout 4 and
+    /// Starfield), i.e. everything before the last `:`.
+    fn namespace(&self) -> Option<&str> {
+        self.name.rsplit_once(':').map(|(namespace, _)| namespace)
+    }
+
+    /// The spellings `name` may take inside this script: as written, plus
+    /// the same type with or without this script's own namespace prefix,
+    /// since a script may name a peer in its own namespace unqualified.
+    fn spellings(&self, name: &str) -> Vec<String> {
+        let mut spellings = vec![name.to_string()];
+        let Some(namespace) = self.namespace() else {
+            return spellings;
+        };
+        match name.rsplit_once(':') {
+            Some((prefix, leaf)) if prefix.eq_ignore_ascii_case(namespace) => {
+                spellings.push(leaf.to_string());
+            }
+            Some(_) => {}
+            None => spellings.push(format!("{namespace}:{name}")),
+        }
+        spellings
+    }
+
+    /// Whether `a` and `b` name the same script from inside this one.
+    /// Case-insensitive, and namespace-aware per [`Self::spellings`].
+    fn same_type(&self, a: &str, b: &str) -> bool {
+        self.spellings(a)
+            .iter()
+            .any(|spelling| spelling.eq_ignore_ascii_case(b))
+    }
+
+    /// Whether a value of type `arg_type` may be passed for `param_type`
+    /// because `arg_type` is this script's own type and `param_type` is
+    /// this script or one of its `Extends` ancestors. An ancestry that
+    /// can't be walked to a definite root (a missing script, a circular
+    /// `Extends` chain) is accepted rather than guessed at.
+    ///
+    /// Only widens [`is_compatible`]: any other argument, including a
+    /// parent-typed value passed where this script's type is required,
+    /// is left to that check.
+    pub(crate) fn accepts<E: ExternalSignatures + ?Sized>(
+        &self,
+        param_type: &TypeName,
+        arg_type: &TypeName,
+        external: &mut E,
+    ) -> bool {
+        if self.name.is_empty()
+            || param_type.is_array
+            || arg_type.is_array
+            || is_primitive(&param_type.name)
+            || !self.same_type(&arg_type.name, &self.name)
+        {
+            return false;
+        }
+        if self.same_type(&param_type.name, &self.name) {
+            return true;
+        }
+        let Some(parent) = self.extends.as_deref() else {
+            return false;
+        };
+        if self.same_type(&param_type.name, parent) {
+            return true;
+        }
+        let parents = self.spellings(parent);
+        let targets = self.spellings(&param_type.name);
+        for parent in &parents {
+            for target in &targets {
+                if external.is_subtype(parent, target) {
+                    return true;
+                }
+            }
+        }
+        !parents
+            .iter()
+            .any(|parent| external.ancestry_fully_known(parent))
+    }
 }
 
 fn mismatch(
@@ -374,3 +483,7 @@ pub(crate) fn is_compatible<E: ExternalSignatures + ?Sized>(
 #[cfg(test)]
 #[path = "argument_types_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "argument_types_self_tests.rs"]
+mod self_tests;
