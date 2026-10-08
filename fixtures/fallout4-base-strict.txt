@@ -182925,13 +182925,11 @@ Scripts/Source/DLC04/DLC04/DLC04_RQ_QuestScript.psc:286:1:identifier-casing
 Scripts/Source/DLC04/DLC04/DLC04_RQ_QuestScript.psc:287:121:line-length
 Scripts/Source/DLC04/DLC04/DLC04_RQ_QuestScript.psc:291:19:forbidden-functions
 Scripts/Source/DLC04/DLC04/DLC04_RQ_QuestScript.psc:297:121:line-length
-Scripts/Source/DLC04/DLC04/DLC04_RQ_QuestScript.psc:306:31:argument-types
 Scripts/Source/DLC04/DLC04/DLC04_RQ_QuestScript.psc:311:1:identifier-casing
 Scripts/Source/DLC04/DLC04/DLC04_RQ_QuestScript.psc:313:12:comma-spacing
 Scripts/Source/DLC04/DLC04/DLC04_RQ_QuestScript.psc:315:2:strict-boolean
 Scripts/Source/DLC04/DLC04/DLC04_RQ_QuestScript.psc:322:12:comma-spacing
 Scripts/Source/DLC04/DLC04/DLC04_RQ_QuestScript.psc:328:104:trailing-whitespace
-Scripts/Source/DLC04/DLC04/DLC04_RQ_QuestScript.psc:331:36:argument-types
 Scripts/Source/DLC04/DLC04/DLC04_RQ_QuestScript.psc:350:121:line-length
 Scripts/Source/DLC04/DLC04/DLC04_RQ_QuestScript.psc:360:1:identifier-casing
 Scripts/Source/DLC04/DLC04/DLC04_RQ_QuestScript.psc:360:1:identifier-casing
