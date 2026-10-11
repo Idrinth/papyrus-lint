@@ -7,7 +7,9 @@
 //! Casting an alias to another alias type (`Alias as ReferenceAlias`,
 //! `ReferenceAlias as MySpecialAlias`) is allowed — that is a real
 //! subtype relationship between alias scripts, not a substitute for
-//! `GetReference()`.
+//! `GetReference()`. The same holds for a cast to any script whose
+//! `Extends` chain reaches an alias type (`(MyAlias as MyAliasScript)`
+//! where `MyAliasScript extends ReferenceAlias`).
 
 use papyrus_parser::ast::{Expr, FunctionDecl, Script};
 use papyrus_parser::types::{infer_type, TypeEnv};
@@ -74,6 +76,13 @@ impl AstLint for Collect {
             return;
         }
         if !is_alias_value(&value_type.name, ctx.external) {
+            return;
+        }
+        // A cast to a script that itself extends an alias type (e.g.
+        // `Scriptname MyBossBattle extends ReferenceAlias`) is the way to
+        // reach the alias's own script; `GetReference()` would return the
+        // filled reference, which does not carry it (#1744).
+        if is_alias_value(type_name, ctx.external) {
             return;
         }
         let suggestion = suggested_api(&value_type.name, type_name);

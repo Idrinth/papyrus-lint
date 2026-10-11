@@ -160,6 +160,10 @@ impl ExternalSignatures for FakeExtendsReferenceAlias {
         sub_type.eq_ignore_ascii_case(super_type)
             || (sub_type.eq_ignore_ascii_case("MySpecialAlias")
                 && super_type.eq_ignore_ascii_case("ReferenceAlias"))
+            || (sub_type.eq_ignore_ascii_case("DLC1dunHarkonBossBattle")
+                && super_type.eq_ignore_ascii_case("ReferenceAlias"))
+            || (sub_type.eq_ignore_ascii_case("MyLocationScript")
+                && super_type.eq_ignore_ascii_case("LocationAlias"))
     }
 }
 
@@ -196,4 +200,44 @@ fn does_not_flag_subtype_of_reference_alias_cast_to_alias() {
     );
 
     assert!(diagnostics.is_empty());
+}
+
+fn check_with_fake(source: &str) -> Vec<Diagnostic> {
+    let ast = papyrus_parser::parse(source).ok();
+    super::check(
+        "",
+        ast.as_ref(),
+        None,
+        &crate::config::Config::default(),
+        &mut FakeExtendsReferenceAlias,
+    )
+}
+
+#[test]
+fn does_not_flag_cast_to_script_extending_reference_alias() {
+    // #1744: vanilla DLC1dunHarkonSummonScript.psc
+    let diagnostics = check_with_fake(
+        "ScriptName Example\n\nReferenceAlias Property DLC1VQ08HarkonAlias Auto\n\nFunction Fine()\n    (DLC1VQ08HarkonAlias as DLC1dunHarkonBossBattle).RecordSummonedGargoyle()\nEndFunction\n",
+    );
+
+    assert!(diagnostics.is_empty());
+}
+
+#[test]
+fn does_not_flag_cast_to_script_extending_location_alias() {
+    let diagnostics = check_with_fake(
+        "ScriptName Example\n\nFunction Fine(LocationAlias akLoc)\n    MyLocationScript s = akLoc as MyLocationScript\nEndFunction\n",
+    );
+
+    assert!(diagnostics.is_empty());
+}
+
+#[test]
+fn still_flags_cast_to_non_alias_script() {
+    let diagnostics = check_with_fake(
+        "ScriptName Example\n\nReferenceAlias Property MyAlias Auto\n\nFunction Bad()\n    (MyAlias as SomeActorScript).DoThing()\nEndFunction\n",
+    );
+
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!(diagnostics[0].rule, RULE);
 }
