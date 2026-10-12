@@ -1767,6 +1767,7 @@ Scripts/Source/BECityCYRedTape02QuestScript.psc:56:1:function-override
 Scripts/Source/BECityCYRedTape02QuestScript.psc:56:1:identifier-casing
 Scripts/Source/BECityCYRedTape02QuestScript.psc:57:1:indentation
 Scripts/Source/BECityCYRedTape02QuestScript.psc:58:1:indentation
+Scripts/Source/BECityCYRedTape02QuestScript.psc:58:17:quest-stage-logic-gap
 Scripts/Source/BECityCYRedTape02QuestScript.psc:59:1:indentation
 Scripts/Source/BECityCYRedTape02QuestScript.psc:60:1:indentation
 Scripts/Source/BECityCYRedTape02QuestScript.psc:61:1:indentation
@@ -2598,6 +2599,7 @@ Scripts/Source/BEScript.psc:1129:1:identifier-casing
 Scripts/Source/BEScript.psc:1129:1:unnecessary-function
 Scripts/Source/BEScript.psc:1131:47:exclamation-spacing
 Scripts/Source/BEScript.psc:1131:62:exclamation-spacing
+Scripts/Source/BEScript.psc:1135:14:quest-stage-logic-gap
 Scripts/Source/BEScript.psc:1146:1:identifier-casing
 Scripts/Source/BEScript.psc:1146:1:identifier-casing
 Scripts/Source/BEScript.psc:1146:1:identifier-casing
@@ -2854,6 +2856,7 @@ Scripts/Source/BEScript.psc:1829:3:empty-body
 Scripts/Source/BEScript.psc:1831:43:slow-functions
 Scripts/Source/BEScript.psc:1833:44:slow-functions
 Scripts/Source/BEScript.psc:1840:28:trailing-whitespace
+Scripts/Source/BEScript.psc:1842:11:quest-stage-logic-gap
 Scripts/Source/BEScript.psc:1851:36:exclamation-spacing
 Scripts/Source/BEScript.psc:1851:121:line-length
 Scripts/Source/BEScript.psc:1852:1:identifier-casing
@@ -3433,6 +3436,7 @@ Scripts/Source/Botany03_WaitScript.psc:9:1:function-override
 Scripts/Source/Botany03_WaitScript.psc:9:1:identifier-casing
 Scripts/Source/Botany03_WaitScript.psc:10:1:indentation
 Scripts/Source/Botany03_WaitScript.psc:11:1:indentation
+Scripts/Source/Botany03_WaitScript.psc:11:17:quest-stage-logic-gap
 Scripts/Source/Botany03_WaitScript.psc:12:1:indentation
 Scripts/Source/Botany03_WaitScript.psc:15:35:final-newline
 Scripts/Source/BribeTopicInfoScript.psc:1:56:line-endings
@@ -3679,6 +3683,7 @@ Scripts/Source/CF03QuestScript.psc:9:1:function-override
 Scripts/Source/CF03QuestScript.psc:9:1:identifier-casing
 Scripts/Source/CF03QuestScript.psc:10:1:indentation
 Scripts/Source/CF03QuestScript.psc:11:1:indentation
+Scripts/Source/CF03QuestScript.psc:11:17:quest-stage-logic-gap
 Scripts/Source/CF03QuestScript.psc:12:1:indentation
 Scripts/Source/CF03QuestScript.psc:15:35:final-newline
 Scripts/Source/CF04GalbankArchivesAmbushQuestScript.psc:1:62:line-endings
@@ -4059,6 +4064,7 @@ Scripts/Source/CF06QuestScript.psc:4:1:indentation
 Scripts/Source/CF06QuestScript.psc:7:1:function-override
 Scripts/Source/CF06QuestScript.psc:7:1:identifier-casing
 Scripts/Source/CF06QuestScript.psc:8:1:indentation
+Scripts/Source/CF06QuestScript.psc:8:13:quest-stage-logic-gap
 Scripts/Source/CF06QuestScript.psc:11:1:unnecessary-function
 Scripts/Source/CF06QuestScript.psc:12:1:indentation
 Scripts/Source/CF06QuestScript.psc:12:1:none-form-usage
@@ -4297,16 +4303,20 @@ Scripts/Source/CFSD01_QuestScript.psc:68:1:indentation
 Scripts/Source/CFSD01_QuestScript.psc:68:43:comma-spacing
 Scripts/Source/CFSD01_QuestScript.psc:69:1:indentation
 Scripts/Source/CFSD01_QuestScript.psc:70:1:indentation
+Scripts/Source/CFSD01_QuestScript.psc:70:17:quest-stage-logic-gap
 Scripts/Source/CFSD01_QuestScript.psc:71:1:indentation
 Scripts/Source/CFSD01_QuestScript.psc:72:1:indentation
 Scripts/Source/CFSD01_QuestScript.psc:73:1:indentation
+Scripts/Source/CFSD01_QuestScript.psc:73:17:quest-stage-logic-gap
 Scripts/Source/CFSD01_QuestScript.psc:74:1:indentation
 Scripts/Source/CFSD01_QuestScript.psc:75:1:indentation
 Scripts/Source/CFSD01_QuestScript.psc:75:53:trailing-whitespace
 Scripts/Source/CFSD01_QuestScript.psc:76:1:indentation
+Scripts/Source/CFSD01_QuestScript.psc:76:17:quest-stage-logic-gap
 Scripts/Source/CFSD01_QuestScript.psc:77:1:indentation
 Scripts/Source/CFSD01_QuestScript.psc:78:1:indentation
 Scripts/Source/CFSD01_QuestScript.psc:79:1:indentation
+Scripts/Source/CFSD01_QuestScript.psc:79:17:quest-stage-logic-gap
 Scripts/Source/CFSD01_QuestScript.psc:80:1:indentation
 Scripts/Source/CFSD01_QuestScript.psc:83:1:function-length
 Scripts/Source/CFSD01_QuestScript.psc:85:1:indentation
@@ -4551,6 +4561,7 @@ Scripts/Source/COMQuestSarahMorganCommitmentScript.psc:23:1:indentation
 Scripts/Source/COMQuestSarahMorganCommitmentScript.psc:23:1:none-form-usage
 Scripts/Source/COMQuestSarahMorganCommitmentScript.psc:23:1:none-form-usage
 Scripts/Source/COMQuestSarahMorganCommitmentScript.psc:24:1:indentation
+Scripts/Source/COMQuestSarahMorganCommitmentScript.psc:24:15:quest-stage-logic-gap
 Scripts/Source/COMQuestSarahMorganCommitmentScript.psc:25:1:indentation
 Scripts/Source/COMQuestSarahMorganCommitmentScript.psc:29:1:identifier-casing
 Scripts/Source/COMQuestSarahMorganCommitmentScript.psc:29:1:identifier-casing
@@ -4566,6 +4577,7 @@ Scripts/Source/COMQuestSarahMorganCommitmentScript.psc:33:1:indentation
 Scripts/Source/COMQuestSarahMorganCommitmentScript.psc:33:1:none-form-usage
 Scripts/Source/COMQuestSarahMorganCommitmentScript.psc:33:1:none-form-usage
 Scripts/Source/COMQuestSarahMorganCommitmentScript.psc:34:1:indentation
+Scripts/Source/COMQuestSarahMorganCommitmentScript.psc:34:15:quest-stage-logic-gap
 Scripts/Source/COMQuestSarahMorganCommitmentScript.psc:35:1:indentation
 Scripts/Source/COMQuestSarahMorganCommitmentScript.psc:37:9:final-newline
 Scripts/Source/COM_Andreja_Q01_VaruunShipScript.psc:1:12:type-casing
@@ -4584,6 +4596,7 @@ Scripts/Source/COM_Barrett_EpilogueTimerScript.psc:15:1:function-override
 Scripts/Source/COM_Barrett_EpilogueTimerScript.psc:15:1:identifier-casing
 Scripts/Source/COM_Barrett_EpilogueTimerScript.psc:16:1:indentation
 Scripts/Source/COM_Barrett_EpilogueTimerScript.psc:17:1:indentation
+Scripts/Source/COM_Barrett_EpilogueTimerScript.psc:17:17:quest-stage-logic-gap
 Scripts/Source/COM_Barrett_EpilogueTimerScript.psc:18:1:indentation
 Scripts/Source/COM_Barrett_EpilogueTimerScript.psc:20:1:final-newline
 Scripts/Source/COM_CREW_GiveItemActorScript.psc:1:54:trailing-whitespace
@@ -5791,6 +5804,7 @@ Scripts/Source/CityCYRedTape01QuestScript.psc:33:1:none-form-usage
 Scripts/Source/CityCYRedTape01QuestScript.psc:34:1:indentation
 Scripts/Source/CityCYRedTape01QuestScript.psc:35:1:indentation
 Scripts/Source/CityCYRedTape01QuestScript.psc:36:1:indentation
+Scripts/Source/CityCYRedTape01QuestScript.psc:36:21:quest-stage-logic-gap
 Scripts/Source/CityCYRedTape01QuestScript.psc:37:1:indentation
 Scripts/Source/CityCYRedTape01QuestScript.psc:38:1:indentation
 Scripts/Source/CityCYRedTape01QuestScript.psc:39:1:indentation
@@ -6069,10 +6083,12 @@ Scripts/Source/City_AkilaLife04_Script.psc:11:1:indentation
 Scripts/Source/City_AkilaLife04_Script.psc:12:1:indentation
 Scripts/Source/City_AkilaLife04_Script.psc:12:15:forbidden-functions
 Scripts/Source/City_AkilaLife04_Script.psc:13:1:indentation
+Scripts/Source/City_AkilaLife04_Script.psc:13:17:quest-stage-logic-gap
 Scripts/Source/City_AkilaLife04_Script.psc:15:1:indentation
 Scripts/Source/City_AkilaLife04_Script.psc:16:1:indentation
 Scripts/Source/City_AkilaLife04_Script.psc:16:1:none-form-usage
 Scripts/Source/City_AkilaLife04_Script.psc:17:1:indentation
+Scripts/Source/City_AkilaLife04_Script.psc:17:21:quest-stage-logic-gap
 Scripts/Source/City_AkilaLife04_Script.psc:18:1:indentation
 Scripts/Source/City_AkilaLife04_Script.psc:19:1:indentation
 Scripts/Source/City_AkilaLife05Script.psc:1:12:type-casing
@@ -6111,6 +6127,7 @@ Scripts/Source/City_AkilaLife05Script.psc:29:1:indentation
 Scripts/Source/City_AkilaLife05Script.psc:30:1:indentation
 Scripts/Source/City_AkilaLife05Script.psc:31:1:indentation
 Scripts/Source/City_AkilaLife05Script.psc:32:1:indentation
+Scripts/Source/City_AkilaLife05Script.psc:32:17:quest-stage-logic-gap
 Scripts/Source/City_AkilaLife05Script.psc:33:1:indentation
 Scripts/Source/City_AkilaLife05Script.psc:34:9:final-newline
 Scripts/Source/City_AkilaLife07_Script.psc:1:12:type-casing
@@ -6141,6 +6158,7 @@ Scripts/Source/City_Akila_Ashta02_Script.psc:13:1:indentation
 Scripts/Source/City_Akila_Ashta02_Script.psc:14:1:indentation
 Scripts/Source/City_Akila_Ashta02_Script.psc:14:15:forbidden-functions
 Scripts/Source/City_Akila_Ashta02_Script.psc:15:1:indentation
+Scripts/Source/City_Akila_Ashta02_Script.psc:15:17:quest-stage-logic-gap
 Scripts/Source/City_Akila_Ashta02_Script.psc:16:1:indentation
 Scripts/Source/City_GG_Connect_NodeRefScript.psc:1:12:type-casing
 Scripts/Source/City_GG_Connect_NodeRefScript.psc:1:71:line-endings
@@ -6172,6 +6190,7 @@ Scripts/Source/City_NA_Botany02Pointer_Wait.psc:9:1:function-override
 Scripts/Source/City_NA_Botany02Pointer_Wait.psc:9:1:identifier-casing
 Scripts/Source/City_NA_Botany02Pointer_Wait.psc:10:1:indentation
 Scripts/Source/City_NA_Botany02Pointer_Wait.psc:11:1:indentation
+Scripts/Source/City_NA_Botany02Pointer_Wait.psc:11:17:quest-stage-logic-gap
 Scripts/Source/City_NA_Botany02Pointer_Wait.psc:12:1:indentation
 Scripts/Source/City_NA_Botany02Pointer_Wait.psc:15:35:final-newline
 Scripts/Source/City_NA_JunctionBox04Script.psc:1:12:type-casing
@@ -6507,6 +6526,7 @@ Scripts/Source/City_Neon_DrugGameScript.psc:118:1:indentation
 Scripts/Source/City_Neon_DrugGameScript.psc:119:1:indentation
 Scripts/Source/City_Neon_DrugGameScript.psc:120:1:indentation
 Scripts/Source/City_Neon_DrugGameScript.psc:122:1:indentation
+Scripts/Source/City_Neon_DrugGameScript.psc:122:13:quest-stage-logic-gap
 Scripts/Source/City_Neon_DrugGameScript.psc:124:1:indentation
 Scripts/Source/City_Neon_DrugGameScript.psc:125:1:indentation
 Scripts/Source/City_Neon_DrugGameScript.psc:125:1:none-form-usage
@@ -15422,6 +15442,7 @@ Scripts/Source/DefaultPassengerQuestScript.psc:271:1:unnecessary-function
 Scripts/Source/DefaultPassengerQuestScript.psc:273:121:line-length
 Scripts/Source/DefaultPassengerQuestScript.psc:277:1:identifier-casing
 Scripts/Source/DefaultPassengerQuestScript.psc:279:121:line-length
+Scripts/Source/DefaultPassengerQuestScript.psc:280:12:quest-stage-logic-gap
 Scripts/Source/DefaultPassengerQuestScript.psc:282:121:line-length
 Scripts/Source/DefaultPassengerQuestScript.psc:287:1:identifier-casing
 Scripts/Source/DefaultPassengerQuestScript.psc:287:1:unnecessary-function
@@ -17097,6 +17118,7 @@ Scripts/Source/DefaultSurveyTraitQuestScript.psc:87:1:indentation
 Scripts/Source/DefaultSurveyTraitQuestScript.psc:88:1:indentation
 Scripts/Source/DefaultSurveyTraitQuestScript.psc:89:1:indentation
 Scripts/Source/DefaultSurveyTraitQuestScript.psc:90:1:indentation
+Scripts/Source/DefaultSurveyTraitQuestScript.psc:90:33:quest-stage-logic-gap
 Scripts/Source/DefaultSurveyTraitQuestScript.psc:91:1:indentation
 Scripts/Source/DefaultSurveyTraitQuestScript.psc:92:1:indentation
 Scripts/Source/DefaultSurveyTraitQuestScript.psc:93:1:indentation
@@ -17672,6 +17694,7 @@ Scripts/Source/DialogueCydoniaDetonationQuestScript.psc:59:1:indentation
 Scripts/Source/DialogueCydoniaDetonationQuestScript.psc:59:1:none-form-usage
 Scripts/Source/DialogueCydoniaDetonationQuestScript.psc:60:1:indentation
 Scripts/Source/DialogueCydoniaDetonationQuestScript.psc:61:1:indentation
+Scripts/Source/DialogueCydoniaDetonationQuestScript.psc:61:21:quest-stage-logic-gap
 Scripts/Source/DialogueCydoniaDetonationQuestScript.psc:62:1:indentation
 Scripts/Source/DialogueCydoniaDetonationQuestScript.psc:63:1:trailing-whitespace
 Scripts/Source/DialogueCydoniaDetonationQuestScript.psc:64:1:indentation
@@ -17681,6 +17704,7 @@ Scripts/Source/DialogueCydoniaDetonationQuestScript.psc:66:1:indentation
 Scripts/Source/DialogueCydoniaDetonationQuestScript.psc:66:1:none-form-usage
 Scripts/Source/DialogueCydoniaDetonationQuestScript.psc:67:1:indentation
 Scripts/Source/DialogueCydoniaDetonationQuestScript.psc:68:1:indentation
+Scripts/Source/DialogueCydoniaDetonationQuestScript.psc:68:21:quest-stage-logic-gap
 Scripts/Source/DialogueCydoniaDetonationQuestScript.psc:69:1:indentation
 Scripts/Source/DialogueCydoniaDetonationQuestScript.psc:70:1:indentation
 Scripts/Source/DialogueCydoniaDetonationQuestScript.psc:75:1:indentation
@@ -17760,12 +17784,14 @@ Scripts/Source/DialogueCydoniaDetonationQuestScript.psc:153:1:indentation
 Scripts/Source/DialogueCydoniaDetonationQuestScript.psc:154:1:indentation
 Scripts/Source/DialogueCydoniaDetonationQuestScript.psc:155:1:indentation
 Scripts/Source/DialogueCydoniaDetonationQuestScript.psc:156:1:indentation
+Scripts/Source/DialogueCydoniaDetonationQuestScript.psc:156:25:quest-stage-logic-gap
 Scripts/Source/DialogueCydoniaDetonationQuestScript.psc:157:1:indentation
 Scripts/Source/DialogueCydoniaDetonationQuestScript.psc:158:1:indentation
 Scripts/Source/DialogueCydoniaDetonationQuestScript.psc:159:1:indentation
 Scripts/Source/DialogueCydoniaDetonationQuestScript.psc:160:1:indentation
 Scripts/Source/DialogueCydoniaDetonationQuestScript.psc:161:1:indentation
 Scripts/Source/DialogueCydoniaDetonationQuestScript.psc:162:1:indentation
+Scripts/Source/DialogueCydoniaDetonationQuestScript.psc:162:17:quest-stage-logic-gap
 Scripts/Source/DialogueCydoniaDetonationQuestScript.psc:163:1:indentation
 Scripts/Source/DialogueCydoniaDetonationQuestScript.psc:169:1:identifier-casing
 Scripts/Source/DialogueCydoniaDetonationQuestScript.psc:169:1:indentation
@@ -17775,6 +17801,7 @@ Scripts/Source/DialogueCydoniaDetonationQuestScript.psc:170:1:none-form-usage
 Scripts/Source/DialogueCydoniaDetonationQuestScript.psc:171:1:indentation
 Scripts/Source/DialogueCydoniaDetonationQuestScript.psc:172:1:indentation
 Scripts/Source/DialogueCydoniaDetonationQuestScript.psc:173:1:indentation
+Scripts/Source/DialogueCydoniaDetonationQuestScript.psc:173:17:quest-stage-logic-gap
 Scripts/Source/DialogueCydoniaDetonationQuestScript.psc:174:1:indentation
 Scripts/Source/DialogueCydoniaDetonationQuestScript.psc:180:1:function-override
 Scripts/Source/DialogueCydoniaDetonationQuestScript.psc:181:1:indentation
@@ -17923,6 +17950,7 @@ Scripts/Source/DialogueFCNeon_TimerScript.psc:10:1:function-override
 Scripts/Source/DialogueFCNeon_TimerScript.psc:10:1:identifier-casing
 Scripts/Source/DialogueFCNeon_TimerScript.psc:11:1:indentation
 Scripts/Source/DialogueFCNeon_TimerScript.psc:12:1:indentation
+Scripts/Source/DialogueFCNeon_TimerScript.psc:12:17:quest-stage-logic-gap
 Scripts/Source/DialogueFCNeon_TimerScript.psc:13:1:indentation
 Scripts/Source/DialogueFCNeon_TimerScript.psc:15:1:final-newline
 Scripts/Source/DialogueGenericPiracyShipQScript.psc:1:58:line-endings
@@ -20679,6 +20707,7 @@ Scripts/Source/FCR01Script.psc:16:1:none-form-usage
 Scripts/Source/FCR01Script.psc:23:1:identifier-casing
 Scripts/Source/FCR01Script.psc:24:8:forbidden-functions
 Scripts/Source/FCR01Script.psc:28:1:indentation
+Scripts/Source/FCR01Script.psc:28:17:quest-stage-logic-gap
 Scripts/Source/FCRQuestScript.psc:1:40:line-endings
 Scripts/Source/FCRQuestScript.psc:8:1:indentation
 Scripts/Source/FCRQuestScript.psc:8:1:none-form-usage
@@ -20828,6 +20857,7 @@ Scripts/Source/FFClinicR02QuestScript.psc:87:7:forbidden-functions
 Scripts/Source/FFClinicR02QuestScript.psc:87:79:slow-functions
 Scripts/Source/FFClinicR02QuestScript.psc:88:1:indentation
 Scripts/Source/FFClinicR02QuestScript.psc:89:1:indentation
+Scripts/Source/FFClinicR02QuestScript.psc:89:9:quest-stage-logic-gap
 Scripts/Source/FFClinicR02_PlayerScript.psc:1:12:type-casing
 Scripts/Source/FFClinicR02_PlayerScript.psc:1:71:line-endings
 Scripts/Source/FFClinicR02_PlayerScript.psc:5:1:indentation
@@ -21041,6 +21071,7 @@ Scripts/Source/FFConstantR02QuestScript.psc:85:10:forbidden-functions
 Scripts/Source/FFConstantR02QuestScript.psc:86:1:indentation
 Scripts/Source/FFConstantR02QuestScript.psc:86:1:none-form-usage
 Scripts/Source/FFConstantR02QuestScript.psc:87:1:indentation
+Scripts/Source/FFConstantR02QuestScript.psc:87:13:quest-stage-logic-gap
 Scripts/Source/FFConstantR02QuestScript.psc:90:1:unnecessary-function
 Scripts/Source/FFConstantR02QuestScript.psc:91:1:indentation
 Scripts/Source/FFConstantR02QuestScript.psc:95:1:function-override
@@ -21452,6 +21483,7 @@ Scripts/Source/FFCydoniaZ07QuestScript.psc:13:11:forbidden-functions
 Scripts/Source/FFCydoniaZ07QuestScript.psc:13:121:line-length
 Scripts/Source/FFCydoniaZ07QuestScript.psc:14:1:indentation
 Scripts/Source/FFCydoniaZ07QuestScript.psc:15:1:indentation
+Scripts/Source/FFCydoniaZ07QuestScript.psc:15:13:quest-stage-logic-gap
 Scripts/Source/FFCydoniaZ07QuestScript.psc:16:9:final-newline
 Scripts/Source/FFLodge04QuestScript.psc:1:46:line-endings
 Scripts/Source/FFLodge04QuestScript.psc:3:1:identifier-casing
@@ -21691,6 +21723,7 @@ Scripts/Source/FFNewHomesteadR04QuestScript.psc:77:1:indentation
 Scripts/Source/FFNewHomesteadR04QuestScript.psc:78:1:indentation
 Scripts/Source/FFNewHomesteadR04QuestScript.psc:79:1:indentation
 Scripts/Source/FFNewHomesteadR04QuestScript.psc:80:1:indentation
+Scripts/Source/FFNewHomesteadR04QuestScript.psc:80:17:quest-stage-logic-gap
 Scripts/Source/FFNewHomesteadR04QuestScript.psc:81:1:indentation
 Scripts/Source/FFNewHomesteadR04QuestScript.psc:86:1:function-override
 Scripts/Source/FFNewHomesteadR04QuestScript.psc:87:1:indentation
@@ -21704,6 +21737,7 @@ Scripts/Source/FFNewHomesteadR04QuestScript.psc:93:1:indentation
 Scripts/Source/FFNewHomesteadR04QuestScript.psc:97:1:function-override
 Scripts/Source/FFNewHomesteadR04QuestScript.psc:97:1:identifier-casing
 Scripts/Source/FFNewHomesteadR04QuestScript.psc:98:1:indentation
+Scripts/Source/FFNewHomesteadR04QuestScript.psc:98:13:quest-stage-logic-gap
 Scripts/Source/FFNewHomesteadR04QuestScript.psc:99:1:indentation
 Scripts/Source/FFNewHomesteadR04QuestScript.psc:99:121:line-length
 Scripts/Source/FFNewHomesteadR04QuestScript.psc:99:149:trailing-whitespace
@@ -21712,6 +21746,7 @@ Scripts/Source/FFNewHomesteadR04QuestScript.psc:101:1:indentation
 Scripts/Source/FFNewHomesteadR04QuestScript.psc:101:1:none-form-usage
 Scripts/Source/FFNewHomesteadR04QuestScript.psc:101:13:forbidden-functions
 Scripts/Source/FFNewHomesteadR04QuestScript.psc:102:1:indentation
+Scripts/Source/FFNewHomesteadR04QuestScript.psc:102:17:quest-stage-logic-gap
 Scripts/Source/FFNewHomesteadR04QuestScript.psc:103:1:indentation
 Scripts/Source/FFNewHomesteadR05QuestScript.psc:1:54:line-endings
 Scripts/Source/FFNewHomesteadR05QuestScript.psc:4:1:identifier-casing
@@ -21764,6 +21799,7 @@ Scripts/Source/FFParadisoZ01QuestScript.psc:29:1:function-override
 Scripts/Source/FFParadisoZ01QuestScript.psc:29:1:identifier-casing
 Scripts/Source/FFParadisoZ01QuestScript.psc:30:1:indentation
 Scripts/Source/FFParadisoZ01QuestScript.psc:31:1:indentation
+Scripts/Source/FFParadisoZ01QuestScript.psc:31:17:quest-stage-logic-gap
 Scripts/Source/FFParadisoZ01QuestScript.psc:32:1:indentation
 Scripts/Source/FFRedMileR01QuestScript.psc:1:49:line-endings
 Scripts/Source/FFRedMileR01QuestScript.psc:3:1:identifier-casing
@@ -84605,6 +84641,7 @@ Scripts/Source/GuardShipQuestScript.psc:303:1:none-form-usage
 Scripts/Source/GuardShipQuestScript.psc:303:8:forbidden-functions
 Scripts/Source/GuardShipQuestScript.psc:304:1:none-form-usage
 Scripts/Source/GuardShipQuestScript.psc:305:1:none-form-usage
+Scripts/Source/GuardShipQuestScript.psc:306:10:quest-stage-logic-gap
 Scripts/Source/GuardShipQuestScript.psc:310:8:forbidden-functions
 Scripts/Source/GuardShipQuestScript.psc:311:1:none-form-usage
 Scripts/Source/GuardShipQuestScript.psc:316:1:function-length
@@ -86193,6 +86230,7 @@ Scripts/Source/LC030_QuestScript.psc:427:51:assignment-operator-spacing
 Scripts/Source/LC030_QuestScript.psc:428:6:exclamation-spacing
 Scripts/Source/LC030_QuestScript.psc:434:1:identifier-casing
 Scripts/Source/LC030_QuestScript.psc:438:7:exclamation-spacing
+Scripts/Source/LC030_QuestScript.psc:439:12:quest-stage-logic-gap
 Scripts/Source/LC030_QuestScript.psc:441:12:forbidden-functions
 Scripts/Source/LC030_QuestScript.psc:450:1:identifier-casing
 Scripts/Source/LC030_QuestScript.psc:458:1:unnecessary-function
@@ -86221,6 +86259,7 @@ Scripts/Source/LC030_QuestScript.psc:520:1:identifier-casing
 Scripts/Source/LC030_QuestScript.psc:532:1:identifier-casing
 Scripts/Source/LC030_QuestScript.psc:532:1:identifier-casing
 Scripts/Source/LC030_QuestScript.psc:532:1:identifier-casing
+Scripts/Source/LC030_QuestScript.psc:534:11:quest-stage-logic-gap
 Scripts/Source/LC030_QuestScript.psc:538:1:identifier-casing
 Scripts/Source/LC030_QuestScript.psc:538:1:identifier-casing
 Scripts/Source/LC030_QuestScript.psc:538:1:identifier-casing
@@ -86233,6 +86272,7 @@ Scripts/Source/LC030_QuestScript.psc:552:1:identifier-casing
 Scripts/Source/LC030_QuestScript.psc:552:1:identifier-casing
 Scripts/Source/LC030_QuestScript.psc:552:1:identifier-casing
 Scripts/Source/LC030_QuestScript.psc:573:1:unnecessary-function
+Scripts/Source/LC030_QuestScript.psc:588:10:quest-stage-logic-gap
 Scripts/Source/LC030_QuestScript.psc:592:1:function-length
 Scripts/Source/LC030_QuestScript.psc:606:12:final-newline
 Scripts/Source/LC039QTTriggerScript.psc:1:62:line-endings
@@ -86805,6 +86845,7 @@ Scripts/Source/LC082_VigilanceQuestScript.psc:243:10:trailing-whitespace
 Scripts/Source/LC082_VigilanceQuestScript.psc:246:1:identifier-casing
 Scripts/Source/LC082_VigilanceQuestScript.psc:246:1:unnecessary-function
 Scripts/Source/LC082_VigilanceQuestScript.psc:256:12:forbidden-functions
+Scripts/Source/LC082_VigilanceQuestScript.psc:259:11:quest-stage-logic-gap
 Scripts/Source/LC082_VigilanceQuestScript.psc:260:1:indentation
 Scripts/Source/LC082_VigilanceQuestScript.psc:265:1:identifier-casing
 Scripts/Source/LC082_VigilanceQuestScript.psc:265:1:identifier-casing
@@ -86824,6 +86865,7 @@ Scripts/Source/LC082_VigilanceQuestScript.psc:292:1:identifier-casing
 Scripts/Source/LC082_VigilanceQuestScript.psc:298:1:identifier-casing
 Scripts/Source/LC082_VigilanceQuestScript.psc:299:1:identifier-casing
 Scripts/Source/LC082_VigilanceQuestScript.psc:313:1:identifier-casing
+Scripts/Source/LC082_VigilanceQuestScript.psc:329:10:quest-stage-logic-gap
 Scripts/Source/LC082_VigilanceQuestScript.psc:335:1:identifier-casing
 Scripts/Source/LC082_VigilanceQuestScript.psc:344:1:function-length
 Scripts/Source/LC082_VigilanceQuestScript.psc:344:1:identifier-casing
@@ -87249,6 +87291,7 @@ Scripts/Source/LC088_KeyQuestScript.psc:202:1:identifier-casing
 Scripts/Source/LC088_KeyQuestScript.psc:202:1:identifier-casing
 Scripts/Source/LC088_KeyQuestScript.psc:202:1:identifier-casing
 Scripts/Source/LC088_KeyQuestScript.psc:203:1:identifier-casing
+Scripts/Source/LC088_KeyQuestScript.psc:206:11:quest-stage-logic-gap
 Scripts/Source/LC088_KeyQuestScript.psc:209:7:exclamation-spacing
 Scripts/Source/LC088_KeyQuestScript.psc:219:1:identifier-casing
 Scripts/Source/LC088_KeyQuestScript.psc:236:1:identifier-casing
@@ -87305,12 +87348,14 @@ Scripts/Source/LC088_KeyQuestScript.psc:408:31:exclamation-spacing
 Scripts/Source/LC088_KeyQuestScript.psc:416:1:place-at-me
 Scripts/Source/LC088_KeyQuestScript.psc:417:10:forbidden-functions
 Scripts/Source/LC088_KeyQuestScript.psc:419:10:forbidden-functions
+Scripts/Source/LC088_KeyQuestScript.psc:420:10:quest-stage-logic-gap
 Scripts/Source/LC088_KeyQuestScript.psc:423:1:unnecessary-function
 Scripts/Source/LC088_KeyQuestScript.psc:424:6:exclamation-spacing
 Scripts/Source/LC088_KeyQuestScript.psc:434:1:unnecessary-function
 Scripts/Source/LC088_KeyQuestScript.psc:438:1:identifier-casing
 Scripts/Source/LC088_KeyQuestScript.psc:438:1:identifier-casing
 Scripts/Source/LC088_KeyQuestScript.psc:438:1:identifier-casing
+Scripts/Source/LC088_KeyQuestScript.psc:439:10:quest-stage-logic-gap
 Scripts/Source/LC088_KeyQuestScript.psc:452:1:identifier-casing
 Scripts/Source/LC088_KeyQuestScript.psc:468:1:identifier-casing
 Scripts/Source/LC088_KeyQuestScript.psc:487:1:identifier-casing
@@ -87740,6 +87785,7 @@ Scripts/Source/LC088_SpaceQuestScript.psc:437:1:identifier-casing
 Scripts/Source/LC088_SpaceQuestScript.psc:437:1:identifier-casing
 Scripts/Source/LC088_SpaceQuestScript.psc:437:1:identifier-casing
 Scripts/Source/LC088_SpaceQuestScript.psc:438:1:identifier-casing
+Scripts/Source/LC088_SpaceQuestScript.psc:440:11:quest-stage-logic-gap
 Scripts/Source/LC088_SpaceQuestScript.psc:452:1:function-length
 Scripts/Source/LC088_SpaceQuestScript.psc:453:51:slow-functions
 Scripts/Source/LC088_SpaceQuestScript.psc:454:52:slow-functions
@@ -87816,6 +87862,7 @@ Scripts/Source/LC088_SpaceQuestScript.psc:660:1:identifier-casing
 Scripts/Source/LC088_SpaceQuestScript.psc:690:1:argument-naming
 Scripts/Source/LC088_SpaceQuestScript.psc:690:1:function-override
 Scripts/Source/LC088_SpaceQuestScript.psc:690:1:identifier-casing
+Scripts/Source/LC088_SpaceQuestScript.psc:692:11:quest-stage-logic-gap
 Scripts/Source/LC088_SpaceQuestScript.psc:694:7:exclamation-spacing
 Scripts/Source/LC088_SpaceQuestScript.psc:700:1:identifier-casing
 Scripts/Source/LC088_SpaceQuestScript.psc:700:1:identifier-casing
@@ -88431,6 +88478,7 @@ Scripts/Source/LC088_VigilanceQuestScript.psc:288:1:identifier-casing
 Scripts/Source/LC088_VigilanceQuestScript.psc:288:121:line-length
 Scripts/Source/LC088_VigilanceQuestScript.psc:289:1:identifier-casing
 Scripts/Source/LC088_VigilanceQuestScript.psc:289:40:slow-functions
+Scripts/Source/LC088_VigilanceQuestScript.psc:297:11:quest-stage-logic-gap
 Scripts/Source/LC088_VigilanceQuestScript.psc:304:8:exclamation-spacing
 Scripts/Source/LC088_VigilanceQuestScript.psc:313:121:line-length
 Scripts/Source/LC088_VigilanceQuestScript.psc:315:1:identifier-casing
@@ -88494,6 +88542,7 @@ Scripts/Source/LC088_VigilanceQuestScript.psc:475:1:identifier-casing
 Scripts/Source/LC088_VigilanceQuestScript.psc:476:1:identifier-casing
 Scripts/Source/LC088_VigilanceQuestScript.psc:481:1:identifier-casing
 Scripts/Source/LC088_VigilanceQuestScript.psc:482:1:identifier-casing
+Scripts/Source/LC088_VigilanceQuestScript.psc:485:11:quest-stage-logic-gap
 Scripts/Source/LC088_VigilanceQuestScript.psc:490:1:identifier-casing
 Scripts/Source/LC088_VigilanceQuestScript.psc:490:1:identifier-casing
 Scripts/Source/LC088_VigilanceQuestScript.psc:490:1:identifier-casing
@@ -89398,6 +89447,7 @@ Scripts/Source/LC107QuestScript.psc:380:1:identifier-casing
 Scripts/Source/LC107QuestScript.psc:380:1:identifier-casing
 Scripts/Source/LC107QuestScript.psc:380:1:identifier-casing
 Scripts/Source/LC107QuestScript.psc:380:121:line-length
+Scripts/Source/LC107QuestScript.psc:383:11:quest-stage-logic-gap
 Scripts/Source/LC107QuestScript.psc:385:29:argument-types
 Scripts/Source/LC107QuestScript.psc:395:1:identifier-casing
 Scripts/Source/LC107QuestScript.psc:395:1:identifier-casing
@@ -90823,6 +90873,7 @@ Scripts/Source/LC165QuestScript.psc:1213:121:line-length
 Scripts/Source/LC165QuestScript.psc:1219:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:1219:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:1219:1:identifier-casing
+Scripts/Source/LC165QuestScript.psc:1223:11:quest-stage-logic-gap
 Scripts/Source/LC165QuestScript.psc:1228:1:function-override
 Scripts/Source/LC165QuestScript.psc:1228:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:1228:1:identifier-casing
@@ -91018,6 +91069,8 @@ Scripts/Source/LC165QuestScript.psc:1476:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:1476:1:nesting-depth
 Scripts/Source/LC165QuestScript.psc:1476:1:unnecessary-function
 Scripts/Source/LC165QuestScript.psc:1477:121:line-length
+Scripts/Source/LC165QuestScript.psc:1481:12:quest-stage-logic-gap
+Scripts/Source/LC165QuestScript.psc:1483:11:quest-stage-logic-gap
 Scripts/Source/LC165QuestScript.psc:1486:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:1492:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:1493:1:identifier-casing
@@ -91116,6 +91169,8 @@ Scripts/Source/LC165QuestScript.psc:1708:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:1708:1:unnecessary-function
 Scripts/Source/LC165QuestScript.psc:1710:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:1712:40:trailing-whitespace
+Scripts/Source/LC165QuestScript.psc:1719:13:quest-stage-logic-gap
+Scripts/Source/LC165QuestScript.psc:1721:12:quest-stage-logic-gap
 Scripts/Source/LC165QuestScript.psc:1727:10:forbidden-functions
 Scripts/Source/LC165QuestScript.psc:1728:121:line-length
 Scripts/Source/LC165QuestScript.psc:1731:121:line-length
@@ -91132,6 +91187,8 @@ Scripts/Source/LC165QuestScript.psc:1758:1:function-length
 Scripts/Source/LC165QuestScript.psc:1758:1:unnecessary-function
 Scripts/Source/LC165QuestScript.psc:1760:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:1761:1:identifier-casing
+Scripts/Source/LC165QuestScript.psc:1765:12:quest-stage-logic-gap
+Scripts/Source/LC165QuestScript.psc:1772:12:quest-stage-logic-gap
 Scripts/Source/LC165QuestScript.psc:1773:89:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:1773:89:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:1773:121:line-length
@@ -91161,6 +91218,7 @@ Scripts/Source/LC165QuestScript.psc:1824:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:1824:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:1824:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:1824:1:unregistered-remote-event
+Scripts/Source/LC165QuestScript.psc:1826:11:quest-stage-logic-gap
 Scripts/Source/LC165QuestScript.psc:1833:1:semicolon
 Scripts/Source/LC165QuestScript.psc:1838:1:function-length
 Scripts/Source/LC165QuestScript.psc:1838:1:identifier-casing
@@ -91198,9 +91256,12 @@ Scripts/Source/LC165QuestScript.psc:1883:1:function-length
 Scripts/Source/LC165QuestScript.psc:1883:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:1885:6:exclamation-spacing
 Scripts/Source/LC165QuestScript.psc:1887:7:exclamation-spacing
+Scripts/Source/LC165QuestScript.psc:1890:11:quest-stage-logic-gap
 Scripts/Source/LC165QuestScript.psc:1892:6:exclamation-spacing
 Scripts/Source/LC165QuestScript.psc:1892:57:trailing-whitespace
 Scripts/Source/LC165QuestScript.psc:1894:7:exclamation-spacing
+Scripts/Source/LC165QuestScript.psc:1898:11:quest-stage-logic-gap
+Scripts/Source/LC165QuestScript.psc:1907:11:quest-stage-logic-gap
 Scripts/Source/LC165QuestScript.psc:1912:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:1912:34:exclamation-spacing
 Scripts/Source/LC165QuestScript.psc:1913:1:identifier-casing
@@ -91231,6 +91292,7 @@ Scripts/Source/LC165QuestScript.psc:1992:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:1992:1:unnecessary-function
 Scripts/Source/LC165QuestScript.psc:1992:121:line-length
 Scripts/Source/LC165QuestScript.psc:1996:12:trailing-whitespace
+Scripts/Source/LC165QuestScript.psc:1999:10:quest-stage-logic-gap
 Scripts/Source/LC165QuestScript.psc:2005:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:2005:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:2005:1:identifier-casing
@@ -91311,6 +91373,8 @@ Scripts/Source/LC165QuestScript.psc:2201:1:nesting-depth
 Scripts/Source/LC165QuestScript.psc:2201:1:unnecessary-function
 Scripts/Source/LC165QuestScript.psc:2203:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:2209:26:argument-types
+Scripts/Source/LC165QuestScript.psc:2211:14:quest-stage-logic-gap
+Scripts/Source/LC165QuestScript.psc:2213:13:quest-stage-logic-gap
 Scripts/Source/LC165QuestScript.psc:2216:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:2217:8:exclamation-spacing
 Scripts/Source/LC165QuestScript.psc:2220:79:assignment-operator-spacing
@@ -91633,6 +91697,7 @@ Scripts/Source/LC165QuestScript.psc:2795:1:unchecked-cast
 Scripts/Source/LC165QuestScript.psc:2806:7:trailing-whitespace
 Scripts/Source/LC165QuestScript.psc:2809:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:2809:121:line-length
+Scripts/Source/LC165QuestScript.psc:2811:11:quest-stage-logic-gap
 Scripts/Source/LC165QuestScript.psc:2816:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:2817:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:2827:1:identifier-casing
@@ -91866,6 +91931,7 @@ Scripts/Source/LC165QuestScript.psc:3507:95:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:3507:95:assignment-operator-spacing
 Scripts/Source/LC165QuestScript.psc:3512:10:forbidden-functions
 Scripts/Source/LC165QuestScript.psc:3514:1:unchecked-cast
+Scripts/Source/LC165QuestScript.psc:3515:10:quest-stage-logic-gap
 Scripts/Source/LC165QuestScript.psc:3524:1:function-length
 Scripts/Source/LC165QuestScript.psc:3576:1:identifier-casing
 Scripts/Source/LC165QuestScript.psc:3595:1:identifier-casing
@@ -92021,6 +92087,7 @@ Scripts/Source/LC165ShiftingQuestScript.psc:131:1:trailing-whitespace
 Scripts/Source/LC165ShiftingQuestScript.psc:133:1:identifier-casing
 Scripts/Source/LC165ShiftingQuestScript.psc:137:8:exclamation-spacing
 Scripts/Source/LC165ShiftingQuestScript.psc:160:5:semicolon
+Scripts/Source/LC165ShiftingQuestScript.psc:180:13:quest-stage-logic-gap
 Scripts/Source/LC165ShiftingQuestScript.psc:191:1:identifier-casing
 Scripts/Source/LC165ShiftingQuestScript.psc:192:1:identifier-casing
 Scripts/Source/LC165ShiftingQuestScript.psc:197:121:line-length
@@ -92076,8 +92143,10 @@ Scripts/Source/LC165ShiftingQuestScript.psc:245:1:identifier-casing
 Scripts/Source/LC165ShiftingQuestScript.psc:247:1:identifier-casing
 Scripts/Source/LC165ShiftingQuestScript.psc:250:14:forbidden-functions
 Scripts/Source/LC165ShiftingQuestScript.psc:258:8:exclamation-spacing
+Scripts/Source/LC165ShiftingQuestScript.psc:259:13:quest-stage-logic-gap
 Scripts/Source/LC165ShiftingQuestScript.psc:266:1:trailing-whitespace
 Scripts/Source/LC165ShiftingQuestScript.psc:274:8:exclamation-spacing
+Scripts/Source/LC165ShiftingQuestScript.psc:280:13:quest-stage-logic-gap
 Scripts/Source/LC165ShiftingQuestScript.psc:286:1:function-length
 Scripts/Source/LC165ShiftingQuestScript.psc:286:1:identifier-casing
 Scripts/Source/LC165ShiftingQuestScript.psc:286:1:unnecessary-function
@@ -92326,11 +92395,14 @@ Scripts/Source/LC165SpaceQuestScript.psc:255:6:exclamation-spacing
 Scripts/Source/LC165SpaceQuestScript.psc:260:1:function-length
 Scripts/Source/LC165SpaceQuestScript.psc:261:1:identifier-casing
 Scripts/Source/LC165SpaceQuestScript.psc:261:1:unused-local-variable
+Scripts/Source/LC165SpaceQuestScript.psc:271:11:quest-stage-logic-gap
 Scripts/Source/LC165SpaceQuestScript.psc:274:7:exclamation-spacing
+Scripts/Source/LC165SpaceQuestScript.psc:284:11:quest-stage-logic-gap
 Scripts/Source/LC165SpaceQuestScript.psc:288:1:function-length
 Scripts/Source/LC165SpaceQuestScript.psc:288:1:unnecessary-function
 Scripts/Source/LC165SpaceQuestScript.psc:289:6:exclamation-spacing
 Scripts/Source/LC165SpaceQuestScript.psc:294:121:line-length
+Scripts/Source/LC165SpaceQuestScript.psc:300:11:quest-stage-logic-gap
 Scripts/Source/LC165SpaceQuestScript.psc:308:121:line-length
 Scripts/Source/LC165SpaceQuestScript.psc:317:1:argument-naming
 Scripts/Source/LC165SpaceQuestScript.psc:317:1:function-override
@@ -92360,6 +92432,7 @@ Scripts/Source/LC165SpaceQuestScript.psc:336:1:identifier-casing
 Scripts/Source/LC165SpaceQuestScript.psc:337:1:numeric-comparison
 Scripts/Source/LC165SpaceQuestScript.psc:350:1:identifier-casing
 Scripts/Source/LC165SpaceQuestScript.psc:351:1:numeric-comparison
+Scripts/Source/LC165SpaceQuestScript.psc:367:12:quest-stage-logic-gap
 Scripts/Source/LC165SpaceQuestScript.psc:371:1:variable-used-before-assignment
 Scripts/Source/LC165SpaceQuestScript.psc:372:12:final-newline
 Scripts/Source/LC175_CreatureAmbushScript.psc:1:12:type-casing
@@ -94140,6 +94213,7 @@ Scripts/Source/MQ101Script.psc:75:1:function-override
 Scripts/Source/MQ101Script.psc:76:25:forbidden-functions
 Scripts/Source/MQ101Script.psc:79:1:none-form-usage
 Scripts/Source/MQ101Script.psc:79:16:slow-functions
+Scripts/Source/MQ101Script.psc:80:11:quest-stage-logic-gap
 Scripts/Source/MQ101Script.psc:84:1:identifier-casing
 Scripts/Source/MQ101Script.psc:84:1:identifier-casing
 Scripts/Source/MQ101Script.psc:84:1:identifier-casing
@@ -94217,6 +94291,8 @@ Scripts/Source/MQ101Script.psc:216:1:none-form-usage
 Scripts/Source/MQ101Script.psc:217:1:unused-local-variable
 Scripts/Source/MQ101Script.psc:217:25:forbidden-functions
 Scripts/Source/MQ101Script.psc:218:1:none-form-usage
+Scripts/Source/MQ101Script.psc:221:11:quest-stage-logic-gap
+Scripts/Source/MQ101Script.psc:223:11:quest-stage-logic-gap
 Scripts/Source/MQ101Script.psc:228:25:forbidden-functions
 Scripts/Source/MQ101Script.psc:230:10:forbidden-functions
 Scripts/Source/MQ101Script.psc:231:1:none-form-usage
@@ -94257,6 +94333,7 @@ Scripts/Source/MQ101Script.psc:259:19:operator-spacing
 Scripts/Source/MQ101Script.psc:260:1:indentation
 Scripts/Source/MQ101Script.psc:260:24:boolean-simplification
 Scripts/Source/MQ101Script.psc:261:1:indentation
+Scripts/Source/MQ101Script.psc:261:11:quest-stage-logic-gap
 Scripts/Source/MQ101Script.psc:262:1:indentation
 Scripts/Source/MQ101Script.psc:263:1:indentation
 Scripts/Source/MQ101Script.psc:267:28:exclamation-spacing
@@ -94580,6 +94657,7 @@ Scripts/Source/MQ104AScript.psc:10:1:identifier-casing
 Scripts/Source/MQ104AScript.psc:10:1:identifier-casing
 Scripts/Source/MQ104AScript.psc:10:1:unregistered-remote-event
 Scripts/Source/MQ104AScript.psc:11:1:indentation
+Scripts/Source/MQ104AScript.psc:11:13:quest-stage-logic-gap
 Scripts/Source/MQ104AScript.psc:12:1:indentation
 Scripts/Source/MQ104AScript.psc:12:1:none-form-usage
 Scripts/Source/MQ104AScript.psc:13:9:final-newline
@@ -95186,6 +95264,7 @@ Scripts/Source/MQ204Script.psc:36:1:identifier-casing
 Scripts/Source/MQ204Script.psc:36:1:unused-property
 Scripts/Source/MQ204Script.psc:38:1:function-override
 Scripts/Source/MQ204Script.psc:39:1:indentation
+Scripts/Source/MQ204Script.psc:39:13:quest-stage-logic-gap
 Scripts/Source/MQ204Script.psc:42:1:assignment-overwritten
 Scripts/Source/MQ204Script.psc:42:1:function-length
 Scripts/Source/MQ204Script.psc:42:1:identifier-casing
@@ -95245,12 +95324,14 @@ Scripts/Source/MQ204Script.psc:88:24:assignment-operator-spacing
 Scripts/Source/MQ204Script.psc:88:24:assignment-operator-spacing
 Scripts/Source/MQ204Script.psc:89:1:indentation
 Scripts/Source/MQ204Script.psc:90:1:indentation
+Scripts/Source/MQ204Script.psc:90:17:quest-stage-logic-gap
 Scripts/Source/MQ204Script.psc:91:1:indentation
 Scripts/Source/MQ204Script.psc:96:1:indentation
 Scripts/Source/MQ204Script.psc:96:26:assignment-operator-spacing
 Scripts/Source/MQ204Script.psc:96:26:assignment-operator-spacing
 Scripts/Source/MQ204Script.psc:97:1:indentation
 Scripts/Source/MQ204Script.psc:98:1:indentation
+Scripts/Source/MQ204Script.psc:98:17:quest-stage-logic-gap
 Scripts/Source/MQ204Script.psc:99:1:indentation
 Scripts/Source/MQ204Script.psc:103:1:identifier-casing
 Scripts/Source/MQ204Script.psc:103:1:identifier-casing
@@ -95507,6 +95588,7 @@ Scripts/Source/MQ206AScript.psc:29:1:indentation
 Scripts/Source/MQ206AScript.psc:30:1:indentation
 Scripts/Source/MQ206AScript.psc:30:1:none-form-usage
 Scripts/Source/MQ206AScript.psc:31:1:indentation
+Scripts/Source/MQ206AScript.psc:31:11:quest-stage-logic-gap
 Scripts/Source/MQ206AScript.psc:32:1:indentation
 Scripts/Source/MQ206AScript.psc:33:1:indentation
 Scripts/Source/MQ206AScript.psc:33:7:duplicate-conditional-body
@@ -95515,6 +95597,7 @@ Scripts/Source/MQ206AScript.psc:33:70:assignment-operator-spacing
 Scripts/Source/MQ206AScript.psc:33:86:assignment-operator-spacing
 Scripts/Source/MQ206AScript.psc:33:86:assignment-operator-spacing
 Scripts/Source/MQ206AScript.psc:34:1:indentation
+Scripts/Source/MQ206AScript.psc:34:19:quest-stage-logic-gap
 Scripts/Source/MQ206AScript.psc:35:1:indentation
 Scripts/Source/MQ206AScript.psc:36:1:indentation
 Scripts/Source/MQ206AScript.psc:37:1:indentation
@@ -95539,6 +95622,7 @@ Scripts/Source/MQ206AScript.psc:65:1:indentation
 Scripts/Source/MQ206AScript.psc:66:1:indentation
 Scripts/Source/MQ206AScript.psc:66:13:forbidden-functions
 Scripts/Source/MQ206AScript.psc:67:1:indentation
+Scripts/Source/MQ206AScript.psc:67:13:quest-stage-logic-gap
 Scripts/Source/MQ206AScript.psc:71:1:function-length
 Scripts/Source/MQ206AScript.psc:72:1:indentation
 Scripts/Source/MQ206AScript.psc:72:1:none-form-usage
@@ -95567,6 +95651,7 @@ Scripts/Source/MQ206AScript.psc:91:1:indentation
 Scripts/Source/MQ206AScript.psc:92:1:indentation
 Scripts/Source/MQ206AScript.psc:93:1:indentation
 Scripts/Source/MQ206AScript.psc:94:1:indentation
+Scripts/Source/MQ206AScript.psc:94:17:quest-stage-logic-gap
 Scripts/Source/MQ206AScript.psc:95:1:indentation
 Scripts/Source/MQ206AScript.psc:96:12:final-newline
 Scripts/Source/MQ206BPlayerScript.psc:1:53:line-endings
@@ -96187,6 +96272,7 @@ Scripts/Source/MQ207CQuestScript.psc:335:1:argument-naming
 Scripts/Source/MQ207CQuestScript.psc:335:1:function-override
 Scripts/Source/MQ207CQuestScript.psc:335:1:identifier-casing
 Scripts/Source/MQ207CQuestScript.psc:335:1:identifier-casing
+Scripts/Source/MQ207CQuestScript.psc:337:11:quest-stage-logic-gap
 Scripts/Source/MQ207CQuestScript.psc:341:1:argument-naming
 Scripts/Source/MQ207CQuestScript.psc:341:1:function-override
 Scripts/Source/MQ207CQuestScript.psc:341:1:identifier-casing
@@ -96199,6 +96285,7 @@ Scripts/Source/MQ207CQuestScript.psc:341:1:identifier-casing
 Scripts/Source/MQ207CQuestScript.psc:341:1:identifier-casing
 Scripts/Source/MQ207CQuestScript.psc:341:1:identifier-casing
 Scripts/Source/MQ207CQuestScript.psc:341:121:line-length
+Scripts/Source/MQ207CQuestScript.psc:342:10:quest-stage-logic-gap
 Scripts/Source/MQ207CQuestScript.psc:351:1:function-length
 Scripts/Source/MQ207CQuestScript.psc:351:1:unnecessary-function
 Scripts/Source/MQ207CQuestScript.psc:352:56:exclamation-spacing
@@ -96333,6 +96420,7 @@ Scripts/Source/MQ207CQuestScript.psc:856:1:identifier-casing
 Scripts/Source/MQ207CQuestScript.psc:859:121:line-length
 Scripts/Source/MQ207CQuestScript.psc:861:36:assignment-operator-spacing
 Scripts/Source/MQ207CQuestScript.psc:861:36:assignment-operator-spacing
+Scripts/Source/MQ207CQuestScript.psc:870:11:quest-stage-logic-gap
 Scripts/Source/MQ207CQuestScript.psc:877:1:function-length
 Scripts/Source/MQ207CQuestScript.psc:877:1:identifier-casing
 Scripts/Source/MQ207CQuestScript.psc:877:1:identifier-casing
@@ -96345,6 +96433,7 @@ Scripts/Source/MQ207CQuestScript.psc:907:10:forbidden-functions
 Scripts/Source/MQ207CQuestScript.psc:909:10:forbidden-functions
 Scripts/Source/MQ207CQuestScript.psc:911:10:forbidden-functions
 Scripts/Source/MQ207CQuestScript.psc:913:6:exclamation-spacing
+Scripts/Source/MQ207CQuestScript.psc:914:11:quest-stage-logic-gap
 Scripts/Source/MQ207CQuestScript.psc:923:1:identifier-casing
 Scripts/Source/MQ207CQuestScript.psc:928:1:identifier-casing
 Scripts/Source/MQ207CQuestScript.psc:933:1:identifier-casing
@@ -96500,18 +96589,25 @@ Scripts/Source/MQ207CQuestScript.psc:1326:1:indentation
 Scripts/Source/MQ207CQuestScript.psc:1327:1:indentation
 Scripts/Source/MQ207CQuestScript.psc:1328:1:indentation
 Scripts/Source/MQ207CQuestScript.psc:1329:1:indentation
+Scripts/Source/MQ207CQuestScript.psc:1336:10:quest-stage-logic-gap
+Scripts/Source/MQ207CQuestScript.psc:1337:10:quest-stage-logic-gap
+Scripts/Source/MQ207CQuestScript.psc:1338:10:quest-stage-logic-gap
 Scripts/Source/MQ207CQuestScript.psc:1341:1:identifier-casing
 Scripts/Source/MQ207CQuestScript.psc:1348:1:identifier-casing
 Scripts/Source/MQ207CQuestScript.psc:1348:1:identifier-casing
 Scripts/Source/MQ207CQuestScript.psc:1353:1:identifier-casing
 Scripts/Source/MQ207CQuestScript.psc:1353:1:identifier-casing
 Scripts/Source/MQ207CQuestScript.psc:1358:1:identifier-casing
+Scripts/Source/MQ207CQuestScript.psc:1361:10:quest-stage-logic-gap
 Scripts/Source/MQ207CQuestScript.psc:1364:1:identifier-casing
+Scripts/Source/MQ207CQuestScript.psc:1367:10:quest-stage-logic-gap
 Scripts/Source/MQ207CQuestScript.psc:1370:1:function-length
 Scripts/Source/MQ207CQuestScript.psc:1370:1:identifier-casing
 Scripts/Source/MQ207CQuestScript.psc:1372:35:assignment-operator-spacing
 Scripts/Source/MQ207CQuestScript.psc:1372:35:assignment-operator-spacing
+Scripts/Source/MQ207CQuestScript.psc:1381:10:quest-stage-logic-gap
 Scripts/Source/MQ207CQuestScript.psc:1384:1:identifier-casing
+Scripts/Source/MQ207CQuestScript.psc:1391:10:quest-stage-logic-gap
 Scripts/Source/MQ207CQuestScript.psc:1392:12:final-newline
 Scripts/Source/MQ207CRafaelPostquestQuestScript.psc:1:58:line-endings
 Scripts/Source/MQ207CRafaelPostquestQuestScript.psc:5:1:indentation
@@ -96730,6 +96826,8 @@ Scripts/Source/MQ207CShiftingQuestScript.psc:227:86:assignment-operator-spacing
 Scripts/Source/MQ207CShiftingQuestScript.psc:227:86:assignment-operator-spacing
 Scripts/Source/MQ207CShiftingQuestScript.psc:228:7:exclamation-spacing
 Scripts/Source/MQ207CShiftingQuestScript.psc:234:1:identifier-casing
+Scripts/Source/MQ207CShiftingQuestScript.psc:242:11:quest-stage-logic-gap
+Scripts/Source/MQ207CShiftingQuestScript.psc:247:11:quest-stage-logic-gap
 Scripts/Source/MQ207CShiftingQuestScript.psc:257:1:trailing-whitespace
 Scripts/Source/MQ207CShiftingQuestScript.psc:262:6:exclamation-spacing
 Scripts/Source/MQ207CShiftingQuestScript.psc:268:1:function-length
@@ -97163,6 +97261,7 @@ Scripts/Source/MQ305Script.psc:248:1:unnecessary-function
 Scripts/Source/MQ305Script.psc:258:1:function-length
 Scripts/Source/MQ305Script.psc:258:1:identifier-casing
 Scripts/Source/MQ305Script.psc:258:1:unnecessary-function
+Scripts/Source/MQ305Script.psc:260:11:quest-stage-logic-gap
 Scripts/Source/MQ305Script.psc:261:6:trailing-whitespace
 Scripts/Source/MQ305Script.psc:262:46:exclamation-spacing
 Scripts/Source/MQ305Script.psc:265:49:assignment-operator-spacing
@@ -97389,6 +97488,7 @@ Scripts/Source/MQ401QuestScript.psc:84:1:indentation
 Scripts/Source/MQ401QuestScript.psc:85:1:indentation
 Scripts/Source/MQ401QuestScript.psc:87:1:indentation
 Scripts/Source/MQ401QuestScript.psc:88:1:indentation
+Scripts/Source/MQ401QuestScript.psc:88:13:quest-stage-logic-gap
 Scripts/Source/MQ401QuestScript.psc:92:1:function-override
 Scripts/Source/MQ401QuestScript.psc:92:1:identifier-casing
 Scripts/Source/MQ401QuestScript.psc:92:1:identifier-casing
@@ -97491,6 +97591,7 @@ Scripts/Source/MQ401VariantQuestScript.psc:16:1:none-form-usage
 Scripts/Source/MQ401VariantQuestScript.psc:16:32:slow-functions
 Scripts/Source/MQ401VariantQuestScript.psc:17:1:indentation
 Scripts/Source/MQ401VariantQuestScript.psc:19:1:indentation
+Scripts/Source/MQ401VariantQuestScript.psc:19:12:quest-stage-logic-gap
 Scripts/Source/MQ401VariantQuestScript.psc:22:1:indentation
 Scripts/Source/MQ401VariantQuestScript.psc:23:1:identifier-casing
 Scripts/Source/MQ401VariantQuestScript.psc:23:1:indentation
@@ -97802,6 +97903,7 @@ Scripts/Source/MQHunterPreMQ106Script.psc:3:28:assignment-operator-spacing
 Scripts/Source/MQHunterPreMQ106Script.psc:3:28:assignment-operator-spacing
 Scripts/Source/MQHunterPreMQ106Script.psc:5:1:function-override
 Scripts/Source/MQHunterPreMQ106Script.psc:6:1:indentation
+Scripts/Source/MQHunterPreMQ106Script.psc:6:13:quest-stage-logic-gap
 Scripts/Source/MQHunterPreMQ106Script.psc:7:9:final-newline
 Scripts/Source/MQLodgeArmillaryMountScript.psc:1:69:line-endings
 Scripts/Source/MQLodgeArmillaryMountScript.psc:4:1:identifier-casing
@@ -98248,6 +98350,7 @@ Scripts/Source/MQ_Temple_SubScript.psc:69:1:indentation
 Scripts/Source/MQ_Temple_SubScript.psc:70:1:indentation
 Scripts/Source/MQ_Temple_SubScript.psc:70:33:trailing-whitespace
 Scripts/Source/MQ_Temple_SubScript.psc:71:1:indentation
+Scripts/Source/MQ_Temple_SubScript.psc:71:21:quest-stage-logic-gap
 Scripts/Source/MQ_Temple_SubScript.psc:72:1:indentation
 Scripts/Source/MQ_Temple_SubScript.psc:73:1:indentation
 Scripts/Source/MQ_Temple_SubScript.psc:76:1:identifier-casing
@@ -99020,6 +99123,7 @@ Scripts/Source/MQ_TutorialQuestScript.psc:276:1:indentation
 Scripts/Source/MQ_TutorialQuestScript.psc:277:1:indentation
 Scripts/Source/MQ_TutorialQuestScript.psc:278:1:indentation
 Scripts/Source/MQ_TutorialQuestScript.psc:279:1:indentation
+Scripts/Source/MQ_TutorialQuestScript.psc:279:17:quest-stage-logic-gap
 Scripts/Source/MQ_TutorialQuestScript.psc:280:1:indentation
 Scripts/Source/MQ_TutorialQuestScript.psc:283:1:identifier-casing
 Scripts/Source/MQ_TutorialQuestScript.psc:283:1:identifier-casing
@@ -99030,6 +99134,7 @@ Scripts/Source/MQ_TutorialQuestScript.psc:285:1:indentation
 Scripts/Source/MQ_TutorialQuestScript.psc:286:1:indentation
 Scripts/Source/MQ_TutorialQuestScript.psc:286:1:none-form-usage
 Scripts/Source/MQ_TutorialQuestScript.psc:287:1:indentation
+Scripts/Source/MQ_TutorialQuestScript.psc:287:17:quest-stage-logic-gap
 Scripts/Source/MQ_TutorialQuestScript.psc:288:1:indentation
 Scripts/Source/MQ_TutorialQuestScript.psc:291:1:identifier-casing
 Scripts/Source/MQ_TutorialQuestScript.psc:291:1:identifier-casing
@@ -99399,10 +99504,12 @@ Scripts/Source/MS02Script.psc:179:1:indentation
 Scripts/Source/MS02Script.psc:180:1:indentation
 Scripts/Source/MS02Script.psc:180:10:forbidden-functions
 Scripts/Source/MS02Script.psc:182:1:indentation
+Scripts/Source/MS02Script.psc:182:13:quest-stage-logic-gap
 Scripts/Source/MS02Script.psc:183:1:indentation
 Scripts/Source/MS02Script.psc:183:1:none-form-usage
 Scripts/Source/MS02Script.psc:187:1:function-length
 Scripts/Source/MS02Script.psc:188:1:indentation
+Scripts/Source/MS02Script.psc:188:13:quest-stage-logic-gap
 Scripts/Source/MS02Script.psc:189:1:identifier-casing
 Scripts/Source/MS02Script.psc:189:1:indentation
 Scripts/Source/MS02Script.psc:189:1:none-form-usage
@@ -99553,8 +99660,10 @@ Scripts/Source/MS05QuestScript.psc:26:22:boolean-simplification
 Scripts/Source/MS05QuestScript.psc:27:1:indentation
 Scripts/Source/MS05QuestScript.psc:27:1:unchecked-cast
 Scripts/Source/MS05QuestScript.psc:28:1:indentation
+Scripts/Source/MS05QuestScript.psc:28:21:quest-stage-logic-gap
 Scripts/Source/MS05QuestScript.psc:29:1:indentation
 Scripts/Source/MS05QuestScript.psc:30:1:indentation
+Scripts/Source/MS05QuestScript.psc:30:21:quest-stage-logic-gap
 Scripts/Source/MS05QuestScript.psc:31:1:indentation
 Scripts/Source/MS05QuestScript.psc:32:1:indentation
 Scripts/Source/MS05QuestScript.psc:34:1:final-newline
@@ -99573,6 +99682,7 @@ Scripts/Source/MS05RewardScript.psc:20:1:indentation
 Scripts/Source/MS05RewardScript.psc:20:1:none-form-usage
 Scripts/Source/MS05RewardScript.psc:20:1:none-form-usage
 Scripts/Source/MS05RewardScript.psc:21:1:indentation
+Scripts/Source/MS05RewardScript.psc:21:17:quest-stage-logic-gap
 Scripts/Source/MS05RewardScript.psc:22:1:indentation
 Scripts/Source/MS06ResetActorsScript.psc:1:63:line-endings
 Scripts/Source/MS06ResetActorsScript.psc:5:1:function-override
@@ -101951,6 +102061,7 @@ Scripts/Source/MissionPiracyQuestScript.psc:244:121:line-length
 Scripts/Source/MissionPiracyQuestScript.psc:247:1:identifier-casing
 Scripts/Source/MissionPiracyQuestScript.psc:247:1:indentation
 Scripts/Source/MissionPiracyQuestScript.psc:247:61:unresolved-script
+Scripts/Source/MissionPiracyQuestScript.psc:249:12:quest-stage-logic-gap
 Scripts/Source/MissionPiracyQuestScript.psc:250:1:indentation
 Scripts/Source/MissionPiracyQuestScript.psc:255:1:identifier-casing
 Scripts/Source/MissionPiracyQuestScript.psc:255:1:identifier-casing
@@ -101964,6 +102075,7 @@ Scripts/Source/MissionPiracyQuestScript.psc:257:58:unresolved-script
 Scripts/Source/MissionPiracyQuestScript.psc:259:1:indentation
 Scripts/Source/MissionPiracyQuestScript.psc:259:11:forbidden-functions
 Scripts/Source/MissionPiracyQuestScript.psc:260:1:indentation
+Scripts/Source/MissionPiracyQuestScript.psc:262:11:quest-stage-logic-gap
 Scripts/Source/MissionPiracyQuestScript.psc:263:1:indentation
 Scripts/Source/MissionPiracyQuestScript.psc:266:1:argument-naming
 Scripts/Source/MissionPiracyQuestScript.psc:266:1:function-override
@@ -101975,6 +102087,7 @@ Scripts/Source/MissionPiracyQuestScript.psc:267:8:forbidden-functions
 Scripts/Source/MissionPiracyQuestScript.psc:268:1:identifier-casing
 Scripts/Source/MissionPiracyQuestScript.psc:268:1:indentation
 Scripts/Source/MissionPiracyQuestScript.psc:268:58:unresolved-script
+Scripts/Source/MissionPiracyQuestScript.psc:271:11:quest-stage-logic-gap
 Scripts/Source/MissionPlantEvidenceQuestScript.psc:1:70:line-endings
 Scripts/Source/MissionPlantEvidenceQuestScript.psc:4:1:indentation
 Scripts/Source/MissionPlantEvidenceQuestScript.psc:4:1:unused-property
@@ -102051,6 +102164,7 @@ Scripts/Source/MissionQuestScript.psc:118:1:none-form-usage
 Scripts/Source/MissionQuestScript.psc:120:1:none-form-usage
 Scripts/Source/MissionQuestScript.psc:121:9:forbidden-functions
 Scripts/Source/MissionQuestScript.psc:129:8:forbidden-functions
+Scripts/Source/MissionQuestScript.psc:130:10:quest-stage-logic-gap
 Scripts/Source/MissionQuestScript.psc:133:1:function-override
 Scripts/Source/MissionQuestScript.psc:133:1:identifier-casing
 Scripts/Source/MissionQuestScript.psc:133:1:identifier-casing
@@ -102069,6 +102183,7 @@ Scripts/Source/MissionQuestScript.psc:157:1:none-form-usage
 Scripts/Source/MissionQuestScript.psc:164:1:function-length
 Scripts/Source/MissionQuestScript.psc:164:1:identifier-casing
 Scripts/Source/MissionQuestScript.psc:165:8:forbidden-functions
+Scripts/Source/MissionQuestScript.psc:176:11:quest-stage-logic-gap
 Scripts/Source/MissionQuestScript.psc:179:1:none-form-usage
 Scripts/Source/MissionQuestScript.psc:191:1:function-length
 Scripts/Source/MissionQuestScript.psc:192:8:forbidden-functions
@@ -102078,10 +102193,12 @@ Scripts/Source/MissionQuestScript.psc:195:1:unused-local-variable
 Scripts/Source/MissionQuestScript.psc:195:27:forbidden-functions
 Scripts/Source/MissionQuestScript.psc:198:1:none-form-usage
 Scripts/Source/MissionQuestScript.psc:200:13:forbidden-functions
+Scripts/Source/MissionQuestScript.psc:205:12:quest-stage-logic-gap
 Scripts/Source/MissionQuestScript.psc:214:1:function-length
 Scripts/Source/MissionQuestScript.psc:215:8:forbidden-functions
 Scripts/Source/MissionQuestScript.psc:217:50:boolean-simplification
 Scripts/Source/MissionQuestScript.psc:219:1:none-form-usage
+Scripts/Source/MissionQuestScript.psc:221:12:quest-stage-logic-gap
 Scripts/Source/MissionQuestScript.psc:231:1:function-length
 Scripts/Source/MissionQuestScript.psc:232:1:identifier-casing
 Scripts/Source/MissionQuestScript.psc:233:1:identifier-casing
@@ -103401,6 +103518,7 @@ Scripts/Source/Mq301Script.psc:7:32:assignment-operator-spacing
 Scripts/Source/Mq301Script.psc:10:1:indentation
 Scripts/Source/Mq301Script.psc:11:1:indentation
 Scripts/Source/Mq301Script.psc:12:1:indentation
+Scripts/Source/Mq301Script.psc:12:17:quest-stage-logic-gap
 Scripts/Source/Mq301Script.psc:13:1:indentation
 Scripts/Source/Mq301Script.psc:18:1:indentation
 Scripts/Source/Mq301Script.psc:19:12:final-newline
@@ -104712,12 +104830,14 @@ Scripts/Source/OEScript.psc:150:1:indentation
 Scripts/Source/OEScript.psc:151:1:indentation
 Scripts/Source/OEScript.psc:153:1:indentation
 Scripts/Source/OEScript.psc:154:1:indentation
+Scripts/Source/OEScript.psc:154:17:quest-stage-logic-gap
 Scripts/Source/OEScript.psc:155:1:indentation
 Scripts/Source/OEScript.psc:158:1:function-override
 Scripts/Source/OEScript.psc:158:1:identifier-casing
 Scripts/Source/OEScript.psc:158:1:identifier-casing
 Scripts/Source/OEScript.psc:158:1:identifier-casing
 Scripts/Source/OEScript.psc:158:1:identifier-casing
+Scripts/Source/OEScript.psc:162:10:quest-stage-logic-gap
 Scripts/Source/OEScript.psc:167:1:function-length
 Scripts/Source/OEScript.psc:167:1:identifier-casing
 Scripts/Source/OEScript.psc:167:28:trailing-whitespace
@@ -105218,6 +105338,7 @@ Scripts/Source/OE_CiviliansScript.psc:68:1:indentation
 Scripts/Source/OE_CiviliansScript.psc:70:1:useless-downcast
 Scripts/Source/OE_CiviliansScript.psc:73:1:indentation
 Scripts/Source/OE_CiviliansScript.psc:74:1:indentation
+Scripts/Source/OE_CiviliansScript.psc:74:13:quest-stage-logic-gap
 Scripts/Source/OE_CiviliansScript.psc:76:1:indentation
 Scripts/Source/OE_CiviliansScript.psc:77:1:indentation
 Scripts/Source/OE_CiviliansScript.psc:80:1:identifier-casing
@@ -105563,6 +105684,7 @@ Scripts/Source/OE_HuntedHomesteaders_QuestScript.psc:25:1:function-override
 Scripts/Source/OE_HuntedHomesteaders_QuestScript.psc:25:1:identifier-casing
 Scripts/Source/OE_HuntedHomesteaders_QuestScript.psc:26:1:indentation
 Scripts/Source/OE_HuntedHomesteaders_QuestScript.psc:27:1:indentation
+Scripts/Source/OE_HuntedHomesteaders_QuestScript.psc:27:17:quest-stage-logic-gap
 Scripts/Source/OE_HuntedHomesteaders_QuestScript.psc:28:1:indentation
 Scripts/Source/OE_KT_FoodGiftFilter.psc:1:55:line-endings
 Scripts/Source/OE_KT_FoodGiftFilter.psc:4:1:indentation
@@ -105607,6 +105729,7 @@ Scripts/Source/OE_KT_IncomingStormTerminalScript.psc:32:93:slow-functions
 Scripts/Source/OE_KT_IncomingStormTerminalScript.psc:32:121:line-length
 Scripts/Source/OE_KT_IncomingStormTerminalScript.psc:32:147:slow-functions
 Scripts/Source/OE_KT_IncomingStormTerminalScript.psc:33:1:indentation
+Scripts/Source/OE_KT_IncomingStormTerminalScript.psc:33:17:quest-stage-logic-gap
 Scripts/Source/OE_KT_IncomingStormTerminalScript.psc:34:1:indentation
 Scripts/Source/OE_KT_IncomingStormTerminalScript.psc:34:1:none-form-usage
 Scripts/Source/OE_KT_IncomingStormTerminalScript.psc:34:49:slow-functions
@@ -105621,8 +105744,10 @@ Scripts/Source/OE_KT_IncomingStormTerminalScript.psc:37:97:slow-functions
 Scripts/Source/OE_KT_IncomingStormTerminalScript.psc:37:121:line-length
 Scripts/Source/OE_KT_IncomingStormTerminalScript.psc:37:151:slow-functions
 Scripts/Source/OE_KT_IncomingStormTerminalScript.psc:38:1:indentation
+Scripts/Source/OE_KT_IncomingStormTerminalScript.psc:38:21:quest-stage-logic-gap
 Scripts/Source/OE_KT_IncomingStormTerminalScript.psc:39:1:indentation
 Scripts/Source/OE_KT_IncomingStormTerminalScript.psc:40:1:indentation
+Scripts/Source/OE_KT_IncomingStormTerminalScript.psc:40:21:quest-stage-logic-gap
 Scripts/Source/OE_KT_IncomingStormTerminalScript.psc:41:1:indentation
 Scripts/Source/OE_KT_IncomingStormTerminalScript.psc:42:1:indentation
 Scripts/Source/OE_KT_IncomingStormTerminalScript.psc:44:12:final-newline
@@ -106518,6 +106643,7 @@ Scripts/Source/OE_ShipsAddonScript.psc:573:43:trailing-whitespace
 Scripts/Source/OE_ShipsAddonScript.psc:575:1:indentation
 Scripts/Source/OE_ShipsAddonScript.psc:577:1:indentation
 Scripts/Source/OE_ShipsAddonScript.psc:578:1:indentation
+Scripts/Source/OE_ShipsAddonScript.psc:578:25:quest-stage-logic-gap
 Scripts/Source/OE_ShipsAddonScript.psc:579:1:indentation
 Scripts/Source/OE_ShipsAddonScript.psc:580:1:indentation
 Scripts/Source/OE_ShipsAddonScript.psc:580:13:trailing-whitespace
@@ -106620,6 +106746,7 @@ Scripts/Source/OE_ShipsAddonScript.psc:662:1:indentation
 Scripts/Source/OE_ShipsAddonScript.psc:663:1:indentation
 Scripts/Source/OE_ShipsAddonScript.psc:664:1:indentation
 Scripts/Source/OE_ShipsAddonScript.psc:665:1:indentation
+Scripts/Source/OE_ShipsAddonScript.psc:665:25:quest-stage-logic-gap
 Scripts/Source/OE_ShipsAddonScript.psc:666:1:indentation
 Scripts/Source/OE_ShipsAddonScript.psc:667:1:indentation
 Scripts/Source/OE_ShipsAddonScript.psc:668:1:indentation
@@ -106632,6 +106759,7 @@ Scripts/Source/OE_ShipsAddonScript.psc:673:1:indentation
 Scripts/Source/OE_ShipsAddonScript.psc:674:1:indentation
 Scripts/Source/OE_ShipsAddonScript.psc:675:1:indentation
 Scripts/Source/OE_ShipsAddonScript.psc:676:1:indentation
+Scripts/Source/OE_ShipsAddonScript.psc:676:21:quest-stage-logic-gap
 Scripts/Source/OE_ShipsAddonScript.psc:677:1:indentation
 Scripts/Source/OE_ShipsAddonScript.psc:678:1:indentation
 Scripts/Source/OE_ShipsAddonScript.psc:681:1:identifier-casing
@@ -106851,6 +106979,7 @@ Scripts/Source/OE_ShipsAddonScript.psc:852:1:trailing-whitespace
 Scripts/Source/OE_ShipsAddonScript.psc:853:1:indentation
 Scripts/Source/OE_ShipsAddonScript.psc:854:1:indentation
 Scripts/Source/OE_ShipsAddonScript.psc:855:1:indentation
+Scripts/Source/OE_ShipsAddonScript.psc:855:33:quest-stage-logic-gap
 Scripts/Source/OE_ShipsAddonScript.psc:856:1:indentation
 Scripts/Source/OE_ShipsAddonScript.psc:857:1:indentation
 Scripts/Source/OE_ShipsAddonScript.psc:858:1:indentation
@@ -107265,6 +107394,7 @@ Scripts/Source/OE_SimpleTimer.psc:26:1:function-override
 Scripts/Source/OE_SimpleTimer.psc:26:1:identifier-casing
 Scripts/Source/OE_SimpleTimer.psc:27:1:indentation
 Scripts/Source/OE_SimpleTimer.psc:28:1:indentation
+Scripts/Source/OE_SimpleTimer.psc:28:17:quest-stage-logic-gap
 Scripts/Source/OE_SimpleTimer.psc:29:1:indentation
 Scripts/Source/OE_SimpleTimer.psc:30:9:final-newline
 Scripts/Source/OLD_BE_QuestScript.psc:1:56:line-endings
@@ -108331,6 +108461,7 @@ Scripts/Source/OneOfAKindQuestScript.psc:11:1:indentation
 Scripts/Source/OneOfAKindQuestScript.psc:12:1:indentation
 Scripts/Source/OneOfAKindQuestScript.psc:13:1:indentation
 Scripts/Source/OneOfAKindQuestScript.psc:14:1:indentation
+Scripts/Source/OneOfAKindQuestScript.psc:14:17:quest-stage-logic-gap
 Scripts/Source/OneOfAKindQuestScript.psc:15:1:indentation
 Scripts/Source/OneOfAKindQuestScript.psc:16:12:final-newline
 Scripts/Source/OpenInventoryInfoScript.psc:1:59:line-endings
@@ -109836,6 +109967,7 @@ Scripts/Source/OutpostTutorialScript.psc:199:62:assignment-operator-spacing
 Scripts/Source/OutpostTutorialScript.psc:199:62:assignment-operator-spacing
 Scripts/Source/OutpostTutorialScript.psc:201:1:identifier-casing
 Scripts/Source/OutpostTutorialScript.psc:202:121:line-length
+Scripts/Source/OutpostTutorialScript.psc:205:14:quest-stage-logic-gap
 Scripts/Source/OutpostTutorialScript.psc:207:36:forbidden-functions
 Scripts/Source/OutpostTutorialScript.psc:215:1:cyclomatic-complexity
 Scripts/Source/OutpostTutorialScript.psc:215:1:function-length
@@ -111695,10 +111827,12 @@ Scripts/Source/QuestDebuggerScript.psc:87:1:identifier-casing
 Scripts/Source/QuestDebuggerScript.psc:88:3:strict-boolean
 Scripts/Source/QuestDebuggerScript.psc:94:1:identifier-casing
 Scripts/Source/QuestDebuggerScript.psc:106:23:boolean-simplification
+Scripts/Source/QuestDebuggerScript.psc:108:11:quest-stage-logic-gap
 Scripts/Source/QuestDebuggerScript.psc:113:1:cyclomatic-complexity
 Scripts/Source/QuestDebuggerScript.psc:113:1:function-length
 Scripts/Source/QuestDebuggerScript.psc:113:1:identifier-casing
 Scripts/Source/QuestDebuggerScript.psc:116:22:boolean-simplification
+Scripts/Source/QuestDebuggerScript.psc:118:11:quest-stage-logic-gap
 Scripts/Source/QuestDebuggerScript.psc:121:22:boolean-simplification
 Scripts/Source/QuestDebuggerScript.psc:129:22:boolean-simplification
 Scripts/Source/QuestDebuggerScript.psc:139:22:boolean-simplification
@@ -111749,6 +111883,7 @@ Scripts/Source/RAD02Script.psc:9:1:indentation
 Scripts/Source/RAD02Script.psc:10:1:indentation
 Scripts/Source/RAD02Script.psc:10:1:none-form-usage
 Scripts/Source/RAD02Script.psc:11:1:indentation
+Scripts/Source/RAD02Script.psc:11:17:quest-stage-logic-gap
 Scripts/Source/RAD02Script.psc:12:1:indentation
 Scripts/Source/RAD02Script.psc:13:12:final-newline
 Scripts/Source/RAD03QuestScript.psc:1:42:line-endings
@@ -111764,6 +111899,7 @@ Scripts/Source/RAD03QuestScript.psc:18:1:function-override
 Scripts/Source/RAD03QuestScript.psc:19:1:indentation
 Scripts/Source/RAD03QuestScript.psc:20:1:indentation
 Scripts/Source/RAD03QuestScript.psc:21:1:indentation
+Scripts/Source/RAD03QuestScript.psc:21:17:quest-stage-logic-gap
 Scripts/Source/RAD03QuestScript.psc:22:1:indentation
 Scripts/Source/RAD03QuestScript.psc:23:1:identifier-casing
 Scripts/Source/RAD03QuestScript.psc:23:1:indentation
@@ -111800,6 +111936,7 @@ Scripts/Source/RAD03QuestScript.psc:48:1:indentation
 Scripts/Source/RAD03QuestScript.psc:48:1:unchecked-cast
 Scripts/Source/RAD03QuestScript.psc:49:1:indentation
 Scripts/Source/RAD03QuestScript.psc:50:1:indentation
+Scripts/Source/RAD03QuestScript.psc:50:17:quest-stage-logic-gap
 Scripts/Source/RAD03QuestScript.psc:51:1:indentation
 Scripts/Source/RAD03QuestScript.psc:52:9:final-newline
 Scripts/Source/RAD04QuestScript.psc:1:42:line-endings
@@ -111822,6 +111959,7 @@ Scripts/Source/RAD04QuestScript.psc:15:1:unchecked-cast
 Scripts/Source/RAD04QuestScript.psc:15:1:unchecked-cast
 Scripts/Source/RAD04QuestScript.psc:16:1:indentation
 Scripts/Source/RAD04QuestScript.psc:17:1:indentation
+Scripts/Source/RAD04QuestScript.psc:17:17:quest-stage-logic-gap
 Scripts/Source/RAD04QuestScript.psc:18:1:indentation
 Scripts/Source/RAD04QuestScript.psc:19:9:final-newline
 Scripts/Source/RAD06PlayerAliasScript.psc:1:57:line-endings
@@ -111889,6 +112027,7 @@ Scripts/Source/RAD06Script.psc:72:1:identifier-casing
 Scripts/Source/RAD06Script.psc:73:1:identifier-casing
 Scripts/Source/RAD06Script.psc:73:1:none-form-usage
 Scripts/Source/RAD06Script.psc:75:8:forbidden-functions
+Scripts/Source/RAD06Script.psc:80:11:quest-stage-logic-gap
 Scripts/Source/RAD06Script.psc:88:9:forbidden-functions
 Scripts/Source/RAD06Script.psc:89:1:none-form-usage
 Scripts/Source/RAD06Script.psc:91:1:identifier-casing
@@ -112558,6 +112697,7 @@ Scripts/Source/REScript.psc:203:1:indentation
 Scripts/Source/REScript.psc:209:1:function-override
 Scripts/Source/REScript.psc:209:1:identifier-casing
 Scripts/Source/REScript.psc:213:1:identifier-casing
+Scripts/Source/REScript.psc:219:11:quest-stage-logic-gap
 Scripts/Source/REScript.psc:224:1:identifier-casing
 Scripts/Source/REScript.psc:224:1:identifier-casing
 Scripts/Source/REScript.psc:224:1:identifier-casing
@@ -112608,11 +112748,15 @@ Scripts/Source/REScript.psc:306:121:line-length
 Scripts/Source/REScript.psc:312:1:identifier-casing
 Scripts/Source/REScript.psc:313:121:line-length
 Scripts/Source/REScript.psc:332:1:unnecessary-function
+Scripts/Source/REScript.psc:335:11:quest-stage-logic-gap
 Scripts/Source/REScript.psc:342:1:identifier-casing
+Scripts/Source/REScript.psc:345:11:quest-stage-logic-gap
 Scripts/Source/REScript.psc:349:1:identifier-casing
 Scripts/Source/REScript.psc:349:1:identifier-casing
+Scripts/Source/REScript.psc:352:11:quest-stage-logic-gap
 Scripts/Source/REScript.psc:356:1:identifier-casing
 Scripts/Source/REScript.psc:356:1:identifier-casing
+Scripts/Source/REScript.psc:359:11:quest-stage-logic-gap
 Scripts/Source/REScript.psc:363:1:identifier-casing
 Scripts/Source/REScript.psc:363:1:identifier-casing
 Scripts/Source/REScript.psc:363:1:unnecessary-function
@@ -113358,10 +113502,12 @@ Scripts/Source/RI06_QuestScript.psc:60:11:forbidden-functions
 Scripts/Source/RI06_QuestScript.psc:61:1:indentation
 Scripts/Source/RI06_QuestScript.psc:61:1:none-form-usage
 Scripts/Source/RI06_QuestScript.psc:62:1:indentation
+Scripts/Source/RI06_QuestScript.psc:62:17:quest-stage-logic-gap
 Scripts/Source/RI06_QuestScript.psc:63:1:indentation
 Scripts/Source/RI06_QuestScript.psc:64:1:indentation
 Scripts/Source/RI06_QuestScript.psc:64:1:none-form-usage
 Scripts/Source/RI06_QuestScript.psc:65:1:indentation
+Scripts/Source/RI06_QuestScript.psc:65:17:quest-stage-logic-gap
 Scripts/Source/RI06_QuestScript.psc:66:1:indentation
 Scripts/Source/RI06_QuestScript.psc:69:1:function-length
 Scripts/Source/RI06_QuestScript.psc:69:1:function-override
@@ -113376,6 +113522,7 @@ Scripts/Source/RI06_QuestScript.psc:73:1:indentation
 Scripts/Source/RI06_QuestScript.psc:73:1:none-form-usage
 Scripts/Source/RI06_QuestScript.psc:73:52:forbidden-functions
 Scripts/Source/RI06_QuestScript.psc:74:1:indentation
+Scripts/Source/RI06_QuestScript.psc:74:21:quest-stage-logic-gap
 Scripts/Source/RI06_QuestScript.psc:75:1:indentation
 Scripts/Source/RI06_QuestScript.psc:76:1:indentation
 Scripts/Source/RI06_QuestScript.psc:77:1:indentation
@@ -113387,6 +113534,7 @@ Scripts/Source/RI06_QuestScript.psc:81:1:indentation
 Scripts/Source/RI06_QuestScript.psc:81:1:none-form-usage
 Scripts/Source/RI06_QuestScript.psc:81:54:forbidden-functions
 Scripts/Source/RI06_QuestScript.psc:82:1:indentation
+Scripts/Source/RI06_QuestScript.psc:82:21:quest-stage-logic-gap
 Scripts/Source/RI06_QuestScript.psc:83:1:indentation
 Scripts/Source/RI06_QuestScript.psc:84:1:indentation
 Scripts/Source/RI06_QuestScript.psc:85:1:indentation
@@ -113436,6 +113584,7 @@ Scripts/Source/RI06_QuestScript.psc:116:1:none-form-usage
 Scripts/Source/RI06_QuestScript.psc:117:1:indentation
 Scripts/Source/RI06_QuestScript.psc:117:11:forbidden-functions
 Scripts/Source/RI06_QuestScript.psc:118:1:indentation
+Scripts/Source/RI06_QuestScript.psc:118:17:quest-stage-logic-gap
 Scripts/Source/RI06_QuestScript.psc:119:1:indentation
 Scripts/Source/RI06_QuestScript.psc:119:1:none-form-usage
 Scripts/Source/RI06_QuestScript.psc:120:1:indentation
@@ -113444,6 +113593,7 @@ Scripts/Source/RI06_QuestScript.psc:121:1:none-form-usage
 Scripts/Source/RI06_QuestScript.psc:122:1:indentation
 Scripts/Source/RI06_QuestScript.psc:122:11:forbidden-functions
 Scripts/Source/RI06_QuestScript.psc:123:1:indentation
+Scripts/Source/RI06_QuestScript.psc:123:17:quest-stage-logic-gap
 Scripts/Source/RI06_QuestScript.psc:124:1:indentation
 Scripts/Source/RI06_QuestScript.psc:124:1:none-form-usage
 Scripts/Source/RI06_QuestScript.psc:125:1:indentation
@@ -113453,6 +113603,7 @@ Scripts/Source/RI06_QuestScript.psc:126:1:none-form-usage
 Scripts/Source/RI06_QuestScript.psc:127:1:indentation
 Scripts/Source/RI06_QuestScript.psc:127:11:forbidden-functions
 Scripts/Source/RI06_QuestScript.psc:128:1:indentation
+Scripts/Source/RI06_QuestScript.psc:128:17:quest-stage-logic-gap
 Scripts/Source/RI06_QuestScript.psc:129:1:indentation
 Scripts/Source/RI07_DeMarcusAliasScript.psc:1:12:type-casing
 Scripts/Source/RI07_DeMarcusAliasScript.psc:1:59:line-endings
@@ -113775,6 +113926,7 @@ Scripts/Source/RI08_PostQuestScript.psc:10:1:function-override
 Scripts/Source/RI08_PostQuestScript.psc:10:1:identifier-casing
 Scripts/Source/RI08_PostQuestScript.psc:11:1:indentation
 Scripts/Source/RI08_PostQuestScript.psc:12:1:indentation
+Scripts/Source/RI08_PostQuestScript.psc:12:17:quest-stage-logic-gap
 Scripts/Source/RI08_PostQuestScript.psc:13:1:indentation
 Scripts/Source/RIR02_ContainerAliasScript.psc:1:12:type-casing
 Scripts/Source/RIR02_ContainerAliasScript.psc:1:61:line-endings
@@ -113954,6 +114106,7 @@ Scripts/Source/RIR03_QuestScript.psc:16:121:line-length
 Scripts/Source/RIR03_QuestScript.psc:17:1:indentation
 Scripts/Source/RIR03_QuestScript.psc:17:11:forbidden-functions
 Scripts/Source/RIR03_QuestScript.psc:18:1:indentation
+Scripts/Source/RIR03_QuestScript.psc:18:19:quest-stage-logic-gap
 Scripts/Source/RIR03_QuestScript.psc:19:1:indentation
 Scripts/Source/RIR03_QuestScript.psc:21:12:final-newline
 Scripts/Source/RIR04_GuardAliasScript.psc:1:12:type-casing
@@ -114278,6 +114431,7 @@ Scripts/Source/RI_CrimeTrackingQuestScript.psc:98:1:indentation
 Scripts/Source/RI_CrimeTrackingQuestScript.psc:98:1:none-form-usage
 Scripts/Source/RI_CrimeTrackingQuestScript.psc:98:11:forbidden-functions
 Scripts/Source/RI_CrimeTrackingQuestScript.psc:100:1:indentation
+Scripts/Source/RI_CrimeTrackingQuestScript.psc:100:13:quest-stage-logic-gap
 Scripts/Source/RI_CrimeTrackingQuestScript.psc:102:12:final-newline
 Scripts/Source/RI_LaneTriggerScript.psc:1:55:line-endings
 Scripts/Source/RI_LaneTriggerScript.psc:3:1:identifier-casing
@@ -115697,6 +115851,7 @@ Scripts/Source/RQ_CollectScript.psc:29:1:indentation
 Scripts/Source/RQ_CollectScript.psc:29:37:slow-functions
 Scripts/Source/RQ_CollectScript.psc:30:1:indentation
 Scripts/Source/RQ_CollectScript.psc:31:1:indentation
+Scripts/Source/RQ_CollectScript.psc:31:17:quest-stage-logic-gap
 Scripts/Source/RQ_CollectScript.psc:32:1:indentation
 Scripts/Source/RQ_CollectScript.psc:37:1:indentation
 Scripts/Source/RQ_CollectScript.psc:38:1:indentation
@@ -115720,6 +115875,7 @@ Scripts/Source/RQ_CollectScript.psc:48:1:indentation
 Scripts/Source/RQ_CollectScript.psc:49:1:indentation
 Scripts/Source/RQ_CollectScript.psc:49:66:slow-functions
 Scripts/Source/RQ_CollectScript.psc:50:1:indentation
+Scripts/Source/RQ_CollectScript.psc:50:17:quest-stage-logic-gap
 Scripts/Source/RQ_CollectScript.psc:51:1:indentation
 Scripts/Source/RQ_CollectScript.psc:52:1:indentation
 Scripts/Source/RQ_CollectScript.psc:54:1:final-newline
@@ -115750,6 +115906,7 @@ Scripts/Source/RQ_DeliverScript.psc:36:1:useless-downcast
 Scripts/Source/RQ_DeliverScript.psc:39:1:indentation
 Scripts/Source/RQ_DeliverScript.psc:40:1:indentation
 Scripts/Source/RQ_DeliverScript.psc:41:1:indentation
+Scripts/Source/RQ_DeliverScript.psc:41:13:quest-stage-logic-gap
 Scripts/Source/RQ_DeliverScript.psc:44:1:function-override
 Scripts/Source/RQ_DeliverScript.psc:44:1:identifier-casing
 Scripts/Source/RQ_DeliverScript.psc:44:1:identifier-casing
@@ -115851,6 +116008,7 @@ Scripts/Source/RQ_HarvestMineScript.psc:45:65:trailing-whitespace
 Scripts/Source/RQ_HarvestMineScript.psc:46:1:indentation
 Scripts/Source/RQ_HarvestMineScript.psc:46:15:forbidden-functions
 Scripts/Source/RQ_HarvestMineScript.psc:47:1:indentation
+Scripts/Source/RQ_HarvestMineScript.psc:47:17:quest-stage-logic-gap
 Scripts/Source/RQ_HarvestMineScript.psc:48:1:indentation
 Scripts/Source/RQ_HarvestMineScript.psc:49:1:indentation
 Scripts/Source/RQ_HarvestMineScript.psc:50:1:indentation
@@ -115920,6 +116078,7 @@ Scripts/Source/RQ_HarvestMineScript.psc:105:26:trailing-whitespace
 Scripts/Source/RQ_HarvestMineScript.psc:106:1:indentation
 Scripts/Source/RQ_HarvestMineScript.psc:106:19:forbidden-functions
 Scripts/Source/RQ_HarvestMineScript.psc:107:1:indentation
+Scripts/Source/RQ_HarvestMineScript.psc:107:21:quest-stage-logic-gap
 Scripts/Source/RQ_HarvestMineScript.psc:108:1:indentation
 Scripts/Source/RQ_HarvestMineScript.psc:109:1:indentation
 Scripts/Source/RQ_HarvestMineScript.psc:109:121:line-length
@@ -115951,6 +116110,7 @@ Scripts/Source/RQ_HarvestMineScript.psc:125:1:indentation
 Scripts/Source/RQ_HarvestMineScript.psc:127:1:indentation
 Scripts/Source/RQ_HarvestMineScript.psc:127:51:slow-functions
 Scripts/Source/RQ_HarvestMineScript.psc:128:1:indentation
+Scripts/Source/RQ_HarvestMineScript.psc:128:17:quest-stage-logic-gap
 Scripts/Source/RQ_HarvestMineScript.psc:129:1:indentation
 Scripts/Source/RQ_HarvestMineScript.psc:130:9:final-newline
 Scripts/Source/RQ_Heal_01_Script.psc:1:12:type-casing
@@ -116166,6 +116326,7 @@ Scripts/Source/RQ_SetStageOnExternalScene.psc:27:1:indentation
 Scripts/Source/RQ_SetStageOnExternalScene.psc:28:1:indentation
 Scripts/Source/RQ_SetStageOnExternalScene.psc:29:1:indentation
 Scripts/Source/RQ_SetStageOnExternalScene.psc:30:1:indentation
+Scripts/Source/RQ_SetStageOnExternalScene.psc:30:17:quest-stage-logic-gap
 Scripts/Source/RQ_SetStageOnExternalScene.psc:31:1:indentation
 Scripts/Source/RQ_SetStageOnExternalScene.psc:39:1:identifier-casing
 Scripts/Source/RQ_SetStageOnExternalScene.psc:39:1:identifier-casing
@@ -116262,6 +116423,7 @@ Scripts/Source/RQ_TransportPersonScript.psc:85:1:indentation
 Scripts/Source/RQ_TransportPersonScript.psc:86:1:indentation
 Scripts/Source/RQ_TransportPersonScript.psc:87:1:indentation
 Scripts/Source/RQ_TransportPersonScript.psc:88:1:indentation
+Scripts/Source/RQ_TransportPersonScript.psc:88:17:quest-stage-logic-gap
 Scripts/Source/RQ_TransportPersonScript.psc:89:1:indentation
 Scripts/Source/RQ_TransportPersonScript.psc:90:1:indentation
 Scripts/Source/RQ_TransportPersonScript.psc:91:1:indentation
@@ -117701,6 +117863,7 @@ Scripts/Source/Ri08_QuestScript.psc:22:1:indentation
 Scripts/Source/Ri08_QuestScript.psc:25:1:function-override
 Scripts/Source/Ri08_QuestScript.psc:25:1:identifier-casing
 Scripts/Source/Ri08_QuestScript.psc:26:1:indentation
+Scripts/Source/Ri08_QuestScript.psc:26:13:quest-stage-logic-gap
 Scripts/Source/Ri08_QuestScript.psc:30:121:line-length
 Scripts/Source/Ri08_QuestScript.psc:35:1:identifier-casing
 Scripts/Source/Ri08_QuestScript.psc:35:1:indentation
@@ -119774,6 +119937,7 @@ Scripts/Source/SEScript.psc:107:8:forbidden-functions
 Scripts/Source/SEScript.psc:108:1:identifier-casing
 Scripts/Source/SEScript.psc:111:1:identifier-casing
 Scripts/Source/SEScript.psc:113:10:forbidden-functions
+Scripts/Source/SEScript.psc:120:12:quest-stage-logic-gap
 Scripts/Source/SEScript.psc:125:2:strict-boolean
 Scripts/Source/SEScript.psc:126:1:identifier-casing
 Scripts/Source/SEScript.psc:127:9:forbidden-functions
@@ -119810,6 +119974,7 @@ Scripts/Source/SEScript.psc:186:35:forbidden-functions
 Scripts/Source/SEScript.psc:188:1:assignment-overwritten
 Scripts/Source/SEScript.psc:188:1:identifier-casing
 Scripts/Source/SEScript.psc:196:13:boolean-simplification
+Scripts/Source/SEScript.psc:206:11:quest-stage-logic-gap
 Scripts/Source/SEScript.psc:212:1:identifier-casing
 Scripts/Source/SEScript.psc:212:1:identifier-casing
 Scripts/Source/SEScript.psc:212:1:identifier-casing
@@ -120504,6 +120669,7 @@ Scripts/Source/SE_RaidScript.psc:71:1:indentation
 Scripts/Source/SE_RaidScript.psc:72:1:indentation
 Scripts/Source/SE_RaidScript.psc:72:25:forbidden-functions
 Scripts/Source/SE_RaidScript.psc:73:1:indentation
+Scripts/Source/SE_RaidScript.psc:73:30:quest-stage-logic-gap
 Scripts/Source/SE_RaidScript.psc:74:1:indentation
 Scripts/Source/SE_RaidScript.psc:74:18:trailing-whitespace
 Scripts/Source/SE_RaidScript.psc:75:1:trailing-whitespace
@@ -124566,6 +124732,7 @@ Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:75:1:indentation
 Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:76:1:indentation
 Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:77:1:indentation
 Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:78:1:indentation
+Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:78:17:quest-stage-logic-gap
 Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:78:34:trailing-whitespace
 Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:79:1:indentation
 Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:80:1:indentation
@@ -124627,9 +124794,11 @@ Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:131:1:indentation
 Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:131:103:trailing-whitespace
 Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:132:1:indentation
 Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:133:1:indentation
+Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:133:17:quest-stage-logic-gap
 Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:134:1:indentation
 Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:134:9:trailing-whitespace
 Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:135:1:indentation
+Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:135:17:quest-stage-logic-gap
 Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:136:1:indentation
 Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:136:10:trailing-whitespace
 Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:140:1:identifier-casing
@@ -124643,6 +124812,7 @@ Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:144:121:line-length
 Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:145:1:indentation
 Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:146:1:indentation
 Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:147:1:indentation
+Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:147:17:quest-stage-logic-gap
 Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:148:1:indentation
 Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:148:9:trailing-whitespace
 Scripts/Source/SFBGS003/SFBGS003_SQ_Bounty_MissionScript.psc:149:1:indentation
@@ -125055,6 +125225,7 @@ Scripts/Source/SFBGS003MiscPointerQuestScript.psc:94:1:indentation
 Scripts/Source/SFBGS003MiscPointerQuestScript.psc:98:1:function-override
 Scripts/Source/SFBGS003MiscPointerQuestScript.psc:98:1:identifier-casing
 Scripts/Source/SFBGS003MiscPointerQuestScript.psc:99:1:indentation
+Scripts/Source/SFBGS003MiscPointerQuestScript.psc:99:13:quest-stage-logic-gap
 Scripts/Source/SFBGS003MiscPointerQuestScript.psc:100:9:final-newline
 Scripts/Source/SFBGS003TASupportQuestScript.psc:1:54:line-endings
 Scripts/Source/SFBGS003TASupportQuestScript.psc:3:1:identifier-casing
@@ -125722,6 +125893,7 @@ Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:113:1:indentation
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:113:44:exclamation-spacing
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:114:1:indentation
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:115:1:indentation
+Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:115:17:quest-stage-logic-gap
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:116:1:trailing-whitespace
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:117:1:indentation
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:118:1:indentation
@@ -125904,9 +126076,11 @@ Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:285:1:indentation
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:285:103:trailing-whitespace
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:286:1:indentation
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:287:1:indentation
+Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:287:17:quest-stage-logic-gap
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:288:1:indentation
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:288:9:trailing-whitespace
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:289:1:indentation
+Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:289:17:quest-stage-logic-gap
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:290:1:indentation
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:290:10:trailing-whitespace
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:294:1:function-length
@@ -125925,6 +126099,7 @@ Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:301:121:line-length
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:302:1:indentation
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:303:1:indentation
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:304:1:indentation
+Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:304:17:quest-stage-logic-gap
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:305:1:indentation
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:305:9:trailing-whitespace
 Scripts/Source/SFBGS003_SQ_Bounty_QuestScript.psc:306:1:indentation
@@ -126133,12 +126308,14 @@ Scripts/Source/SFBGS00D/CruiseModeTestSupportScript.psc:31:1:indentation
 Scripts/Source/SFBGS00D/CruiseModeTestSupportScript.psc:33:1:indentation
 Scripts/Source/SFBGS00D/CruiseModeTestSupportScript.psc:34:1:indentation
 Scripts/Source/SFBGS00D/CruiseModeTestSupportScript.psc:35:1:indentation
+Scripts/Source/SFBGS00D/CruiseModeTestSupportScript.psc:35:21:quest-stage-logic-gap
 Scripts/Source/SFBGS00D/CruiseModeTestSupportScript.psc:36:1:indentation
 Scripts/Source/SFBGS00D/CruiseModeTestSupportScript.psc:36:13:trailing-whitespace
 Scripts/Source/SFBGS00D/CruiseModeTestSupportScript.psc:37:1:indentation
 Scripts/Source/SFBGS00D/CruiseModeTestSupportScript.psc:38:1:indentation
 Scripts/Source/SFBGS00D/CruiseModeTestSupportScript.psc:39:1:indentation
 Scripts/Source/SFBGS00D/CruiseModeTestSupportScript.psc:40:1:indentation
+Scripts/Source/SFBGS00D/CruiseModeTestSupportScript.psc:40:21:quest-stage-logic-gap
 Scripts/Source/SFBGS00D/CruiseModeTestSupportScript.psc:41:1:indentation
 Scripts/Source/SFBGS00D/CruiseModeTestSupportScript.psc:42:1:indentation
 Scripts/Source/SFBGS00D/DisableSelfAndLinkedRefOnActivate.psc:1:84:line-endings
@@ -132514,6 +132691,7 @@ Scripts/Source/SFBGS00D/SFBGS00D_CruiseMode_Tutorial_Script.psc:51:17:forbidden-
 Scripts/Source/SFBGS00D/SFBGS00D_CruiseMode_Tutorial_Script.psc:52:1:indentation
 Scripts/Source/SFBGS00D/SFBGS00D_CruiseMode_Tutorial_Script.psc:53:1:indentation
 Scripts/Source/SFBGS00D/SFBGS00D_CruiseMode_Tutorial_Script.psc:54:1:indentation
+Scripts/Source/SFBGS00D/SFBGS00D_CruiseMode_Tutorial_Script.psc:54:21:quest-stage-logic-gap
 Scripts/Source/SFBGS00D/SFBGS00D_CruiseMode_Tutorial_Script.psc:55:1:indentation
 Scripts/Source/SFBGS00D/SFBGS00D_CruiseMode_Tutorial_Script.psc:55:19:forbidden-functions
 Scripts/Source/SFBGS00D/SFBGS00D_CruiseMode_Tutorial_Script.psc:56:1:indentation
@@ -132657,6 +132835,7 @@ Scripts/Source/SFBGS00D/SFBGS00D_CruiseMode_Tutorial_Script.psc:147:1:indentatio
 Scripts/Source/SFBGS00D/SFBGS00D_CruiseMode_Tutorial_Script.psc:148:1:indentation
 Scripts/Source/SFBGS00D/SFBGS00D_CruiseMode_Tutorial_Script.psc:148:13:forbidden-functions
 Scripts/Source/SFBGS00D/SFBGS00D_CruiseMode_Tutorial_Script.psc:149:1:indentation
+Scripts/Source/SFBGS00D/SFBGS00D_CruiseMode_Tutorial_Script.psc:149:13:quest-stage-logic-gap
 Scripts/Source/SFBGS00D/SFBGS00D_CruiseMode_Tutorial_Script.psc:150:1:indentation
 Scripts/Source/SFBGS00D/SFBGS00D_CruiseMode_Tutorial_Script.psc:150:13:forbidden-functions
 Scripts/Source/SFBGS00D/SFBGS00D_CruiseMode_Tutorial_Script.psc:152:1:indentation
@@ -132665,6 +132844,7 @@ Scripts/Source/SFBGS00D/SFBGS00D_CruiseMode_Tutorial_Script.psc:153:1:indentatio
 Scripts/Source/SFBGS00D/SFBGS00D_CruiseMode_Tutorial_Script.psc:154:1:indentation
 Scripts/Source/SFBGS00D/SFBGS00D_CruiseMode_Tutorial_Script.psc:156:1:indentation
 Scripts/Source/SFBGS00D/SFBGS00D_CruiseMode_Tutorial_Script.psc:157:1:indentation
+Scripts/Source/SFBGS00D/SFBGS00D_CruiseMode_Tutorial_Script.psc:157:13:quest-stage-logic-gap
 Scripts/Source/SFBGS00D/SFBGS00D_CruiseMode_Tutorial_Script.psc:158:12:final-newline
 Scripts/Source/SFBGS00D/SFBGS00D_EquipmentSchematicScript.psc:1:78:line-endings
 Scripts/Source/SFBGS00D/SFBGS00D_EquipmentSchematicScript.psc:12:1:function-length
@@ -133673,22 +133853,26 @@ Scripts/Source/SFBGS00D/SFFL_SE_EC08_QuestScript.psc:55:1:indentation
 Scripts/Source/SFBGS00D/SFFL_SE_EC08_QuestScript.psc:56:1:indentation
 Scripts/Source/SFBGS00D/SFFL_SE_EC08_QuestScript.psc:56:1:unchecked-cast
 Scripts/Source/SFBGS00D/SFFL_SE_EC08_QuestScript.psc:57:1:indentation
+Scripts/Source/SFBGS00D/SFFL_SE_EC08_QuestScript.psc:57:21:quest-stage-logic-gap
 Scripts/Source/SFBGS00D/SFFL_SE_EC08_QuestScript.psc:58:1:indentation
 Scripts/Source/SFBGS00D/SFFL_SE_EC08_QuestScript.psc:58:19:forbidden-functions
 Scripts/Source/SFBGS00D/SFFL_SE_EC08_QuestScript.psc:59:1:indentation
 Scripts/Source/SFBGS00D/SFFL_SE_EC08_QuestScript.psc:60:1:indentation
 Scripts/Source/SFBGS00D/SFFL_SE_EC08_QuestScript.psc:60:1:unchecked-cast
 Scripts/Source/SFBGS00D/SFFL_SE_EC08_QuestScript.psc:61:1:indentation
+Scripts/Source/SFBGS00D/SFFL_SE_EC08_QuestScript.psc:61:21:quest-stage-logic-gap
 Scripts/Source/SFBGS00D/SFFL_SE_EC08_QuestScript.psc:62:1:indentation
 Scripts/Source/SFBGS00D/SFFL_SE_EC08_QuestScript.psc:62:19:forbidden-functions
 Scripts/Source/SFBGS00D/SFFL_SE_EC08_QuestScript.psc:63:1:indentation
 Scripts/Source/SFBGS00D/SFFL_SE_EC08_QuestScript.psc:64:1:indentation
 Scripts/Source/SFBGS00D/SFFL_SE_EC08_QuestScript.psc:64:1:unchecked-cast
 Scripts/Source/SFBGS00D/SFFL_SE_EC08_QuestScript.psc:65:1:indentation
+Scripts/Source/SFBGS00D/SFFL_SE_EC08_QuestScript.psc:65:21:quest-stage-logic-gap
 Scripts/Source/SFBGS00D/SFFL_SE_EC08_QuestScript.psc:66:1:indentation
 Scripts/Source/SFBGS00D/SFFL_SE_EC08_QuestScript.psc:66:19:forbidden-functions
 Scripts/Source/SFBGS00D/SFFL_SE_EC08_QuestScript.psc:67:1:indentation
 Scripts/Source/SFBGS00D/SFFL_SE_EC08_QuestScript.psc:68:1:indentation
+Scripts/Source/SFBGS00D/SFFL_SE_EC08_QuestScript.psc:68:21:quest-stage-logic-gap
 Scripts/Source/SFBGS00D/SFFL_SE_EC08_QuestScript.psc:69:1:indentation
 Scripts/Source/SFBGS00D/SFFL_SE_EC08_QuestScript.psc:69:19:forbidden-functions
 Scripts/Source/SFBGS00D/SFFL_SE_EC08_QuestScript.psc:70:1:indentation
@@ -133738,6 +133922,7 @@ Scripts/Source/SFBGS00D/SFFL_SE_EC08_QuestScript.psc:95:1:indentation
 Scripts/Source/SFBGS00D/SFFL_SE_EC08_QuestScript.psc:96:1:indentation
 Scripts/Source/SFBGS00D/SFFL_SE_EC08_QuestScript.psc:97:1:indentation
 Scripts/Source/SFBGS00D/SFFL_SE_EC08_QuestScript.psc:99:1:indentation
+Scripts/Source/SFBGS00D/SFFL_SE_EC08_QuestScript.psc:99:13:quest-stage-logic-gap
 Scripts/Source/SFBGS00D/SFFL_SE_EC08_QuestScript.psc:108:1:identifier-casing
 Scripts/Source/SFBGS00D/SFFL_SE_EC08_QuestScript.psc:110:1:identifier-casing
 Scripts/Source/SFBGS00D/SFFL_SE_EC08_QuestScript.psc:114:1:identifier-casing
@@ -134111,6 +134296,7 @@ Scripts/Source/SFBGS00D/SQ_StarbornContainerScript.psc:121:1:indentation
 Scripts/Source/SFBGS00D/SQ_StarbornContainerScript.psc:122:1:indentation
 Scripts/Source/SFBGS00D/SQ_StarbornContainerScript.psc:123:1:indentation
 Scripts/Source/SFBGS00D/SQ_StarbornContainerScript.psc:124:1:indentation
+Scripts/Source/SFBGS00D/SQ_StarbornContainerScript.psc:124:17:quest-stage-logic-gap
 Scripts/Source/SFBGS00D/SQ_StarbornContainerScript.psc:125:1:indentation
 Scripts/Source/SFBGS00D/SQ_StarbornContainerScript.psc:126:1:indentation
 Scripts/Source/SFBGS00D/SQ_StarbornContainerScript.psc:127:1:indentation
@@ -134127,6 +134313,7 @@ Scripts/Source/SFBGS00D/SQ_StarbornContainerScript.psc:137:1:indentation
 Scripts/Source/SFBGS00D/SQ_StarbornContainerScript.psc:138:1:indentation
 Scripts/Source/SFBGS00D/SQ_StarbornContainerScript.psc:142:1:indentation
 Scripts/Source/SFBGS00D/SQ_StarbornContainerScript.psc:143:1:indentation
+Scripts/Source/SFBGS00D/SQ_StarbornContainerScript.psc:143:18:quest-stage-logic-gap
 Scripts/Source/SFBGS00D/SQ_StarbornContainerScript.psc:147:1:indentation
 Scripts/Source/SFBGS00D/SQ_StarbornContainerScript.psc:147:28:forbidden-functions
 Scripts/Source/SFBGS00D/SQ_StarbornContainerScript.psc:149:1:indentation
@@ -134157,6 +134344,7 @@ Scripts/Source/SFBGS00D/SQ_StarbornContainerScript.psc:177:1:identifier-casing
 Scripts/Source/SFBGS00D/SQ_StarbornContainerScript.psc:177:1:indentation
 Scripts/Source/SFBGS00D/SQ_StarbornContainerScript.psc:177:1:unused-local-variable
 Scripts/Source/SFBGS00D/SQ_StarbornContainerScript.psc:179:1:indentation
+Scripts/Source/SFBGS00D/SQ_StarbornContainerScript.psc:179:13:quest-stage-logic-gap
 Scripts/Source/SFBGS00D/SQ_StarbornContainerScript.psc:183:1:indentation
 Scripts/Source/SFBGS00D/SQ_StarbornContainerScript.psc:183:28:forbidden-functions
 Scripts/Source/SFBGS00D/SQ_StarbornContainerScript.psc:185:1:indentation
@@ -136361,6 +136549,7 @@ Scripts/Source/SQ_Crew_SpawnManagerScript.psc:62:1:unchecked-cast
 Scripts/Source/SQ_Crew_SpawnManagerScript.psc:66:1:unchecked-cast
 Scripts/Source/SQ_Crew_SpawnManagerScript.psc:72:1:unchecked-cast
 Scripts/Source/SQ_Crew_SpawnManagerScript.psc:78:1:unnecessary-function
+Scripts/Source/SQ_Crew_SpawnManagerScript.psc:79:10:quest-stage-logic-gap
 Scripts/Source/SQ_Crew_SpawnManagerScript.psc:86:1:identifier-casing
 Scripts/Source/SQ_Crew_SpawnManagerScript.psc:86:1:identifier-casing
 Scripts/Source/SQ_Crew_SpawnManagerScript.psc:86:1:identifier-casing
@@ -142739,6 +142928,7 @@ Scripts/Source/SQ_SurveySlateQuestScript.psc:21:1:indentation
 Scripts/Source/SQ_SurveySlateQuestScript.psc:21:1:none-form-usage
 Scripts/Source/SQ_SurveySlateQuestScript.psc:22:1:indentation
 Scripts/Source/SQ_SurveySlateQuestScript.psc:23:1:indentation
+Scripts/Source/SQ_SurveySlateQuestScript.psc:23:13:quest-stage-logic-gap
 Scripts/Source/SQ_SurveySlateQuestScript.psc:24:1:indentation
 Scripts/Source/SQ_TrafficManagerScript.psc:1:49:line-endings
 Scripts/Source/SQ_TrafficManagerScript.psc:4:1:identifier-casing
@@ -143462,6 +143652,7 @@ Scripts/Source/SQ_TreasureMapSurfaceQuestScript.psc:89:11:forbidden-functions
 Scripts/Source/SQ_TreasureMapSurfaceQuestScript.psc:90:1:indentation
 Scripts/Source/SQ_TreasureMapSurfaceQuestScript.psc:91:1:indentation
 Scripts/Source/SQ_TreasureMapSurfaceQuestScript.psc:92:1:indentation
+Scripts/Source/SQ_TreasureMapSurfaceQuestScript.psc:92:17:quest-stage-logic-gap
 Scripts/Source/SQ_TreasureMapSurfaceQuestScript.psc:93:1:indentation
 Scripts/Source/SQ_TreasureMapSurfaceQuestScript.psc:93:39:forbidden-functions
 Scripts/Source/SQ_TreasureMapSurfaceQuestScript.psc:94:1:indentation
@@ -148918,6 +149109,7 @@ Scripts/Source/TestFossilHuntQuestScript.psc:24:1:identifier-casing
 Scripts/Source/TestFossilHuntQuestScript.psc:25:1:indentation
 Scripts/Source/TestFossilHuntQuestScript.psc:25:1:none-form-usage
 Scripts/Source/TestFossilHuntQuestScript.psc:26:1:indentation
+Scripts/Source/TestFossilHuntQuestScript.psc:26:17:quest-stage-logic-gap
 Scripts/Source/TestFossilHuntQuestScript.psc:27:1:indentation
 Scripts/Source/TestFossilHuntQuestScript.psc:28:1:indentation
 Scripts/Source/TestFossilHuntQuestScript.psc:31:1:identifier-casing
@@ -148934,6 +149126,7 @@ Scripts/Source/TestFossilHuntQuestScript.psc:36:1:none-form-usage
 Scripts/Source/TestFossilHuntQuestScript.psc:36:1:none-form-usage
 Scripts/Source/TestFossilHuntQuestScript.psc:36:121:line-length
 Scripts/Source/TestFossilHuntQuestScript.psc:37:1:indentation
+Scripts/Source/TestFossilHuntQuestScript.psc:37:21:quest-stage-logic-gap
 Scripts/Source/TestFossilHuntQuestScript.psc:38:1:indentation
 Scripts/Source/TestFossilHuntQuestScript.psc:38:43:forbidden-functions
 Scripts/Source/TestFossilHuntQuestScript.psc:39:1:indentation
@@ -149611,6 +149804,7 @@ Scripts/Source/TestKurtArtifactTempleQuestScript.psc:43:1:indentation
 Scripts/Source/TestKurtArtifactTempleQuestScript.psc:43:1:none-form-usage
 Scripts/Source/TestKurtArtifactTempleQuestScript.psc:44:1:indentation
 Scripts/Source/TestKurtArtifactTempleQuestScript.psc:45:1:indentation
+Scripts/Source/TestKurtArtifactTempleQuestScript.psc:45:17:quest-stage-logic-gap
 Scripts/Source/TestKurtArtifactTempleQuestScript.psc:46:1:indentation
 Scripts/Source/TestKurtArtifactTempleQuestScript.psc:49:1:identifier-casing
 Scripts/Source/TestKurtArtifactTempleQuestScript.psc:49:1:identifier-casing
@@ -151349,12 +151543,14 @@ Scripts/Source/TestSESatRepairQuestScript.psc:21:15:forbidden-functions
 Scripts/Source/TestSESatRepairQuestScript.psc:21:72:trailing-whitespace
 Scripts/Source/TestSESatRepairQuestScript.psc:22:1:indentation
 Scripts/Source/TestSESatRepairQuestScript.psc:23:1:indentation
+Scripts/Source/TestSESatRepairQuestScript.psc:23:17:quest-stage-logic-gap
 Scripts/Source/TestSESatRepairQuestScript.psc:24:1:indentation
 Scripts/Source/TestSESatRepairQuestScript.psc:25:1:indentation
 Scripts/Source/TestSESatRepairQuestScript.psc:26:1:indentation
 Scripts/Source/TestSESatRepairQuestScript.psc:26:19:forbidden-functions
 Scripts/Source/TestSESatRepairQuestScript.psc:26:77:trailing-whitespace
 Scripts/Source/TestSESatRepairQuestScript.psc:27:1:indentation
+Scripts/Source/TestSESatRepairQuestScript.psc:27:21:quest-stage-logic-gap
 Scripts/Source/TestSESatRepairQuestScript.psc:28:1:indentation
 Scripts/Source/TestSESatRepairQuestScript.psc:29:1:indentation
 Scripts/Source/TestSESatRepairQuestScript.psc:32:1:function-length
@@ -151378,12 +151574,14 @@ Scripts/Source/TestSESatRepairQuestScript.psc:37:15:forbidden-functions
 Scripts/Source/TestSESatRepairQuestScript.psc:37:72:trailing-whitespace
 Scripts/Source/TestSESatRepairQuestScript.psc:38:1:indentation
 Scripts/Source/TestSESatRepairQuestScript.psc:39:1:indentation
+Scripts/Source/TestSESatRepairQuestScript.psc:39:17:quest-stage-logic-gap
 Scripts/Source/TestSESatRepairQuestScript.psc:40:1:indentation
 Scripts/Source/TestSESatRepairQuestScript.psc:41:1:indentation
 Scripts/Source/TestSESatRepairQuestScript.psc:42:1:indentation
 Scripts/Source/TestSESatRepairQuestScript.psc:42:19:forbidden-functions
 Scripts/Source/TestSESatRepairQuestScript.psc:42:77:trailing-whitespace
 Scripts/Source/TestSESatRepairQuestScript.psc:43:1:indentation
+Scripts/Source/TestSESatRepairQuestScript.psc:43:21:quest-stage-logic-gap
 Scripts/Source/TestSESatRepairQuestScript.psc:44:1:indentation
 Scripts/Source/TestSESatRepairQuestScript.psc:45:1:indentation
 Scripts/Source/TestSESatRepairQuestScript.psc:48:1:explicit-return
@@ -151412,6 +151610,7 @@ Scripts/Source/TestSESatRepairQuestScript.psc:60:11:forbidden-functions
 Scripts/Source/TestSESatRepairQuestScript.psc:60:116:trailing-whitespace
 Scripts/Source/TestSESatRepairQuestScript.psc:61:1:indentation
 Scripts/Source/TestSESatRepairQuestScript.psc:62:1:indentation
+Scripts/Source/TestSESatRepairQuestScript.psc:62:17:quest-stage-logic-gap
 Scripts/Source/TestSESatRepairQuestScript.psc:63:1:indentation
 Scripts/Source/TestSESatRepairQuestScript.psc:67:1:identifier-casing
 Scripts/Source/TestSESatRepairQuestScript.psc:67:1:indentation
@@ -152165,6 +152364,7 @@ Scripts/Source/TestSteveCQuestScript.psc:598:1:identifier-casing
 Scripts/Source/TestSteveCQuestScript.psc:598:1:identifier-casing
 Scripts/Source/TestSteveCQuestScript.psc:598:1:identifier-casing
 Scripts/Source/TestSteveCQuestScript.psc:598:121:line-length
+Scripts/Source/TestSteveCQuestScript.psc:599:10:quest-stage-logic-gap
 Scripts/Source/TestSteveCQuestScript.psc:602:1:identifier-casing
 Scripts/Source/TestSteveCQuestScript.psc:602:1:identifier-casing
 Scripts/Source/TestSteveCQuestScript.psc:603:8:forbidden-functions
@@ -153687,6 +153887,7 @@ Scripts/Source/UC01QuestScript.psc:105:1:indentation
 Scripts/Source/UC01QuestScript.psc:105:1:variable-used-before-assignment
 Scripts/Source/UC01QuestScript.psc:105:8:exclamation-spacing
 Scripts/Source/UC01QuestScript.psc:106:1:indentation
+Scripts/Source/UC01QuestScript.psc:106:17:quest-stage-logic-gap
 Scripts/Source/UC01QuestScript.psc:107:1:indentation
 Scripts/Source/UC01QuestScript.psc:109:1:indentation
 Scripts/Source/UC01QuestScript.psc:112:1:unnecessary-function
@@ -154593,6 +154794,7 @@ Scripts/Source/UC01_ShipSimulationQuestScript.psc:359:1:indentation
 Scripts/Source/UC01_ShipSimulationQuestScript.psc:359:83:slow-functions
 Scripts/Source/UC01_ShipSimulationQuestScript.psc:361:1:indentation
 Scripts/Source/UC01_ShipSimulationQuestScript.psc:362:1:indentation
+Scripts/Source/UC01_ShipSimulationQuestScript.psc:362:21:quest-stage-logic-gap
 Scripts/Source/UC01_ShipSimulationQuestScript.psc:363:1:indentation
 Scripts/Source/UC01_ShipSimulationQuestScript.psc:365:1:indentation
 Scripts/Source/UC01_ShipSimulationQuestScript.psc:365:64:trailing-whitespace
@@ -155218,6 +155420,7 @@ Scripts/Source/UC02_QuestScript.psc:112:1:indentation
 Scripts/Source/UC02_QuestScript.psc:112:1:variable-used-before-assignment
 Scripts/Source/UC02_QuestScript.psc:113:1:indentation
 Scripts/Source/UC02_QuestScript.psc:114:1:indentation
+Scripts/Source/UC02_QuestScript.psc:114:17:quest-stage-logic-gap
 Scripts/Source/UC02_QuestScript.psc:115:1:indentation
 Scripts/Source/UC02_QuestScript.psc:116:1:indentation
 Scripts/Source/UC02_QuestScript.psc:116:1:variable-used-before-assignment
@@ -157359,6 +157562,7 @@ Scripts/Source/UC07QuestScript.psc:92:1:indentation
 Scripts/Source/UC07QuestScript.psc:93:1:indentation
 Scripts/Source/UC07QuestScript.psc:95:1:indentation
 Scripts/Source/UC07QuestScript.psc:96:1:indentation
+Scripts/Source/UC07QuestScript.psc:96:13:quest-stage-logic-gap
 Scripts/Source/UC07QuestScript.psc:99:1:identifier-casing
 Scripts/Source/UC07QuestScript.psc:100:1:identifier-casing
 Scripts/Source/UC07QuestScript.psc:100:1:indentation
@@ -158287,6 +158491,7 @@ Scripts/Source/UC08_QueenBattle_QuestScript.psc:356:1:function-override
 Scripts/Source/UC08_QueenBattle_QuestScript.psc:356:1:identifier-casing
 Scripts/Source/UC08_QueenBattle_QuestScript.psc:357:1:indentation
 Scripts/Source/UC08_QueenBattle_QuestScript.psc:358:1:indentation
+Scripts/Source/UC08_QueenBattle_QuestScript.psc:358:17:quest-stage-logic-gap
 Scripts/Source/UC08_QueenBattle_QuestScript.psc:359:1:indentation
 Scripts/Source/UC08_QueenBattle_QuestScript.psc:361:1:indentation
 Scripts/Source/UC08_QueenBattle_QuestScript.psc:362:1:indentation
@@ -158761,6 +158966,7 @@ Scripts/Source/UCParentFactionQuestScript.psc:79:1:indentation
 Scripts/Source/UCParentFactionQuestScript.psc:79:1:none-form-usage
 Scripts/Source/UCParentFactionQuestScript.psc:79:50:exclamation-spacing
 Scripts/Source/UCParentFactionQuestScript.psc:80:1:indentation
+Scripts/Source/UCParentFactionQuestScript.psc:80:21:quest-stage-logic-gap
 Scripts/Source/UCParentFactionQuestScript.psc:81:1:indentation
 Scripts/Source/UCParentFactionQuestScript.psc:82:1:indentation
 Scripts/Source/UCParentFactionQuestScript.psc:83:1:indentation
@@ -160732,6 +160938,7 @@ Scripts/Source/rq_scancreaturesscript.psc:141:1:indentation
 Scripts/Source/rq_scancreaturesscript.psc:142:1:indentation
 Scripts/Source/rq_scancreaturesscript.psc:142:1:unchecked-cast
 Scripts/Source/rq_scancreaturesscript.psc:143:1:indentation
+Scripts/Source/rq_scancreaturesscript.psc:143:17:quest-stage-logic-gap
 Scripts/Source/rq_scancreaturesscript.psc:144:1:indentation
 Scripts/Source/rq_scancreaturesscript.psc:146:1:indentation
 Scripts/Source/rq_scancreaturesscript.psc:146:1:numeric-comparison
@@ -160739,6 +160946,7 @@ Scripts/Source/rq_scancreaturesscript.psc:146:28:trailing-whitespace
 Scripts/Source/rq_scancreaturesscript.psc:147:1:indentation
 Scripts/Source/rq_scancreaturesscript.psc:148:1:indentation
 Scripts/Source/rq_scancreaturesscript.psc:149:1:indentation
+Scripts/Source/rq_scancreaturesscript.psc:149:17:quest-stage-logic-gap
 Scripts/Source/rq_scancreaturesscript.psc:150:1:indentation
 Scripts/Source/rq_scancreaturesscript.psc:152:1:indentation
 Scripts/Source/rq_scancreaturesscript.psc:153:1:indentation
@@ -160878,6 +161086,7 @@ Scripts/Source/rq_scantraitscript.psc:83:1:indentation
 Scripts/Source/rq_scantraitscript.psc:85:1:indentation
 Scripts/Source/rq_scantraitscript.psc:86:1:indentation
 Scripts/Source/rq_scantraitscript.psc:87:1:indentation
+Scripts/Source/rq_scantraitscript.psc:87:17:quest-stage-logic-gap
 Scripts/Source/rq_scantraitscript.psc:88:1:indentation
 Scripts/Source/rq_scantraitscript.psc:92:1:identifier-casing
 Scripts/Source/rq_scantraitscript.psc:92:1:identifier-casing

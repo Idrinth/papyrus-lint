@@ -69,6 +69,7 @@ fn ast_rules_return_an_ast_visitor() {
     assert_ast(crate::return_types::visitor());
     assert_ast(crate::script_name_collision::visitor());
     assert_ast(crate::self_assignment::visitor());
+    assert_ast(crate::quest_stage_logic_gap::visitor());
     assert_ast(crate::setvalue_in_loop::visitor());
     assert_ast(crate::short_wait_interval::visitor());
     assert_ast(crate::state_function_signature::visitor());

@@ -24,6 +24,7 @@ use std::collections::HashSet;
 use papyrus_parser::ast::{AccessLevel, Expr, FunctionDecl, Script};
 use papyrus_parser::comment_annotations::parse_line_annotations;
 
+use crate::fragment_code::is_fragment_function;
 use crate::external_signatures::ExternalSignatures;
 use crate::visitor::{AstLint, LintVisitor, Store, VisitCtx};
 use crate::Diagnostic;
@@ -117,15 +118,6 @@ fn is_candidate(function: &FunctionDecl, lines: &[String]) -> bool {
     function.access_level == AccessLevel::Private || has_internal_annotation(function.line, lines)
 }
 
-/// Whether `name` is a CreationKit-generated fragment function name
-/// (`Fragment_` followed by one or more ASCII digits, case-insensitively),
-/// which the engine calls directly rather than the script's own author.
-fn is_fragment_function(name: &str) -> bool {
-    name.get(..9)
-        .is_some_and(|prefix| prefix.eq_ignore_ascii_case("Fragment_"))
-        && !name[9..].is_empty()
-        && name[9..].bytes().all(|byte| byte.is_ascii_digit())
-}
 
 fn has_internal_annotation(function_line: usize, lines: &[String]) -> bool {
     if function_line == 0 {

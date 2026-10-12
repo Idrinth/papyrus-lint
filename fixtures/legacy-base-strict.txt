@@ -2630,6 +2630,7 @@ Scripts/Source/C03PostQuestScript.psc:4:1:unused-property
 Scripts/Source/C03PostQuestScript.psc:7:1:identifier-casing
 Scripts/Source/C03PostQuestScript.psc:8:1:identifier-casing
 Scripts/Source/C03PostQuestScript.psc:10:1:function-override
+Scripts/Source/C03PostQuestScript.psc:13:11:quest-stage-logic-gap
 Scripts/Source/C03QuestScript.psc:1:67:line-endings
 Scripts/Source/C03QuestScript.psc:6:1:unused-property
 Scripts/Source/C03QuestScript.psc:7:1:unused-property
@@ -3204,6 +3205,7 @@ Scripts/Source/C06PostQuestScript.psc:4:1:unused-property
 Scripts/Source/C06PostQuestScript.psc:7:1:identifier-casing
 Scripts/Source/C06PostQuestScript.psc:8:1:identifier-casing
 Scripts/Source/C06PostQuestScript.psc:10:1:function-override
+Scripts/Source/C06PostQuestScript.psc:13:11:quest-stage-logic-gap
 Scripts/Source/C06QuestScript.psc:1:67:line-endings
 Scripts/Source/C06QuestScript.psc:5:1:unused-property
 Scripts/Source/C06QuestScript.psc:6:1:unused-property
@@ -3259,6 +3261,7 @@ Scripts/Source/C06QuestScript.psc:125:1:function-override
 Scripts/Source/C06QuestScript.psc:128:1:identifier-casing
 Scripts/Source/C06QuestScript.psc:128:1:none-form-usage
 Scripts/Source/C06QuestScript.psc:129:1:none-form-usage
+Scripts/Source/C06QuestScript.psc:131:11:quest-stage-logic-gap
 Scripts/Source/C06TempActivatorScript.psc:1:58:trailing-whitespace
 Scripts/Source/C06TempActivatorScript.psc:1:60:line-endings
 Scripts/Source/C06TempActivatorScript.psc:5:1:argument-naming
@@ -3430,6 +3433,7 @@ Scripts/Source/CR03QuestScript.psc:91:1:indentation
 Scripts/Source/CR03QuestScript.psc:93:1:trailing-whitespace
 Scripts/Source/CR03QuestScript.psc:94:1:none-form-usage
 Scripts/Source/CR03QuestScript.psc:96:1:trailing-whitespace
+Scripts/Source/CR03QuestScript.psc:98:11:quest-stage-logic-gap
 Scripts/Source/CR03QuestScript.psc:111:1:trailing-whitespace
 Scripts/Source/CR04BrutePreQuestScript.psc:1:58:trailing-whitespace
 Scripts/Source/CR04BrutePreQuestScript.psc:1:60:line-endings
@@ -3455,6 +3459,7 @@ Scripts/Source/CR04QuestScript.psc:13:1:identifier-casing
 Scripts/Source/CR04QuestScript.psc:13:1:unnecessary-function
 Scripts/Source/CR04QuestScript.psc:14:1:indentation
 Scripts/Source/CR04QuestScript.psc:15:1:none-form-usage
+Scripts/Source/CR04QuestScript.psc:16:11:quest-stage-logic-gap
 Scripts/Source/CR04QuestScript.psc:20:1:function-override
 Scripts/Source/CR04QuestScript.psc:21:1:none-form-usage
 Scripts/Source/CR05BossScript.psc:1:49:trailing-whitespace
@@ -3552,6 +3557,7 @@ Scripts/Source/CR08QuestScript.psc:41:6:exclamation-spacing
 Scripts/Source/CR08QuestScript.psc:44:1:trailing-whitespace
 Scripts/Source/CR08QuestScript.psc:45:1:indentation
 Scripts/Source/CR08QuestScript.psc:46:1:none-form-usage
+Scripts/Source/CR08QuestScript.psc:47:11:quest-stage-logic-gap
 Scripts/Source/CR08VictimScript.psc:1:51:trailing-whitespace
 Scripts/Source/CR08VictimScript.psc:1:53:line-endings
 Scripts/Source/CR08VictimScript.psc:5:1:function-override
@@ -3776,9 +3782,11 @@ Scripts/Source/CRTwinsPostQuestScript.psc:11:1:none-form-usage
 Scripts/Source/CRTwinsPostQuestScript.psc:15:1:identifier-casing
 Scripts/Source/CRTwinsPostQuestScript.psc:15:1:none-form-usage
 Scripts/Source/CRTwinsPostQuestScript.psc:17:1:indentation
+Scripts/Source/CRTwinsPostQuestScript.psc:18:11:quest-stage-logic-gap
 Scripts/Source/CRTwinsPostQuestScript.psc:19:2:empty-body
 Scripts/Source/CRTwinsPostQuestScript.psc:20:1:indentation
 Scripts/Source/CRTwinsPostQuestScript.psc:24:1:function-override
+Scripts/Source/CRTwinsPostQuestScript.psc:25:10:quest-stage-logic-gap
 Scripts/Source/CRTwinsPostQuestScript.psc:28:1:final-newline
 Scripts/Source/CW00AScript.psc:1:50:line-endings
 Scripts/Source/CW00AScript.psc:3:1:unused-property
@@ -3834,6 +3842,7 @@ Scripts/Source/CW01BScript.psc:23:1:trailing-whitespace
 Scripts/Source/CW01BScript.psc:25:1:indentation
 Scripts/Source/CW01BScript.psc:25:121:line-length
 Scripts/Source/CW01BScript.psc:26:1:trailing-whitespace
+Scripts/Source/CW01BScript.psc:27:11:quest-stage-logic-gap
 Scripts/Source/CW01BScript.psc:28:1:trailing-whitespace
 Scripts/Source/CW01BScript.psc:33:1:unused-property
 Scripts/Source/CW01BScript.psc:33:47:trailing-whitespace
@@ -3859,6 +3868,7 @@ Scripts/Source/CW01Script.psc:23:1:trailing-whitespace
 Scripts/Source/CW01Script.psc:25:1:indentation
 Scripts/Source/CW01Script.psc:25:121:line-length
 Scripts/Source/CW01Script.psc:26:1:trailing-whitespace
+Scripts/Source/CW01Script.psc:27:11:quest-stage-logic-gap
 Scripts/Source/CW01Script.psc:28:1:trailing-whitespace
 Scripts/Source/CW01Script.psc:34:1:unused-property
 Scripts/Source/CW01Script.psc:34:41:trailing-whitespace
@@ -6464,6 +6474,7 @@ Scripts/Source/CWFinaleScript.psc:80:1:unused-property
 Scripts/Source/CWFinaleScript.psc:82:1:unused-property
 Scripts/Source/CWFinaleScript.psc:82:47:trailing-whitespace
 Scripts/Source/CWFinaleScript.psc:84:1:function-length
+Scripts/Source/CWFinaleScript.psc:85:10:quest-stage-logic-gap
 Scripts/Source/CWFinaleScript.psc:86:1:trailing-whitespace
 Scripts/Source/CWFinaleScript.psc:87:27:forbidden-functions
 Scripts/Source/CWFinaleScript.psc:89:1:indentation
@@ -6502,6 +6513,7 @@ Scripts/Source/CWFinaleScript.psc:140:1:variable-used-before-assignment
 Scripts/Source/CWFinaleScript.psc:141:1:indentation
 Scripts/Source/CWFinaleScript.psc:141:121:line-length
 Scripts/Source/CWFinaleScript.psc:142:1:trailing-whitespace
+Scripts/Source/CWFinaleScript.psc:146:10:quest-stage-logic-gap
 Scripts/Source/CWFinaleScript.psc:148:27:forbidden-functions
 Scripts/Source/CWFinaleScript.psc:149:1:trailing-whitespace
 Scripts/Source/CWFinaleScript.psc:150:1:none-form-usage
@@ -6849,6 +6861,7 @@ Scripts/Source/CWFortSiegeMissionScript.psc:23:1:indentation
 Scripts/Source/CWFortSiegeMissionScript.psc:23:121:line-length
 Scripts/Source/CWFortSiegeMissionScript.psc:25:1:trailing-whitespace
 Scripts/Source/CWFortSiegeMissionScript.psc:27:1:trailing-whitespace
+Scripts/Source/CWFortSiegeMissionScript.psc:28:10:quest-stage-logic-gap
 Scripts/Source/CWFortSiegeMissionScript.psc:29:1:trailing-whitespace
 Scripts/Source/CWFortSiegeMissionScript.psc:30:1:indentation
 Scripts/Source/CWFortSiegeMissionScript.psc:31:1:trailing-whitespace
@@ -6996,6 +7009,7 @@ Scripts/Source/CWFortSiegeScript.psc:305:1:trailing-whitespace
 Scripts/Source/CWFortSiegeScript.psc:307:1:trailing-whitespace
 Scripts/Source/CWFortSiegeScript.psc:309:1:indentation
 Scripts/Source/CWFortSiegeScript.psc:309:121:line-length
+Scripts/Source/CWFortSiegeScript.psc:310:11:quest-stage-logic-gap
 Scripts/Source/CWFortSiegeScript.psc:311:1:trailing-whitespace
 Scripts/Source/CWFortSiegeScript.psc:312:1:indentation
 Scripts/Source/CWFortSiegeScript.psc:312:121:line-length
@@ -7774,6 +7788,7 @@ Scripts/Source/CWMission03Script.psc:4:1:unused-property
 Scripts/Source/CWMission03Script.psc:8:1:function-override
 Scripts/Source/CWMission03Script.psc:8:1:identifier-casing
 Scripts/Source/CWMission03Script.psc:8:1:identifier-casing
+Scripts/Source/CWMission03Script.psc:9:10:quest-stage-logic-gap
 Scripts/Source/CWMission04FriendScript.psc:1:58:trailing-whitespace
 Scripts/Source/CWMission04FriendScript.psc:1:60:line-endings
 Scripts/Source/CWMission04FriendScript.psc:5:1:function-override
@@ -7881,6 +7896,7 @@ Scripts/Source/CWMission04Script.psc:108:1:trailing-whitespace
 Scripts/Source/CWMission04Script.psc:109:1:indentation
 Scripts/Source/CWMission04Script.psc:109:121:line-length
 Scripts/Source/CWMission04Script.psc:110:1:trailing-whitespace
+Scripts/Source/CWMission04Script.psc:111:11:quest-stage-logic-gap
 Scripts/Source/CWMission04Script.psc:112:1:trailing-whitespace
 Scripts/Source/CWMission04Script.psc:113:2:empty-body
 Scripts/Source/CWMission04Script.psc:114:1:trailing-whitespace
@@ -7925,6 +7941,7 @@ Scripts/Source/CWMission04Script.psc:175:1:none-form-usage
 Scripts/Source/CWMission04Script.psc:175:1:none-form-usage
 Scripts/Source/CWMission04Script.psc:175:23:forbidden-functions
 Scripts/Source/CWMission04Script.psc:175:121:line-length
+Scripts/Source/CWMission04Script.psc:176:12:quest-stage-logic-gap
 Scripts/Source/CWMission04Script.psc:178:1:trailing-whitespace
 Scripts/Source/CWMission04Script.psc:181:1:trailing-whitespace
 Scripts/Source/CWMission04SoldierScript.psc:1:59:trailing-whitespace
@@ -7988,8 +8005,10 @@ Scripts/Source/CWMission06Script.psc:70:1:trailing-whitespace
 Scripts/Source/CWMission06Script.psc:107:1:trailing-whitespace
 Scripts/Source/CWMission06Script.psc:108:1:trailing-whitespace
 Scripts/Source/CWMission06Script.psc:113:1:trailing-whitespace
+Scripts/Source/CWMission06Script.psc:115:11:quest-stage-logic-gap
 Scripts/Source/CWMission06Script.psc:117:1:trailing-whitespace
 Scripts/Source/CWMission06Script.psc:122:1:trailing-whitespace
+Scripts/Source/CWMission06Script.psc:124:11:quest-stage-logic-gap
 Scripts/Source/CWMission06Script.psc:126:1:trailing-whitespace
 Scripts/Source/CWMission06Script.psc:129:1:identifier-casing
 Scripts/Source/CWMission06Script.psc:132:1:trailing-whitespace
@@ -8052,6 +8071,7 @@ Scripts/Source/CWMission07Script.psc:16:85:trailing-whitespace
 Scripts/Source/CWMission07Script.psc:17:1:indentation
 Scripts/Source/CWMission07Script.psc:17:121:line-length
 Scripts/Source/CWMission07Script.psc:18:1:trailing-whitespace
+Scripts/Source/CWMission07Script.psc:19:11:quest-stage-logic-gap
 Scripts/Source/CWMission07Script.psc:20:1:trailing-whitespace
 Scripts/Source/CWMission07StewardScript.psc:1:59:trailing-whitespace
 Scripts/Source/CWMission07StewardScript.psc:1:61:line-endings
@@ -8365,6 +8385,7 @@ Scripts/Source/CWMissionPollForSoldiersScript.psc:67:1:indentation
 Scripts/Source/CWMissionPollForSoldiersScript.psc:68:1:trailing-whitespace
 Scripts/Source/CWMissionPollForSoldiersScript.psc:70:1:indentation
 Scripts/Source/CWMissionPollForSoldiersScript.psc:70:121:line-length
+Scripts/Source/CWMissionPollForSoldiersScript.psc:72:13:quest-stage-logic-gap
 Scripts/Source/CWMissionPollForSoldiersScript.psc:74:1:trailing-whitespace
 Scripts/Source/CWMissionPollForSoldiersScript.psc:77:1:indentation
 Scripts/Source/CWMissionPollForSoldiersScript.psc:77:121:line-length
@@ -8910,6 +8931,7 @@ Scripts/Source/CWMonitorDeathQuestScript.psc:9:1:unnecessary-function
 Scripts/Source/CWMonitorDeathQuestScript.psc:11:1:trailing-whitespace
 Scripts/Source/CWMonitorDeathQuestScript.psc:17:1:trailing-whitespace
 Scripts/Source/CWMonitorDeathQuestScript.psc:20:1:unnecessary-function
+Scripts/Source/CWMonitorDeathQuestScript.psc:22:11:quest-stage-logic-gap
 Scripts/Source/CWMonitorDeathSoldierScript.psc:1:62:trailing-whitespace
 Scripts/Source/CWMonitorDeathSoldierScript.psc:1:64:line-endings
 Scripts/Source/CWMonitorDeathSoldierScript.psc:2:121:line-length
@@ -10574,6 +10596,7 @@ Scripts/Source/CWResolutionScript.psc:16:1:unused-property
 Scripts/Source/CWResolutionScript.psc:19:1:identifier-casing
 Scripts/Source/CWResolutionScript.psc:19:1:unnecessary-function
 Scripts/Source/CWResolutionScript.psc:24:1:identifier-casing
+Scripts/Source/CWResolutionScript.psc:28:11:quest-stage-logic-gap
 Scripts/Source/CWResolutionScript.psc:29:1:trailing-whitespace
 Scripts/Source/CWResolutionScript.psc:31:1:trailing-whitespace
 Scripts/Source/CWRikkeGalmarScript.psc:1:54:trailing-whitespace
@@ -11922,6 +11945,7 @@ Scripts/Source/CWScript.psc:2606:1:indentation
 Scripts/Source/CWScript.psc:2607:1:trailing-whitespace
 Scripts/Source/CWScript.psc:2610:1:function-length
 Scripts/Source/CWScript.psc:2610:1:identifier-casing
+Scripts/Source/CWScript.psc:2611:10:quest-stage-logic-gap
 Scripts/Source/CWScript.psc:2613:121:line-length
 Scripts/Source/CWScript.psc:2615:1:trailing-whitespace
 Scripts/Source/CWScript.psc:2618:1:trailing-whitespace
@@ -15737,6 +15761,7 @@ Scripts/Source/CompanionsHousekeepingScript.psc:341:1:indentation
 Scripts/Source/CompanionsHousekeepingScript.psc:345:1:trailing-whitespace
 Scripts/Source/CompanionsHousekeepingScript.psc:347:1:trailing-whitespace
 Scripts/Source/CompanionsHousekeepingScript.psc:348:1:indentation
+Scripts/Source/CompanionsHousekeepingScript.psc:349:10:quest-stage-logic-gap
 Scripts/Source/CompanionsHousekeepingScript.psc:352:1:cyclomatic-complexity
 Scripts/Source/CompanionsHousekeepingScript.psc:352:1:function-length
 Scripts/Source/CompanionsHousekeepingScript.psc:353:1:indentation
@@ -16056,10 +16081,12 @@ Scripts/Source/CompanionsRadiantQuest.psc:27:19:forbidden-functions
 Scripts/Source/CompanionsRadiantQuest.psc:32:2:unreachable-elseif
 Scripts/Source/CompanionsRadiantQuest.psc:34:2:unreachable-elseif
 Scripts/Source/CompanionsRadiantQuest.psc:40:1:unchecked-cast
+Scripts/Source/CompanionsRadiantQuest.psc:41:10:quest-stage-logic-gap
 Scripts/Source/CompanionsRadiantQuest.psc:46:1:indentation
 Scripts/Source/CompanionsRadiantQuest.psc:47:1:none-form-usage
 Scripts/Source/CompanionsRadiantQuest.psc:47:1:unchecked-cast
 Scripts/Source/CompanionsRadiantQuest.psc:51:19:trailing-whitespace
+Scripts/Source/CompanionsRadiantQuest.psc:52:10:quest-stage-logic-gap
 Scripts/Source/CompanionsRadiantQuest.psc:56:1:unnecessary-function
 Scripts/Source/CompanionsRadiantQuest.psc:57:1:indentation
 Scripts/Source/CompanionsRadiantQuest.psc:62:1:identifier-casing
@@ -17335,6 +17362,7 @@ Scripts/Source/DA02Script.psc:184:1:none-form-usage
 Scripts/Source/DA02Script.psc:185:1:trailing-whitespace
 Scripts/Source/DA02Script.psc:186:1:none-form-usage
 Scripts/Source/DA02Script.psc:187:1:trailing-whitespace
+Scripts/Source/DA02Script.psc:188:11:quest-stage-logic-gap
 Scripts/Source/DA02Script.psc:189:1:trailing-whitespace
 Scripts/Source/DA02Script.psc:190:1:indentation
 Scripts/Source/DA02Script.psc:191:1:trailing-whitespace
@@ -17405,8 +17433,10 @@ Scripts/Source/DA02Script.psc:292:121:line-length
 Scripts/Source/DA02Script.psc:293:1:trailing-whitespace
 Scripts/Source/DA02Script.psc:296:1:none-form-usage
 Scripts/Source/DA02Script.psc:297:1:trailing-whitespace
+Scripts/Source/DA02Script.psc:298:12:quest-stage-logic-gap
 Scripts/Source/DA02Script.psc:305:1:indentation
 Scripts/Source/DA02Script.psc:307:1:none-form-usage
+Scripts/Source/DA02Script.psc:308:10:quest-stage-logic-gap
 Scripts/Source/DA02Script.psc:309:1:trailing-whitespace
 Scripts/Source/DA02Script.psc:310:1:none-form-usage
 Scripts/Source/DA02Script.psc:311:1:none-form-usage
@@ -17811,6 +17841,7 @@ Scripts/Source/DA04QuestScript.psc:44:1:identifier-casing
 Scripts/Source/DA04QuestScript.psc:45:1:identifier-casing
 Scripts/Source/DA04QuestScript.psc:45:1:unchecked-cast
 Scripts/Source/DA04QuestScript.psc:62:1:trailing-whitespace
+Scripts/Source/DA04QuestScript.psc:64:11:quest-stage-logic-gap
 Scripts/Source/DA04QuestScript.psc:68:1:function-length
 Scripts/Source/DA04QuestScript.psc:68:1:identifier-casing
 Scripts/Source/DA04QuestScript.psc:68:1:unnecessary-function
@@ -18228,6 +18259,7 @@ Scripts/Source/DA06QuestScript.psc:20:1:function-override
 Scripts/Source/DA06QuestScript.psc:23:29:trailing-whitespace
 Scripts/Source/DA06QuestScript.psc:24:1:none-form-usage
 Scripts/Source/DA06QuestScript.psc:28:19:operator-spacing
+Scripts/Source/DA06QuestScript.psc:29:11:quest-stage-logic-gap
 Scripts/Source/DA06QuestScript.psc:46:1:none-form-usage
 Scripts/Source/DA06QuestScript.psc:46:54:forbidden-functions
 Scripts/Source/DA06QuestScript.psc:47:1:none-form-usage
@@ -19231,6 +19263,7 @@ Scripts/Source/DA10HauntingControllerScript.psc:309:1:trailing-whitespace
 Scripts/Source/DA10HauntingControllerScript.psc:310:1:indentation
 Scripts/Source/DA10HauntingControllerScript.psc:310:82:semicolon
 Scripts/Source/DA10HauntingControllerScript.psc:311:29:trailing-whitespace
+Scripts/Source/DA10HauntingControllerScript.psc:314:13:quest-stage-logic-gap
 Scripts/Source/DA10HauntingControllerScript.psc:315:4:empty-body
 Scripts/Source/DA10HauntingControllerScript.psc:316:1:indentation
 Scripts/Source/DA10HauntingControllerScript.psc:318:12:forbidden-functions
@@ -24649,6 +24682,7 @@ Scripts/Source/Dawnguard/DA04QuestScript.psc:44:1:identifier-casing
 Scripts/Source/Dawnguard/DA04QuestScript.psc:45:1:identifier-casing
 Scripts/Source/Dawnguard/DA04QuestScript.psc:45:1:unchecked-cast
 Scripts/Source/Dawnguard/DA04QuestScript.psc:62:1:trailing-whitespace
+Scripts/Source/Dawnguard/DA04QuestScript.psc:64:11:quest-stage-logic-gap
 Scripts/Source/Dawnguard/DA04QuestScript.psc:68:1:function-length
 Scripts/Source/Dawnguard/DA04QuestScript.psc:68:1:identifier-casing
 Scripts/Source/Dawnguard/DA04QuestScript.psc:68:1:unnecessary-function
@@ -29122,6 +29156,7 @@ Scripts/Source/Dawnguard/DLC1PlayerVampireChangeScript.psc:267:1:indentation
 Scripts/Source/Dawnguard/DLC1PlayerVampireChangeScript.psc:268:1:indentation
 Scripts/Source/Dawnguard/DLC1PlayerVampireChangeScript.psc:268:5:forbidden-functions
 Scripts/Source/Dawnguard/DLC1PlayerVampireChangeScript.psc:270:1:indentation
+Scripts/Source/Dawnguard/DLC1PlayerVampireChangeScript.psc:270:13:quest-stage-logic-gap
 Scripts/Source/Dawnguard/DLC1PlayerVampireChangeScript.psc:274:1:function-length
 Scripts/Source/Dawnguard/DLC1PlayerVampireChangeScript.psc:274:1:function-override
 Scripts/Source/Dawnguard/DLC1PlayerVampireChangeScript.psc:275:1:indentation
@@ -29184,6 +29219,7 @@ Scripts/Source/Dawnguard/DLC1PlayerVampireChangeScript.psc:335:1:indentation
 Scripts/Source/Dawnguard/DLC1PlayerVampireChangeScript.psc:336:1:trailing-whitespace
 Scripts/Source/Dawnguard/DLC1PlayerVampireChangeScript.psc:337:1:indentation
 Scripts/Source/Dawnguard/DLC1PlayerVampireChangeScript.psc:338:1:indentation
+Scripts/Source/Dawnguard/DLC1PlayerVampireChangeScript.psc:338:13:quest-stage-logic-gap
 Scripts/Source/Dawnguard/DLC1PlayerVampireChangeScript.psc:341:1:identifier-casing
 Scripts/Source/Dawnguard/DLC1PlayerVampireChangeScript.psc:342:1:indentation
 Scripts/Source/Dawnguard/DLC1PlayerVampireChangeScript.psc:343:1:indentation
@@ -30080,6 +30116,7 @@ Scripts/Source/Dawnguard/DLC1RV10Script.psc:17:1:none-form-usage
 Scripts/Source/Dawnguard/DLC1RV10Script.psc:17:1:none-form-usage
 Scripts/Source/Dawnguard/DLC1RV10Script.psc:17:1:none-form-usage
 Scripts/Source/Dawnguard/DLC1RV10Script.psc:17:1:none-form-usage
+Scripts/Source/Dawnguard/DLC1RV10Script.psc:27:11:quest-stage-logic-gap
 Scripts/Source/Dawnguard/DLC1RV10Script.psc:40:1:final-newline
 Scripts/Source/Dawnguard/DLC1RadiantCrimeMonitorScript.psc:1:55:trailing-whitespace
 Scripts/Source/Dawnguard/DLC1RadiantCrimeMonitorScript.psc:1:57:line-endings
@@ -32517,6 +32554,7 @@ Scripts/Source/Dawnguard/DLC1VQ03MothpriestFightScript.psc:68:1:unnecessary-func
 Scripts/Source/Dawnguard/DLC1VQ03MothpriestFightScript.psc:69:5:exclamation-spacing
 Scripts/Source/Dawnguard/DLC1VQ03MothpriestFightScript.psc:71:1:none-form-usage
 Scripts/Source/Dawnguard/DLC1VQ03MothpriestFightScript.psc:73:9:forbidden-functions
+Scripts/Source/Dawnguard/DLC1VQ03MothpriestFightScript.psc:74:11:quest-stage-logic-gap
 Scripts/Source/Dawnguard/DLC1VQ03MothpriestFightScript.psc:84:1:none-form-usage
 Scripts/Source/Dawnguard/DLC1VQ03MothpriestFightScript.psc:85:1:none-form-usage
 Scripts/Source/Dawnguard/DLC1VQ03MothpriestFightScript.psc:87:12:forbidden-functions
@@ -33119,6 +33157,7 @@ Scripts/Source/Dawnguard/DLC1VQ05QuestScript.psc:12:1:identifier-casing
 Scripts/Source/Dawnguard/DLC1VQ05QuestScript.psc:14:1:unnecessary-function
 Scripts/Source/Dawnguard/DLC1VQ05QuestScript.psc:17:1:none-form-usage
 Scripts/Source/Dawnguard/DLC1VQ05QuestScript.psc:17:1:none-form-usage
+Scripts/Source/Dawnguard/DLC1VQ05QuestScript.psc:18:12:quest-stage-logic-gap
 Scripts/Source/Dawnguard/DLC1VQ05QuestScript.psc:25:1:unnecessary-function
 Scripts/Source/Dawnguard/DLC1VQ05QuestScript.psc:27:1:none-form-usage
 Scripts/Source/Dawnguard/DLC1VQ05QuestScript.psc:28:1:none-form-usage
@@ -33432,6 +33471,7 @@ Scripts/Source/Dawnguard/DLC1VQ06QuestScript.psc:62:1:none-form-usage
 Scripts/Source/Dawnguard/DLC1VQ06QuestScript.psc:64:1:none-form-usage
 Scripts/Source/Dawnguard/DLC1VQ06QuestScript.psc:64:39:forbidden-functions
 Scripts/Source/Dawnguard/DLC1VQ06QuestScript.psc:65:1:none-form-usage
+Scripts/Source/Dawnguard/DLC1VQ06QuestScript.psc:66:12:quest-stage-logic-gap
 Scripts/Source/Dawnguard/DLC1VQ06QuestScript.psc:67:1:none-form-usage
 Scripts/Source/Dawnguard/DLC1VQ06QuestScript.psc:67:44:forbidden-functions
 Scripts/Source/Dawnguard/DLC1VQ06QuestScript.psc:68:9:forbidden-functions
@@ -33450,6 +33490,7 @@ Scripts/Source/Dawnguard/DLC1VQ06QuestScript.psc:79:1:none-form-usage
 Scripts/Source/Dawnguard/DLC1VQ06QuestScript.psc:80:9:forbidden-functions
 Scripts/Source/Dawnguard/DLC1VQ06QuestScript.psc:81:12:forbidden-functions
 Scripts/Source/Dawnguard/DLC1VQ06QuestScript.psc:82:9:forbidden-functions
+Scripts/Source/Dawnguard/DLC1VQ06QuestScript.psc:83:12:quest-stage-logic-gap
 Scripts/Source/Dawnguard/DLC1VQ06QuestScript.psc:89:1:identifier-casing
 Scripts/Source/Dawnguard/DLC1VQ06QuestScript.psc:93:49:trailing-whitespace
 Scripts/Source/Dawnguard/DLC1VQ06QuestScript.psc:94:50:trailing-whitespace
@@ -34893,6 +34934,7 @@ Scripts/Source/Dawnguard/DLC1VampireTurnScript.psc:404:1:none-form-usage
 Scripts/Source/Dawnguard/DLC1VampireTurnScript.psc:405:1:none-form-usage
 Scripts/Source/Dawnguard/DLC1VampireTurnScript.psc:411:8:forbidden-functions
 Scripts/Source/Dawnguard/DLC1VampireTurnScript.psc:412:1:none-form-usage
+Scripts/Source/Dawnguard/DLC1VampireTurnScript.psc:416:10:quest-stage-logic-gap
 Scripts/Source/Dawnguard/DLC1VampireTurnScript.psc:417:1:none-form-usage
 Scripts/Source/Dawnguard/DLC1VampireTurnScript.psc:418:1:none-form-usage
 Scripts/Source/Dawnguard/DLC1VampireTutorialNoPickpocket.psc:1:66:trailing-whitespace
@@ -48396,6 +48438,7 @@ Scripts/Source/Dawnguard/PlayerWerewolfChangeScript.psc:241:1:indentation
 Scripts/Source/Dawnguard/PlayerWerewolfChangeScript.psc:242:1:indentation
 Scripts/Source/Dawnguard/PlayerWerewolfChangeScript.psc:242:5:forbidden-functions
 Scripts/Source/Dawnguard/PlayerWerewolfChangeScript.psc:244:1:indentation
+Scripts/Source/Dawnguard/PlayerWerewolfChangeScript.psc:244:13:quest-stage-logic-gap
 Scripts/Source/Dawnguard/PlayerWerewolfChangeScript.psc:248:1:function-length
 Scripts/Source/Dawnguard/PlayerWerewolfChangeScript.psc:248:1:function-override
 Scripts/Source/Dawnguard/PlayerWerewolfChangeScript.psc:249:1:indentation
@@ -48421,6 +48464,7 @@ Scripts/Source/Dawnguard/PlayerWerewolfChangeScript.psc:261:50:forbidden-functio
 Scripts/Source/Dawnguard/PlayerWerewolfChangeScript.psc:261:81:exclamation-spacing
 Scripts/Source/Dawnguard/PlayerWerewolfChangeScript.psc:262:1:indentation
 Scripts/Source/Dawnguard/PlayerWerewolfChangeScript.psc:263:1:indentation
+Scripts/Source/Dawnguard/PlayerWerewolfChangeScript.psc:263:17:quest-stage-logic-gap
 Scripts/Source/Dawnguard/PlayerWerewolfChangeScript.psc:264:1:indentation
 Scripts/Source/Dawnguard/PlayerWerewolfChangeScript.psc:265:1:indentation
 Scripts/Source/Dawnguard/PlayerWerewolfChangeScript.psc:267:1:indentation
@@ -48483,6 +48527,7 @@ Scripts/Source/Dawnguard/PlayerWerewolfChangeScript.psc:308:1:indentation
 Scripts/Source/Dawnguard/PlayerWerewolfChangeScript.psc:309:1:indentation
 Scripts/Source/Dawnguard/PlayerWerewolfChangeScript.psc:310:1:indentation
 Scripts/Source/Dawnguard/PlayerWerewolfChangeScript.psc:311:1:indentation
+Scripts/Source/Dawnguard/PlayerWerewolfChangeScript.psc:311:13:quest-stage-logic-gap
 Scripts/Source/Dawnguard/PlayerWerewolfChangeScript.psc:316:1:unnecessary-function
 Scripts/Source/Dawnguard/PlayerWerewolfChangeScript.psc:317:1:indentation
 Scripts/Source/Dawnguard/PlayerWerewolfChangeScript.psc:318:1:indentation
@@ -53038,6 +53083,7 @@ Scripts/Source/Dragonborn/DA04QuestScript.psc:46:1:identifier-casing
 Scripts/Source/Dragonborn/DA04QuestScript.psc:47:1:identifier-casing
 Scripts/Source/Dragonborn/DA04QuestScript.psc:47:1:unchecked-cast
 Scripts/Source/Dragonborn/DA04QuestScript.psc:64:1:trailing-whitespace
+Scripts/Source/Dragonborn/DA04QuestScript.psc:66:11:quest-stage-logic-gap
 Scripts/Source/Dragonborn/DA04QuestScript.psc:70:1:function-length
 Scripts/Source/Dragonborn/DA04QuestScript.psc:70:1:identifier-casing
 Scripts/Source/Dragonborn/DA04QuestScript.psc:71:1:identifier-casing
@@ -55992,6 +56038,7 @@ Scripts/Source/Dragonborn/DLC2FFR04QuestScript.psc:8:44:comma-spacing
 Scripts/Source/Dragonborn/DLC2FFR04QuestScript.psc:14:7:forbidden-functions
 Scripts/Source/Dragonborn/DLC2FFR04QuestScript.psc:14:47:comma-spacing
 Scripts/Source/Dragonborn/DLC2FFR04QuestScript.psc:17:1:none-form-usage
+Scripts/Source/Dragonborn/DLC2FFR04QuestScript.psc:18:11:quest-stage-logic-gap
 Scripts/Source/Dragonborn/DLC2FFR04QuestScript.psc:21:12:trailing-whitespace
 Scripts/Source/Dragonborn/DLC2FFR04QuestScript.psc:21:13:final-newline
 Scripts/Source/Dragonborn/DLC2FXInsturmentsAttachSCRIPT.psc:1:79:line-endings
@@ -57402,6 +57449,7 @@ Scripts/Source/Dragonborn/DLC2MH01QuestScript.psc:14:1:unused-property
 Scripts/Source/Dragonborn/DLC2MH01QuestScript.psc:24:1:none-form-usage
 Scripts/Source/Dragonborn/DLC2MH01QuestScript.psc:27:1:none-form-usage
 Scripts/Source/Dragonborn/DLC2MH01QuestScript.psc:27:32:trailing-whitespace
+Scripts/Source/Dragonborn/DLC2MH01QuestScript.psc:28:11:quest-stage-logic-gap
 Scripts/Source/Dragonborn/DLC2MH01QuestScript.psc:33:1:unnecessary-function
 Scripts/Source/Dragonborn/DLC2MH01QuestScript.psc:39:1:none-form-usage
 Scripts/Source/Dragonborn/DLC2MH01QuestScript.psc:40:1:none-form-usage
@@ -57489,6 +57537,7 @@ Scripts/Source/Dragonborn/DLC2MH02QuestScript.psc:11:1:unused-property
 Scripts/Source/Dragonborn/DLC2MH02QuestScript.psc:16:1:none-form-usage
 Scripts/Source/Dragonborn/DLC2MH02QuestScript.psc:19:1:none-form-usage
 Scripts/Source/Dragonborn/DLC2MH02QuestScript.psc:19:28:trailing-whitespace
+Scripts/Source/Dragonborn/DLC2MH02QuestScript.psc:20:11:quest-stage-logic-gap
 Scripts/Source/Dragonborn/DLC2MH02QuestScript.psc:26:1:identifier-casing
 Scripts/Source/Dragonborn/DLC2MH02QuestScript.psc:33:1:unnecessary-function
 Scripts/Source/Dragonborn/DLC2MH02QuestScript.psc:34:1:trailing-whitespace
@@ -57665,6 +57714,7 @@ Scripts/Source/Dragonborn/DLC2MQ04Script.psc:12:1:unused-property
 Scripts/Source/Dragonborn/DLC2MQ04Script.psc:13:121:line-length
 Scripts/Source/Dragonborn/DLC2MQ04Script.psc:15:1:identifier-casing
 Scripts/Source/Dragonborn/DLC2MQ04Script.psc:15:1:property-never-read
+Scripts/Source/Dragonborn/DLC2MQ04Script.psc:22:10:quest-stage-logic-gap
 Scripts/Source/Dragonborn/DLC2MQ04Script.psc:25:1:unnecessary-function
 Scripts/Source/Dragonborn/DLC2MQ04Script.psc:30:1:unnecessary-function
 Scripts/Source/Dragonborn/DLC2MQ04Script.psc:31:1:none-form-usage
@@ -59094,6 +59144,7 @@ Scripts/Source/Dragonborn/DLC2MQ06Script.psc:4:1:indentation
 Scripts/Source/Dragonborn/DLC2MQ06Script.psc:5:1:indentation
 Scripts/Source/Dragonborn/DLC2MQ06Script.psc:6:1:indentation
 Scripts/Source/Dragonborn/DLC2MQ06Script.psc:9:121:line-length
+Scripts/Source/Dragonborn/DLC2MQ06Script.psc:10:11:quest-stage-logic-gap
 Scripts/Source/Dragonborn/DLC2MQ06Script.psc:18:1:none-form-usage
 Scripts/Source/Dragonborn/DLC2MQ06Script.psc:19:1:none-form-usage
 Scripts/Source/Dragonborn/DLC2MQ06Script.psc:20:1:none-form-usage
@@ -59948,6 +59999,7 @@ Scripts/Source/Dragonborn/DLC2RR00QuestScript.psc:7:1:global-variable-increment
 Scripts/Source/Dragonborn/DLC2RR00QuestScript.psc:7:1:none-form-usage
 Scripts/Source/Dragonborn/DLC2RR00QuestScript.psc:7:1:none-form-usage
 Scripts/Source/Dragonborn/DLC2RR00QuestScript.psc:9:1:none-form-usage
+Scripts/Source/Dragonborn/DLC2RR00QuestScript.psc:10:11:quest-stage-logic-gap
 Scripts/Source/Dragonborn/DLC2RR00QuestScript.psc:13:12:final-newline
 Scripts/Source/Dragonborn/DLC2RR01AltLetterScript.psc:1:71:line-endings
 Scripts/Source/Dragonborn/DLC2RR01AltLetterScript.psc:3:1:identifier-casing
@@ -60344,6 +60396,7 @@ Scripts/Source/Dragonborn/DLC2RRF02PlayerAliasScript.psc:31:9:trailing-whitespac
 Scripts/Source/Dragonborn/DLC2RRF03QuestScript.psc:1:46:trailing-whitespace
 Scripts/Source/Dragonborn/DLC2RRF03QuestScript.psc:1:48:line-endings
 Scripts/Source/Dragonborn/DLC2RRF03QuestScript.psc:3:1:identifier-casing
+Scripts/Source/Dragonborn/DLC2RRF03QuestScript.psc:10:11:quest-stage-logic-gap
 Scripts/Source/Dragonborn/DLC2RRF03QuestScript.psc:13:12:final-newline
 Scripts/Source/Dragonborn/DLC2RRF03SpawnScript.psc:1:55:trailing-whitespace
 Scripts/Source/Dragonborn/DLC2RRF03SpawnScript.psc:1:57:line-endings
@@ -71318,6 +71371,7 @@ Scripts/Source/Dragonborn/DLC2dunKolbjornDeathTrackingScript.psc:157:61:exclamat
 Scripts/Source/Dragonborn/DLC2dunKolbjornDeathTrackingScript.psc:164:1:trailing-whitespace
 Scripts/Source/Dragonborn/DLC2dunKolbjornDeathTrackingScript.psc:165:1:indentation
 Scripts/Source/Dragonborn/DLC2dunKolbjornDeathTrackingScript.psc:167:1:none-form-usage
+Scripts/Source/Dragonborn/DLC2dunKolbjornDeathTrackingScript.psc:168:16:quest-stage-logic-gap
 Scripts/Source/Dragonborn/DLC2dunKolbjornDeathTrackingScript.psc:170:1:indentation
 Scripts/Source/Dragonborn/DLC2dunKolbjornDeathTrackingScript.psc:171:1:indentation
 Scripts/Source/Dragonborn/DLC2dunKolbjornDeathTrackingScript.psc:172:1:indentation
@@ -77627,6 +77681,7 @@ Scripts/Source/Favor002QuestScript.psc:6:35:trailing-whitespace
 Scripts/Source/Favor002QuestScript.psc:17:1:function-override
 Scripts/Source/Favor002QuestScript.psc:19:1:none-form-usage
 Scripts/Source/Favor002QuestScript.psc:19:1:none-form-usage
+Scripts/Source/Favor002QuestScript.psc:20:11:quest-stage-logic-gap
 Scripts/Source/Favor002QuestScript.psc:23:9:final-newline
 Scripts/Source/Favor003QuestScript.psc:1:57:line-endings
 Scripts/Source/Favor003QuestScript.psc:3:1:unused-property
@@ -77791,6 +77846,7 @@ Scripts/Source/FavorChangeLocationQuestScript.psc:38:1:none-form-usage
 Scripts/Source/FavorChangeLocationQuestScript.psc:38:10:forbidden-functions
 Scripts/Source/FavorChangeLocationQuestScript.psc:41:1:indentation
 Scripts/Source/FavorChangeLocationQuestScript.psc:42:1:numeric-comparison
+Scripts/Source/FavorChangeLocationQuestScript.psc:44:12:quest-stage-logic-gap
 Scripts/Source/FavorChangeLocationQuestScript.psc:56:1:indentation
 Scripts/Source/FavorChangeLocationQuestScript.psc:58:1:none-form-usage
 Scripts/Source/FavorChangeLocationQuestScript.psc:59:1:trailing-whitespace
@@ -77961,12 +78017,14 @@ Scripts/Source/FavorJarlsMakeFriendsScript.psc:140:67:trailing-whitespace
 Scripts/Source/FavorJarlsMakeFriendsScript.psc:141:56:trailing-whitespace
 Scripts/Source/FavorJarlsMakeFriendsScript.psc:142:1:indentation
 Scripts/Source/FavorJarlsMakeFriendsScript.psc:145:1:none-form-usage
+Scripts/Source/FavorJarlsMakeFriendsScript.psc:146:13:quest-stage-logic-gap
 Scripts/Source/FavorJarlsMakeFriendsScript.psc:149:1:none-form-usage
 Scripts/Source/FavorJarlsMakeFriendsScript.psc:149:1:none-form-usage
 Scripts/Source/FavorJarlsMakeFriendsScript.psc:150:1:none-form-usage
 Scripts/Source/FavorJarlsMakeFriendsScript.psc:154:59:trailing-whitespace
 Scripts/Source/FavorJarlsMakeFriendsScript.psc:155:1:indentation
 Scripts/Source/FavorJarlsMakeFriendsScript.psc:158:1:none-form-usage
+Scripts/Source/FavorJarlsMakeFriendsScript.psc:159:13:quest-stage-logic-gap
 Scripts/Source/FavorJarlsMakeFriendsScript.psc:161:7:trailing-whitespace
 Scripts/Source/FavorJarlsMakeFriendsScript.psc:162:1:none-form-usage
 Scripts/Source/FavorJarlsMakeFriendsScript.psc:162:1:none-form-usage
@@ -77974,6 +78032,7 @@ Scripts/Source/FavorJarlsMakeFriendsScript.psc:163:1:none-form-usage
 Scripts/Source/FavorJarlsMakeFriendsScript.psc:167:64:trailing-whitespace
 Scripts/Source/FavorJarlsMakeFriendsScript.psc:168:1:indentation
 Scripts/Source/FavorJarlsMakeFriendsScript.psc:171:1:none-form-usage
+Scripts/Source/FavorJarlsMakeFriendsScript.psc:172:13:quest-stage-logic-gap
 Scripts/Source/FavorJarlsMakeFriendsScript.psc:174:7:trailing-whitespace
 Scripts/Source/FavorJarlsMakeFriendsScript.psc:175:1:none-form-usage
 Scripts/Source/FavorJarlsMakeFriendsScript.psc:175:1:none-form-usage
@@ -77982,6 +78041,7 @@ Scripts/Source/FavorJarlsMakeFriendsScript.psc:179:8:trailing-whitespace
 Scripts/Source/FavorJarlsMakeFriendsScript.psc:180:63:trailing-whitespace
 Scripts/Source/FavorJarlsMakeFriendsScript.psc:181:1:indentation
 Scripts/Source/FavorJarlsMakeFriendsScript.psc:184:1:none-form-usage
+Scripts/Source/FavorJarlsMakeFriendsScript.psc:185:13:quest-stage-logic-gap
 Scripts/Source/FavorJarlsMakeFriendsScript.psc:187:7:trailing-whitespace
 Scripts/Source/FavorJarlsMakeFriendsScript.psc:188:1:none-form-usage
 Scripts/Source/FavorJarlsMakeFriendsScript.psc:188:1:none-form-usage
@@ -77990,30 +78050,35 @@ Scripts/Source/FavorJarlsMakeFriendsScript.psc:192:8:trailing-whitespace
 Scripts/Source/FavorJarlsMakeFriendsScript.psc:193:64:trailing-whitespace
 Scripts/Source/FavorJarlsMakeFriendsScript.psc:194:1:indentation
 Scripts/Source/FavorJarlsMakeFriendsScript.psc:197:1:none-form-usage
+Scripts/Source/FavorJarlsMakeFriendsScript.psc:198:13:quest-stage-logic-gap
 Scripts/Source/FavorJarlsMakeFriendsScript.psc:200:7:trailing-whitespace
 Scripts/Source/FavorJarlsMakeFriendsScript.psc:201:1:none-form-usage
 Scripts/Source/FavorJarlsMakeFriendsScript.psc:201:1:none-form-usage
 Scripts/Source/FavorJarlsMakeFriendsScript.psc:202:1:none-form-usage
 Scripts/Source/FavorJarlsMakeFriendsScript.psc:207:1:indentation
 Scripts/Source/FavorJarlsMakeFriendsScript.psc:210:1:none-form-usage
+Scripts/Source/FavorJarlsMakeFriendsScript.psc:211:13:quest-stage-logic-gap
 Scripts/Source/FavorJarlsMakeFriendsScript.psc:213:7:trailing-whitespace
 Scripts/Source/FavorJarlsMakeFriendsScript.psc:214:1:none-form-usage
 Scripts/Source/FavorJarlsMakeFriendsScript.psc:214:1:none-form-usage
 Scripts/Source/FavorJarlsMakeFriendsScript.psc:215:1:none-form-usage
 Scripts/Source/FavorJarlsMakeFriendsScript.psc:220:1:indentation
 Scripts/Source/FavorJarlsMakeFriendsScript.psc:223:1:none-form-usage
+Scripts/Source/FavorJarlsMakeFriendsScript.psc:224:13:quest-stage-logic-gap
 Scripts/Source/FavorJarlsMakeFriendsScript.psc:226:7:trailing-whitespace
 Scripts/Source/FavorJarlsMakeFriendsScript.psc:227:1:none-form-usage
 Scripts/Source/FavorJarlsMakeFriendsScript.psc:227:1:none-form-usage
 Scripts/Source/FavorJarlsMakeFriendsScript.psc:228:1:none-form-usage
 Scripts/Source/FavorJarlsMakeFriendsScript.psc:233:1:indentation
 Scripts/Source/FavorJarlsMakeFriendsScript.psc:236:1:none-form-usage
+Scripts/Source/FavorJarlsMakeFriendsScript.psc:237:13:quest-stage-logic-gap
 Scripts/Source/FavorJarlsMakeFriendsScript.psc:239:7:trailing-whitespace
 Scripts/Source/FavorJarlsMakeFriendsScript.psc:240:1:none-form-usage
 Scripts/Source/FavorJarlsMakeFriendsScript.psc:240:1:none-form-usage
 Scripts/Source/FavorJarlsMakeFriendsScript.psc:241:1:none-form-usage
 Scripts/Source/FavorJarlsMakeFriendsScript.psc:246:1:indentation
 Scripts/Source/FavorJarlsMakeFriendsScript.psc:249:1:none-form-usage
+Scripts/Source/FavorJarlsMakeFriendsScript.psc:250:13:quest-stage-logic-gap
 Scripts/Source/FavorJarlsMakeFriendsScript.psc:252:7:trailing-whitespace
 Scripts/Source/FavorJarlsMakeFriendsScript.psc:253:1:none-form-usage
 Scripts/Source/FavorJarlsMakeFriendsScript.psc:253:1:none-form-usage
@@ -79473,6 +79538,7 @@ Scripts/Source/FreeformKarthwastenAQuestScript.psc:1:57:line-endings
 Scripts/Source/FreeformKarthwastenAQuestScript.psc:4:1:unused-property
 Scripts/Source/FreeformKarthwastenAQuestScript.psc:6:1:unnecessary-function
 Scripts/Source/FreeformKarthwastenAQuestScript.psc:7:1:none-form-usage
+Scripts/Source/FreeformKarthwastenAQuestScript.psc:8:11:quest-stage-logic-gap
 Scripts/Source/FreeformKarthwastenAQuestScript.psc:10:12:final-newline
 Scripts/Source/FreeformKarthwastenNPC.psc:1:57:line-endings
 Scripts/Source/FreeformKarthwastenNPC.psc:5:1:function-override
@@ -79489,6 +79555,7 @@ Scripts/Source/FreeformKolskeggrADeathScript.psc:13:9:final-newline
 Scripts/Source/FreeformKolskeggrAQuestScript.psc:1:55:line-endings
 Scripts/Source/FreeformKolskeggrAQuestScript.psc:6:1:unnecessary-function
 Scripts/Source/FreeformKolskeggrAQuestScript.psc:7:1:none-form-usage
+Scripts/Source/FreeformKolskeggrAQuestScript.psc:8:11:quest-stage-logic-gap
 Scripts/Source/FreeformKolskeggrAQuestScript.psc:10:12:final-newline
 Scripts/Source/FreeformMarkarthAScript.psc:1:49:line-endings
 Scripts/Source/FreeformMarkarthAScript.psc:3:1:identifier-casing
@@ -79582,10 +79649,13 @@ Scripts/Source/FreeformSkyHavenTempleAScript.psc:15:1:function-length
 Scripts/Source/FreeformSkyHavenTempleAScript.psc:15:1:unnecessary-function
 Scripts/Source/FreeformSkyHavenTempleAScript.psc:20:1:none-form-usage
 Scripts/Source/FreeformSkyHavenTempleAScript.psc:21:1:none-form-usage
+Scripts/Source/FreeformSkyHavenTempleAScript.psc:23:11:quest-stage-logic-gap
 Scripts/Source/FreeformSkyHavenTempleAScript.psc:25:1:none-form-usage
 Scripts/Source/FreeformSkyHavenTempleAScript.psc:26:1:none-form-usage
+Scripts/Source/FreeformSkyHavenTempleAScript.psc:28:11:quest-stage-logic-gap
 Scripts/Source/FreeformSkyHavenTempleAScript.psc:30:1:none-form-usage
 Scripts/Source/FreeformSkyHavenTempleAScript.psc:31:1:none-form-usage
+Scripts/Source/FreeformSkyHavenTempleAScript.psc:33:11:quest-stage-logic-gap
 Scripts/Source/FreeformSkyHavenTempleAScript.psc:47:12:final-newline
 Scripts/Source/FreeformSkyHavenTempleCScript.psc:1:55:line-endings
 Scripts/Source/FreeformSkyHavenTempleCScript.psc:3:1:unused-property
@@ -81745,6 +81815,7 @@ Scripts/Source/Hearthfire/BYOHHouseScript.psc:207:1:identifier-casing
 Scripts/Source/Hearthfire/BYOHHouseScript.psc:207:1:identifier-casing
 Scripts/Source/Hearthfire/BYOHHouseScript.psc:207:1:identifier-casing
 Scripts/Source/Hearthfire/BYOHHouseScript.psc:208:8:forbidden-functions
+Scripts/Source/Hearthfire/BYOHHouseScript.psc:210:10:quest-stage-logic-gap
 Scripts/Source/Hearthfire/BYOHHouseScript.psc:212:8:forbidden-functions
 Scripts/Source/Hearthfire/BYOHHouseScript.psc:213:1:trailing-whitespace
 Scripts/Source/Hearthfire/BYOHHouseScript.psc:216:1:identifier-casing
@@ -81756,6 +81827,7 @@ Scripts/Source/Hearthfire/BYOHHouseScript.psc:236:2:strict-boolean
 Scripts/Source/Hearthfire/BYOHHouseScript.psc:237:9:forbidden-functions
 Scripts/Source/Hearthfire/BYOHHouseScript.psc:240:2:strict-boolean
 Scripts/Source/Hearthfire/BYOHHouseScript.psc:241:9:forbidden-functions
+Scripts/Source/Hearthfire/BYOHHouseScript.psc:248:11:quest-stage-logic-gap
 Scripts/Source/Hearthfire/BYOHHouseScript.psc:250:1:identifier-casing
 Scripts/Source/Hearthfire/BYOHHouseScript.psc:251:3:strict-boolean
 Scripts/Source/Hearthfire/BYOHHouseScript.psc:258:1:none-form-usage
@@ -81778,6 +81850,7 @@ Scripts/Source/Hearthfire/BYOHHouseScript.psc:284:59:slow-functions
 Scripts/Source/Hearthfire/BYOHHouseScript.psc:287:1:none-form-usage
 Scripts/Source/Hearthfire/BYOHHouseScript.psc:287:9:forbidden-functions
 Scripts/Source/Hearthfire/BYOHHouseScript.psc:289:1:none-form-usage
+Scripts/Source/Hearthfire/BYOHHouseScript.psc:292:11:quest-stage-logic-gap
 Scripts/Source/Hearthfire/BYOHHouseScript.psc:296:121:line-length
 Scripts/Source/Hearthfire/BYOHHouseScript.psc:297:1:identifier-casing
 Scripts/Source/Hearthfire/BYOHHouseScript.psc:298:8:forbidden-functions
@@ -82311,6 +82384,7 @@ Scripts/Source/Hearthfire/BYOHRelationshipAdoptableOrphanageSc.psc:172:1:none-fo
 Scripts/Source/Hearthfire/BYOHRelationshipAdoptableOrphanageSc.psc:177:121:line-length
 Scripts/Source/Hearthfire/BYOHRelationshipAdoptableOrphanageSc.psc:178:1:cyclomatic-complexity
 Scripts/Source/Hearthfire/BYOHRelationshipAdoptableOrphanageSc.psc:178:1:function-length
+Scripts/Source/Hearthfire/BYOHRelationshipAdoptableOrphanageSc.psc:181:15:quest-stage-logic-gap
 Scripts/Source/Hearthfire/BYOHRelationshipAdoptableOrphanageSc.psc:182:1:trailing-whitespace
 Scripts/Source/Hearthfire/BYOHRelationshipAdoptableOrphanageSc.psc:185:1:trailing-whitespace
 Scripts/Source/Hearthfire/BYOHRelationshipAdoptableOrphanageSc.psc:187:1:unchecked-cast
@@ -82412,6 +82486,8 @@ Scripts/Source/Hearthfire/BYOHRelationshipAdoptableOrphanageSc.psc:271:1:none-fo
 Scripts/Source/Hearthfire/BYOHRelationshipAdoptableOrphanageSc.psc:271:1:none-form-usage
 Scripts/Source/Hearthfire/BYOHRelationshipAdoptableOrphanageSc.psc:271:1:none-form-usage
 Scripts/Source/Hearthfire/BYOHRelationshipAdoptableOrphanageSc.psc:271:1:none-form-usage
+Scripts/Source/Hearthfire/BYOHRelationshipAdoptableOrphanageSc.psc:277:17:quest-stage-logic-gap
+Scripts/Source/Hearthfire/BYOHRelationshipAdoptableOrphanageSc.psc:279:17:quest-stage-logic-gap
 Scripts/Source/Hearthfire/BYOHRelationshipAdoptableOrphanageSc.psc:296:1:unchecked-cast
 Scripts/Source/Hearthfire/BYOHRelationshipAdoptableOrphanageSc.psc:301:1:function-override
 Scripts/Source/Hearthfire/BYOHRelationshipAdoptableOrphanageSc.psc:303:1:none-form-usage
@@ -88835,6 +88911,7 @@ Scripts/Source/MG03QuestScript.psc:5:1:unused-property
 Scripts/Source/MG03QuestScript.psc:9:1:unused-property
 Scripts/Source/MG03QuestScript.psc:17:1:none-form-usage
 Scripts/Source/MG03QuestScript.psc:17:1:none-form-usage
+Scripts/Source/MG03QuestScript.psc:18:11:quest-stage-logic-gap
 Scripts/Source/MG03QuestScript.psc:24:1:unnecessary-function
 Scripts/Source/MG03QuestScript.psc:28:1:none-form-usage
 Scripts/Source/MG03QuestScript.psc:29:1:none-form-usage
@@ -88942,6 +89019,7 @@ Scripts/Source/MG05QuestScript.psc:10:1:indentation
 Scripts/Source/MG05QuestScript.psc:12:1:none-form-usage
 Scripts/Source/MG05QuestScript.psc:12:1:none-form-usage
 Scripts/Source/MG05QuestScript.psc:12:58:trailing-whitespace
+Scripts/Source/MG05QuestScript.psc:13:11:quest-stage-logic-gap
 Scripts/Source/MG05QuestScript.psc:20:1:unused-property
 Scripts/Source/MG05QuestScript.psc:24:1:unused-property
 Scripts/Source/MG05QuestScript.psc:24:48:trailing-whitespace
@@ -90189,6 +90267,7 @@ Scripts/Source/MGR02QuestScript.psc:121:1:indentation
 Scripts/Source/MGR02QuestScript.psc:123:1:indentation
 Scripts/Source/MGR02QuestScript.psc:129:1:indentation
 Scripts/Source/MGR02QuestScript.psc:130:1:indentation
+Scripts/Source/MGR02QuestScript.psc:133:12:quest-stage-logic-gap
 Scripts/Source/MGR02QuestScript.psc:135:1:trailing-whitespace
 Scripts/Source/MGR02QuestScript.psc:142:1:unused-property
 Scripts/Source/MGR02QuestScript.psc:142:47:trailing-whitespace
@@ -90575,6 +90654,7 @@ Scripts/Source/MGRAppOnmund1QuestScript.psc:5:1:unused-property
 Scripts/Source/MGRAppOnmund1QuestScript.psc:8:1:unnecessary-function
 Scripts/Source/MGRAppOnmund1QuestScript.psc:11:1:none-form-usage
 Scripts/Source/MGRAppOnmund1QuestScript.psc:11:10:forbidden-functions
+Scripts/Source/MGRAppOnmund1QuestScript.psc:12:11:quest-stage-logic-gap
 Scripts/Source/MGRAppOnmund1QuestScript.psc:17:36:trailing-whitespace
 Scripts/Source/MGRApprenticeQGScript.psc:1:56:trailing-whitespace
 Scripts/Source/MGRApprenticeQGScript.psc:1:58:line-endings
@@ -90961,6 +91041,7 @@ Scripts/Source/MGRJzargoSpell01QuestScript.psc:3:1:unused-property
 Scripts/Source/MGRJzargoSpell01QuestScript.psc:5:1:unused-property
 Scripts/Source/MGRJzargoSpell01QuestScript.psc:19:1:none-form-usage
 Scripts/Source/MGRJzargoSpell01QuestScript.psc:19:1:none-form-usage
+Scripts/Source/MGRJzargoSpell01QuestScript.psc:20:12:quest-stage-logic-gap
 Scripts/Source/MGRJzargoSpell01QuestScript.psc:23:12:final-newline
 Scripts/Source/MGRKeeningScript.psc:1:52:trailing-whitespace
 Scripts/Source/MGRKeeningScript.psc:1:54:line-endings
@@ -91547,9 +91628,11 @@ Scripts/Source/MQ101QuestScript.psc:66:23:forbidden-functions
 Scripts/Source/MQ101QuestScript.psc:67:1:indentation
 Scripts/Source/MQ101QuestScript.psc:68:1:none-form-usage
 Scripts/Source/MQ101QuestScript.psc:69:1:none-form-usage
+Scripts/Source/MQ101QuestScript.psc:70:11:quest-stage-logic-gap
 Scripts/Source/MQ101QuestScript.psc:71:36:forbidden-functions
 Scripts/Source/MQ101QuestScript.psc:74:23:forbidden-functions
 Scripts/Source/MQ101QuestScript.psc:75:1:indentation
+Scripts/Source/MQ101QuestScript.psc:76:11:quest-stage-logic-gap
 Scripts/Source/MQ101QuestScript.psc:77:36:forbidden-functions
 Scripts/Source/MQ101QuestScript.psc:82:1:function-length
 Scripts/Source/MQ101QuestScript.psc:82:1:function-override
@@ -91577,9 +91660,16 @@ Scripts/Source/MQ101QuestScript.psc:141:1:function-length
 Scripts/Source/MQ101QuestScript.psc:141:1:identifier-casing
 Scripts/Source/MQ101QuestScript.psc:141:1:unnecessary-function
 Scripts/Source/MQ101QuestScript.psc:142:1:indentation
+Scripts/Source/MQ101QuestScript.psc:146:12:quest-stage-logic-gap
+Scripts/Source/MQ101QuestScript.psc:151:12:quest-stage-logic-gap
+Scripts/Source/MQ101QuestScript.psc:156:12:quest-stage-logic-gap
+Scripts/Source/MQ101QuestScript.psc:161:12:quest-stage-logic-gap
+Scripts/Source/MQ101QuestScript.psc:166:12:quest-stage-logic-gap
+Scripts/Source/MQ101QuestScript.psc:171:12:quest-stage-logic-gap
 Scripts/Source/MQ101QuestScript.psc:178:1:identifier-casing
 Scripts/Source/MQ101QuestScript.psc:179:1:identifier-casing
 Scripts/Source/MQ101QuestScript.psc:182:1:indentation
+Scripts/Source/MQ101QuestScript.psc:185:11:quest-stage-logic-gap
 Scripts/Source/MQ101QuestScript.psc:192:1:function-length
 Scripts/Source/MQ101QuestScript.psc:192:1:identifier-casing
 Scripts/Source/MQ101QuestScript.psc:192:1:identifier-casing
@@ -91610,6 +91700,7 @@ Scripts/Source/MQ101QuestScript.psc:244:34:trailing-whitespace
 Scripts/Source/MQ101QuestScript.psc:249:34:trailing-whitespace
 Scripts/Source/MQ101QuestScript.psc:254:34:trailing-whitespace
 Scripts/Source/MQ101QuestScript.psc:259:34:trailing-whitespace
+Scripts/Source/MQ101QuestScript.psc:264:11:quest-stage-logic-gap
 Scripts/Source/MQ101QuestScript.psc:274:1:cyclomatic-complexity
 Scripts/Source/MQ101QuestScript.psc:274:1:function-length
 Scripts/Source/MQ101QuestScript.psc:276:1:identifier-casing
@@ -91787,6 +91878,7 @@ Scripts/Source/MQ102QuestScript.psc:26:41:trailing-whitespace
 Scripts/Source/MQ102QuestScript.psc:28:1:unused-property
 Scripts/Source/MQ102QuestScript.psc:28:33:trailing-whitespace
 Scripts/Source/MQ102QuestScript.psc:31:1:function-override
+Scripts/Source/MQ102QuestScript.psc:33:10:quest-stage-logic-gap
 Scripts/Source/MQ102QuestScript.psc:34:9:final-newline
 Scripts/Source/MQ103BookScript.psc:1:50:trailing-whitespace
 Scripts/Source/MQ103BookScript.psc:1:52:line-endings
@@ -91862,6 +91954,7 @@ Scripts/Source/MQ103QuestScript.psc:30:1:indentation
 Scripts/Source/MQ103QuestScript.psc:32:1:none-form-usage
 Scripts/Source/MQ103QuestScript.psc:32:1:none-form-usage
 Scripts/Source/MQ103QuestScript.psc:32:37:operator-spacing
+Scripts/Source/MQ103QuestScript.psc:33:11:quest-stage-logic-gap
 Scripts/Source/MQ103QuestScript.psc:35:1:indentation
 Scripts/Source/MQ103QuestScript.psc:38:41:trailing-whitespace
 Scripts/Source/MQ103QuestScript.psc:41:45:trailing-whitespace
@@ -91870,6 +91963,7 @@ Scripts/Source/MQ103QuestScript.psc:45:1:indentation
 Scripts/Source/MQ103QuestScript.psc:46:1:indentation
 Scripts/Source/MQ103QuestScript.psc:48:1:none-form-usage
 Scripts/Source/MQ103QuestScript.psc:48:1:none-form-usage
+Scripts/Source/MQ103QuestScript.psc:49:11:quest-stage-logic-gap
 Scripts/Source/MQ103QuestScript.psc:51:1:indentation
 Scripts/Source/MQ103QuestScript.psc:56:1:unused-property
 Scripts/Source/MQ103QuestScript.psc:56:36:trailing-whitespace
@@ -92211,6 +92305,7 @@ Scripts/Source/MQ105QuestScript.psc:85:1:indentation
 Scripts/Source/MQ105QuestScript.psc:86:1:none-form-usage
 Scripts/Source/MQ105QuestScript.psc:86:1:none-form-usage
 Scripts/Source/MQ105QuestScript.psc:87:1:none-form-usage
+Scripts/Source/MQ105QuestScript.psc:88:12:quest-stage-logic-gap
 Scripts/Source/MQ105QuestScript.psc:95:1:indentation
 Scripts/Source/MQ105QuestScript.psc:102:7:forbidden-functions
 Scripts/Source/MQ105QuestScript.psc:106:1:function-length
@@ -92454,6 +92549,7 @@ Scripts/Source/MQ106Script.psc:18:1:none-form-usage
 Scripts/Source/MQ106Script.psc:27:1:function-override
 Scripts/Source/MQ106Script.psc:27:1:identifier-casing
 Scripts/Source/MQ106Script.psc:27:1:identifier-casing
+Scripts/Source/MQ106Script.psc:29:10:quest-stage-logic-gap
 Scripts/Source/MQ106Script.psc:32:1:unused-property
 Scripts/Source/MQ106Script.psc:35:1:unused-property
 Scripts/Source/MQ106Script.psc:35:31:trailing-whitespace
@@ -92554,6 +92650,7 @@ Scripts/Source/MQ201MalbornDeathScript.psc:6:1:final-newline
 Scripts/Source/MQ201MalbornQuestScript.psc:1:49:trailing-whitespace
 Scripts/Source/MQ201MalbornQuestScript.psc:1:51:line-endings
 Scripts/Source/MQ201MalbornQuestScript.psc:3:1:function-override
+Scripts/Source/MQ201MalbornQuestScript.psc:5:10:quest-stage-logic-gap
 Scripts/Source/MQ201MalbornQuestScript.psc:7:9:final-newline
 Scripts/Source/MQ201MalbornScript.psc:1:53:trailing-whitespace
 Scripts/Source/MQ201MalbornScript.psc:1:55:line-endings
@@ -93123,6 +93220,7 @@ Scripts/Source/MQ203QuestScript.psc:24:1:identifier-casing
 Scripts/Source/MQ203QuestScript.psc:24:1:identifier-casing
 Scripts/Source/MQ203QuestScript.psc:25:1:indentation
 Scripts/Source/MQ203QuestScript.psc:26:1:none-form-usage
+Scripts/Source/MQ203QuestScript.psc:28:11:quest-stage-logic-gap
 Scripts/Source/MQ203QuestScript.psc:32:1:unused-property
 Scripts/Source/MQ203QuestScript.psc:32:34:trailing-whitespace
 Scripts/Source/MQ203QuestScript.psc:35:1:unused-property
@@ -93286,6 +93384,7 @@ Scripts/Source/MQ204ShoutTrigger.psc:11:4:forbidden-functions
 Scripts/Source/MQ204ShoutTrigger.psc:17:27:trailing-whitespace
 Scripts/Source/MQ205Script.psc:1:50:line-endings
 Scripts/Source/MQ205Script.psc:7:1:function-override
+Scripts/Source/MQ205Script.psc:10:11:quest-stage-logic-gap
 Scripts/Source/MQ205Script.psc:12:9:final-newline
 Scripts/Source/MQ206AlduinScript.psc:1:52:trailing-whitespace
 Scripts/Source/MQ206AlduinScript.psc:1:54:line-endings
@@ -93482,6 +93581,7 @@ Scripts/Source/MQ301Script.psc:72:1:indentation
 Scripts/Source/MQ301Script.psc:75:12:forbidden-functions
 Scripts/Source/MQ301Script.psc:76:1:none-form-usage
 Scripts/Source/MQ301Script.psc:78:9:forbidden-functions
+Scripts/Source/MQ301Script.psc:79:12:quest-stage-logic-gap
 Scripts/Source/MQ301Script.psc:86:1:indentation
 Scripts/Source/MQ301Script.psc:88:1:none-form-usage
 Scripts/Source/MQ301Script.psc:89:1:none-form-usage
@@ -93500,6 +93600,7 @@ Scripts/Source/MQ301Script.psc:113:1:indentation
 Scripts/Source/MQ301Script.psc:114:1:indentation
 Scripts/Source/MQ301Script.psc:115:1:indentation
 Scripts/Source/MQ301Script.psc:116:1:indentation
+Scripts/Source/MQ301Script.psc:116:12:quest-stage-logic-gap
 Scripts/Source/MQ301Script.psc:122:1:indentation
 Scripts/Source/MQ301Script.psc:125:1:none-form-usage
 Scripts/Source/MQ301Script.psc:126:1:none-form-usage
@@ -93887,6 +93988,7 @@ Scripts/Source/MQCallDragonScript.psc:4:1:indentation
 Scripts/Source/MQCallDragonScript.psc:6:5:exclamation-spacing
 Scripts/Source/MQCallDragonScript.psc:7:1:indentation
 Scripts/Source/MQCallDragonScript.psc:9:121:line-length
+Scripts/Source/MQCallDragonScript.psc:11:12:quest-stage-logic-gap
 Scripts/Source/MQCallDragonScript.psc:14:1:indentation
 Scripts/Source/MQCallDragonScript.psc:17:1:indentation
 Scripts/Source/MQCallDragonScript.psc:21:13:forbidden-functions
@@ -93894,6 +93996,7 @@ Scripts/Source/MQCallDragonScript.psc:21:53:forbidden-functions
 Scripts/Source/MQCallDragonScript.psc:22:1:indentation
 Scripts/Source/MQCallDragonScript.psc:25:1:indentation
 Scripts/Source/MQCallDragonScript.psc:33:1:indentation
+Scripts/Source/MQCallDragonScript.psc:34:11:quest-stage-logic-gap
 Scripts/Source/MQCallDragonScript.psc:37:12:final-newline
 Scripts/Source/MQDelphineScript.psc:1:52:trailing-whitespace
 Scripts/Source/MQDelphineScript.psc:1:54:line-endings
@@ -93963,6 +94066,7 @@ Scripts/Source/MQGreybeardAbsorbScript.psc:61:1:indentation
 Scripts/Source/MQGreybeardAbsorbScript.psc:62:1:indentation
 Scripts/Source/MQGreybeardAbsorbScript.psc:68:1:none-form-usage
 Scripts/Source/MQGreybeardAbsorbScript.psc:69:1:none-form-usage
+Scripts/Source/MQGreybeardAbsorbScript.psc:73:11:quest-stage-logic-gap
 Scripts/Source/MQGreybeardAbsorbScript.psc:79:1:function-length
 Scripts/Source/MQGreybeardAbsorbScript.psc:79:1:identifier-casing
 Scripts/Source/MQGreybeardAbsorbScript.psc:79:1:identifier-casing
@@ -93984,6 +94088,7 @@ Scripts/Source/MQGreybeardAbsorbScript.psc:100:1:trailing-whitespace
 Scripts/Source/MQGreybeardAbsorbScript.psc:102:1:trailing-whitespace
 Scripts/Source/MQGreybeardAbsorbScript.psc:104:1:none-form-usage
 Scripts/Source/MQGreybeardAbsorbScript.psc:105:1:none-form-usage
+Scripts/Source/MQGreybeardAbsorbScript.psc:109:11:quest-stage-logic-gap
 Scripts/Source/MQGreybeardAbsorbScript.psc:113:35:trailing-whitespace
 Scripts/Source/MQHrothgarPilgrimmageTabletSCRIPT.psc:1:69:trailing-whitespace
 Scripts/Source/MQHrothgarPilgrimmageTabletSCRIPT.psc:1:71:line-endings
@@ -94515,6 +94620,7 @@ Scripts/Source/MS01IldeneScript.psc:8:32:trailing-whitespace
 Scripts/Source/MS01IldeneScript.psc:11:9:final-newline
 Scripts/Source/MS01IntroWorldSceneScript.psc:1:51:line-endings
 Scripts/Source/MS01IntroWorldSceneScript.psc:3:1:function-override
+Scripts/Source/MS01IntroWorldSceneScript.psc:5:10:quest-stage-logic-gap
 Scripts/Source/MS01IntroWorldSceneScript.psc:8:9:final-newline
 Scripts/Source/MS01NeposScript.psc:1:50:line-endings
 Scripts/Source/MS01NeposScript.psc:3:1:function-override
@@ -94610,6 +94716,7 @@ Scripts/Source/MS02BorkulCellDoorScript.psc:7:9:final-newline
 Scripts/Source/MS02EscapeNeposEndingScript.psc:1:53:line-endings
 Scripts/Source/MS02EscapeNeposEndingScript.psc:3:1:identifier-casing
 Scripts/Source/MS02EscapeNeposEndingScript.psc:5:1:identifier-casing
+Scripts/Source/MS02EscapeNeposEndingScript.psc:8:11:quest-stage-logic-gap
 Scripts/Source/MS02EscapeNeposEndingScript.psc:10:12:final-newline
 Scripts/Source/MS02EscapeNeposForswornScript.psc:1:64:line-endings
 Scripts/Source/MS02EscapeNeposForswornScript.psc:3:1:function-override
@@ -95019,6 +95126,7 @@ Scripts/Source/MS06IntroTrigScript.psc:35:9:final-newline
 Scripts/Source/MS06Script.psc:1:49:line-endings
 Scripts/Source/MS06Script.psc:3:1:unused-property
 Scripts/Source/MS06Script.psc:7:1:unused-property
+Scripts/Source/MS06Script.psc:19:11:quest-stage-logic-gap
 Scripts/Source/MS06Script.psc:21:12:final-newline
 Scripts/Source/MS06StageSetter.psc:1:50:trailing-whitespace
 Scripts/Source/MS06StageSetter.psc:1:52:line-endings
@@ -95300,6 +95408,7 @@ Scripts/Source/MS08QuestScript.psc:12:1:unnecessary-function
 Scripts/Source/MS08QuestScript.psc:15:1:indentation
 Scripts/Source/MS08QuestScript.psc:16:1:indentation
 Scripts/Source/MS08QuestScript.psc:17:1:indentation
+Scripts/Source/MS08QuestScript.psc:17:11:quest-stage-logic-gap
 Scripts/Source/MS08QuestScript.psc:18:1:indentation
 Scripts/Source/MS08QuestScript.psc:23:1:function-override
 Scripts/Source/MS08QuestScript.psc:26:1:none-form-usage
@@ -95592,6 +95701,7 @@ Scripts/Source/MS10QuestScript.psc:40:1:none-form-usage
 Scripts/Source/MS10QuestScript.psc:42:1:none-form-usage
 Scripts/Source/MS10QuestScript.psc:43:1:none-form-usage
 Scripts/Source/MS10QuestScript.psc:45:1:none-form-usage
+Scripts/Source/MS10QuestScript.psc:46:10:quest-stage-logic-gap
 Scripts/Source/MS10QuestScript.psc:50:1:none-form-usage
 Scripts/Source/MS10QuestScript.psc:51:7:forbidden-functions
 Scripts/Source/MS10QuestScript.psc:52:1:none-form-usage
@@ -95599,6 +95709,7 @@ Scripts/Source/MS10QuestScript.psc:53:1:none-form-usage
 Scripts/Source/MS10QuestScript.psc:55:1:none-form-usage
 Scripts/Source/MS10QuestScript.psc:56:1:none-form-usage
 Scripts/Source/MS10QuestScript.psc:58:1:none-form-usage
+Scripts/Source/MS10QuestScript.psc:59:10:quest-stage-logic-gap
 Scripts/Source/MS10QuestScript.psc:62:1:unnecessary-function
 Scripts/Source/MS10ShipDestructorScript.psc:1:59:trailing-whitespace
 Scripts/Source/MS10ShipDestructorScript.psc:1:61:line-endings
@@ -96052,9 +96163,11 @@ Scripts/Source/MS12bQuestScript.psc:37:76:trailing-whitespace
 Scripts/Source/MS12bQuestScript.psc:38:73:trailing-whitespace
 Scripts/Source/MS12bQuestScript.psc:40:1:identifier-casing
 Scripts/Source/MS12bQuestScript.psc:48:1:trailing-whitespace
+Scripts/Source/MS12bQuestScript.psc:50:11:quest-stage-logic-gap
 Scripts/Source/MS12bQuestScript.psc:55:1:identifier-casing
 Scripts/Source/MS12bQuestScript.psc:56:1:indentation
 Scripts/Source/MS12bQuestScript.psc:64:1:trailing-whitespace
+Scripts/Source/MS12bQuestScript.psc:66:11:quest-stage-logic-gap
 Scripts/Source/MS12bQuestScript.psc:70:1:unnecessary-function
 Scripts/Source/MS12bQuestScript.psc:71:1:none-form-usage
 Scripts/Source/MS13ArvelTriggerScript.psc:1:58:line-endings
@@ -97602,8 +97715,10 @@ Scripts/Source/MonitorAliveCountScript.psc:39:121:line-length
 Scripts/Source/MonitorAliveCountScript.psc:40:1:trailing-whitespace
 Scripts/Source/MonitorAliveCountScript.psc:42:1:indentation
 Scripts/Source/MonitorAliveCountScript.psc:43:1:trailing-whitespace
+Scripts/Source/MonitorAliveCountScript.psc:46:12:quest-stage-logic-gap
 Scripts/Source/MonitorAliveCountScript.psc:47:1:trailing-whitespace
 Scripts/Source/MonitorAliveCountScript.psc:48:4:strict-boolean
+Scripts/Source/MonitorAliveCountScript.psc:49:13:quest-stage-logic-gap
 Scripts/Source/MonitorAliveCountScript.psc:51:1:trailing-whitespace
 Scripts/Source/MonitorAliveCountScript.psc:53:10:forbidden-functions
 Scripts/Source/MonitorAliveCountScript.psc:54:1:trailing-whitespace
@@ -101420,6 +101535,7 @@ Scripts/Source/PlayerWerewolfChangeScript.psc:239:1:indentation
 Scripts/Source/PlayerWerewolfChangeScript.psc:240:1:indentation
 Scripts/Source/PlayerWerewolfChangeScript.psc:240:5:forbidden-functions
 Scripts/Source/PlayerWerewolfChangeScript.psc:242:1:indentation
+Scripts/Source/PlayerWerewolfChangeScript.psc:242:13:quest-stage-logic-gap
 Scripts/Source/PlayerWerewolfChangeScript.psc:246:1:function-length
 Scripts/Source/PlayerWerewolfChangeScript.psc:246:1:function-override
 Scripts/Source/PlayerWerewolfChangeScript.psc:247:1:indentation
@@ -101437,6 +101553,7 @@ Scripts/Source/PlayerWerewolfChangeScript.psc:253:50:forbidden-functions
 Scripts/Source/PlayerWerewolfChangeScript.psc:253:81:exclamation-spacing
 Scripts/Source/PlayerWerewolfChangeScript.psc:254:1:indentation
 Scripts/Source/PlayerWerewolfChangeScript.psc:255:1:indentation
+Scripts/Source/PlayerWerewolfChangeScript.psc:255:17:quest-stage-logic-gap
 Scripts/Source/PlayerWerewolfChangeScript.psc:256:1:indentation
 Scripts/Source/PlayerWerewolfChangeScript.psc:257:1:indentation
 Scripts/Source/PlayerWerewolfChangeScript.psc:259:1:indentation
@@ -101478,6 +101595,7 @@ Scripts/Source/PlayerWerewolfChangeScript.psc:288:1:indentation
 Scripts/Source/PlayerWerewolfChangeScript.psc:289:1:indentation
 Scripts/Source/PlayerWerewolfChangeScript.psc:290:1:indentation
 Scripts/Source/PlayerWerewolfChangeScript.psc:291:1:indentation
+Scripts/Source/PlayerWerewolfChangeScript.psc:291:13:quest-stage-logic-gap
 Scripts/Source/PlayerWerewolfChangeScript.psc:296:1:unnecessary-function
 Scripts/Source/PlayerWerewolfChangeScript.psc:297:1:indentation
 Scripts/Source/PlayerWerewolfChangeScript.psc:298:1:indentation
@@ -137919,6 +138037,7 @@ Scripts/Source/SR08QuestScript.psc:6:31:trailing-whitespace
 Scripts/Source/SR08QuestScript.psc:9:1:indentation
 Scripts/Source/SR08QuestScript.psc:10:1:indentation
 Scripts/Source/SR08QuestScript.psc:11:1:indentation
+Scripts/Source/SR08QuestScript.psc:11:22:quest-stage-logic-gap
 Scripts/Source/SR08QuestScript.psc:12:1:indentation
 Scripts/Source/SR10QuestScript.psc:1:53:final-newline
 Scripts/Source/SR12QuestScript.psc:1:41:line-endings
@@ -139165,6 +139284,7 @@ Scripts/Source/T02QuestScript.psc:77:1:none-form-usage
 Scripts/Source/T02QuestScript.psc:86:1:identifier-casing
 Scripts/Source/T02QuestScript.psc:87:1:none-form-usage
 Scripts/Source/T02QuestScript.psc:90:1:none-form-usage
+Scripts/Source/T02QuestScript.psc:95:11:quest-stage-logic-gap
 Scripts/Source/T02QuestScript.psc:101:1:none-form-usage
 Scripts/Source/T02QuestScript.psc:101:9:exclamation-spacing
 Scripts/Source/T02QuestScript.psc:102:11:forbidden-functions
@@ -139680,6 +139800,7 @@ Scripts/Source/TG02BQuestScript.psc:20:1:unused-property
 Scripts/Source/TG02BQuestScript.psc:21:1:identifier-casing
 Scripts/Source/TG02BQuestScript.psc:21:1:unused-property
 Scripts/Source/TG02BQuestScript.psc:23:1:function-override
+Scripts/Source/TG02BQuestScript.psc:27:12:quest-stage-logic-gap
 Scripts/Source/TG02Beehive.psc:1:48:line-endings
 Scripts/Source/TG02Beehive.psc:4:1:identifier-casing
 Scripts/Source/TG02Beehive.psc:6:1:identifier-casing
@@ -139818,6 +139939,7 @@ Scripts/Source/TG02QuestScript.psc:32:1:identifier-casing
 Scripts/Source/TG02QuestScript.psc:32:1:unused-property
 Scripts/Source/TG02QuestScript.psc:33:1:identifier-casing
 Scripts/Source/TG02QuestScript.psc:35:1:function-override
+Scripts/Source/TG02QuestScript.psc:38:12:quest-stage-logic-gap
 Scripts/Source/TG02QuestScript.psc:46:1:function-length
 Scripts/Source/TG02QuestScript.psc:51:1:none-form-usage
 Scripts/Source/TG02QuestScript.psc:54:121:line-length
@@ -140273,6 +140395,7 @@ Scripts/Source/TG04PostQuestScript.psc:25:8:forbidden-functions
 Scripts/Source/TG04PostQuestScript.psc:25:47:comma-spacing
 Scripts/Source/TG04PostQuestScript.psc:26:8:forbidden-functions
 Scripts/Source/TG04PostQuestScript.psc:26:44:comma-spacing
+Scripts/Source/TG04PostQuestScript.psc:29:10:quest-stage-logic-gap
 Scripts/Source/TG04PostQuestScript.psc:31:12:final-newline
 Scripts/Source/TG04QuestScript.psc:1:54:line-endings
 Scripts/Source/TG04QuestScript.psc:3:1:identifier-casing
@@ -143167,13 +143290,21 @@ Scripts/Source/TGREnablerHandlerQuestScript.psc:3:1:identifier-casing
 Scripts/Source/TGREnablerHandlerQuestScript.psc:5:1:function-length
 Scripts/Source/TGREnablerHandlerQuestScript.psc:5:1:unnecessary-function
 Scripts/Source/TGREnablerHandlerQuestScript.psc:7:1:none-form-usage
+Scripts/Source/TGREnablerHandlerQuestScript.psc:8:11:quest-stage-logic-gap
 Scripts/Source/TGREnablerHandlerQuestScript.psc:9:1:none-form-usage
+Scripts/Source/TGREnablerHandlerQuestScript.psc:10:11:quest-stage-logic-gap
 Scripts/Source/TGREnablerHandlerQuestScript.psc:11:1:none-form-usage
+Scripts/Source/TGREnablerHandlerQuestScript.psc:12:11:quest-stage-logic-gap
 Scripts/Source/TGREnablerHandlerQuestScript.psc:13:1:none-form-usage
+Scripts/Source/TGREnablerHandlerQuestScript.psc:14:11:quest-stage-logic-gap
 Scripts/Source/TGREnablerHandlerQuestScript.psc:15:1:none-form-usage
+Scripts/Source/TGREnablerHandlerQuestScript.psc:16:11:quest-stage-logic-gap
 Scripts/Source/TGREnablerHandlerQuestScript.psc:17:1:none-form-usage
+Scripts/Source/TGREnablerHandlerQuestScript.psc:18:11:quest-stage-logic-gap
 Scripts/Source/TGREnablerHandlerQuestScript.psc:19:1:none-form-usage
+Scripts/Source/TGREnablerHandlerQuestScript.psc:20:11:quest-stage-logic-gap
 Scripts/Source/TGREnablerHandlerQuestScript.psc:21:1:none-form-usage
+Scripts/Source/TGREnablerHandlerQuestScript.psc:22:11:quest-stage-logic-gap
 Scripts/Source/TGREnablerHandlerQuestScript.psc:25:12:final-newline
 Scripts/Source/TGREvidenceChestScript.psc:1:70:line-endings
 Scripts/Source/TGREvidenceChestScript.psc:3:1:function-override
@@ -143285,6 +143416,7 @@ Scripts/Source/TGRHCQuestScript.psc:35:1:identifier-casing
 Scripts/Source/TGRHCQuestScript.psc:36:1:identifier-casing
 Scripts/Source/TGRHCQuestScript.psc:39:1:unnecessary-function
 Scripts/Source/TGRHCQuestScript.psc:41:1:none-form-usage
+Scripts/Source/TGRHCQuestScript.psc:42:11:quest-stage-logic-gap
 Scripts/Source/TGRHCQuestScript.psc:47:1:function-length
 Scripts/Source/TGRHCQuestScript.psc:49:34:comma-spacing
 Scripts/Source/TGRHCQuestScript.psc:50:34:comma-spacing
@@ -162903,6 +163035,7 @@ Scripts/Source/WIAdditem03Script.psc:27:27:forbidden-functions
 Scripts/Source/WIAdditem03Script.psc:28:1:none-form-usage
 Scripts/Source/WIAdditem03Script.psc:30:1:none-form-usage
 Scripts/Source/WIAdditem03Script.psc:30:12:forbidden-functions
+Scripts/Source/WIAdditem03Script.psc:31:13:quest-stage-logic-gap
 Scripts/Source/WIAdditem03Script.psc:39:1:final-newline
 Scripts/Source/WIAssault01Script.psc:1:74:line-endings
 Scripts/Source/WIAssault01Script.psc:4:1:identifier-casing
@@ -163803,6 +163936,7 @@ Scripts/Source/WIKill03Script.psc:63:1:none-form-usage
 Scripts/Source/WIKill03Script.psc:64:1:none-form-usage
 Scripts/Source/WIKill03Script.psc:65:1:trailing-whitespace
 Scripts/Source/WIKill03Script.psc:68:1:trailing-whitespace
+Scripts/Source/WIKill03Script.psc:69:10:quest-stage-logic-gap
 Scripts/Source/WIKill03Script.psc:70:1:trailing-whitespace
 Scripts/Source/WIKill03Script.psc:72:1:trailing-whitespace
 Scripts/Source/WIKill03Script.psc:76:1:final-newline
@@ -164847,6 +164981,7 @@ Scripts/Source/WordWallListenerQuestScript.psc:23:1:trailing-whitespace
 Scripts/Source/WordWallListenerQuestScript.psc:24:1:none-form-usage
 Scripts/Source/WordWallListenerQuestScript.psc:25:1:indentation
 Scripts/Source/WordWallListenerQuestScript.psc:25:121:line-length
+Scripts/Source/WordWallListenerQuestScript.psc:26:11:quest-stage-logic-gap
 Scripts/Source/WordWallListenerQuestScript.psc:27:1:trailing-whitespace
 Scripts/Source/WordWallListenerQuestScript.psc:28:2:empty-body
 Scripts/Source/WordWallListenerQuestScript.psc:29:1:indentation
@@ -170042,6 +170177,7 @@ Scripts/Source/dunAnsilvundSCRIPT.psc:54:1:unused-state
 Scripts/Source/dunAnsilvundSCRIPT.psc:55:1:identifier-casing
 Scripts/Source/dunAnsilvundSCRIPT.psc:55:1:state-missing-empty-fallback
 Scripts/Source/dunAnsilvundSCRIPT.psc:55:1:undefined-event
+Scripts/Source/dunAnsilvundSCRIPT.psc:56:16:quest-stage-logic-gap
 Scripts/Source/dunAnsilvundSCRIPT.psc:60:1:unnecessary-function
 Scripts/Source/dunAnsilvundSCRIPT.psc:70:1:final-newline
 Scripts/Source/dunAnsilvundShrineSCRIPT.psc:1:12:type-casing
@@ -171971,24 +172107,33 @@ Scripts/Source/dunFallowstoneCaveSCRIPT.psc:61:1:identifier-casing
 Scripts/Source/dunFallowstoneCaveSCRIPT.psc:61:1:unused-property
 Scripts/Source/dunFallowstoneCaveSCRIPT.psc:64:1:identifier-casing
 Scripts/Source/dunFallowstoneCaveSCRIPT.psc:67:1:none-form-usage
+Scripts/Source/dunFallowstoneCaveSCRIPT.psc:68:17:quest-stage-logic-gap
 Scripts/Source/dunFallowstoneCaveSCRIPT.psc:74:1:identifier-casing
 Scripts/Source/dunFallowstoneCaveSCRIPT.psc:74:13:trailing-whitespace
 Scripts/Source/dunFallowstoneCaveSCRIPT.psc:77:1:none-form-usage
+Scripts/Source/dunFallowstoneCaveSCRIPT.psc:78:17:quest-stage-logic-gap
 Scripts/Source/dunFallowstoneCaveSCRIPT.psc:84:1:identifier-casing
 Scripts/Source/dunFallowstoneCaveSCRIPT.psc:84:13:trailing-whitespace
 Scripts/Source/dunFallowstoneCaveSCRIPT.psc:87:1:none-form-usage
+Scripts/Source/dunFallowstoneCaveSCRIPT.psc:88:17:quest-stage-logic-gap
 Scripts/Source/dunFallowstoneCaveSCRIPT.psc:94:1:identifier-casing
 Scripts/Source/dunFallowstoneCaveSCRIPT.psc:97:1:none-form-usage
+Scripts/Source/dunFallowstoneCaveSCRIPT.psc:98:17:quest-stage-logic-gap
 Scripts/Source/dunFallowstoneCaveSCRIPT.psc:104:1:identifier-casing
 Scripts/Source/dunFallowstoneCaveSCRIPT.psc:107:1:none-form-usage
+Scripts/Source/dunFallowstoneCaveSCRIPT.psc:108:17:quest-stage-logic-gap
 Scripts/Source/dunFallowstoneCaveSCRIPT.psc:114:1:identifier-casing
 Scripts/Source/dunFallowstoneCaveSCRIPT.psc:117:1:none-form-usage
+Scripts/Source/dunFallowstoneCaveSCRIPT.psc:118:17:quest-stage-logic-gap
 Scripts/Source/dunFallowstoneCaveSCRIPT.psc:124:1:identifier-casing
 Scripts/Source/dunFallowstoneCaveSCRIPT.psc:127:1:none-form-usage
+Scripts/Source/dunFallowstoneCaveSCRIPT.psc:128:17:quest-stage-logic-gap
 Scripts/Source/dunFallowstoneCaveSCRIPT.psc:134:1:identifier-casing
 Scripts/Source/dunFallowstoneCaveSCRIPT.psc:137:1:none-form-usage
+Scripts/Source/dunFallowstoneCaveSCRIPT.psc:138:17:quest-stage-logic-gap
 Scripts/Source/dunFallowstoneCaveSCRIPT.psc:144:1:identifier-casing
 Scripts/Source/dunFallowstoneCaveSCRIPT.psc:147:1:none-form-usage
+Scripts/Source/dunFallowstoneCaveSCRIPT.psc:148:17:quest-stage-logic-gap
 Scripts/Source/dunFallowstoneCaveSCRIPT.psc:149:13:goto-state
 Scripts/Source/dunFallowstoneCaveSCRIPT.psc:156:1:final-newline
 Scripts/Source/dunFallowstoneCaveTrig01.psc:1:12:type-casing
@@ -178911,6 +179056,7 @@ Scripts/Source/dunTalkingStoneChangeLocationScript.psc:4:1:function-override
 Scripts/Source/dunTalkingStoneChangeLocationScript.psc:4:1:identifier-casing
 Scripts/Source/dunTalkingStoneChangeLocationScript.psc:4:1:identifier-casing
 Scripts/Source/dunTalkingStoneChangeLocationScript.psc:4:1:identifier-casing
+Scripts/Source/dunTalkingStoneChangeLocationScript.psc:6:10:quest-stage-logic-gap
 Scripts/Source/dunTalkingStoneChangeLocationScript.psc:7:9:final-newline
 Scripts/Source/dunTolvaldsCaveSCRIPT.psc:1:12:type-casing
 Scripts/Source/dunTolvaldsCaveSCRIPT.psc:1:54:trailing-whitespace
@@ -178920,10 +179066,12 @@ Scripts/Source/dunTolvaldsCaveSCRIPT.psc:17:1:identifier-casing
 Scripts/Source/dunTolvaldsCaveSCRIPT.psc:17:1:unnecessary-function
 Scripts/Source/dunTolvaldsCaveSCRIPT.psc:18:17:boolean-simplification
 Scripts/Source/dunTolvaldsCaveSCRIPT.psc:18:40:boolean-simplification
+Scripts/Source/dunTolvaldsCaveSCRIPT.psc:20:17:quest-stage-logic-gap
 Scripts/Source/dunTolvaldsCaveSCRIPT.psc:25:1:identifier-casing
 Scripts/Source/dunTolvaldsCaveSCRIPT.psc:25:1:unnecessary-function
 Scripts/Source/dunTolvaldsCaveSCRIPT.psc:26:17:boolean-simplification
 Scripts/Source/dunTolvaldsCaveSCRIPT.psc:26:40:boolean-simplification
+Scripts/Source/dunTolvaldsCaveSCRIPT.psc:28:17:quest-stage-logic-gap
 Scripts/Source/dunTolvaldsCaveSCRIPT.psc:34:22:trailing-whitespace
 Scripts/Source/dunTolvaldsCaveSCRIPT.psc:35:1:identifier-casing
 Scripts/Source/dunTolvaldsCaveSCRIPT.psc:35:1:state-missing-empty-fallback

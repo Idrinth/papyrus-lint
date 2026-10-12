@@ -1,0 +1,14 @@
+{
+  "id": "quest-stage-logic-gap",
+  "name": "SetStage without stage check",
+  "category": "Reliability",
+  "visitor": "ast",
+  "tags": [
+    "correctness"
+  ],
+  "severity": "info",
+  "importance": "low",
+  "fixable": false,
+  "description": "Flags a SetStage call on the script's own quest with no earlier GetStageDone/GetStage check in the same function. Fragment scripts are skipped.",
+  "definition": "Flags, as an `[info]`, a `SetStage(...)` or `Self.SetStage(...)` call in a script extending `Quest` (directly or through a resolvable parent) when no `GetStageDone`, `GetStage`, `GetCurrentStageID` or `IsStageDone` call comes before it in the same function or event. Setting a stage that is already set re-runs that stage's fragment, duplicating its side effects; guarding it with `If !GetStageDone(N)` avoids that. Only same-function checks are tracked, so a guard in a calling function is not seen; intentional re-entry can be silenced with a disable comment. `SetStage` on another quest is not checked. CreationKit fragment scripts (a `;BEGIN FRAGMENT` marker or a `Fragment_<digits>` function) are skipped entirely, since their code runs under stage, dialogue or scene conditions set elsewhere."
+}

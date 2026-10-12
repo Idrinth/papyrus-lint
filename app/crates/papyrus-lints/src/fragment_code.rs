@@ -88,3 +88,37 @@ pub fn code_section_starts(source: &str) -> Vec<Option<usize>> {
 #[cfg(test)]
 #[path = "fragment_code_tests.rs"]
 mod tests;
+
+/// Whether `name` is a CreationKit-generated fragment function name
+/// (`Fragment_` followed by one or more ASCII digits, case-insensitively),
+/// which the engine calls directly rather than the script's own author.
+pub fn is_fragment_function(name: &str) -> bool {
+    name.get(..9)
+        .is_some_and(|prefix| prefix.eq_ignore_ascii_case("Fragment_"))
+        && !name[9..].is_empty()
+        && name[9..].bytes().all(|byte| byte.is_ascii_digit())
+}
+
+/// Whether the script is a CreationKit fragment script (quest stage,
+/// topic info, scene, perk, package, terminal fragments): it either has a
+/// `;BEGIN FRAGMENT` marker line or declares a `Fragment_<digits>`
+/// function. Fragment code is usually conditioned elsewhere (stage,
+/// dialogue or scene conditions), so logic-flow rules can skip it.
+pub fn is_fragment_script(source: &str, script: Option<&papyrus_parser::ast::Script>) -> bool {
+    source.lines().any(|line| {
+        line.trim_start()
+            .to_ascii_uppercase()
+            .starts_with(";BEGIN FRAGMENT")
+    }) || script.is_some_and(|script| {
+        script
+            .functions
+            .iter()
+            .chain(
+                script
+                    .states
+                    .iter()
+                    .flat_map(|state| state.functions.iter()),
+            )
+            .any(|function| is_fragment_function(&function.name))
+    })
+}

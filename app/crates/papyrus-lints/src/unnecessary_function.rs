@@ -39,6 +39,7 @@ use std::collections::HashMap;
 use papyrus_parser::ast::{Expr, FunctionDecl, IfBranch, Param, Script, Stmt, TypeName};
 use papyrus_parser::token::{Token, TokenKind};
 
+use crate::fragment_code::is_fragment_function;
 use crate::token_walk::{line_starts, matching_close_paren};
 use crate::visitor::{AstLint, LintVisitor, Store, VisitCtx};
 use crate::Diagnostic;
@@ -116,15 +117,6 @@ fn all_functions(script: &Script) -> impl Iterator<Item = &FunctionDecl> {
     )
 }
 
-/// Whether `name` is a CreationKit-generated fragment function name
-/// (`Fragment_` followed by one or more ASCII digits, case-insensitively),
-/// which the engine calls directly rather than the script's own author.
-fn is_fragment_function(name: &str) -> bool {
-    name.get(..9)
-        .is_some_and(|prefix| prefix.eq_ignore_ascii_case("Fragment_"))
-        && !name[9..].is_empty()
-        && name[9..].bytes().all(|byte| byte.is_ascii_digit())
-}
 
 /// Whether `return_type` is one of Papyrus's primitive scalar types
 /// (`Int`, `Float`, `Bool`, `String`), rather than an array or an
