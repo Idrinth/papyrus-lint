@@ -304,3 +304,17 @@ fn reports_lone_logical_operator_characters_at_their_locations() {
         assert_eq!((error.line, error.col), (line, col));
     }
 }
+
+#[test]
+fn translates_compiler_supported_escapes_like_the_papyrus_compiler() {
+    // Issue #1761: the CK compiler stores `\n`, `\t`, `\\` and `\"` as
+    // 0x0A, 0x09, a single backslash and a quote in the .pex string table.
+    let toks = kinds(r#""AAA\nBBB\tCCC\\DDD\"EEE""#);
+    assert_eq!(
+        toks,
+        vec![
+            TokenKind::StringLiteral("AAA\nBBB\tCCC\\DDD\"EEE".to_string()),
+            TokenKind::Eof,
+        ]
+    );
+}

@@ -13,43 +13,52 @@ fn check(source: &str) -> Vec<Diagnostic> {
 }
 
 #[test]
-fn flags_backslash_n_in_trace_string() {
+fn flags_backslash_r_in_trace_string() {
     let diagnostics = check(
-        "ScriptName Example\n\nFunction Test()\n    Debug.Trace(\"Quest started\\n\")\nEndFunction\n",
+        "ScriptName Example\n\nFunction Test()\n    Debug.Trace(\"Quest started\\r\")\nEndFunction\n",
     );
 
     assert_eq!(diagnostics.len(), 1);
     assert_eq!(diagnostics[0].line, 4);
     assert_eq!(diagnostics[0].rule, RULE);
     assert!(diagnostics[0].message.starts_with("[warning]"));
-    assert!(diagnostics[0].message.contains("\\n"));
-    assert!(diagnostics[0].message.contains("no escape sequences"));
+    assert!(diagnostics[0].message.contains("'\\r'"));
+    assert!(diagnostics[0].message.contains("not a supported escape"));
     // Indent(4) + Debug.Trace((12) + quote => backslash after Quest started at col 31.
     assert_eq!(diagnostics[0].column, 31);
 }
 
 #[test]
-fn flags_backslash_t_and_backslash_r() {
+fn does_not_flag_compiler_supported_escapes() {
+    // Issue #1761: the compiler translates \n, \t, \\ and \" (verified in
+    // the .pex string table), so none of them may be reported.
     let diagnostics = check(
-        "ScriptName Example\n\nFunction Test()\n    Debug.Notification(\"Done\\tOK\")\n    String cr = \"a\\rb\"\nEndFunction\n",
+        "ScriptName Example\n\nFunction Test()\n    Return \"AAA\\nBBB\\tCCC\\\\DDD\\\"EEE\"\n    Debug.Notification(\"Done\\tOK\\n\")\nEndFunction\n",
     );
 
-    assert_eq!(diagnostics.len(), 2);
-    assert!(diagnostics[0].message.contains("\\t"));
-    assert!(diagnostics[1].message.contains("\\r"));
+    assert!(diagnostics.is_empty(), "{diagnostics:?}");
 }
 
 #[test]
-fn flags_every_escape_in_the_same_string() {
+fn flags_only_unsupported_escapes_in_mixed_string() {
     let diagnostics = check(
-        "ScriptName Example\n\nFunction Test()\n    String s = \"a\\nb\\tc\\rd\"\nEndFunction\n",
+        "ScriptName Example\n\nFunction Test()\n    String s = \"a\\nb\\rc\\td\\re\"\nEndFunction\n",
     );
 
-    assert_eq!(diagnostics.len(), 3);
+    assert_eq!(diagnostics.len(), 2);
     assert!(diagnostics.iter().all(|d| d.line == 4));
-    assert_eq!(diagnostics[0].column, 18);
-    assert_eq!(diagnostics[1].column, 21);
-    assert_eq!(diagnostics[2].column, 24);
+    assert_eq!(diagnostics[0].column, 21);
+    assert_eq!(diagnostics[1].column, 27);
+}
+
+#[test]
+fn escaped_backslash_before_r_is_not_flagged() {
+    // `\\r` is an escaped backslash followed by a plain `r`.
+    let diagnostics = check(
+        "ScriptName Example\n\nFunction Test()\n    String s = \"C:\\\\readme\"\nEndFunction\n",
+    );
+
+    assert!(diagnostics.is_empty());
 }
 
 #[test]
@@ -80,15 +89,13 @@ fn does_not_flag_escapes_in_comments() {
 }
 
 #[test]
-fn flags_windows_path_segment_that_looks_like_newline() {
-    // "C:\new" contains `\n` — a classic footgun even in C, and exactly the
-    // misconception this lint exists to catch in Papyrus.
+fn flags_windows_path_segment_that_looks_like_carriage_return() {
     let diagnostics = check(
-        "ScriptName Example\n\nFunction Test()\n    String path = \"C:\\new\"\nEndFunction\n",
+        "ScriptName Example\n\nFunction Test()\n    String path = \"C:\\readme\"\nEndFunction\n",
     );
 
     assert_eq!(diagnostics.len(), 1);
-    assert!(diagnostics[0].message.contains("\\n"));
+    assert!(diagnostics[0].message.contains("'\\r'"));
 }
 
 #[test]
@@ -133,13 +140,13 @@ fn malformed_string_token_locations_are_ignored() {
 fn raw_string_scan_stops_at_closing_quote_or_line_ending() {
     let mut escapes = Vec::new();
 
-    visit_escapes_in_string("\"ok\"\\n", 1, 0, |column, letter| {
+    visit_escapes_in_string("\"ok\"\\r", 1, 0, |column, letter| {
         escapes.push((column, letter));
     });
-    visit_escapes_in_string("\"ok\n\\t", 1, 0, |column, letter| {
+    visit_escapes_in_string("\"ok\n\\r", 1, 0, |column, letter| {
         escapes.push((column, letter));
     });
-    visit_escapes_in_string("\"ok\r\\t", 1, 0, |column, letter| {
+    visit_escapes_in_string("\"ok\r\\r", 1, 0, |column, letter| {
         escapes.push((column, letter));
     });
 
@@ -163,11 +170,11 @@ fn raw_string_scan_ignores_invalid_offsets_and_trailing_backslashes() {
 #[test]
 fn disable_directives_suppress_diagnostics() {
     let line_disabled = crate::lint(
-        "ScriptName Example\n\nFunction Test()\n    Debug.Trace(\"hi\\n\") ; @disable invalid-string-escape\nEndFunction\n",
+        "ScriptName Example\n\nFunction Test()\n    Debug.Trace(\"hi\\r\") ; @disable invalid-string-escape\nEndFunction\n",
         &crate::config::Config::default(),
     );
     let file_disabled = crate::lint(
-        "; @disable-file invalid-string-escape\nScriptName Example\n\nFunction Test()\n    Debug.Trace(\"hi\\n\")\nEndFunction\n",
+        "; @disable-file invalid-string-escape\nScriptName Example\n\nFunction Test()\n    Debug.Trace(\"hi\\r\")\nEndFunction\n",
         &crate::config::Config::default(),
     );
 
@@ -185,7 +192,7 @@ fn config_off_switch_suppresses_diagnostics() {
     config.rules.invalid_string_escape = false;
 
     let diagnostics = crate::lint(
-        "ScriptName Example\n\nFunction Test()\n    Debug.Trace(\"hi\\n\")\nEndFunction\n",
+        "ScriptName Example\n\nFunction Test()\n    Debug.Trace(\"hi\\r\")\nEndFunction\n",
         &config,
     );
 

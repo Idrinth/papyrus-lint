@@ -1,16 +1,18 @@
-//! Flags C-like escape sequences inside string literals.
+//! Flags C-like escape sequences in string literals that the Papyrus
+//! compiler does not translate.
 //!
-//! Papyrus string literals have no escape sequences: a literal `"\n"` is the
-//! two characters backslash and `n`, not a newline. Authors coming from
-//! C/JavaScript/Python constantly write `Debug.Trace("Loaded\nDone")` or
-//! `"\t"` expecting whitespace escapes, then wonder why the log shows a
-//! literal `\n`.
+//! The Papyrus compiler translates exactly four escapes in string literals:
+//! `\n` (newline), `\t` (tab), `\\` (backslash) and `\"` (quote) — verified
+//! for Skyrim by compiling a probe script and inspecting the `.pex` string
+//! table (#1761), and the same set is documented for Fallout 4 / Starfield.
+//! Those are never flagged. `\r` is not part of that set, so an author who
+//! writes `"a\rb"` expecting a carriage return does not get one.
 //!
 //! This works on lexer tokens rather than the parsed AST so a script that
 //! doesn't parse cleanly is still checked. The lexer itself interprets a
 //! few backslash sequences when building the token value, so this lint
 //! re-scans the raw source text between the quotes and only flags the
-//! high-signal set `\n` / `\t` / `\r` — intentional Windows-style paths
+//! high-signal `\r` escape — intentional Windows-style paths
 //! (`"C:\Games"`) and doubled backslashes are left alone.
 
 use papyrus_parser::token::{Token, TokenKind};
@@ -23,7 +25,10 @@ use crate::Diagnostic;
 pub const RULE: &str = "invalid-string-escape";
 
 /// Escape letters this lint treats as common C-like misconceptions.
-const FLAGGED_ESCAPES: &[u8] = b"ntr";
+///
+/// `\n`, `\t`, `\\` and `\"` are translated by the compiler in every
+/// dialect and must never appear here.
+const FLAGGED_ESCAPES: &[u8] = b"r";
 
 #[derive(Default)]
 struct Collect {
@@ -68,10 +73,9 @@ impl TokenLint for Collect {
                 token.line,
                 column,
                 format!(
-                    "[warning] string literal contains '\\{letter}', but Papyrus has no \
-                     escape sequences — the two characters backslash and '{letter}' are \
-                     stored literally; prefer separate Debug.Trace calls (or omit the \
-                     escape) instead of embedding C-like escapes"
+                    "[warning] string literal contains '\\{letter}', but the Papyrus \
+                     compiler only translates \\n, \\t, \\\\ and \\\" — '\\{letter}' is \
+                     not a supported escape sequence; use \\n or remove the escape"
                 ),
                 RULE,
             );
@@ -83,8 +87,8 @@ pub fn visitor() -> LintVisitor {
     LintVisitor::Tokens(Box::new(Collect::default()))
 }
 
-/// Checks `source` for string literals that contain a C-like `\n`, `\t`, or
-/// `\r` escape sequence.
+/// Checks `source` for string literals that contain an unsupported C-like `\r`
+/// escape sequence.
 #[allow(dead_code)] // unit tests; collect_diagnostics uses visitor()
 pub fn check(
     source: &str,
