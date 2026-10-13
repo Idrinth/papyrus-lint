@@ -122,3 +122,17 @@ fn a_function_merely_resembling_a_fragment_name_does_not_exempt() {
     let source = "ScriptName MyQuest Extends Quest\n\nFunction Fragment_Helper()\n  SetStage(30)\nEndFunction\n";
     assert_eq!(check(source).len(), 1);
 }
+
+#[test]
+fn message_scopes_the_finding_to_allow_repeated_stages() {
+    let diagnostics = check(&quest("  SetStage(20)\n"));
+    assert_eq!(diagnostics.len(), 1);
+    assert!(diagnostics[0]
+        .message
+        .contains("only relevant if the quest has Allow Repeated Stages enabled"));
+}
+
+#[test]
+fn rule_is_off_by_default() {
+    assert!(!crate::config::Config::default().rules.quest_stage_logic_gap);
+}
