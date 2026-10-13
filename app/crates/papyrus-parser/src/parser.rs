@@ -96,6 +96,7 @@ impl Parser {
     /// at least the final [`TokenKind::Eof`] token.
     pub fn new_with_mode(tokens: Vec<Token>, mode: GameEdition) -> Self {
         assert!(!tokens.is_empty(), "parser token stream must not be empty");
+        let tokens = demote_dialect_keywords(tokens, mode);
         Parser {
             tokens,
             pos: 0,
@@ -278,4 +279,37 @@ impl Parser {
             Err(self.error(format!("expected {:?}, found {:?}", kind, self.kind())))
         }
     }
+}
+/// Spelling used for a dialect-only keyword when `mode` does not reserve
+/// it, so it can be used as an ordinary identifier (issue #1760).
+///
+/// The lexer is mode-unaware and always produces these keywords; the Skyrim
+/// compiler accepts e.g. `Int Group` as a parameter or local, so the
+/// Fallout 4 / Starfield-only `Struct` and `Group` keywords are turned back
+/// into identifiers here before parsing starts.
+fn dialect_keyword_as_identifier(kw: Keyword, mode: GameEdition) -> Option<&'static str> {
+    if mode.has_fallout4_dialect() {
+        return None;
+    }
+    match kw {
+        Keyword::Struct => Some("Struct"),
+        Keyword::EndStruct => Some("EndStruct"),
+        Keyword::Group => Some("Group"),
+        Keyword::EndGroup => Some("EndGroup"),
+        Keyword::Collapsed => Some("Collapsed"),
+        Keyword::CollapsedOnBase => Some("CollapsedOnBase"),
+        Keyword::CollapsedOnRef => Some("CollapsedOnRef"),
+        _ => None,
+    }
+}
+
+fn demote_dialect_keywords(mut tokens: Vec<Token>, mode: GameEdition) -> Vec<Token> {
+    for token in &mut tokens {
+        if let TokenKind::Keyword(kw) = token.kind {
+            if let Some(name) = dialect_keyword_as_identifier(kw, mode) {
+                token.kind = TokenKind::Identifier(name.to_string());
+            }
+        }
+    }
+    tokens
 }

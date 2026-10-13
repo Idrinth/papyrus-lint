@@ -695,3 +695,47 @@ fn reports_parse_errors_with_location_and_message() {
     assert!(message.contains("expected identifier"), "{message}");
     assert!(matches!(error, PapyrusError::Parse(_)));
 }
+
+const GROUP_AS_IDENTIFIER: &str = "ScriptName VahlokGroupIdent extends Quest
+
+Int Function CountItems(Int Group)
+    Return Group + 1
+EndFunction
+
+Int Function Local()
+    Int Group = 3
+    Group += 1
+    Return CountItems(Group = Group)
+EndFunction
+";
+
+#[test]
+fn skyrim_accepts_group_as_parameter_and_local_name() {
+    let script = parse(GROUP_AS_IDENTIFIER).unwrap();
+    assert_eq!(script.functions.len(), 2);
+    assert_eq!(script.functions[0].params[0].name, "Group");
+}
+
+#[test]
+fn skyrim_accepts_other_dialect_only_keywords_as_identifiers() {
+    let source = "ScriptName S extends Quest
+Int Struct
+Int Function F(Int Collapsed, Int CollapsedOnRef, Int EndGroup)
+    Int EndStruct = Collapsed + CollapsedOnRef + EndGroup + Struct
+    Return EndStruct
+EndFunction
+";
+    parse(source).unwrap();
+}
+
+#[test]
+fn fallout4_still_parses_group_blocks_and_rejects_group_identifier() {
+    let source = "ScriptName S extends Quest
+Group Settings Collapsed
+    Int Property Count Auto
+EndGroup
+";
+    let script = parse_with_mode(source, parser::GameEdition::Fallout4).unwrap();
+    assert_eq!(script.groups.len(), 1);
+    assert!(parse_with_mode(GROUP_AS_IDENTIFIER, parser::GameEdition::Fallout4).is_err());
+}
