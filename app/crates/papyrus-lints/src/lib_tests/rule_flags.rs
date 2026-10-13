@@ -285,8 +285,8 @@ fn each_rule_flag_gates_only_its_own_lint() {
             (
                 "ScriptName Example Extends Quest\n\nFunction Go()\n    SetStage(10)\nEndFunction\n",
                 quest_stage_logic_gap::RULE,
+                config_with(|c| c.rules.quest_stage_logic_gap = true),
                 Config::default(),
-                config_with(|c| c.rules.quest_stage_logic_gap = false),
             ),
             (
                 "ScriptName Example\n\nState Active\n    Function DoWork()\n    EndFunction\nEndState\n",

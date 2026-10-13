@@ -2,10 +2,12 @@
 //! within the same function or event, by a stage check (`GetStageDone`,
 //! `GetStage`, `GetCurrentStageID`, `IsStageDone`).
 //!
-//! Setting a stage that is already set re-runs that stage's fragment, which
-//! duplicates its side effects. A dominating check in the same function is
-//! the high-signal case; checks living in another function are not tracked,
-//! so the rule is informational and low importance.
+//! By default `SetStage` on an already-set stage is a no-op; only quests with
+//! "Allow Repeated Stages" enabled re-run that stage's fragment, duplicating
+//! its side effects. The linter cannot see quest flags, so the rule is opt-in
+//! (`enabled_by_default: false`, not enabled by any preset). Checks living in
+//! another function are not tracked, so the rule is informational and low
+//! importance.
 //!
 //! Only scripts extending `Quest` (directly, or through a resolvable
 //! parent) are checked, and only calls on the script itself (`SetStage(..)`
@@ -70,7 +72,8 @@ impl Collect {
                     line,
                     col,
                     "[info] SetStage is not preceded by a GetStageDone/GetStage check in this \
-                     function; setting an already-set stage re-runs its fragment"
+                     function; only relevant if the quest has Allow Repeated Stages enabled, \
+                     where setting an already-set stage re-runs its fragment"
                         .to_string(),
                     RULE,
                 ),
