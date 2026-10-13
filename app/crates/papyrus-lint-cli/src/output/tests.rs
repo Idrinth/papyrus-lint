@@ -269,11 +269,11 @@ fn collect_parser_errors_distinguishes_lex_parse_and_valid_sources() {
         super::collect_parser_errors(group, papyrus_lints::Game::Fallout4).is_empty(),
         "Fallout 4 Group declarations must not be reported as parse errors"
     );
+    // Skyrim treats `Group` as a plain identifier, so a FO4-style group block
+    // is still rejected, just no longer as a `Group` keyword error.
     assert!(
-        super::collect_parser_errors(group, papyrus_lints::Game::Skyrim)
-            .iter()
-            .any(|error| error.message.contains("Group")),
-        "Skyrim must still reject Group"
+        !super::collect_parser_errors(group, papyrus_lints::Game::Skyrim).is_empty(),
+        "Skyrim must still reject Fallout 4 group blocks"
     );
 }
 
