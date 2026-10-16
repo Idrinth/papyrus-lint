@@ -167,7 +167,15 @@ fn parse_archive(scripts_dir: &Path, archive_name: &str) -> Vec<ScriptHeader> {
                 path.display()
             )
         });
-        let name = entry.name().to_string();
+        let name = entry
+            .name()
+            .unwrap_or_else(|err| {
+                panic!(
+                    "failed to read zip entry {i} name from {}: {err}",
+                    path.display()
+                )
+            })
+            .to_string();
         if !name.to_ascii_lowercase().ends_with(".psc") {
             continue;
         }
