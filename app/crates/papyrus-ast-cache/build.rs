@@ -146,7 +146,15 @@ fn build_game_blob(manifest_dir: &str, out_dir: &str, game: &GameArchives) {
                     zip_path.display()
                 )
             });
-            let name = entry.name().to_string();
+            let name = entry
+                .name()
+                .unwrap_or_else(|err| {
+                    panic!(
+                        "failed to read zip entry {i} name from {}: {err}",
+                        zip_path.display()
+                    )
+                })
+                .to_string();
             if !name.to_ascii_lowercase().ends_with(".psc") {
                 continue;
             }
