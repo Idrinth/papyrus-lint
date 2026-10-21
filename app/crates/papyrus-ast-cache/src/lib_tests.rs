@@ -21,7 +21,8 @@ fn bundled_script(archive_name: &str, file_name: &str) -> String {
 
     for index in 0..archive.len() {
         let mut entry = archive.by_index(index).unwrap();
-        if entry.name().ends_with(&suffix) || entry.name() == file_name {
+        let name = entry.name().unwrap().to_string();
+        if name.ends_with(&suffix) || name == file_name {
             let mut source = String::new();
             entry.read_to_string(&mut source).unwrap();
             return source;
