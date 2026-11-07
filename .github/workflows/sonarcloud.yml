@@ -18,13 +18,25 @@ jobs:
   Analysis:
     runs-on: ubuntu-latest
     steps:
+      # Dependabot pull_request runs cannot read SONAR_TOKEN, so the scan
+      # fails authorization and the required Analysis check goes red. Skip
+      # the scan and leave this job successful. Pushes to the-one, manual
+      # runs, and every other pull request still scan.
+      - name: Skip SonarCloud scan for Dependabot
+        id: dependabot
+        if: github.event_name == 'pull_request' && (github.actor == 'dependabot[bot]' || github.event.pull_request.user.login == 'dependabot[bot]')
+        run: |
+          echo "SonarCloud scan skipped for Dependabot pull requests."
+          echo "skip=true" >> "$GITHUB_OUTPUT"
       - name: Setup Java JDK
+        if: steps.dependabot.outputs.skip != 'true'
         uses: actions/setup-java@v6.1.0
         with:
           java-version: 21
           distribution: temurin
           java-package: jre
       - name: Official SonarQube Scan
+        if: steps.dependabot.outputs.skip != 'true'
         uses: SonarSource/sonarqube-scan-action@v8.4.1
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
