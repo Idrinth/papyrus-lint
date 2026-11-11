@@ -23,7 +23,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@playwright/test": "^1.63.0",
+    "@playwright/test": "^1.65.0",
     "@tauri-apps/cli": "^2",
     "@typescript/native": "npm:typescript@~7.0.2",
     "@vitest/coverage-v8": "^5.1.0",
