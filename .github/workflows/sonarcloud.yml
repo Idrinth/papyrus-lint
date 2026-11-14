@@ -30,7 +30,7 @@ jobs:
           echo "skip=true" >> "$GITHUB_OUTPUT"
       - name: Setup Java JDK
         if: steps.dependabot.outputs.skip != 'true'
-        uses: actions/setup-java@v6.1.0
+        uses: actions/setup-java@v6.2.0
         with:
           java-version: 21
           distribution: temurin
