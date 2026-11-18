@@ -37,7 +37,7 @@ jobs:
           java-package: jre
       - name: Official SonarQube Scan
         if: steps.dependabot.outputs.skip != 'true'
-        uses: SonarSource/sonarqube-scan-action@v8.4.1
+        uses: SonarSource/sonarqube-scan-action@v8.5.0
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
